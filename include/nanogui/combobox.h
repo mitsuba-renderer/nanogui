@@ -34,29 +34,24 @@ public:
      * long descriptive labels for each item
      */
     ComboBox(Widget *parent, const std::vector<std::string> &items,
-             const std::vector<std::string> &itemsShort);
+             const std::vector<std::string> &items_short);
 
-    std::function<void(int)> callback() const { return mCallback; }
-    void setCallback(const std::function<void(int)> &callback) { mCallback = callback; }
+    std::function<void(int)> callback() const { return m_callback; }
+    void set_callback(const std::function<void(int)> &callback) { m_callback = callback; }
 
-    int selectedIndex() const { return mSelectedIndex; }
-    void setSelectedIndex(int idx);
+    int selected_index() const { return m_selected_index; }
+    void set_selected_index(int idx);
 
-    void setItems(const std::vector<std::string> &items, const std::vector<std::string> &itemsShort);
-    void setItems(const std::vector<std::string> &items) { setItems(items, items); }
-    const std::vector<std::string> &items() const { return mItems; }
-    const std::vector<std::string> &itemsShort() const { return mItemsShort; }
+    void set_items(const std::vector<std::string> &items, const std::vector<std::string> &items_short);
+    void set_items(const std::vector<std::string> &items) { set_items(items, items); }
+    const std::vector<std::string> &items() const { return m_items; }
+    const std::vector<std::string> &items_short() const { return m_items_short; }
 
-    virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel) override;
-
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
 protected:
-    std::vector<std::string> mItems, mItemsShort;
-    std::function<void(int)> mCallback;
-    int mSelectedIndex;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::vector<std::string> m_items, m_items_short;
+    std::function<void(int)> m_callback;
+    int m_selected_index;
 };
 
 NAMESPACE_END(nanogui)

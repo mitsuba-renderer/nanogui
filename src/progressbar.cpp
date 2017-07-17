@@ -11,14 +11,13 @@
 
 #include <nanogui/progressbar.h>
 #include <nanogui/opengl.h>
-#include <nanogui/serializer/core.h>
 
 NAMESPACE_BEGIN(nanogui)
 
 ProgressBar::ProgressBar(Widget *parent)
-    : Widget(parent), mValue(0.0f) {}
+    : Widget(parent), m_value(0.0f) {}
 
-Vector2i ProgressBar::preferredSize(NVGcontext *) const {
+Vector2i ProgressBar::preferred_size(NVGcontext *) const {
     return Vector2i(70, 12);
 }
 
@@ -26,40 +25,27 @@ void ProgressBar::draw(NVGcontext* ctx) {
     Widget::draw(ctx);
 
     NVGpaint paint = nvgBoxGradient(
-        ctx, mPos.x() + 1, mPos.y() + 1,
-        mSize.x()-2, mSize.y(), 3, 4, Color(0, 32), Color(0, 92));
+        ctx, m_pos.x() + 1, m_pos.y() + 1,
+        m_size.x()-2, m_size.y(), 3, 4, Color(0, 32), Color(0, 92));
     nvgBeginPath(ctx);
-    nvgRoundedRect(ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y(), 3);
+    nvgRoundedRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), 3);
     nvgFillPaint(ctx, paint);
     nvgFill(ctx);
 
-    float value = std::min(std::max(0.0f, mValue), 1.0f);
-    int barPos = (int) std::round((mSize.x() - 2) * value);
+    float value = std::min(std::max(0.0f, m_value), 1.0f);
+    int bar_pos = (int) std::round((m_size.x() - 2) * value);
 
     paint = nvgBoxGradient(
-        ctx, mPos.x(), mPos.y(),
-        barPos+1.5f, mSize.y()-1, 3, 4,
+        ctx, m_pos.x(), m_pos.y(),
+        bar_pos+1.5f, m_size.y()-1, 3, 4,
         Color(220, 100), Color(128, 100));
 
     nvgBeginPath(ctx);
     nvgRoundedRect(
-        ctx, mPos.x()+1, mPos.y()+1,
-        barPos, mSize.y()-2, 3);
+        ctx, m_pos.x()+1, m_pos.y()+1,
+        bar_pos, m_size.y()-2, 3);
     nvgFillPaint(ctx, paint);
     nvgFill(ctx);
-}
-
-void ProgressBar::save(Serializer &s) const {
-    Widget::save(s);
-    s.set("value", mValue);
-}
-
-bool ProgressBar::load(Serializer &s) {
-    if (!Widget::load(s))
-        return false;
-    if (!s.get("value", mValue))
-        return false;
-    return true;
 }
 
 NAMESPACE_END(nanogui)

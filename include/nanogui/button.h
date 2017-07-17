@@ -40,58 +40,53 @@ public:
 
     Button(Widget *parent, const std::string &caption = "Untitled", int icon = 0);
 
-    const std::string &caption() const { return mCaption; }
-    void setCaption(const std::string &caption) { mCaption = caption; }
+    const std::string &caption() const { return m_caption; }
+    void set_caption(const std::string &caption) { m_caption = caption; }
 
-    const Color &backgroundColor() const { return mBackgroundColor; }
-    void setBackgroundColor(const Color &backgroundColor) { mBackgroundColor = backgroundColor; }
+    const Color &background_color() const { return m_background_color; }
+    void set_background_color(const Color &background_color) { m_background_color = background_color; }
 
-    const Color &textColor() const { return mTextColor; }
-    void setTextColor(const Color &textColor) { mTextColor = textColor; }
+    const Color &text_color() const { return m_text_color; }
+    void set_text_color(const Color &text_color) { m_text_color = text_color; }
 
-    int icon() const { return mIcon; }
-    void setIcon(int icon) { mIcon = icon; }
+    int icon() const { return m_icon; }
+    void set_icon(int icon) { m_icon = icon; }
 
-    int flags() const { return mFlags; }
-    void setFlags(int buttonFlags) { mFlags = buttonFlags; }
+    int flags() const { return m_flags; }
+    void set_flags(int button_flags) { m_flags = button_flags; }
 
-    IconPosition iconPosition() const { return mIconPosition; }
-    void setIconPosition(IconPosition iconPosition) { mIconPosition = iconPosition; }
+    IconPosition icon_position() const { return m_icon_position; }
+    void set_icon_position(IconPosition icon_position) { m_icon_position = icon_position; }
 
-    bool pushed() const { return mPushed; }
-    void setPushed(bool pushed) { mPushed = pushed; }
+    bool pushed() const { return m_pushed; }
+    void set_pushed(bool pushed) { m_pushed = pushed; }
 
     /// Set the push callback (for any type of button)
-    std::function<void()> callback() const { return mCallback; }
-    void setCallback(const std::function<void()> &callback) { mCallback = callback; }
+    std::function<void()> callback() const { return m_callback; }
+    void set_callback(const std::function<void()> &callback) { m_callback = callback; }
 
     /// Set the change callback (for toggle buttons)
-    std::function<void(bool)> changeCallback() const { return mChangeCallback; }
-    void setChangeCallback(const std::function<void(bool)> &callback) { mChangeCallback = callback; }
+    std::function<void(bool)> change_callback() const { return m_change_callback; }
+    void set_change_callback(const std::function<void(bool)> &callback) { m_change_callback = callback; }
 
     /// Set the button group (for radio buttons)
-    void setButtonGroup(const std::vector<Button *> &buttonGroup) { mButtonGroup = buttonGroup; }
-    const std::vector<Button *> &buttonGroup() const { return mButtonGroup; }
+    void set_button_group(const std::vector<Button *> &button_group) { m_button_group = button_group; }
+    const std::vector<Button *> &button_group() const { return m_button_group; }
 
-    virtual Vector2i preferredSize(NVGcontext *ctx) const override;
-    virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) override;
+    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
+    virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
     virtual void draw(NVGcontext *ctx) override;
-
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
 protected:
-    std::string mCaption;
-    int mIcon;
-    IconPosition mIconPosition;
-    bool mPushed;
-    int mFlags;
-    Color mBackgroundColor;
-    Color mTextColor;
-    std::function<void()> mCallback;
-    std::function<void(bool)> mChangeCallback;
-    std::vector<Button *> mButtonGroup;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::string m_caption;
+    int m_icon;
+    IconPosition m_icon_position;
+    bool m_pushed;
+    int m_flags;
+    Color m_background_color;
+    Color m_text_color;
+    std::function<void()> m_callback;
+    std::function<void(bool)> m_change_callback;
+    std::vector<Button *> m_button_group;
 };
 
 NAMESPACE_END(nanogui)

@@ -8,8 +8,8 @@ void register_eigen(py::module &m) {
         .def(py::init<int, int>(), D(Color, Color, 5))
         .def(py::init<float, float, float, float>(), D(Color, Color, 7))
         .def(py::init<float, float>(), D(Color, Color, 5))
-        .def("contrastingColor", &Color::contrastingColor,
-             D(Color, contrastingColor))
+        .def("contrasting_color", &Color::contrasting_color,
+             D(Color, contrasting_color))
         .def_property("r", [](const Color &c) { return c.r(); },
                       [](Color &c, float v) { c.r() = v; }, D(Color, r))
         .def_property("g", [](const Color &c) { return c.g(); },
@@ -18,7 +18,7 @@ void register_eigen(py::module &m) {
                       [](Color &c, float v) { c.b() = v; }, D(Color, b))
         .def("__repr__", [](const Color &c) {
             std::ostringstream oss;
-            oss << c.transpose();
+            oss << c;
             return oss.str();
         });
 }

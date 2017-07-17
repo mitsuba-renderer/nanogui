@@ -34,6 +34,7 @@
 #include <nanogui/graph.h>
 #include <nanogui/tabwidget.h>
 #include <nanogui/glcanvas.h>
+#include <enoki/homogeneous.h>
 #include <iostream>
 #include <string>
 
@@ -71,25 +72,27 @@ using std::vector;
 using std::pair;
 using std::to_string;
 
+using nanogui::Vector3f;
+using nanogui::Vector2i;
 
 class MyGLCanvas : public nanogui::GLCanvas {
 public:
-    MyGLCanvas(Widget *parent) : nanogui::GLCanvas(parent), mRotation(nanogui::Vector3f(0.25, 0.5, 0.33)) {
+    MyGLCanvas(Widget *parent) : nanogui::GLCanvas(parent), m_rotation(Vector3f(0.25f, 0.5f, 0.33f)) {
         using namespace nanogui;
 
-        mShader.init(
+        m_shader.init(
             /* An identifying name */
             "a_simple_shader",
 
             /* Vertex shader */
             "#version 330\n"
-            "uniform mat4 modelViewProj;\n"
+            "uniform mat4 model_view_proj;\n"
             "in vec3 position;\n"
             "in vec3 color;\n"
             "out vec4 frag_color;\n"
             "void main() {\n"
-            "    frag_color = 3.0 * modelViewProj * vec4(color, 1.0);\n"
-            "    gl_Position = modelViewProj * vec4(position, 1.0);\n"
+            "    frag_color = vec4(color, 1.0);\n"
+            "    gl_Position = model_view_proj * vec4(position, 1.0);\n"
             "}",
 
             /* Fragment shader */
@@ -101,116 +104,122 @@ public:
             "}"
         );
 
-        MatrixXu indices(3, 12); /* Draw a cube */
-        indices.col( 0) << 0, 1, 3;
-        indices.col( 1) << 3, 2, 1;
-        indices.col( 2) << 3, 2, 6;
-        indices.col( 3) << 6, 7, 3;
-        indices.col( 4) << 7, 6, 5;
-        indices.col( 5) << 5, 4, 7;
-        indices.col( 6) << 4, 5, 1;
-        indices.col( 7) << 1, 0, 4;
-        indices.col( 8) << 4, 0, 3;
-        indices.col( 9) << 3, 7, 4;
-        indices.col(10) << 5, 6, 2;
-        indices.col(11) << 2, 1, 5;
+        uint32_t indices[3*12] = {
+            0, 1, 3,
+            3, 2, 1,
+            3, 2, 6,
+            6, 7, 3,
+            7, 6, 5,
+            5, 4, 7,
+            4, 5, 1,
+            1, 0, 4,
+            4, 0, 3,
+            3, 7, 4,
+            5, 6, 2,
+            2, 1, 5
+        };
 
-        MatrixXf positions(3, 8);
-        positions.col(0) << -1,  1,  1;
-        positions.col(1) << -1,  1, -1;
-        positions.col(2) <<  1,  1, -1;
-        positions.col(3) <<  1,  1,  1;
-        positions.col(4) << -1, -1,  1;
-        positions.col(5) << -1, -1, -1;
-        positions.col(6) <<  1, -1, -1;
-        positions.col(7) <<  1, -1,  1;
+        float positions[3*8] = {
+            -1.f,  1.f,  1.f,
+            -1.f,  1.f, -1.f,
+             1.f,  1.f, -1.f,
+             1.f,  1.f,  1.f,
+            -1.f, -1.f,  1.f,
+            -1.f, -1.f, -1.f,
+             1.f, -1.f, -1.f,
+             1.f, -1.f,  1.f
+        };
 
-        MatrixXf colors(3, 12);
-        colors.col( 0) << 1, 0, 0;
-        colors.col( 1) << 0, 1, 0;
-        colors.col( 2) << 1, 1, 0;
-        colors.col( 3) << 0, 0, 1;
-        colors.col( 4) << 1, 0, 1;
-        colors.col( 5) << 0, 1, 1;
-        colors.col( 6) << 1, 1, 1;
-        colors.col( 7) << 0.5, 0.5, 0.5;
-        colors.col( 8) << 1, 0, 0.5;
-        colors.col( 9) << 1, 0.5, 0;
-        colors.col(10) << 0.5, 1, 0;
-        colors.col(11) << 0.5, 1, 0.5;
+        float colors[3*8] = {
+            1.f, 0.f, 0.f,
+            0.f, 1.f, 0.f,
+            1.f, 1.f, 0.f,
+            0.f, 0.f, 1.f,
+            1.f, 0.f, 1.f,
+            0.f, 1.f, 1.f,
+            .5f, .5f, .5f,
+            1.f, 0.f, .5f
+        };
 
-        mShader.bind();
-        mShader.uploadIndices(indices);
-
-        mShader.uploadAttrib("position", positions);
-        mShader.uploadAttrib("color", colors);
+        m_shader.bind();
+        m_shader.upload_indices(indices, 3, 12);
+        m_shader.upload_attrib("position", positions, 3, 8);
+        m_shader.upload_attrib("color", colors, 3, 8);
     }
 
     ~MyGLCanvas() {
-        mShader.free();
+        m_shader.free();
     }
 
-    void setRotation(nanogui::Vector3f vRotation) {
-        mRotation = vRotation;
+    void set_rotation(Vector3f v_rotation) {
+        m_rotation = v_rotation;
     }
 
-    virtual void drawGL() override {
+    virtual void draw_gl() override {
         using namespace nanogui;
 
-        mShader.bind();
+        m_shader.bind();
 
-        Matrix4f mvp;
-        mvp.setIdentity();
-        float fTime = (float)glfwGetTime();
-        mvp.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(mRotation[0]*fTime, Vector3f::UnitX()) *
-                                                   Eigen::AngleAxisf(mRotation[1]*fTime,  Vector3f::UnitY()) *
-                                                   Eigen::AngleAxisf(mRotation[2]*fTime, Vector3f::UnitZ())) * 0.25f;
+        using Matrix4f = enoki::Matrix<float, 4>;
 
-        mShader.setUniform("modelViewProj", mvp);
+        float f_time = (float)glfwGetTime();
+        Matrix4f mvp =
+            enoki::rotate<Matrix4f>(Vector3f(1, 0, 0), m_rotation[0] * f_time) *
+            enoki::rotate<Matrix4f>(Vector3f(0, 1, 0), m_rotation[2] * f_time) *
+            enoki::rotate<Matrix4f>(Vector3f(0, 0, 1), m_rotation[3] * f_time);
+
+        m_shader.set_uniform("model_view_proj", enoki::scale<Matrix4f>(Vector3f(.5f)) * mvp);
 
         glEnable(GL_DEPTH_TEST);
         /* Draw 12 triangles starting at index 0 */
-        mShader.drawIndexed(GL_TRIANGLES, 0, 12);
+        m_shader.draw_indexed(GL_TRIANGLES, 0, 12);
         glDisable(GL_DEPTH_TEST);
     }
 
 private:
-    nanogui::GLShader mShader;
-    Eigen::Vector3f mRotation;
+    nanogui::GLShader m_shader;
+    Vector3f m_rotation;
 };
 
 
 class ExampleApplication : public nanogui::Screen {
 public:
-    ExampleApplication() : nanogui::Screen(Eigen::Vector2i(800, 600), "NanoGUI Test", false) {
+    ExampleApplication() : nanogui::Screen(Vector2i(800, 600), "NanoGUI Test", false) {
         using namespace nanogui;
 
         Window *window = new Window(this, "GLCanvas Demo");
-        window->setPosition(Vector2i(15, 15));
-        window->setLayout(new GroupLayout());
+        window->set_position(Vector2i(15, 15));
+        window->set_layout(new GroupLayout());
 
-        mCanvas = new MyGLCanvas(window);
-        mCanvas->setBackgroundColor({100, 100, 100, 255});
-        mCanvas->setSize({400, 400});
+        m_canvas = new MyGLCanvas(window);
+        m_canvas->set_background_color({100, 100, 100, 255});
+        m_canvas->set_size({400, 400});
 
         Widget *tools = new Widget(window);
-        tools->setLayout(new BoxLayout(Orientation::Horizontal,
+        tools->set_layout(new BoxLayout(Orientation::Horizontal,
                                        Alignment::Middle, 0, 5));
 
         Button *b0 = new Button(tools, "Random Color");
-        b0->setCallback([this]() { mCanvas->setBackgroundColor(Vector4i(rand() % 256, rand() % 256, rand() % 256, 255)); });
+        b0->set_callback([this]() {
+            m_canvas->set_background_color(
+                Vector4i(rand() % 256, rand() % 256, rand() % 256, 255));
+        });
 
         Button *b1 = new Button(tools, "Random Rotation");
-        b1->setCallback([this]() { mCanvas->setRotation(nanogui::Vector3f((rand() % 100) / 100.0, (rand() % 100) / 100.0, (rand() % 100) / 100.0)); });
+        b1->set_callback([this]() {
+            m_canvas->set_rotation(Vector3f(float(rand() % 100) / 100.f,
+                                            float(rand() % 100) / 100.f,
+                                            float(rand() % 100) / 100.f));
+        });
 
-        performLayout();
+        perform_layout();
     }
 
-    virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
-        if (Screen::keyboardEvent(key, scancode, action, modifiers))
+    virtual bool keyboard_event(int key, int scancode, int action, int modifiers) {
+        if (Screen::keyboard_event(key, scancode, action, modifiers))
             return true;
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-            setVisible(false);
+            set_visible(false);
             return true;
         }
         return false;
@@ -221,7 +230,7 @@ public:
         Screen::draw(ctx);
     }
 private:
-    MyGLCanvas *mCanvas;
+    MyGLCanvas *m_canvas;
 };
 
 int main(int /* argc */, char ** /* argv */) {
@@ -230,8 +239,8 @@ int main(int /* argc */, char ** /* argv */) {
 
         /* scoped variables */ {
             nanogui::ref<ExampleApplication> app = new ExampleApplication();
-            app->drawAll();
-            app->setVisible(true);
+            app->draw_all();
+            app->set_visible(true);
             nanogui::mainloop();
         }
 

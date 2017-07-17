@@ -17,60 +17,60 @@
 
 /// Provides a ``PYBIND11_OVERLOAD`` for any relevant Widget items that need to be bound.
 #define NANOGUI_WIDGET_OVERLOADS(Parent) \
-    bool mouseButtonEvent(const ::nanogui::Vector2i &p, int button, bool down, int modifiers) { \
-        PYBIND11_OVERLOAD(bool, Parent, mouseButtonEvent, p, button, down, modifiers); \
+    bool mouse_button_event(const ::nanogui::Vector2i &p, int button, bool down, int modifiers) override { \
+        PYBIND11_OVERLOAD(bool, Parent, mouse_button_event, p, button, down, modifiers); \
     } \
-    bool mouseMotionEvent(const ::nanogui::Vector2i &p, const ::nanogui::Vector2i &rel, int button, int modifiers) { \
-        PYBIND11_OVERLOAD(bool, Parent, mouseMotionEvent, p, rel, button, modifiers); \
+    bool mouse_motion_event(const ::nanogui::Vector2i &p, const ::nanogui::Vector2i &rel, int button, int modifiers) override { \
+        PYBIND11_OVERLOAD(bool, Parent, mouse_motion_event, p, rel, button, modifiers); \
     } \
-    bool mouseDragEvent(const ::nanogui::Vector2i &p, const ::nanogui::Vector2i &rel, int button, int modifiers) { \
-        PYBIND11_OVERLOAD(bool, Parent, mouseDragEvent, p, rel, button, modifiers); \
+    bool mouse_drag_event(const ::nanogui::Vector2i &p, const ::nanogui::Vector2i &rel, int button, int modifiers) override { \
+        PYBIND11_OVERLOAD(bool, Parent, mouse_drag_event, p, rel, button, modifiers); \
     } \
-    bool mouseEnterEvent(const ::nanogui::Vector2i &p, bool enter) { \
-        PYBIND11_OVERLOAD(bool, Parent, mouseEnterEvent, p, enter); \
+    bool mouse_enter_event(const ::nanogui::Vector2i &p, bool enter) override { \
+        PYBIND11_OVERLOAD(bool, Parent, mouse_enter_event, p, enter); \
     } \
-    bool scrollEvent(const ::nanogui::Vector2i &p, const ::nanogui::Vector2f &rel) { \
-        PYBIND11_OVERLOAD(bool, Parent, scrollEvent, p, rel); \
+    bool scroll_event(const ::nanogui::Vector2i &p, const ::nanogui::Vector2f &rel) override { \
+        PYBIND11_OVERLOAD(bool, Parent, scroll_event, p, rel); \
     } \
-    bool focusEvent(bool focused) { \
-        PYBIND11_OVERLOAD(bool, Parent, focusEvent, focused); \
+    bool focus_event(bool focused) override { \
+        PYBIND11_OVERLOAD(bool, Parent, focus_event, focused); \
     } \
-    bool keyboardEvent(int key, int scancode, int action, int modifiers) { \
-        PYBIND11_OVERLOAD(bool, Parent, keyboardEvent, key, scancode, action, modifiers); \
+    bool keyboard_event(int key, int scancode, int action, int modifiers) override { \
+        PYBIND11_OVERLOAD(bool, Parent, keyboard_event, key, scancode, action, modifiers); \
     } \
-    bool keyboardCharacterEvent(unsigned int codepoint) { \
-        PYBIND11_OVERLOAD(bool, Parent, keyboardCharacterEvent, codepoint); \
+    bool keyboard_character_event(unsigned int codepoint) override { \
+        PYBIND11_OVERLOAD(bool, Parent, keyboard_character_event, codepoint); \
     } \
-    ::nanogui::Vector2i preferredSize(NVGcontext *ctx) const { \
-        PYBIND11_OVERLOAD(::nanogui::Vector2i, Parent, preferredSize, ctx); \
+    ::nanogui::Vector2i preferred_size(NVGcontext *ctx) const override { \
+        PYBIND11_OVERLOAD(::nanogui::Vector2i, Parent, preferred_size, ctx); \
     } \
-    void performLayout(NVGcontext *ctx) { \
-        PYBIND11_OVERLOAD(void, Parent, performLayout, ctx); \
+    void perform_layout(NVGcontext *ctx) override { \
+        PYBIND11_OVERLOAD(void, Parent, perform_layout, ctx); \
     } \
-    void draw(NVGcontext *ctx) { \
+    void draw(NVGcontext *ctx) override { \
         PYBIND11_OVERLOAD(void, Parent, draw, ctx); \
     }
 
 /// Provides a ``PYBIND11_OVERLOAD`` for any relevant Layout items that need to be bound.
 #define NANOGUI_LAYOUT_OVERLOADS(Parent) \
-    ::nanogui::Vector2i preferredSize(NVGcontext *ctx, const ::nanogui::Widget *widget) const { \
-        PYBIND11_OVERLOAD(::nanogui::Vector2i, Parent, preferredSize, ctx, widget); \
+    ::nanogui::Vector2i preferred_size(NVGcontext *ctx, const ::nanogui::Widget *widget) const override { \
+        PYBIND11_OVERLOAD(::nanogui::Vector2i, Parent, preferred_size, ctx, widget); \
     } \
-    void performLayout(NVGcontext *ctx, ::nanogui::Widget *widget) const { \
-        PYBIND11_OVERLOAD(void, Parent, performLayout, ctx, widget); \
+    void perform_layout(NVGcontext *ctx, ::nanogui::Widget *widget) const override { \
+        PYBIND11_OVERLOAD(void, Parent, perform_layout, ctx, widget); \
     }
 
 /// Provides a ``PYBIND11_OVERLOAD`` for any relevant Screen items that need to be bound.
 #define NANOGUI_SCREEN_OVERLOADS(Parent) \
-    virtual void drawAll() { \
-        PYBIND11_OVERLOAD(void, Parent, drawAll); \
+    virtual void draw_all() override { \
+        PYBIND11_OVERLOAD(void, Parent, draw_all); \
     } \
-    virtual void drawContents() { \
-        PYBIND11_OVERLOAD(void, Parent, drawContents); \
+    virtual void draw_contents() override { \
+        PYBIND11_OVERLOAD(void, Parent, draw_contents); \
     } \
-    virtual bool dropEvent(const std::vector<std::string> &filenames) { \
-        PYBIND11_OVERLOAD(bool, Parent, dropEvent, filenames); \
+    virtual bool drop_event(const std::vector<std::string> &filenames) override { \
+        PYBIND11_OVERLOAD(bool, Parent, drop_event, filenames); \
     } \
-    virtual bool resizeEvent(const ::nanogui::Vector2i &size) { \
-        PYBIND11_OVERLOAD(bool, Parent, resizeEvent, size); \
+    virtual bool resize_event(const ::nanogui::Vector2i &size) override { \
+        PYBIND11_OVERLOAD(bool, Parent, resize_event, size); \
     }

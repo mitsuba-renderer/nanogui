@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Eigen/Core>
+#include <enoki/array.h>
 #include <stdint.h>
 #include <array>
 #include <vector>
@@ -130,36 +130,26 @@ enum class Cursor {
     CursorCount
 };
 
-/* Import some common Eigen types */
-using Eigen::Vector2f;
-using Eigen::Vector3f;
-using Eigen::Vector4f;
-using Eigen::Vector2i;
-using Eigen::Vector3i;
-using Eigen::Vector4i;
-using Eigen::Matrix3f;
-using Eigen::Matrix4f;
-using Eigen::VectorXf;
-using Eigen::MatrixXf;
-
-/**
- * Convenience typedef for things like index buffers.  You would use it the same
- * as ``Eigen::MatrixXf``, only it is storing ``uint32_t`` instead of ``float``.
- */
-typedef Eigen::Matrix<uint32_t, Eigen::Dynamic, Eigen::Dynamic> MatrixXu;
+/* Import some common Enoki types */
+using Vector2f = enoki::Array<float, 2>;
+using Vector3f = enoki::Array<float, 3>;
+using Vector4f = enoki::Array<float, 4>;
+using Vector2i = enoki::Array<int32_t, 2>;
+using Vector3i = enoki::Array<int32_t, 3>;
+using Vector4i = enoki::Array<int32_t, 4>;
 
 /**
  * \class Color common.h nanogui/common.h
  *
  * \brief Stores an RGBA floating point color value.
  *
- * This class simply wraps around an ``Eigen::Vector4f``, providing some convenient
+ * This class simply wraps around an ``Vector4f``, providing some convenient
  * methods and terminology for thinking of it as a color.  The data operates in the
- * same way as ``Eigen::Vector4f``, and the following values are identical:
+ * same way as ``Vector4f``, and the following values are identical:
  *
  * \rst
  * +---------+-------------+-----------------------+-------------+
- * | Channel | Array Index | Eigen::Vector4f Value | Color Value |
+ * | Channel | Array Index | enoki Vector4f Value  | Color Value |
  * +=========+=============+=======================+=============+
  * | Red     | ``0``       | x()                   | r()         |
  * +---------+-------------+-----------------------+-------------+
@@ -173,23 +163,13 @@ typedef Eigen::Matrix<uint32_t, Eigen::Dynamic, Eigen::Dynamic> MatrixXu;
  * .. note::
  *    The method for the alpha component is **always** ``w()``.
  * \endrst
- *
- * You can and should still use the various convenience methods such as ``any()``,
- * ``all()``, ``head<index>()``, etc provided by Eigen.
  */
-class Color : public Eigen::Vector4f {
-    typedef Eigen::Vector4f Base;
+class Color : public Vector4f {
 public:
-    /// Default constructor: represents black (``r, g, b, a = 0``)
-    Color() : Color(0, 0, 0, 0) {}
+    using Vector4f::Vector4f;
 
-    /**
-     * Makes an exact copy of the data represented by the input parameter.
-     *
-     * \param color
-     * The four dimensional float vector being copied.
-     */
-    Color(const Eigen::Vector4f &color) : Eigen::Vector4f(color) { }
+    /// Default constructor: represents black (``r, g, b, a = 0``)
+    Color() : Color(0, 0, 0, 0) { }
 
     /**
      * Copies (x, y, z) from the input vector, and uses the value specified by
@@ -201,8 +181,8 @@ public:
      * \param alpha
      * The value to set this object's alpha component to.
      */
-    Color(const Eigen::Vector3f &color, float alpha)
-        : Color(color(0), color(1), color(2), alpha) { }
+    Color(const Vector3f &color, float alpha)
+        : Color(color[0], color[1], color[2], alpha) { }
 
     /**
      * Copies (x, y, z) from the input vector, casted as floats first and then
@@ -216,8 +196,8 @@ public:
      * \param alpha
      * The value to set this object's alpha component to, will be divided by ``255.0``.
      */
-    Color(const Eigen::Vector3i &color, int alpha)
-        : Color(color.cast<float>() / 255.f, alpha / 255.f) { }
+    Color(const Vector3i &color, int alpha)
+        : Color(Vector3f(color) / 255.f, alpha / 255.f) { }
 
     /**
      * Copies (x, y, z) from the input vector, and sets the alpha of this color
@@ -226,7 +206,7 @@ public:
      * \param color
      * The three dimensional float vector being copied.
      */
-    Color(const Eigen::Vector3f &color) : Color(color, 1.0f) {}
+    Color(const Vector3f &color) : Color(color, 1.0f) {}
 
     /**
      * Copies (x, y, z) from the input vector, casting to floats and dividing by
@@ -235,8 +215,8 @@ public:
      * \param color
      * The three dimensional integer vector being copied, will be divided by ``255.0``.
      */
-    Color(const Eigen::Vector3i &color)
-        : Color((Vector3f)(color.cast<float>() / 255.f)) { }
+    Color(const Vector3i &color)
+        : Color(Vector3f(color) / 255.f) { }
 
     /**
      * Copies (x, y, z, w) from the input vector, casting to floats and dividing
@@ -245,8 +225,8 @@ public:
      * \param color
      * The three dimensional integer vector being copied, will be divided by ``255.0``.
      */
-    Color(const Eigen::Vector4i &color)
-        : Color((Vector4f)(color.cast<float>() / 255.f)) { }
+    Color(const Vector4i &color)
+        : Color(Vector4f(color) / 255.f) { }
 
     /**
      * Creates the Color ``(intensity, intensity, intensity, alpha)``.
@@ -258,7 +238,7 @@ public:
      * The alpha component of the color.
      */
     Color(float intensity, float alpha)
-        : Color(Vector3f::Constant(intensity), alpha) { }
+        : Color(Vector3f(intensity), alpha) { }
 
     /**
      * Creates the Color ``(intensity, intensity, intensity, alpha) / 255.0``.
@@ -271,7 +251,7 @@ public:
      * The alpha component of the color, will be divided by ``255.0``.
      */
     Color(int intensity, int alpha)
-        : Color(Vector3i::Constant(intensity), alpha) { }
+        : Color(Vector3i(intensity), alpha) { }
 
     /**
      * Explicit constructor: creates the Color ``(r, g, b, a)``.
@@ -308,16 +288,6 @@ public:
      */
     Color(int r, int g, int b, int a) : Color(Vector4i(r, g, b, a)) { }
 
-    /// Construct a color vector from MatrixBase (needed to play nice with Eigen)
-    template <typename Derived> Color(const Eigen::MatrixBase<Derived>& p)
-        : Base(p) { }
-
-    /// Assign a color vector from MatrixBase (needed to play nice with Eigen)
-    template <typename Derived> Color &operator=(const Eigen::MatrixBase<Derived>& p) {
-        this->Base::operator=(p);
-        return *this;
-    }
-
     /// Return a reference to the red channel
     float &r() { return x(); }
     /// Return a reference to the red channel (const version)
@@ -337,15 +307,13 @@ public:
      * greater than or equal to 0.5, black is returned.  Both returns will have
      * an alpha component of 1.0.
      */
-    Color contrastingColor() const {
-        float luminance = cwiseProduct(Color(0.299f, 0.587f, 0.144f, 0.f)).sum();
+    Color contrasting_color() const {
+        float luminance = enoki::dot(*this, Color(0.299f, 0.587f, 0.144f, 0.f));
         return Color(luminance < 0.5f ? 1.f : 0.f, 1.f);
     }
 
     /// Allows for conversion between this Color and NanoVG's representation.
     inline operator const NVGcolor &() const;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 // skip the forward declarations for the docs
@@ -489,11 +457,11 @@ extern NANOGUI_EXPORT std::array<char, 8> utf8(int c);
 
 /// Load a directory of PNG images and upload them to the GPU (suitable for use with ImagePanel)
 extern NANOGUI_EXPORT std::vector<std::pair<int, std::string>>
-    loadImageDirectory(NVGcontext *ctx, const std::string &path);
+    load_image_directory(NVGcontext *ctx, const std::string &path);
 
 /// Convenience function for instanting a PNG icon from the application's data segment (via bin2c)
-#define nvgImageIcon(ctx, name) nanogui::__nanogui_get_image(ctx, #name, name##_png, name##_png_size)
-/// Helper function used by nvgImageIcon
+#define nvg_image_icon(ctx, name) nanogui::__nanogui_get_image(ctx, #name, name##_png, name##_png_size)
+/// Helper function used by nvg_image_icon
 extern NANOGUI_EXPORT int __nanogui_get_image(NVGcontext *ctx, const std::string &name, uint8_t *data, uint32_t size);
 
 NAMESPACE_END(nanogui)

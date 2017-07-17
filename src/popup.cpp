@@ -13,64 +13,63 @@
 #include <nanogui/popup.h>
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
-#include <nanogui/serializer/core.h>
 
 NAMESPACE_BEGIN(nanogui)
 
-Popup::Popup(Widget *parent, Window *parentWindow)
-    : Window(parent, ""), mParentWindow(parentWindow),
-      mAnchorPos(Vector2i::Zero()), mAnchorHeight(30), mSide(Side::Right) {
+Popup::Popup(Widget *parent, Window *parent_window)
+    : Window(parent, ""), m_parent_window(parent_window),
+      m_anchor_pos(Vector2i(0)), m_anchor_height(30), m_side(Side::Right) {
 }
 
-void Popup::performLayout(NVGcontext *ctx) {
-    if (mLayout || mChildren.size() != 1) {
-        Widget::performLayout(ctx);
+void Popup::perform_layout(NVGcontext *ctx) {
+    if (m_layout || m_children.size() != 1) {
+        Widget::perform_layout(ctx);
     } else {
-        mChildren[0]->setPosition(Vector2i::Zero());
-        mChildren[0]->setSize(mSize);
-        mChildren[0]->performLayout(ctx);
+        m_children[0]->set_position(Vector2i(0));
+        m_children[0]->set_size(m_size);
+        m_children[0]->perform_layout(ctx);
     }
-    if (mSide == Side::Left)
-        mAnchorPos[0] -= size()[0];
+    if (m_side == Side::Left)
+        m_anchor_pos[0] -= size()[0];
 }
 
-void Popup::refreshRelativePlacement() {
-    mParentWindow->refreshRelativePlacement();
-    mVisible &= mParentWindow->visibleRecursive();
-    mPos = mParentWindow->position() + mAnchorPos - Vector2i(0, mAnchorHeight);
+void Popup::refresh_relative_placement() {
+    m_parent_window->refresh_relative_placement();
+    m_visible &= m_parent_window->visible_recursive();
+    m_pos = m_parent_window->position() + m_anchor_pos - Vector2i(0, m_anchor_height);
 }
 
 void Popup::draw(NVGcontext* ctx) {
-    refreshRelativePlacement();
+    refresh_relative_placement();
 
-    if (!mVisible)
+    if (!m_visible)
         return;
 
-    int ds = mTheme->mWindowDropShadowSize, cr = mTheme->mWindowCornerRadius;
+    int ds = m_theme->m_window_drop_shadow_size, cr = m_theme->m_window_corner_radius;
 
     nvgSave(ctx);
     nvgResetScissor(ctx);
 
     /* Draw a drop shadow */
-    NVGpaint shadowPaint = nvgBoxGradient(
-        ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y(), cr*2, ds*2,
-        mTheme->mDropShadow, mTheme->mTransparent);
+    NVGpaint shadow_paint = nvgBoxGradient(
+        ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr*2, ds*2,
+        m_theme->m_drop_shadow, m_theme->m_transparent);
 
     nvgBeginPath(ctx);
-    nvgRect(ctx, mPos.x()-ds,mPos.y()-ds, mSize.x()+2*ds, mSize.y()+2*ds);
-    nvgRoundedRect(ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y(), cr);
+    nvgRect(ctx, m_pos.x()-ds,m_pos.y()-ds, m_size.x()+2*ds, m_size.y()+2*ds);
+    nvgRoundedRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr);
     nvgPathWinding(ctx, NVG_HOLE);
-    nvgFillPaint(ctx, shadowPaint);
+    nvgFillPaint(ctx, shadow_paint);
     nvgFill(ctx);
 
     /* Draw window */
     nvgBeginPath(ctx);
-    nvgRoundedRect(ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y(), cr);
+    nvgRoundedRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr);
 
-    Vector2i base = mPos + Vector2i(0, mAnchorHeight);
+    Vector2i base = m_pos + Vector2i(0, m_anchor_height);
     int sign = -1;
-    if (mSide == Side::Left) {
-        base.x() += mSize.x();
+    if (m_side == Side::Left) {
+        base.x() += m_size.x();
         sign = 1;
     }
 
@@ -78,26 +77,11 @@ void Popup::draw(NVGcontext* ctx) {
     nvgLineTo(ctx, base.x() - 1*sign, base.y() - 15);
     nvgLineTo(ctx, base.x() - 1*sign, base.y() + 15);
 
-    nvgFillColor(ctx, mTheme->mWindowPopup);
+    nvgFillColor(ctx, m_theme->m_window_popup);
     nvgFill(ctx);
     nvgRestore(ctx);
 
     Widget::draw(ctx);
-}
-
-void Popup::save(Serializer &s) const {
-    Window::save(s);
-    s.set("anchorPos", mAnchorPos);
-    s.set("anchorHeight", mAnchorHeight);
-    s.set("side", mSide);
-}
-
-bool Popup::load(Serializer &s) {
-    if (!Window::load(s)) return false;
-    if (!s.get("anchorPos", mAnchorPos)) return false;
-    if (!s.get("anchorHeight", mAnchorHeight)) return false;
-    if (!s.get("side", mSide)) return false;
-    return true;
 }
 
 NAMESPACE_END(nanogui)

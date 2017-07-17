@@ -101,66 +101,66 @@ int main(int /* argc */, char ** /* argv */) {
     // Create nanogui gui
     bool enabled = true;
     FormHelper *gui = new FormHelper(screen);
-    ref<Window> nanoguiWindow = gui->addWindow(Eigen::Vector2i(10, 10), "Form helper example");
-    gui->addGroup("Basic types");
-    gui->addVariable("bool", bvar)->setTooltip("Test tooltip.");
-    gui->addVariable("string", strval);
+    ref<Window> nanogui_window = gui->add_window(Vector2i(10, 10), "Form helper example");
+    gui->add_group("Basic types");
+    gui->add_variable("bool", bvar)->set_tooltip("Test tooltip.");
+    gui->add_variable("string", strval);
 
-    gui->addGroup("Validating fields");
-    gui->addVariable("int", ivar)->setSpinnable(true);
-    gui->addVariable("float", fvar)->setTooltip("Test.");
-    gui->addVariable("double", dvar)->setSpinnable(true);
+    gui->add_group("Validating fields");
+    gui->add_variable("int", ivar)->set_spinnable(true);
+    gui->add_variable("float", fvar)->set_tooltip("Test.");
+    gui->add_variable("double", dvar)->set_spinnable(true);
 
-    gui->addGroup("Complex types");
-    gui->addVariable("Enumeration", enumval, enabled)->setItems({ "Item 1", "Item 2", "Item 3" });
-    gui->addVariable("Color", colval);
+    gui->add_group("Complex types");
+    gui->add_variable("Enumeration", enumval, enabled)->set_items({ "Item 1", "Item 2", "Item 3" });
+    gui->add_variable("Color", colval);
 
-    gui->addGroup("Other widgets");
-    gui->addButton("A button", []() { std::cout << "Button pressed." << std::endl; })->setTooltip("Testing a much longer tooltip, that will wrap around to new lines multiple times.");;
+    gui->add_group("Other widgets");
+    gui->add_button("A button", []() { std::cout << "Button pressed." << std::endl; })->set_tooltip("Testing a much longer tooltip, that will wrap around to new lines multiple times.");;
 
-    screen->setVisible(true);
-    screen->performLayout();
-    nanoguiWindow->center();
+    screen->set_visible(true);
+    screen->perform_layout();
+    nanogui_window->center();
 
     glfwSetCursorPosCallback(window,
             [](GLFWwindow *, double x, double y) {
-            screen->cursorPosCallbackEvent(x, y);
+            screen->cursor_pos_callback_event(x, y);
         }
     );
 
     glfwSetMouseButtonCallback(window,
         [](GLFWwindow *, int button, int action, int modifiers) {
-            screen->mouseButtonCallbackEvent(button, action, modifiers);
+            screen->mouse_button_callback_event(button, action, modifiers);
         }
     );
 
     glfwSetKeyCallback(window,
         [](GLFWwindow *, int key, int scancode, int action, int mods) {
-            screen->keyCallbackEvent(key, scancode, action, mods);
+            screen->key_callback_event(key, scancode, action, mods);
         }
     );
 
     glfwSetCharCallback(window,
         [](GLFWwindow *, unsigned int codepoint) {
-            screen->charCallbackEvent(codepoint);
+            screen->char_callback_event(codepoint);
         }
     );
 
     glfwSetDropCallback(window,
         [](GLFWwindow *, int count, const char **filenames) {
-            screen->dropCallbackEvent(count, filenames);
+            screen->drop_callback_event(count, filenames);
         }
     );
 
     glfwSetScrollCallback(window,
         [](GLFWwindow *, double x, double y) {
-            screen->scrollCallbackEvent(x, y);
+            screen->scroll_callback_event(x, y);
        }
     );
 
     glfwSetFramebufferSizeCallback(window,
         [](GLFWwindow *, int width, int height) {
-            screen->resizeCallbackEvent(width, height);
+            screen->resize_callback_event(width, height);
         }
     );
 
@@ -173,8 +173,8 @@ int main(int /* argc */, char ** /* argv */) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Draw nanogui
-        screen->drawContents();
-        screen->drawWidgets();
+        screen->draw_contents();
+        screen->draw_widgets();
 
         glfwSwapBuffers(window);
     }

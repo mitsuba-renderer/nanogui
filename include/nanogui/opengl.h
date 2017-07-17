@@ -39,7 +39,7 @@
   #if !defined(GL_UNIFORM_BUFFER)
     #warning NanoGUI suspects you have the NVIDIA OpenGL headers installed.  \
              Compilation will likely fail. If it does, you have two choices: \
-             (1) Re-install the mesa-libGL header files.                     \
+             (1) Re-install the mesa-lib_gl header files.                     \
              (2) Compile with NANOGUI_USE_GLAD.
   #endif
 #endif
@@ -51,10 +51,10 @@ inline Color::operator const NVGcolor &() const {
     return reinterpret_cast<const NVGcolor &>(*this->data());
 }
 
-/// Determine whether an icon ID is a texture loaded via nvgImageIcon
-inline bool nvgIsImageIcon(int value) { return value < 1024; }
+/// Determine whether an icon ID is a texture loaded via nvg_image_icon
+inline bool nvg_is_image_icon(int value) { return value < 1024; }
 
 /// Determine whether an icon ID is a font-based icon (e.g. from the entypo.ttf font)
-inline bool nvgIsFontIcon(int value) { return value >= 1024; }
+inline bool nvg_is_font_icon(int value) { return value >= 1024; }
 
 NAMESPACE_END(nanogui)

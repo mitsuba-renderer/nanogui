@@ -9,78 +9,78 @@ void register_formhelper(py::module &m) {
 
     py::class_<FormHelper>(m, "FormHelper", D(FormHelper))
         .def(py::init<Screen *>(), D(FormHelper, FormHelper))
-        .def("addWindow", &FormHelper::addWindow, py::arg("pos"),
-             py::arg("title") = std::string("Untitled"),
-             D(FormHelper, addWindow))
-        .def("addGroup", &FormHelper::addGroup, D(FormHelper, addGroup))
-        .def("addButton", &FormHelper::addButton, py::arg("label"),
-             py::arg("cb"), D(FormHelper, addGroup))
-        .def("addBoolVariable",
+        .def("add_window", &FormHelper::add_window, "pos"_a,
+             "title"_a = std::string("Untitled"),
+             D(FormHelper, add_window))
+        .def("add_group", &FormHelper::add_group, D(FormHelper, add_group))
+        .def("add_button", &FormHelper::add_button, "label"_a,
+             "cb"_a, D(FormHelper, add_group))
+        .def("add_bool_variable",
              [](FormHelper &h, const std::string &label,
                 const std::function<void(const bool &) > &setter,
                 const std::function<bool(void) > &getter, bool editable) -> CheckBox* {
-                return h.addVariable(label, setter, getter, editable);
+                return h.add_variable(label, setter, getter, editable);
              },
-             py::arg("label"), py::arg("setter"), py::arg("getter"),
-             py::arg("editable") = true)
-        .def("addIntVariable",
+             "label"_a, "setter"_a, "getter"_a,
+             "editable"_a = true)
+        .def("add_int_variable",
              [](FormHelper &h, const std::string &label,
                 const std::function<void(const int64_t &) > &setter,
                 const std::function<int64_t(void) > &getter, bool editable) -> Int64Box* {
-                return h.addVariable(label, setter, getter, editable);
+                return h.add_variable(label, setter, getter, editable);
              },
-             py::arg("label"), py::arg("setter"), py::arg("getter"),
-             py::arg("editable") = true)
-        .def("addDoubleVariable",
+             "label"_a, "setter"_a, "getter"_a,
+             "editable"_a = true)
+        .def("add_double_variable",
              [](FormHelper &h, const std::string &label,
                 const std::function<void(const double &) > &setter,
                 const std::function<double(void) > &getter, bool editable) -> FloatBox<double>* {
-                return h.addVariable(label, setter, getter, editable);
+                return h.add_variable(label, setter, getter, editable);
              },
-             py::arg("label"), py::arg("setter"), py::arg("getter"),
-             py::arg("editable") = true)
-        .def("addStringVariable",
+             "label"_a, "setter"_a, "getter"_a,
+             "editable"_a = true)
+        .def("add_string_variable",
              [](FormHelper &h, const std::string &label,
                 const std::function<void(const std::string &) > &setter,
                 const std::function<std::string(void) > &getter, bool editable) -> TextBox* {
-                return h.addVariable(label, setter, getter, editable);
+                return h.add_variable(label, setter, getter, editable);
              },
-             py::arg("label"), py::arg("setter"), py::arg("getter"),
-             py::arg("editable") = true)
-        .def("addColorVariable",
+             "label"_a, "setter"_a, "getter"_a,
+             "editable"_a = true)
+        .def("add_color_variable",
              [](FormHelper &h, const std::string &label,
                 const std::function<void(const Color &) > &setter,
                 const std::function<Color(void) > &getter, bool editable) -> ColorPicker* {
-                return h.addVariable(label, setter, getter, editable);
+                return h.add_variable(label, setter, getter, editable);
              },
-             py::arg("label"), py::arg("setter"), py::arg("getter"),
-             py::arg("editable") = true)
-        .def("addEnumVariable",
+             "label"_a, "setter"_a, "getter"_a,
+             "editable"_a = true)
+        .def("add_enum_variable",
              [](FormHelper &h, const std::string &label,
                 const std::function<void(const int &) > &setter,
                 const std::function<int(void) > &getter, bool editable) -> ComboBox* {
-                return h.addVariable(label,
+                return h.add_variable(label,
                         reinterpret_cast<const std::function<void(const DummyEnum &)>&>(setter),
                         reinterpret_cast<const std::function<DummyEnum(void)>&>(getter),
                         editable);
              },
-             py::arg("label"), py::arg("setter"), py::arg("getter"),
-             py::arg("editable") = true)
-        .def("addWidget", &FormHelper::addWidget, D(FormHelper, addWidget))
+             "label"_a, "setter"_a, "getter"_a,
+             "editable"_a = true)
+        .def("add_widget", &FormHelper::add_widget, D(FormHelper, add_widget))
         .def("refresh", &FormHelper::refresh, D(FormHelper, refresh))
         .def("window", &FormHelper::window, D(FormHelper, window))
-        .def("setWindow", &FormHelper::setWindow, D(FormHelper, setWindow))
-        .def("fixedSize", &FormHelper::fixedSize, D(FormHelper, fixedSize))
-        .def("setFixedSize", &FormHelper::setFixedSize, D(FormHelper, setFixedSize))
-        .def("groupFontName", &FormHelper::groupFontName, D(FormHelper, groupFontName))
-        .def("setGroupFontName", &FormHelper::setGroupFontName, D(FormHelper, setGroupFontName))
-        .def("labelFontName", &FormHelper::labelFontName, D(FormHelper, labelFontName))
-        .def("setLabelFontName", &FormHelper::setLabelFontName, D(FormHelper, setLabelFontName))
-        .def("groupFontSize", &FormHelper::groupFontSize, D(FormHelper, groupFontSize))
-        .def("setGroupFontSize", &FormHelper::setGroupFontSize, D(FormHelper, setGroupFontSize))
-        .def("labelFontSize", &FormHelper::labelFontSize, D(FormHelper, labelFontSize))
-        .def("setLabelFontSize", &FormHelper::setLabelFontSize, D(FormHelper, setLabelFontSize))
-        .def("widgetFontSize", &FormHelper::widgetFontSize, D(FormHelper, widgetFontSize))
-        .def("setWidgetFontSize", &FormHelper::setWidgetFontSize, D(FormHelper, setWidgetFontSize));
+        .def("set_window", &FormHelper::set_window, D(FormHelper, set_window))
+        .def("fixed_size", &FormHelper::fixed_size, D(FormHelper, fixed_size))
+        .def("set_fixed_size", &FormHelper::set_fixed_size, D(FormHelper, set_fixed_size))
+        .def("group_font_name", &FormHelper::group_font_name, D(FormHelper, group_font_name))
+        .def("set_group_font_name", &FormHelper::set_group_font_name, D(FormHelper, set_group_font_name))
+        .def("label_font_name", &FormHelper::label_font_name, D(FormHelper, label_font_name))
+        .def("set_label_font_name", &FormHelper::set_label_font_name, D(FormHelper, set_label_font_name))
+        .def("group_font_size", &FormHelper::group_font_size, D(FormHelper, group_font_size))
+        .def("set_group_font_size", &FormHelper::set_group_font_size, D(FormHelper, set_group_font_size))
+        .def("label_font_size", &FormHelper::label_font_size, D(FormHelper, label_font_size))
+        .def("set_label_font_size", &FormHelper::set_label_font_size, D(FormHelper, set_label_font_size))
+        .def("widget_font_size", &FormHelper::widget_font_size, D(FormHelper, widget_font_size))
+        .def("set_widget_font_size", &FormHelper::set_widget_font_size, D(FormHelper, set_widget_font_size));
 }
 #endif

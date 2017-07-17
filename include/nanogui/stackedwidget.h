@@ -28,17 +28,15 @@ class NANOGUI_EXPORT StackedWidget : public Widget {
 public:
     StackedWidget(Widget* parent);
 
-    void setSelectedIndex(int index);
-    int selectedIndex() const;
+    void set_selected_index(int index);
+    int selected_index() const;
 
-    virtual void performLayout(NVGcontext* ctx) override;
-    virtual Vector2i preferredSize(NVGcontext* ctx) const override;
-    virtual void addChild(int index, Widget* widget) override;
+    virtual void perform_layout(NVGcontext* ctx) override;
+    virtual Vector2i preferred_size(NVGcontext* ctx) const override;
+    virtual void add_child(int index, Widget* widget) override;
 
 private:
-    int mSelectedIndex = -1;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    int m_selected_index = -1;
 };
 
 NAMESPACE_END(nanogui)

@@ -12,11 +12,10 @@
 #include <nanogui/glutil.h>
 #include <iostream>
 #include <fstream>
-#include <Eigen/Geometry>
 
 NAMESPACE_BEGIN(nanogui)
 
-static GLuint createShader_helper(GLint type, const std::string &name,
+static GLuint create_shader_helper(GLint type, const std::string &name,
                                   const std::string &defines,
                                   std::string shader_string) {
     if (shader_string.empty())
@@ -47,7 +46,7 @@ static GLuint createShader_helper(GLint type, const std::string &name,
     glGetShaderiv(id, GL_COMPILE_STATUS, &status);
 
     if (status != GL_TRUE) {
-        char buffer[512];
+        char buffer[4096];
         std::cerr << "Error while compiling ";
         if (type == GL_VERTEX_SHADER)
             std::cerr << "vertex shader";
@@ -57,7 +56,7 @@ static GLuint createShader_helper(GLint type, const std::string &name,
             std::cerr << "geometry shader";
         std::cerr << " \"" << name << "\":" << std::endl;
         std::cerr << shader_string << std::endl << std::endl;
-        glGetShaderInfoLog(id, 512, nullptr, buffer);
+        glGetShaderInfoLog(id, sizeof(buffer), nullptr, buffer);
         std::cerr << "Error: " << std::endl << buffer << std::endl;
         throw std::runtime_error("Shader compilation failed!");
     }
@@ -65,7 +64,7 @@ static GLuint createShader_helper(GLint type, const std::string &name,
     return id;
 }
 
-bool GLShader::initFromFiles(
+bool GLShader::init_from_files(
     const std::string &name,
     const std::string &vertex_fname,
     const std::string &fragment_fname,
@@ -89,41 +88,41 @@ bool GLShader::init(const std::string &name,
                     const std::string &fragment_str,
                     const std::string &geometry_str) {
     std::string defines;
-    for (auto def : mDefinitions)
+    for (auto def : m_definitions)
         defines += std::string("#define ") + def.first + std::string(" ") + def.second + "\n";
 
-    glGenVertexArrays(1, &mVertexArrayObject);
-    mName = name;
-    mVertexShader =
-        createShader_helper(GL_VERTEX_SHADER, name, defines, vertex_str);
-    mGeometryShader =
-        createShader_helper(GL_GEOMETRY_SHADER, name, defines, geometry_str);
-    mFragmentShader =
-        createShader_helper(GL_FRAGMENT_SHADER, name, defines, fragment_str);
+    glGenVertexArrays(1, &m_vertex_array_object);
+    m_name = name;
+    m_vertex_shader =
+        create_shader_helper(GL_VERTEX_SHADER, name, defines, vertex_str);
+    m_geometry_shader =
+        create_shader_helper(GL_GEOMETRY_SHADER, name, defines, geometry_str);
+    m_fragment_shader =
+        create_shader_helper(GL_FRAGMENT_SHADER, name, defines, fragment_str);
 
-    if (!mVertexShader || !mFragmentShader)
+    if (!m_vertex_shader || !m_fragment_shader)
         return false;
-    if (!geometry_str.empty() && !mGeometryShader)
+    if (!geometry_str.empty() && !m_geometry_shader)
         return false;
 
-    mProgramShader = glCreateProgram();
+    m_program_shader = glCreateProgram();
 
-    glAttachShader(mProgramShader, mVertexShader);
-    glAttachShader(mProgramShader, mFragmentShader);
+    glAttachShader(m_program_shader, m_vertex_shader);
+    glAttachShader(m_program_shader, m_fragment_shader);
 
-    if (mGeometryShader)
-        glAttachShader(mProgramShader, mGeometryShader);
+    if (m_geometry_shader)
+        glAttachShader(m_program_shader, m_geometry_shader);
 
-    glLinkProgram(mProgramShader);
+    glLinkProgram(m_program_shader);
 
     GLint status;
-    glGetProgramiv(mProgramShader, GL_LINK_STATUS, &status);
+    glGetProgramiv(m_program_shader, GL_LINK_STATUS, &status);
 
     if (status != GL_TRUE) {
         char buffer[512];
-        glGetProgramInfoLog(mProgramShader, 512, nullptr, buffer);
-        std::cerr << "Linker error (" << mName << "): " << std::endl << buffer << std::endl;
-        mProgramShader = 0;
+        glGetProgramInfoLog(m_program_shader, 512, nullptr, buffer);
+        std::cerr << "Linker error (" << m_name << "): " << std::endl << buffer << std::endl;
+        m_program_shader = 0;
         throw std::runtime_error("Shader linking failed!");
     }
 
@@ -131,134 +130,127 @@ bool GLShader::init(const std::string &name,
 }
 
 void GLShader::bind() {
-    glUseProgram(mProgramShader);
-    glBindVertexArray(mVertexArrayObject);
+    glUseProgram(m_program_shader);
+    glBindVertexArray(m_vertex_array_object);
 }
 
 GLint GLShader::attrib(const std::string &name, bool warn) const {
-    GLint id = glGetAttribLocation(mProgramShader, name.c_str());
+    GLint id = glGetAttribLocation(m_program_shader, name.c_str());
     if (id == -1 && warn)
-        std::cerr << mName << ": warning: did not find attrib " << name << std::endl;
+        std::cerr << m_name << ": warning: did not find attrib " << name << std::endl;
     return id;
-}
-
-void GLShader::setUniform(const std::string &name, const GLUniformBuffer &buf, bool warn) {
-    GLuint blockIndex = glGetUniformBlockIndex(mProgramShader, name.c_str());
-    if (blockIndex == GL_INVALID_INDEX) {
-        if (warn)
-            std::cerr << mName << ": warning: did not find uniform buffer " << name << std::endl;
-        return;
-    }
-    glUniformBlockBinding(mProgramShader, blockIndex, buf.getBindingPoint());
 }
 
 GLint GLShader::uniform(const std::string &name, bool warn) const {
-    GLint id = glGetUniformLocation(mProgramShader, name.c_str());
+    GLint id = glGetUniformLocation(m_program_shader, name.c_str());
     if (id == -1 && warn)
-        std::cerr << mName << ": warning: did not find uniform " << name << std::endl;
+        std::cerr << m_name << ": warning: did not find uniform " << name << std::endl;
     return id;
 }
 
-void GLShader::uploadAttrib(const std::string &name, size_t size, int dim,
-                            uint32_t compSize, GLuint glType, bool integral,
-                            const void *data, int version) {
-    int attribID = 0;
+void GLShader::upload_attrib(const std::string &name, size_t dim, size_t count,
+                             size_t comp_size, GLuint gl_type, bool integral,
+                             const void *data, int version) {
+    int attrib_id = 0;
     if (name != "indices") {
-        attribID = attrib(name);
-        if (attribID < 0)
+        attrib_id = attrib(name);
+        if (attrib_id < 0)
             return;
     }
+    size_t size = count * dim * comp_size;
 
-    GLuint bufferID;
-    auto it = mBufferObjects.find(name);
-    if (it != mBufferObjects.end()) {
+    GLuint buffer_id;
+    auto it = m_buffer_objects.find(name);
+    if (it != m_buffer_objects.end()) {
         Buffer &buffer = it->second;
-        bufferID = it->second.id;
+        buffer_id = it->second.id;
         buffer.version = version;
         buffer.size = size;
-        buffer.compSize = compSize;
+        buffer.comp_size = comp_size;
     } else {
-        glGenBuffers(1, &bufferID);
+        glGenBuffers(1, &buffer_id);
         Buffer buffer;
-        buffer.id = bufferID;
-        buffer.glType = glType;
+        buffer.id = buffer_id;
+        buffer.gl_type = gl_type;
         buffer.dim = dim;
-        buffer.compSize = compSize;
+        buffer.comp_size = comp_size;
         buffer.size = size;
         buffer.version = version;
-        mBufferObjects[name] = buffer;
+        m_buffer_objects[name] = buffer;
     }
-    size_t totalSize = size * (size_t) compSize;
 
     if (name == "indices") {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, totalSize, data, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_id);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
     } else {
-        glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-        glBufferData(GL_ARRAY_BUFFER, totalSize, data, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+        glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
         if (size == 0) {
-            glDisableVertexAttribArray(attribID);
+            glDisableVertexAttribArray(attrib_id);
         } else {
-            glEnableVertexAttribArray(attribID);
-            glVertexAttribPointer(attribID, dim, glType, integral, 0, 0);
+            glEnableVertexAttribArray(attrib_id);
+            glVertexAttribPointer(attrib_id, (GLint) dim, gl_type, integral, 0, 0);
         }
     }
 }
 
-void GLShader::downloadAttrib(const std::string &name, size_t size, int /* dim */,
-                             uint32_t compSize, GLuint /* glType */, void *data) {
-    auto it = mBufferObjects.find(name);
-    if (it == mBufferObjects.end())
-        throw std::runtime_error("downloadAttrib(" + mName + ", " + name + ") : buffer not found!");
+size_t GLShader::attrib_size(const std::string &name) const {
+    auto it = m_buffer_objects.find(name);
+    if (it == m_buffer_objects.end())
+        throw std::runtime_error("attrib_size(" + m_name + ", " + name + ") : buffer not found!");
+    return it->second.size;
+}
+
+void GLShader::download_attrib(const std::string &name, void *data) {
+    auto it = m_buffer_objects.find(name);
+    if (it == m_buffer_objects.end())
+        throw std::runtime_error("download_attrib(" + m_name + ", " + name + ") : buffer not found!");
 
     const Buffer &buf = it->second;
-    if (buf.size != size || buf.compSize != compSize)
-        throw std::runtime_error(mName + ": downloadAttrib: size mismatch!");
-
-    size_t totalSize = size * (size_t) compSize;
 
     if (name == "indices") {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf.id);
-        glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, totalSize, data);
+        glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, buf.size, data);
     } else {
         glBindBuffer(GL_ARRAY_BUFFER, buf.id);
-        glGetBufferSubData(GL_ARRAY_BUFFER, 0, totalSize, data);
+        glGetBufferSubData(GL_ARRAY_BUFFER, 0, buf.size, data);
     }
 }
 
-void GLShader::shareAttrib(const GLShader &otherShader, const std::string &name, const std::string &_as) {
+void GLShader::share_attrib(const GLShader &other_shader, const std::string &name, const std::string &_as) {
     std::string as = _as.length() == 0 ? name : _as;
-    auto it = otherShader.mBufferObjects.find(name);
-    if (it == otherShader.mBufferObjects.end())
-        throw std::runtime_error("shareAttribute(" + otherShader.mName + ", " + name + "): attribute not found!");
+    auto it = other_shader.m_buffer_objects.find(name);
+    if (it == other_shader.m_buffer_objects.end())
+        throw std::runtime_error("share_attribute(" + other_shader.m_name + ", " + name + "): attribute not found!");
     const Buffer &buffer = it->second;
 
     if (name != "indices") {
-        int attribID = attrib(as);
-        if (attribID < 0)
+        int attrib_id = attrib(as);
+        if (attrib_id < 0)
             return;
-        glEnableVertexAttribArray(attribID);
+        glEnableVertexAttribArray(attrib_id);
         glBindBuffer(GL_ARRAY_BUFFER, buffer.id);
-        glVertexAttribPointer(attribID, buffer.dim, buffer.glType, buffer.compSize == 1 ? GL_TRUE : GL_FALSE, 0, 0);
+        glVertexAttribPointer(attrib_id, (GLint) buffer.dim, buffer.gl_type,
+                              buffer.comp_size == 1 ? GL_TRUE : GL_FALSE, 0, 0);
     } else {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.id);
     }
 }
 
-void GLShader::invalidateAttribs() {
-    for (auto &buffer : mBufferObjects)
+void GLShader::invalidate_attribs() {
+    for (auto &buffer : m_buffer_objects)
         buffer.second.version = -1;
 }
 
-void GLShader::freeAttrib(const std::string &name) {
-    auto it = mBufferObjects.find(name);
-    if (it != mBufferObjects.end()) {
+void GLShader::free_attrib(const std::string &name) {
+    auto it = m_buffer_objects.find(name);
+    if (it != m_buffer_objects.end()) {
         glDeleteBuffers(1, &it->second.id);
-        mBufferObjects.erase(it);
+        m_buffer_objects.erase(it);
     }
 }
 
-void GLShader::drawIndexed(int type, uint32_t offset_, uint32_t count_) {
+void GLShader::draw_indexed(int type, uint32_t offset_, uint32_t count_) {
     if (count_ == 0)
         return;
     size_t offset = offset_;
@@ -273,7 +265,7 @@ void GLShader::drawIndexed(int type, uint32_t offset_, uint32_t count_) {
                    (const void *)(offset * sizeof(uint32_t)));
 }
 
-void GLShader::drawArray(int type, uint32_t offset, uint32_t count) {
+void GLShader::draw_array(int type, uint32_t offset, uint32_t count) {
     if (count == 0)
         return;
 
@@ -281,75 +273,49 @@ void GLShader::drawArray(int type, uint32_t offset, uint32_t count) {
 }
 
 void GLShader::free() {
-    for (auto &buf: mBufferObjects)
+    for (auto &buf: m_buffer_objects)
         glDeleteBuffers(1, &buf.second.id);
-    mBufferObjects.clear();
+    m_buffer_objects.clear();
 
-    if (mVertexArrayObject) {
-        glDeleteVertexArrays(1, &mVertexArrayObject);
-        mVertexArrayObject = 0;
+    if (m_vertex_array_object) {
+        glDeleteVertexArrays(1, &m_vertex_array_object);
+        m_vertex_array_object = 0;
     }
 
-    glDeleteProgram(mProgramShader); mProgramShader = 0;
-    glDeleteShader(mVertexShader);   mVertexShader = 0;
-    glDeleteShader(mFragmentShader); mFragmentShader = 0;
-    glDeleteShader(mGeometryShader); mGeometryShader = 0;
+    glDeleteProgram(m_program_shader); m_program_shader = 0;
+    glDeleteShader(m_vertex_shader);   m_vertex_shader = 0;
+    glDeleteShader(m_fragment_shader); m_fragment_shader = 0;
+    glDeleteShader(m_geometry_shader); m_geometry_shader = 0;
 }
 
 //  ----------------------------------------------------
 
-void GLUniformBuffer::init() {
-    glGenBuffers(1, &mID);
-}
+void GLFramebuffer::init(const Vector2i &size, int n_samples) {
+    m_size = size;
+    m_samples = n_samples;
 
-void GLUniformBuffer::bind(int bindingPoint) {
-    mBindingPoint = bindingPoint;
-    glBindBufferBase(GL_UNIFORM_BUFFER, mBindingPoint, mID);
-}
+    glGenRenderbuffers(1, &m_color);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_color);
 
-void GLUniformBuffer::release() {
-    glBindBufferBase(GL_UNIFORM_BUFFER, mBindingPoint, 0);
-}
-
-void GLUniformBuffer::free() {
-    glDeleteBuffers(1, &mID);
-    mID = 0;
-}
-
-void GLUniformBuffer::update(const std::vector<uint8_t> &data) {
-    glBindBuffer(GL_UNIFORM_BUFFER, mID);
-    glBufferData(GL_UNIFORM_BUFFER, data.size(), data.data(), GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-}
-
-//  ----------------------------------------------------
-
-void GLFramebuffer::init(const Vector2i &size, int nSamples) {
-    mSize = size;
-    mSamples = nSamples;
-
-    glGenRenderbuffers(1, &mColor);
-    glBindRenderbuffer(GL_RENDERBUFFER, mColor);
-
-    if (nSamples <= 1)
+    if (n_samples <= 1)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, size.x(), size.y());
     else
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, nSamples, GL_RGBA8, size.x(), size.y());
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, n_samples, GL_RGBA8, size.x(), size.y());
 
-    glGenRenderbuffers(1, &mDepth);
-    glBindRenderbuffer(GL_RENDERBUFFER, mDepth);
+    glGenRenderbuffers(1, &m_depth);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_depth);
 
-    if (nSamples <= 1)
+    if (n_samples <= 1)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, size.x(), size.y());
     else
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, nSamples, GL_DEPTH24_STENCIL8, size.x(), size.y());
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, n_samples, GL_DEPTH24_STENCIL8, size.x(), size.y());
 
-    glGenFramebuffers(1, &mFramebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
+    glGenFramebuffers(1, &m_framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, mColor);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepth);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mDepth);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_color);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depth);
 
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -362,58 +328,58 @@ void GLFramebuffer::init(const Vector2i &size, int nSamples) {
 }
 
 void GLFramebuffer::free() {
-    glDeleteRenderbuffers(1, &mColor);
-    glDeleteRenderbuffers(1, &mDepth);
-    mColor = mDepth = 0;
+    glDeleteRenderbuffers(1, &m_color);
+    glDeleteRenderbuffers(1, &m_depth);
+    m_color = m_depth = 0;
 }
 
 void GLFramebuffer::bind() {
-    glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
-    if (mSamples > 1)
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
+    if (m_samples > 1)
         glEnable(GL_MULTISAMPLE);
 }
 
 void GLFramebuffer::release() {
-    if (mSamples > 1)
+    if (m_samples > 1)
         glDisable(GL_MULTISAMPLE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void GLFramebuffer::blit() {
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebuffer);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glDrawBuffer(GL_BACK);
 
-    glBlitFramebuffer(0, 0, mSize.x(), mSize.y(), 0, 0, mSize.x(), mSize.y(),
+    glBlitFramebuffer(0, 0, m_size.x(), m_size.y(), 0, 0, m_size.x(), m_size.y(),
                       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GLFramebuffer::downloadTGA(const std::string &filename) {
-    uint8_t *temp = new uint8_t[mSize.prod() * 4];
+void GLFramebuffer::download_tga(const std::string &filename) {
+    uint8_t *temp = new uint8_t[hprod(m_size) * 4];
 
-    std::cout << "Writing \"" << filename  << "\" (" << mSize.x() << "x" << mSize.y() << ") .. ";
+    std::cout << "Writing \"" << filename  << "\" (" << m_size.x() << "x" << m_size.y() << ") .. ";
     std::cout.flush();
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebuffer);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-    glReadPixels(0, 0, mSize.x(), mSize.y(), GL_BGRA, GL_UNSIGNED_BYTE, temp);
+    glReadPixels(0, 0, m_size.x(), m_size.y(), GL_BGRA, GL_UNSIGNED_BYTE, temp);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
-    uint32_t rowSize = mSize.x() * 4;
-    uint32_t halfHeight = mSize.y() / 2;
-    uint8_t *line = (uint8_t *) alloca(rowSize);
-    for (uint32_t i=0, j=mSize.y()-1; i<halfHeight; ++i) {
-        memcpy(line, temp + i * rowSize, rowSize);
-        memcpy(temp + i * rowSize, temp + j * rowSize, rowSize);
-        memcpy(temp + j * rowSize, line, rowSize);
+    uint32_t row_size = m_size.x() * 4;
+    uint32_t half_height = m_size.y() / 2;
+    uint8_t *line = (uint8_t *) alloca(row_size);
+    for (uint32_t i=0, j=m_size.y()-1; i<half_height; ++i) {
+        memcpy(line, temp + i * row_size, row_size);
+        memcpy(temp + i * row_size, temp + j * row_size, row_size);
+        memcpy(temp + j * row_size, line, row_size);
         j--;
     }
 
     FILE *tga = fopen(filename.c_str(), "wb");
     if (tga == nullptr)
-        throw std::runtime_error("GLFramebuffer::downloadTGA(): Could not open output file");
+        throw std::runtime_error("GLFramebuffer::download_tga(): Could not open output file");
     fputc(0, tga); /* ID */
     fputc(0, tga); /* Color map */
     fputc(2, tga); /* Image type */
@@ -422,113 +388,17 @@ void GLFramebuffer::downloadTGA(const std::string &filename) {
     fputc(0, tga); /* Color map entry size (unused) */
     fputc(0, tga); fputc(0, tga);  /* X offset */
     fputc(0, tga); fputc(0, tga);  /* Y offset */
-    fputc(mSize.x() % 256, tga); /* Width */
-    fputc(mSize.x() / 256, tga); /* continued */
-    fputc(mSize.y() % 256, tga); /* Height */
-    fputc(mSize.y() / 256, tga); /* continued */
+    fputc(m_size.x() % 256, tga); /* Width */
+    fputc(m_size.x() / 256, tga); /* continued */
+    fputc(m_size.y() % 256, tga); /* Height */
+    fputc(m_size.y() / 256, tga); /* continued */
     fputc(32, tga);   /* Bits per pixel */
     fputc(0x20, tga); /* Scan from top left */
-    fwrite(temp, mSize.prod() * 4, 1, tga);
+    fwrite(temp, hprod(m_size) * 4, 1, tga);
     fclose(tga);
 
     delete[] temp;
     std::cout << "done." << std::endl;
-}
-
-//  ----------------------------------------------------
-
-Eigen::Vector3f project(const Eigen::Vector3f &obj,
-                        const Eigen::Matrix4f &model,
-                        const Eigen::Matrix4f &proj,
-                        const Vector2i &viewportSize) {
-    Eigen::Vector4f tmp;
-    tmp << obj, 1;
-
-    tmp = model * tmp;
-
-    tmp = proj * tmp;
-
-    tmp = tmp.array() / tmp(3);
-    tmp = tmp.array() * 0.5f + 0.5f;
-    tmp(0) = tmp(0) * viewportSize.x();
-    tmp(1) = tmp(1) * viewportSize.y();
-
-    return tmp.head(3);
-}
-
-Eigen::Vector3f unproject(const Eigen::Vector3f &win,
-                          const Eigen::Matrix4f &model,
-                          const Eigen::Matrix4f &proj,
-                          const Vector2i &viewportSize) {
-    Eigen::Matrix4f Inverse = (proj * model).inverse();
-
-    Eigen::Vector4f tmp;
-    tmp << win, 1;
-    tmp(0) = tmp(0) / viewportSize.x();
-    tmp(1) = tmp(1) / viewportSize.y();
-    tmp = tmp.array() * 2.0f - 1.0f;
-
-    Eigen::Vector4f obj = Inverse * tmp;
-    obj /= obj(3);
-
-    return obj.head(3);
-}
-
-Eigen::Matrix4f lookAt(const Eigen::Vector3f &origin,
-                       const Eigen::Vector3f &target,
-                       const Eigen::Vector3f &up) {
-    Eigen::Vector3f f = (target - origin).normalized();
-    Eigen::Vector3f s = f.cross(up).normalized();
-    Eigen::Vector3f u = s.cross(f);
-
-    Eigen::Matrix4f result = Eigen::Matrix4f::Identity();
-    result(0, 0) = s(0);
-    result(0, 1) = s(1);
-    result(0, 2) = s(2);
-    result(1, 0) = u(0);
-    result(1, 1) = u(1);
-    result(1, 2) = u(2);
-    result(2, 0) = -f(0);
-    result(2, 1) = -f(1);
-    result(2, 2) = -f(2);
-    result(0, 3) = -s.transpose() * origin;
-    result(1, 3) = -u.transpose() * origin;
-    result(2, 3) = f.transpose() * origin;
-    return result;
-}
-
-Eigen::Matrix4f ortho(float left, float right, float bottom,
-                      float top, float nearVal, float farVal) {
-    Eigen::Matrix4f result = Eigen::Matrix4f::Identity();
-    result(0, 0) = 2.0f / (right - left);
-    result(1, 1) = 2.0f / (top - bottom);
-    result(2, 2) = -2.0f / (farVal - nearVal);
-    result(0, 3) = -(right + left) / (right - left);
-    result(1, 3) = -(top + bottom) / (top - bottom);
-    result(2, 3) = -(farVal + nearVal) / (farVal - nearVal);
-    return result;
-}
-
-Eigen::Matrix4f frustum(float left, float right, float bottom,
-                        float top, float nearVal,
-                        float farVal) {
-    Eigen::Matrix4f result = Eigen::Matrix4f::Zero();
-    result(0, 0) = (2.0f * nearVal) / (right - left);
-    result(1, 1) = (2.0f * nearVal) / (top - bottom);
-    result(0, 2) = (right + left) / (right - left);
-    result(1, 2) = (top + bottom) / (top - bottom);
-    result(2, 2) = -(farVal + nearVal) / (farVal - nearVal);
-    result(3, 2) = -1.0f;
-    result(2, 3) = -(2.0f * farVal * nearVal) / (farVal - nearVal);
-    return result;
-}
-
-Eigen::Matrix4f scale(const Eigen::Vector3f &v) {
-    return Eigen::Affine3f(Eigen::Scaling(v)).matrix();
-}
-
-Eigen::Matrix4f translate(const Eigen::Vector3f &v) {
-    return Eigen::Affine3f(Eigen::Translation<float, 3>(v)).matrix();
 }
 
 NAMESPACE_END(nanogui)

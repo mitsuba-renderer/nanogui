@@ -28,19 +28,17 @@ public:
     ColorPicker(Widget *parent, const Color& color = Color(1.0f, 0.0f, 0.0f, 1.0f));
 
     /// Set the change callback
-    std::function<void(const Color &)> callback() const                  { return mCallback; }
-    void setCallback(const std::function<void(const Color &)> &callback) { mCallback = callback; }
+    std::function<void(const Color &)> callback() const                  { return m_callback; }
+    void set_callback(const std::function<void(const Color &)> &callback) { m_callback = callback; }
 
     /// Get the current color
     Color color() const;
     /// Set the current color
-    void setColor(const Color& color);
+    void set_color(const Color& color);
 protected:
-    std::function<void(const Color &)> mCallback;
-    ColorWheel *mColorWheel;
-    Button *mPickButton;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::function<void(const Color &)> m_callback;
+    ColorWheel *m_color_wheel;
+    Button *m_pick_button;
 };
 
 NAMESPACE_END(nanogui)

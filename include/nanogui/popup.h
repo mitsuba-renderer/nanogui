@@ -30,47 +30,42 @@ public:
     enum Side { Left = 0, Right };
 
     /// Create a new popup parented to a screen (first argument) and a parent window
-    Popup(Widget *parent, Window *parentWindow);
+    Popup(Widget *parent, Window *parent_window);
 
     /// Return the anchor position in the parent window; the placement of the popup is relative to it
-    void setAnchorPos(const Vector2i &anchorPos) { mAnchorPos = anchorPos; }
+    void set_anchor_pos(const Vector2i &anchor_pos) { m_anchor_pos = anchor_pos; }
     /// Set the anchor position in the parent window; the placement of the popup is relative to it
-    const Vector2i &anchorPos() const { return mAnchorPos; }
+    const Vector2i &anchor_pos() const { return m_anchor_pos; }
 
     /// Set the anchor height; this determines the vertical shift relative to the anchor position
-    void setAnchorHeight(int anchorHeight) { mAnchorHeight = anchorHeight; }
+    void set_anchor_height(int anchor_height) { m_anchor_height = anchor_height; }
     /// Return the anchor height; this determines the vertical shift relative to the anchor position
-    int anchorHeight() const { return mAnchorHeight; }
+    int anchor_height() const { return m_anchor_height; }
 
     /// Set the side of the parent window at which popup will appear
-    void setSide(Side popupSide) { mSide = popupSide; }
+    void set_side(Side popup_side) { m_side = popup_side; }
     /// Return the side of the parent window at which popup will appear
-    Side side() const { return mSide; }
+    Side side() const { return m_side; }
 
     /// Return the parent window of the popup
-    Window *parentWindow() { return mParentWindow; }
+    Window *parent_window() { return m_parent_window; }
     /// Return the parent window of the popup
-    const Window *parentWindow() const { return mParentWindow; }
+    const Window *parent_window() const { return m_parent_window; }
 
     /// Invoke the associated layout generator to properly place child widgets, if any
-    virtual void performLayout(NVGcontext *ctx) override;
+    virtual void perform_layout(NVGcontext *ctx) override;
 
     /// Draw the popup window
     virtual void draw(NVGcontext* ctx) override;
-
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
 protected:
     /// Internal helper function to maintain nested window position values
-    virtual void refreshRelativePlacement() override;
+    virtual void refresh_relative_placement() override;
 
 protected:
-    Window *mParentWindow;
-    Vector2i mAnchorPos;
-    int mAnchorHeight;
-    Side mSide;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    Window *m_parent_window;
+    Vector2i m_anchor_pos;
+    int m_anchor_height;
+    Side m_side;
 };
 
 NAMESPACE_END(nanogui)

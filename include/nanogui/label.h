@@ -21,46 +21,41 @@ NAMESPACE_BEGIN(nanogui)
  *
  * \brief Text label widget.
  *
- * The font and color can be customized. When \ref Widget::setFixedWidth()
+ * The font and color can be customized. When \ref Widget::set_fixed_width()
  * is used, the text is wrapped when it surpasses the specified width.
  */
 class NANOGUI_EXPORT Label : public Widget {
 public:
     Label(Widget *parent, const std::string &caption,
-          const std::string &font = "sans", int fontSize = -1);
+          const std::string &font = "sans", int font_size = -1);
 
     /// Get the label's text caption
-    const std::string &caption() const { return mCaption; }
+    const std::string &caption() const { return m_caption; }
     /// Set the label's text caption
-    void setCaption(const std::string &caption) { mCaption = caption; }
+    void set_caption(const std::string &caption) { m_caption = caption; }
 
     /// Set the currently active font (2 are available by default: 'sans' and 'sans-bold')
-    void setFont(const std::string &font) { mFont = font; }
+    void set_font(const std::string &font) { m_font = font; }
     /// Get the currently active font
-    const std::string &font() const { return mFont; }
+    const std::string &font() const { return m_font; }
 
     /// Get the label color
-    Color color() const { return mColor; }
+    Color color() const { return m_color; }
     /// Set the label color
-    void setColor(const Color& color) { mColor = color; }
+    void set_color(const Color& color) { m_color = color; }
 
     /// Set the \ref Theme used to draw this widget
-    virtual void setTheme(Theme *theme) override;
+    virtual void set_theme(Theme *theme) override;
 
     /// Compute the size needed to fully display the label
-    virtual Vector2i preferredSize(NVGcontext *ctx) const override;
+    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
 
     /// Draw the label
     virtual void draw(NVGcontext *ctx) override;
-
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
 protected:
-    std::string mCaption;
-    std::string mFont;
-    Color mColor;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::string m_caption;
+    std::string m_font;
+    Color m_color;
 };
 
 NAMESPACE_END(nanogui)

@@ -6,7 +6,7 @@
 
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
-#include <pybind11/eigen.h>
+#include <enoki/python.h>
 #include <pybind11/functional.h>
 #include <nanogui/python.h>
 #include "py_doc.h"
@@ -38,6 +38,7 @@ PYBIND11_MAKE_OPAQUE(nanogui::Color)
     }
 
 namespace py = pybind11;
+using namespace py::literals;
 using namespace nanogui;
 
 /// Make pybind aware of the ref-counted wrapper type

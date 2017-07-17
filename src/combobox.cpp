@@ -11,88 +11,72 @@
 
 #include <nanogui/combobox.h>
 #include <nanogui/layout.h>
-#include <nanogui/serializer/core.h>
 #include <cassert>
 
 NAMESPACE_BEGIN(nanogui)
 
-ComboBox::ComboBox(Widget *parent) : PopupButton(parent), mSelectedIndex(0) {
+ComboBox::ComboBox(Widget *parent) : PopupButton(parent), m_selected_index(0) {
 }
 
 ComboBox::ComboBox(Widget *parent, const std::vector<std::string> &items)
-    : PopupButton(parent), mSelectedIndex(0) {
-    setItems(items);
+    : PopupButton(parent), m_selected_index(0) {
+    set_items(items);
 }
 
-ComboBox::ComboBox(Widget *parent, const std::vector<std::string> &items, const std::vector<std::string> &itemsShort)
-    : PopupButton(parent), mSelectedIndex(0) {
-    setItems(items, itemsShort);
+ComboBox::ComboBox(Widget *parent, const std::vector<std::string> &items, const std::vector<std::string> &items_short)
+    : PopupButton(parent), m_selected_index(0) {
+    set_items(items, items_short);
 }
 
-void ComboBox::setSelectedIndex(int idx) {
-    if (mItemsShort.empty())
+void ComboBox::set_selected_index(int idx) {
+    if (m_items_short.empty())
         return;
     const std::vector<Widget *> &children = popup()->children();
-    ((Button *) children[mSelectedIndex])->setPushed(false);
-    ((Button *) children[idx])->setPushed(true);
-    mSelectedIndex = idx;
-    setCaption(mItemsShort[idx]);
+    ((Button *) children[m_selected_index])->set_pushed(false);
+    ((Button *) children[idx])->set_pushed(true);
+    m_selected_index = idx;
+    set_caption(m_items_short[idx]);
 }
 
-void ComboBox::setItems(const std::vector<std::string> &items, const std::vector<std::string> &itemsShort) {
-    assert(items.size() == itemsShort.size());
-    mItems = items;
-    mItemsShort = itemsShort;
-    if (mSelectedIndex < 0 || mSelectedIndex >= (int) items.size())
-        mSelectedIndex = 0;
-    while (mPopup->childCount() != 0)
-        mPopup->removeChild(mPopup->childCount()-1);
-    mPopup->setLayout(new GroupLayout(10));
+void ComboBox::set_items(const std::vector<std::string> &items, const std::vector<std::string> &items_short) {
+    assert(items.size() == items_short.size());
+    m_items = items;
+    m_items_short = items_short;
+    if (m_selected_index < 0 || m_selected_index >= (int) items.size())
+        m_selected_index = 0;
+    while (m_popup->child_count() != 0)
+        m_popup->remove_child(m_popup->child_count()-1);
+    m_popup->set_layout(new GroupLayout(10));
     int index = 0;
     for (const auto &str: items) {
-        Button *button = new Button(mPopup, str);
-        button->setFlags(Button::RadioButton);
-        button->setCallback([&, index] {
-            mSelectedIndex = index;
-            setCaption(mItemsShort[index]);
-            setPushed(false);
-            popup()->setVisible(false);
-            if (mCallback)
-                mCallback(index);
+        Button *button = new Button(m_popup, str);
+        button->set_flags(Button::RadioButton);
+        button->set_callback([&, index] {
+            m_selected_index = index;
+            set_caption(m_items_short[index]);
+            set_pushed(false);
+            popup()->set_visible(false);
+            if (m_callback)
+                m_callback(index);
         });
         index++;
     }
-    setSelectedIndex(mSelectedIndex);
+    set_selected_index(m_selected_index);
 }
 
-bool ComboBox::scrollEvent(const Vector2i &p, const Vector2f &rel) {
+bool ComboBox::scroll_event(const Vector2i &p, const Vector2f &rel) {
     if (rel.y() < 0) {
-        setSelectedIndex(std::min(mSelectedIndex+1, (int)(items().size()-1)));
-        if (mCallback)
-            mCallback(mSelectedIndex);
+        set_selected_index(std::min(m_selected_index+1, (int)(items().size()-1)));
+        if (m_callback)
+            m_callback(m_selected_index);
         return true;
     } else if (rel.y() > 0) {
-        setSelectedIndex(std::max(mSelectedIndex-1, 0));
-        if (mCallback)
-            mCallback(mSelectedIndex);
+        set_selected_index(std::max(m_selected_index-1, 0));
+        if (m_callback)
+            m_callback(m_selected_index);
         return true;
     }
-    return Widget::scrollEvent(p, rel);
-}
-
-void ComboBox::save(Serializer &s) const {
-    Widget::save(s);
-    s.set("items", mItems);
-    s.set("itemsShort", mItemsShort);
-    s.set("selectedIndex", mSelectedIndex);
-}
-
-bool ComboBox::load(Serializer &s) {
-    if (!Widget::load(s)) return false;
-    if (!s.get("items", mItems)) return false;
-    if (!s.get("itemsShort", mItemsShort)) return false;
-    if (!s.get("selectedIndex", mSelectedIndex)) return false;
-    return true;
+    return Widget::scroll_event(p, rel);
 }
 
 NAMESPACE_END(nanogui)

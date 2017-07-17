@@ -40,14 +40,14 @@ NAMESPACE_BEGIN(nanogui)
 std::map<GLFWwindow *, Screen *> __nanogui_screens;
 
 #if defined(NANOGUI_GLAD)
-static bool gladInitialized = false;
+static bool glad_initialized = false;
 #endif
 
 /* Calculate pixel ratio for hi-dpi devices. */
 static float get_pixel_ratio(GLFWwindow *window) {
 #if defined(_WIN32)
-    HWND hWnd = glfwGetWin32Window(window);
-    HMONITOR monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+    HWND hwnd = glfwGetWin32Window(window);
+    HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
     /* The following function only exists on Windows 8.1+, but we don't want to make that a dependency */
     static HRESULT (WINAPI *GetDpiForMonitor_)(HMONITOR, UINT, UINT*, UINT*) = nullptr;
     static bool GetDpiForMonitor_tried = false;
@@ -60,9 +60,9 @@ static float get_pixel_ratio(GLFWwindow *window) {
     }
 
     if (GetDpiForMonitor_) {
-        uint32_t dpiX, dpiY;
-        if (GetDpiForMonitor_(monitor, 0 /* effective DPI */, &dpiX, &dpiY) == S_OK)
-            return std::round(dpiX / 96.0);
+        uint32_t dpi_x, dpi_y;
+        if (GetDpiForMonitor_(monitor, 0 /* effective DPI */, &dpi_x, &dpi_y) == S_OK)
+            return std::round(dpi_x / 96.0);
     }
     return 1.f;
 #elif defined(__linux__)
@@ -82,158 +82,158 @@ static float get_pixel_ratio(GLFWwindow *window) {
 
     return ratio >= 1 ? ratio : 1;
 #else
-    Vector2i fbSize, size;
-    glfwGetFramebufferSize(window, &fbSize[0], &fbSize[1]);
+    Vector2i fb_size, size;
+    glfwGetFramebufferSize(window, &fb_size[0], &fb_size[1]);
     glfwGetWindowSize(window, &size[0], &size[1]);
-    return (float)fbSize[0] / (float)size[0];
+    return (float)fb_size[0] / (float)size[0];
 #endif
 }
 
 Screen::Screen()
-    : Widget(nullptr), mGLFWWindow(nullptr), mNVGContext(nullptr),
-      mCursor(Cursor::Arrow), mBackground(0.3f, 0.3f, 0.32f, 1.f),
-      mShutdownGLFWOnDestruct(false), mFullscreen(false) {
-    memset(mCursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
+    : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
+      m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
+      m_shutdown_glfw(false), m_fullscreen(false) {
+    memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
 }
 
 Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
-               bool fullscreen, int colorBits, int alphaBits, int depthBits,
-               int stencilBits, int nSamples,
-               unsigned int glMajor, unsigned int glMinor)
-    : Widget(nullptr), mGLFWWindow(nullptr), mNVGContext(nullptr),
-      mCursor(Cursor::Arrow), mBackground(0.3f, 0.3f, 0.32f, 1.f), mCaption(caption),
-      mShutdownGLFWOnDestruct(false), mFullscreen(fullscreen) {
-    memset(mCursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
+               bool fullscreen, int color_bits, int alpha_bits, int depth_bits,
+               int stencil_bits, int n_samples,
+               unsigned int gl_major, unsigned int gl_minor)
+    : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
+      m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f), m_caption(caption),
+      m_shutdown_glfw(false), m_fullscreen(fullscreen) {
+    memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
 
-    /* Request a forward compatible OpenGL glMajor.glMinor core profile context.
+    /* Request a forward compatible OpenGL gl_major.gl_minor core profile context.
        Default value is an OpenGL 3.3 core profile context. */
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glMinor);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gl_major);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl_minor);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    glfwWindowHint(GLFW_SAMPLES, nSamples);
-    glfwWindowHint(GLFW_RED_BITS, colorBits);
-    glfwWindowHint(GLFW_GREEN_BITS, colorBits);
-    glfwWindowHint(GLFW_BLUE_BITS, colorBits);
-    glfwWindowHint(GLFW_ALPHA_BITS, alphaBits);
-    glfwWindowHint(GLFW_STENCIL_BITS, stencilBits);
-    glfwWindowHint(GLFW_DEPTH_BITS, depthBits);
+    glfwWindowHint(GLFW_SAMPLES, n_samples);
+    glfwWindowHint(GLFW_RED_BITS, color_bits);
+    glfwWindowHint(GLFW_GREEN_BITS, color_bits);
+    glfwWindowHint(GLFW_BLUE_BITS, color_bits);
+    glfwWindowHint(GLFW_ALPHA_BITS, alpha_bits);
+    glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits);
+    glfwWindowHint(GLFW_DEPTH_BITS, depth_bits);
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
 
     if (fullscreen) {
         GLFWmonitor *monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-        mGLFWWindow = glfwCreateWindow(mode->width, mode->height,
+        m_glfw_window = glfwCreateWindow(mode->width, mode->height,
                                        caption.c_str(), monitor, nullptr);
     } else {
-        mGLFWWindow = glfwCreateWindow(size.x(), size.y(),
+        m_glfw_window = glfwCreateWindow(size.x(), size.y(),
                                        caption.c_str(), nullptr, nullptr);
     }
 
-    if (!mGLFWWindow)
+    if (!m_glfw_window)
         throw std::runtime_error("Could not create an OpenGL " +
-                                 std::to_string(glMajor) + "." +
-                                 std::to_string(glMinor) + " context!");
+                                 std::to_string(gl_major) + "." +
+                                 std::to_string(gl_minor) + " context!");
 
-    glfwMakeContextCurrent(mGLFWWindow);
+    glfwMakeContextCurrent(m_glfw_window);
 
 #if defined(NANOGUI_GLAD)
-    if (!gladInitialized) {
-        gladInitialized = true;
+    if (!glad_initialized) {
+        glad_initialized = true;
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
             throw std::runtime_error("Could not initialize GLAD!");
         glGetError(); // pull and ignore unhandled errors like GL_INVALID_ENUM
     }
 #endif
 
-    glfwGetFramebufferSize(mGLFWWindow, &mFBSize[0], &mFBSize[1]);
-    glViewport(0, 0, mFBSize[0], mFBSize[1]);
-    glClearColor(mBackground[0], mBackground[1], mBackground[2], mBackground[3]);
+    glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
+    glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
+    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glfwSwapInterval(0);
-    glfwSwapBuffers(mGLFWWindow);
+    glfwSwapBuffers(m_glfw_window);
 
 #if defined(__APPLE__)
     /* Poll for events once before starting a potentially
        lengthy loading process. This is needed to be
        classified as "interactive" by other software such
-       as iTerm2 */
+       as i_term2 */
 
     glfwPollEvents();
 #endif
 
     /* Propagate GLFW events to the appropriate Screen instance */
-    glfwSetCursorPosCallback(mGLFWWindow,
+    glfwSetCursorPosCallback(m_glfw_window,
         [](GLFWwindow *w, double x, double y) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
             Screen *s = it->second;
-            if (!s->mProcessEvents)
+            if (!s->m_process_events)
                 return;
-            s->cursorPosCallbackEvent(x, y);
+            s->cursor_pos_callback_event(x, y);
         }
     );
 
-    glfwSetMouseButtonCallback(mGLFWWindow,
+    glfwSetMouseButtonCallback(m_glfw_window,
         [](GLFWwindow *w, int button, int action, int modifiers) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
             Screen *s = it->second;
-            if (!s->mProcessEvents)
+            if (!s->m_process_events)
                 return;
-            s->mouseButtonCallbackEvent(button, action, modifiers);
+            s->mouse_button_callback_event(button, action, modifiers);
         }
     );
 
-    glfwSetKeyCallback(mGLFWWindow,
+    glfwSetKeyCallback(m_glfw_window,
         [](GLFWwindow *w, int key, int scancode, int action, int mods) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
             Screen *s = it->second;
-            if (!s->mProcessEvents)
+            if (!s->m_process_events)
                 return;
-            s->keyCallbackEvent(key, scancode, action, mods);
+            s->key_callback_event(key, scancode, action, mods);
         }
     );
 
-    glfwSetCharCallback(mGLFWWindow,
+    glfwSetCharCallback(m_glfw_window,
         [](GLFWwindow *w, unsigned int codepoint) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
             Screen *s = it->second;
-            if (!s->mProcessEvents)
+            if (!s->m_process_events)
                 return;
-            s->charCallbackEvent(codepoint);
+            s->char_callback_event(codepoint);
         }
     );
 
-    glfwSetDropCallback(mGLFWWindow,
+    glfwSetDropCallback(m_glfw_window,
         [](GLFWwindow *w, int count, const char **filenames) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
             Screen *s = it->second;
-            if (!s->mProcessEvents)
+            if (!s->m_process_events)
                 return;
-            s->dropCallbackEvent(count, filenames);
+            s->drop_callback_event(count, filenames);
         }
     );
 
-    glfwSetScrollCallback(mGLFWWindow,
+    glfwSetScrollCallback(m_glfw_window,
         [](GLFWwindow *w, double x, double y) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
             Screen *s = it->second;
-            if (!s->mProcessEvents)
+            if (!s->m_process_events)
                 return;
-            s->scrollCallbackEvent(x, y);
+            s->scroll_callback_event(x, y);
         }
     );
 
@@ -241,39 +241,39 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
        size events and also catches things like dragging
        a window from a Retina-capable screen to a normal
        screen on Mac OS X */
-    glfwSetFramebufferSizeCallback(mGLFWWindow,
+    glfwSetFramebufferSizeCallback(m_glfw_window,
         [](GLFWwindow* w, int width, int height) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
             Screen* s = it->second;
 
-            if (!s->mProcessEvents)
+            if (!s->m_process_events)
                 return;
 
-            s->resizeCallbackEvent(width, height);
+            s->resize_callback_event(width, height);
         }
     );
 
-    initialize(mGLFWWindow, true);
+    initialize(m_glfw_window, true);
 }
 
-void Screen::initialize(GLFWwindow *window, bool shutdownGLFWOnDestruct) {
-    mGLFWWindow = window;
-    mShutdownGLFWOnDestruct = shutdownGLFWOnDestruct;
-    glfwGetWindowSize(mGLFWWindow, &mSize[0], &mSize[1]);
-    glfwGetFramebufferSize(mGLFWWindow, &mFBSize[0], &mFBSize[1]);
+void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
+    m_glfw_window = window;
+    m_shutdown_glfw = shutdown_glfw;
+    glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
+    glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
 
-    mPixelRatio = get_pixel_ratio(window);
+    m_pixel_ratio = get_pixel_ratio(window);
 
 #if defined(_WIN32) || defined(__linux__)
-    if (mPixelRatio != 1 && !mFullscreen)
-        glfwSetWindowSize(window, mSize.x() * mPixelRatio, mSize.y() * mPixelRatio);
+    if (m_pixel_ratio != 1 && !m_fullscreen)
+        glfwSetWindowSize(window, m_size.x() * m_pixel_ratio, m_size.y() * m_pixel_ratio);
 #endif
 
 #if defined(NANOGUI_GLAD)
-    if (!gladInitialized) {
-        gladInitialized = true;
+    if (!glad_initialized) {
+        glad_initialized = true;
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
             throw std::runtime_error("Could not initialize GLAD!");
         glGetError(); // pull and ignore unhandled errors like GL_INVALID_ENUM
@@ -281,221 +281,221 @@ void Screen::initialize(GLFWwindow *window, bool shutdownGLFWOnDestruct) {
 #endif
 
     /* Detect framebuffer properties and set up compatible NanoVG context */
-    GLint nStencilBits = 0, nSamples = 0;
+    GLint n_stencil_bits = 0, n_samples = 0;
     glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
-        GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &nStencilBits);
-    glGetIntegerv(GL_SAMPLES, &nSamples);
+        GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits);
+    glGetIntegerv(GL_SAMPLES, &n_samples);
 
     int flags = 0;
-    if (nStencilBits >= 8)
+    if (n_stencil_bits >= 8)
        flags |= NVG_STENCIL_STROKES;
-    if (nSamples <= 1)
+    if (n_samples <= 1)
        flags |= NVG_ANTIALIAS;
 #if !defined(NDEBUG)
     flags |= NVG_DEBUG;
 #endif
 
-    mNVGContext = nvgCreateGL3(flags);
-    if (mNVGContext == nullptr)
+    m_nvg_context = nvgCreateGL3(flags);
+    if (m_nvg_context == nullptr)
         throw std::runtime_error("Could not initialize NanoVG!");
 
-    mVisible = glfwGetWindowAttrib(window, GLFW_VISIBLE) != 0;
-    setTheme(new Theme(mNVGContext));
-    mMousePos = Vector2i::Zero();
-    mMouseState = mModifiers = 0;
-    mDragActive = false;
-    mLastInteraction = glfwGetTime();
-    mProcessEvents = true;
-    __nanogui_screens[mGLFWWindow] = this;
+    m_visible = glfwGetWindowAttrib(window, GLFW_VISIBLE) != 0;
+    set_theme(new Theme(m_nvg_context));
+    m_mouse_pos = Vector2i(0);
+    m_mouse_state = m_modifiers = 0;
+    m_drag_active = false;
+    m_last_interaction = glfwGetTime();
+    m_process_events = true;
+    __nanogui_screens[m_glfw_window] = this;
 
     for (int i=0; i < (int) Cursor::CursorCount; ++i)
-        mCursors[i] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR + i);
+        m_cursors[i] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR + i);
 
     /// Fixes retina display-related font rendering issue (#185)
-    nvgBeginFrame(mNVGContext, mSize[0], mSize[1], mPixelRatio);
-    nvgEndFrame(mNVGContext);
+    nvgBeginFrame(m_nvg_context, m_size[0], m_size[1], m_pixel_ratio);
+    nvgEndFrame(m_nvg_context);
 }
 
 Screen::~Screen() {
-    __nanogui_screens.erase(mGLFWWindow);
+    __nanogui_screens.erase(m_glfw_window);
     for (int i=0; i < (int) Cursor::CursorCount; ++i) {
-        if (mCursors[i])
-            glfwDestroyCursor(mCursors[i]);
+        if (m_cursors[i])
+            glfwDestroyCursor(m_cursors[i]);
     }
-    if (mNVGContext)
-        nvgDeleteGL3(mNVGContext);
-    if (mGLFWWindow && mShutdownGLFWOnDestruct)
-        glfwDestroyWindow(mGLFWWindow);
+    if (m_nvg_context)
+        nvgDeleteGL3(m_nvg_context);
+    if (m_glfw_window && m_shutdown_glfw)
+        glfwDestroyWindow(m_glfw_window);
 }
 
-void Screen::setVisible(bool visible) {
-    if (mVisible != visible) {
-        mVisible = visible;
+void Screen::set_visible(bool visible) {
+    if (m_visible != visible) {
+        m_visible = visible;
 
         if (visible)
-            glfwShowWindow(mGLFWWindow);
+            glfwShowWindow(m_glfw_window);
         else
-            glfwHideWindow(mGLFWWindow);
+            glfwHideWindow(m_glfw_window);
     }
 }
 
-void Screen::setCaption(const std::string &caption) {
-    if (caption != mCaption) {
-        glfwSetWindowTitle(mGLFWWindow, caption.c_str());
-        mCaption = caption;
+void Screen::set_caption(const std::string &caption) {
+    if (caption != m_caption) {
+        glfwSetWindowTitle(m_glfw_window, caption.c_str());
+        m_caption = caption;
     }
 }
 
-void Screen::setSize(const Vector2i &size) {
-    Widget::setSize(size);
+void Screen::set_size(const Vector2i &size) {
+    Widget::set_size(size);
 
 #if defined(_WIN32) || defined(__linux__)
-    glfwSetWindowSize(mGLFWWindow, size.x() * mPixelRatio, size.y() * mPixelRatio);
+    glfwSetWindowSize(m_glfw_window, size.x() * m_pixel_ratio, size.y() * m_pixel_ratio);
 #else
-    glfwSetWindowSize(mGLFWWindow, size.x(), size.y());
+    glfwSetWindowSize(m_glfw_window, size.x(), size.y());
 #endif
 }
 
-void Screen::drawAll() {
-    glClearColor(mBackground[0], mBackground[1], mBackground[2], mBackground[3]);
+void Screen::draw_all() {
+    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    drawContents();
-    drawWidgets();
+    draw_contents();
+    draw_widgets();
 
-    glfwSwapBuffers(mGLFWWindow);
+    glfwSwapBuffers(m_glfw_window);
 }
 
-void Screen::drawWidgets() {
-    if (!mVisible)
+void Screen::draw_widgets() {
+    if (!m_visible)
         return;
 
-    glfwMakeContextCurrent(mGLFWWindow);
+    glfwMakeContextCurrent(m_glfw_window);
 
-    glfwGetFramebufferSize(mGLFWWindow, &mFBSize[0], &mFBSize[1]);
-    glfwGetWindowSize(mGLFWWindow, &mSize[0], &mSize[1]);
+    glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
+    glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
 
 #if defined(_WIN32) || defined(__linux__)
-    mSize = (mSize / mPixelRatio).cast<int>();
-    mFBSize = (mSize * mPixelRatio).cast<int>();
+    m_size = Vector2i(m_size / m_pixel_ratio);
+    m_fbsize = Vector2i(m_size * m_pixel_ratio);
 #else
     /* Recompute pixel ratio on OSX */
-    if (mSize[0])
-        mPixelRatio = (float) mFBSize[0] / (float) mSize[0];
+    if (m_size[0])
+        m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
 #endif
 
-    glViewport(0, 0, mFBSize[0], mFBSize[1]);
+    glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
     glBindSampler(0, 0);
-    nvgBeginFrame(mNVGContext, mSize[0], mSize[1], mPixelRatio);
+    nvgBeginFrame(m_nvg_context, m_size[0], m_size[1], m_pixel_ratio);
 
-    draw(mNVGContext);
+    draw(m_nvg_context);
 
-    double elapsed = glfwGetTime() - mLastInteraction;
+    double elapsed = glfwGetTime() - m_last_interaction;
 
     if (elapsed > 0.5f) {
         /* Draw tooltips */
-        const Widget *widget = findWidget(mMousePos);
+        const Widget *widget = find_widget(m_mouse_pos);
         if (widget && !widget->tooltip().empty()) {
-            int tooltipWidth = 150;
+            int tooltip_width = 150;
 
             float bounds[4];
-            nvgFontFace(mNVGContext, "sans");
-            nvgFontSize(mNVGContext, 15.0f);
-            nvgTextAlign(mNVGContext, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
-            nvgTextLineHeight(mNVGContext, 1.1f);
-            Vector2i pos = widget->absolutePosition() +
+            nvgFontFace(m_nvg_context, "sans");
+            nvgFontSize(m_nvg_context, 15.0f);
+            nvgTextAlign(m_nvg_context, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
+            nvgTextLineHeight(m_nvg_context, 1.1f);
+            Vector2i pos = widget->absolute_position() +
                            Vector2i(widget->width() / 2, widget->height() + 10);
 
-            nvgTextBounds(mNVGContext, pos.x(), pos.y(),
+            nvgTextBounds(m_nvg_context, pos.x(), pos.y(),
                             widget->tooltip().c_str(), nullptr, bounds);
             int h = (bounds[2] - bounds[0]) / 2;
-            if (h > tooltipWidth / 2) {
-                nvgTextAlign(mNVGContext, NVG_ALIGN_CENTER | NVG_ALIGN_TOP);
-                nvgTextBoxBounds(mNVGContext, pos.x(), pos.y(), tooltipWidth,
+            if (h > tooltip_width / 2) {
+                nvgTextAlign(m_nvg_context, NVG_ALIGN_CENTER | NVG_ALIGN_TOP);
+                nvgTextBoxBounds(m_nvg_context, pos.x(), pos.y(), tooltip_width,
                                 widget->tooltip().c_str(), nullptr, bounds);
 
                 h = (bounds[2] - bounds[0]) / 2;
             }
-            nvgGlobalAlpha(mNVGContext,
+            nvgGlobalAlpha(m_nvg_context,
                            std::min(1.0, 2 * (elapsed - 0.5f)) * 0.8);
 
-            nvgBeginPath(mNVGContext);
-            nvgFillColor(mNVGContext, Color(0, 255));
-            nvgRoundedRect(mNVGContext, bounds[0] - 4 - h, bounds[1] - 4,
+            nvgBeginPath(m_nvg_context);
+            nvgFillColor(m_nvg_context, Color(0, 255));
+            nvgRoundedRect(m_nvg_context, bounds[0] - 4 - h, bounds[1] - 4,
                            (int) (bounds[2] - bounds[0]) + 8,
                            (int) (bounds[3] - bounds[1]) + 8, 3);
 
             int px = (int) ((bounds[2] + bounds[0]) / 2) - h;
-            nvgMoveTo(mNVGContext, px, bounds[1] - 10);
-            nvgLineTo(mNVGContext, px + 7, bounds[1] + 1);
-            nvgLineTo(mNVGContext, px - 7, bounds[1] + 1);
-            nvgFill(mNVGContext);
+            nvgMoveTo(m_nvg_context, px, bounds[1] - 10);
+            nvgLineTo(m_nvg_context, px + 7, bounds[1] + 1);
+            nvgLineTo(m_nvg_context, px - 7, bounds[1] + 1);
+            nvgFill(m_nvg_context);
 
-            nvgFillColor(mNVGContext, Color(255, 255));
-            nvgFontBlur(mNVGContext, 0.0f);
-            nvgTextBox(mNVGContext, pos.x() - h, pos.y(), tooltipWidth,
+            nvgFillColor(m_nvg_context, Color(255, 255));
+            nvgFontBlur(m_nvg_context, 0.0f);
+            nvgTextBox(m_nvg_context, pos.x() - h, pos.y(), tooltip_width,
                        widget->tooltip().c_str(), nullptr);
         }
     }
 
-    nvgEndFrame(mNVGContext);
+    nvgEndFrame(m_nvg_context);
 }
 
-bool Screen::keyboardEvent(int key, int scancode, int action, int modifiers) {
-    if (mFocusPath.size() > 0) {
-        for (auto it = mFocusPath.rbegin() + 1; it != mFocusPath.rend(); ++it)
-            if ((*it)->focused() && (*it)->keyboardEvent(key, scancode, action, modifiers))
+bool Screen::keyboard_event(int key, int scancode, int action, int modifiers) {
+    if (m_focus_path.size() > 0) {
+        for (auto it = m_focus_path.rbegin() + 1; it != m_focus_path.rend(); ++it)
+            if ((*it)->focused() && (*it)->keyboard_event(key, scancode, action, modifiers))
                 return true;
     }
 
     return false;
 }
 
-bool Screen::keyboardCharacterEvent(unsigned int codepoint) {
-    if (mFocusPath.size() > 0) {
-        for (auto it = mFocusPath.rbegin() + 1; it != mFocusPath.rend(); ++it)
-            if ((*it)->focused() && (*it)->keyboardCharacterEvent(codepoint))
+bool Screen::keyboard_character_event(unsigned int codepoint) {
+    if (m_focus_path.size() > 0) {
+        for (auto it = m_focus_path.rbegin() + 1; it != m_focus_path.rend(); ++it)
+            if ((*it)->focused() && (*it)->keyboard_character_event(codepoint))
                 return true;
     }
     return false;
 }
 
-bool Screen::resizeEvent(const Vector2i& size) {
-    if (mResizeCallback) {
-        mResizeCallback(size);
+bool Screen::resize_event(const Vector2i& size) {
+    if (m_resize_callback) {
+        m_resize_callback(size);
         return true;
     }
     return false;
 }
 
-bool Screen::cursorPosCallbackEvent(double x, double y) {
+bool Screen::cursor_pos_callback_event(double x, double y) {
     Vector2i p((int) x, (int) y);
 
 #if defined(_WIN32) || defined(__linux__)
-    p /= mPixelRatio;
+    p = Vector2i(Vector2f(p) / m_pixel_ratio);
 #endif
 
     bool ret = false;
-    mLastInteraction = glfwGetTime();
+    m_last_interaction = glfwGetTime();
     try {
         p -= Vector2i(1, 2);
 
-        if (!mDragActive) {
-            Widget *widget = findWidget(p);
-            if (widget != nullptr && widget->cursor() != mCursor) {
-                mCursor = widget->cursor();
-                glfwSetCursor(mGLFWWindow, mCursors[(int) mCursor]);
+        if (!m_drag_active) {
+            Widget *widget = find_widget(p);
+            if (widget != nullptr && widget->cursor() != m_cursor) {
+                m_cursor = widget->cursor();
+                glfwSetCursor(m_glfw_window, m_cursors[(int) m_cursor]);
             }
         } else {
-            ret = mDragWidget->mouseDragEvent(
-                p - mDragWidget->parent()->absolutePosition(), p - mMousePos,
-                mMouseState, mModifiers);
+            ret = m_drag_widget->mouse_drag_event(
+                p - m_drag_widget->parent()->absolute_position(), p - m_mouse_pos,
+                m_mouse_state, m_modifiers);
         }
 
         if (!ret)
-            ret = mouseMotionEvent(p, p - mMousePos, mMouseState, mModifiers);
+            ret = mouse_motion_event(p, p - m_mouse_pos, m_mouse_state, m_modifiers);
 
-        mMousePos = p;
+        m_mouse_pos = p;
 
         return ret;
     } catch (const std::exception &e) {
@@ -504,70 +504,70 @@ bool Screen::cursorPosCallbackEvent(double x, double y) {
     }
 }
 
-bool Screen::mouseButtonCallbackEvent(int button, int action, int modifiers) {
-    mModifiers = modifiers;
-    mLastInteraction = glfwGetTime();
+bool Screen::mouse_button_callback_event(int button, int action, int modifiers) {
+    m_modifiers = modifiers;
+    m_last_interaction = glfwGetTime();
     try {
-        if (mFocusPath.size() > 1) {
+        if (m_focus_path.size() > 1) {
             const Window *window =
-                dynamic_cast<Window *>(mFocusPath[mFocusPath.size() - 2]);
+                dynamic_cast<Window *>(m_focus_path[m_focus_path.size() - 2]);
             if (window && window->modal()) {
-                if (!window->contains(mMousePos))
+                if (!window->contains(m_mouse_pos))
                     return false;
             }
         }
 
         if (action == GLFW_PRESS)
-            mMouseState |= 1 << button;
+            m_mouse_state |= 1 << button;
         else
-            mMouseState &= ~(1 << button);
+            m_mouse_state &= ~(1 << button);
 
-        auto dropWidget = findWidget(mMousePos);
-        if (mDragActive && action == GLFW_RELEASE &&
-            dropWidget != mDragWidget)
-            mDragWidget->mouseButtonEvent(
-                mMousePos - mDragWidget->parent()->absolutePosition(), button,
-                false, mModifiers);
+        auto drop_widget = find_widget(m_mouse_pos);
+        if (m_drag_active && action == GLFW_RELEASE &&
+            drop_widget != m_drag_widget)
+            m_drag_widget->mouse_button_event(
+                m_mouse_pos - m_drag_widget->parent()->absolute_position(), button,
+                false, m_modifiers);
 
-        if (dropWidget != nullptr && dropWidget->cursor() != mCursor) {
-            mCursor = dropWidget->cursor();
-            glfwSetCursor(mGLFWWindow, mCursors[(int) mCursor]);
+        if (drop_widget != nullptr && drop_widget->cursor() != m_cursor) {
+            m_cursor = drop_widget->cursor();
+            glfwSetCursor(m_glfw_window, m_cursors[(int) m_cursor]);
         }
 
         if (action == GLFW_PRESS && (button == GLFW_MOUSE_BUTTON_1 || button == GLFW_MOUSE_BUTTON_2)) {
-            mDragWidget = findWidget(mMousePos);
-            if (mDragWidget == this)
-                mDragWidget = nullptr;
-            mDragActive = mDragWidget != nullptr;
-            if (!mDragActive)
-                updateFocus(nullptr);
+            m_drag_widget = find_widget(m_mouse_pos);
+            if (m_drag_widget == this)
+                m_drag_widget = nullptr;
+            m_drag_active = m_drag_widget != nullptr;
+            if (!m_drag_active)
+                update_focus(nullptr);
         } else {
-            mDragActive = false;
-            mDragWidget = nullptr;
+            m_drag_active = false;
+            m_drag_widget = nullptr;
         }
 
-        return mouseButtonEvent(mMousePos, button, action == GLFW_PRESS,
-                                mModifiers);
+        return mouse_button_event(m_mouse_pos, button, action == GLFW_PRESS,
+                                m_modifiers);
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
         return false;
     }
 }
 
-bool Screen::keyCallbackEvent(int key, int scancode, int action, int mods) {
-    mLastInteraction = glfwGetTime();
+bool Screen::key_callback_event(int key, int scancode, int action, int mods) {
+    m_last_interaction = glfwGetTime();
     try {
-        return keyboardEvent(key, scancode, action, mods);
+        return keyboard_event(key, scancode, action, mods);
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
         return false;
     }
 }
 
-bool Screen::charCallbackEvent(unsigned int codepoint) {
-    mLastInteraction = glfwGetTime();
+bool Screen::char_callback_event(unsigned int codepoint) {
+    m_last_interaction = glfwGetTime();
     try {
-        return keyboardCharacterEvent(codepoint);
+        return keyboard_character_event(codepoint);
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what()
                   << std::endl;
@@ -575,25 +575,25 @@ bool Screen::charCallbackEvent(unsigned int codepoint) {
     }
 }
 
-bool Screen::dropCallbackEvent(int count, const char **filenames) {
+bool Screen::drop_callback_event(int count, const char **filenames) {
     std::vector<std::string> arg(count);
     for (int i = 0; i < count; ++i)
         arg[i] = filenames[i];
-    return dropEvent(arg);
+    return drop_event(arg);
 }
 
-bool Screen::scrollCallbackEvent(double x, double y) {
-    mLastInteraction = glfwGetTime();
+bool Screen::scroll_callback_event(double x, double y) {
+    m_last_interaction = glfwGetTime();
     try {
-        if (mFocusPath.size() > 1) {
+        if (m_focus_path.size() > 1) {
             const Window *window =
-                dynamic_cast<Window *>(mFocusPath[mFocusPath.size() - 2]);
+                dynamic_cast<Window *>(m_focus_path[m_focus_path.size() - 2]);
             if (window && window->modal()) {
-                if (!window->contains(mMousePos))
+                if (!window->contains(m_mouse_pos))
                     return false;
             }
         }
-        return scrollEvent(mMousePos, Vector2f(x, y));
+        return scroll_event(m_mouse_pos, Vector2f(x, y));
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what()
                   << std::endl;
@@ -601,23 +601,23 @@ bool Screen::scrollCallbackEvent(double x, double y) {
     }
 }
 
-bool Screen::resizeCallbackEvent(int, int) {
-    Vector2i fbSize, size;
-    glfwGetFramebufferSize(mGLFWWindow, &fbSize[0], &fbSize[1]);
-    glfwGetWindowSize(mGLFWWindow, &size[0], &size[1]);
+bool Screen::resize_callback_event(int, int) {
+    Vector2i fb_size, size;
+    glfwGetFramebufferSize(m_glfw_window, &fb_size[0], &fb_size[1]);
+    glfwGetWindowSize(m_glfw_window, &size[0], &size[1]);
 
 #if defined(_WIN32) || defined(__linux__)
-    size /= mPixelRatio;
+    size = Vector2i(Vector2f(size) / m_pixel_ratio);
 #endif
 
-    if (mFBSize == Vector2i(0, 0) || size == Vector2i(0, 0))
+    if (m_fbsize == Vector2i(0, 0) || size == Vector2i(0, 0))
         return false;
 
-    mFBSize = fbSize; mSize = size;
-    mLastInteraction = glfwGetTime();
+    m_fbsize = fb_size; m_size = size;
+    m_last_interaction = glfwGetTime();
 
     try {
-        return resizeEvent(mSize);
+        return resize_event(m_size);
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what()
                   << std::endl;
@@ -625,58 +625,58 @@ bool Screen::resizeCallbackEvent(int, int) {
     }
 }
 
-void Screen::updateFocus(Widget *widget) {
-    for (auto w: mFocusPath) {
+void Screen::update_focus(Widget *widget) {
+    for (auto w: m_focus_path) {
         if (!w->focused())
             continue;
-        w->focusEvent(false);
+        w->focus_event(false);
     }
-    mFocusPath.clear();
+    m_focus_path.clear();
     Widget *window = nullptr;
     while (widget) {
-        mFocusPath.push_back(widget);
+        m_focus_path.push_back(widget);
         if (dynamic_cast<Window *>(widget))
             window = widget;
         widget = widget->parent();
     }
-    for (auto it = mFocusPath.rbegin(); it != mFocusPath.rend(); ++it)
-        (*it)->focusEvent(true);
+    for (auto it = m_focus_path.rbegin(); it != m_focus_path.rend(); ++it)
+        (*it)->focus_event(true);
 
     if (window)
-        moveWindowToFront((Window *) window);
+        move_window_to_front((Window *) window);
 }
 
-void Screen::disposeWindow(Window *window) {
-    if (std::find(mFocusPath.begin(), mFocusPath.end(), window) != mFocusPath.end())
-        mFocusPath.clear();
-    if (mDragWidget == window)
-        mDragWidget = nullptr;
-    removeChild(window);
+void Screen::dispose_window(Window *window) {
+    if (std::find(m_focus_path.begin(), m_focus_path.end(), window) != m_focus_path.end())
+        m_focus_path.clear();
+    if (m_drag_widget == window)
+        m_drag_widget = nullptr;
+    remove_child(window);
 }
 
-void Screen::centerWindow(Window *window) {
-    if (window->size() == Vector2i::Zero()) {
-        window->setSize(window->preferredSize(mNVGContext));
-        window->performLayout(mNVGContext);
+void Screen::center_window(Window *window) {
+    if (window->size() == 0) {
+        window->set_size(window->preferred_size(m_nvg_context));
+        window->perform_layout(m_nvg_context);
     }
-    window->setPosition((mSize - window->size()) / 2);
+    window->set_position((m_size - window->size()) / 2);
 }
 
-void Screen::moveWindowToFront(Window *window) {
-    mChildren.erase(std::remove(mChildren.begin(), mChildren.end(), window), mChildren.end());
-    mChildren.push_back(window);
+void Screen::move_window_to_front(Window *window) {
+    m_children.erase(std::remove(m_children.begin(), m_children.end(), window), m_children.end());
+    m_children.push_back(window);
     /* Brute force topological sort (no problem for a few windows..) */
     bool changed = false;
     do {
-        size_t baseIndex = 0;
-        for (size_t index = 0; index < mChildren.size(); ++index)
-            if (mChildren[index] == window)
-                baseIndex = index;
+        size_t base_index = 0;
+        for (size_t index = 0; index < m_children.size(); ++index)
+            if (m_children[index] == window)
+                base_index = index;
         changed = false;
-        for (size_t index = 0; index < mChildren.size(); ++index) {
-            Popup *pw = dynamic_cast<Popup *>(mChildren[index]);
-            if (pw && pw->parentWindow() == window && index < baseIndex) {
-                moveWindowToFront(pw);
+        for (size_t index = 0; index < m_children.size(); ++index) {
+            Popup *pw = dynamic_cast<Popup *>(m_children[index]);
+            if (pw && pw->parent_window() == window && index < base_index) {
+                move_window_to_front(pw);
                 changed = true;
                 break;
             }

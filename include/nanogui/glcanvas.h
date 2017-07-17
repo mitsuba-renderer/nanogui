@@ -28,42 +28,34 @@ NAMESPACE_BEGIN(nanogui)
  * application. The implementation uses scissoring to ensure that rendered
  * objects don't spill into neighboring widgets.
  *
- * Usage: override `drawGL` in subclasses to provide custom drawing code.
+ * Usage: override `draw_gl` in subclasses to provide custom drawing code.
  */
 class NANOGUI_EXPORT GLCanvas : public Widget {
 public:
     GLCanvas(Widget *parent);
 
     /// Return the background color
-    const Color &backgroundColor() const { return mBackgroundColor; }
+    const Color &background_color() const { return m_background_color; }
     /// Set the background color
-    void setBackgroundColor(const Color &backgroundColor) { mBackgroundColor = backgroundColor; }
+    void set_background_color(const Color &background_color) { m_background_color = background_color; }
 
     /// Set whether to draw the widget border or not
-    void setDrawBorder(const bool bDrawBorder) { mDrawBorder = bDrawBorder; }
+    void set_draw_border(const bool b_draw_border) { m_draw_border = b_draw_border; }
     /// Return whether the widget border gets drawn or not
-    const bool &drawBorder() const { return mDrawBorder; }
+    const bool &draw_border() const { return m_draw_border; }
 
     /// Draw the canvas
     virtual void draw(NVGcontext *ctx) override;
 
-    /// Draw the GL scene. Override this method to draw the actual GL
-    /// content.
-    virtual void drawGL() {}
-
-    /// Save and load widget properties
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
-
+    /// Draw the GL scene. Override this method to draw the actual GL content.
+    virtual void draw_gl() { }
 protected:
     /// Internal helper function for drawing the widget border
-    void drawWidgetBorder(NVGcontext* ctx) const;
+    void draw_widget_border(NVGcontext* ctx) const;
 
 protected:
-    Color mBackgroundColor;
-    bool mDrawBorder;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    Color m_background_color;
+    bool m_draw_border;
 };
 
 NAMESPACE_END(nanogui)

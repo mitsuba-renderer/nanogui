@@ -12,18 +12,17 @@
 #include <nanogui/graph.h>
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
-#include <nanogui/serializer/core.h>
 
 NAMESPACE_BEGIN(nanogui)
 
 Graph::Graph(Widget *parent, const std::string &caption)
-    : Widget(parent), mCaption(caption) {
-    mBackgroundColor = Color(20, 128);
-    mForegroundColor = Color(255, 192, 0, 128);
-    mTextColor = Color(240, 192);
+    : Widget(parent), m_caption(caption) {
+    m_background_color = Color(20, 128);
+    m_foreground_color = Color(255, 192, 0, 128);
+    m_text_color = Color(240, 192);
 }
 
-Vector2i Graph::preferredSize(NVGcontext *) const {
+Vector2i Graph::preferred_size(NVGcontext *) const {
     return Vector2i(180, 45);
 }
 
@@ -31,78 +30,55 @@ void Graph::draw(NVGcontext *ctx) {
     Widget::draw(ctx);
 
     nvgBeginPath(ctx);
-    nvgRect(ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y());
-    nvgFillColor(ctx, mBackgroundColor);
+    nvgRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y());
+    nvgFillColor(ctx, m_background_color);
     nvgFill(ctx);
 
-    if (mValues.size() < 2)
+    if (m_values.size() < 2)
         return;
 
     nvgBeginPath(ctx);
-    nvgMoveTo(ctx, mPos.x(), mPos.y()+mSize.y());
-    for (size_t i = 0; i < (size_t) mValues.size(); i++) {
-        float value = mValues[i];
-        float vx = mPos.x() + i * mSize.x() / (float) (mValues.size() - 1);
-        float vy = mPos.y() + (1-value) * mSize.y();
+    nvgMoveTo(ctx, m_pos.x(), m_pos.y()+m_size.y());
+    for (size_t i = 0; i < (size_t) m_values.size(); i++) {
+        float value = m_values[i];
+        float vx = m_pos.x() + i * m_size.x() / (float) (m_values.size() - 1);
+        float vy = m_pos.y() + (1-value) * m_size.y();
         nvgLineTo(ctx, vx, vy);
     }
 
-    nvgLineTo(ctx, mPos.x() + mSize.x(), mPos.y() + mSize.y());
+    nvgLineTo(ctx, m_pos.x() + m_size.x(), m_pos.y() + m_size.y());
     nvgStrokeColor(ctx, Color(100, 255));
     nvgStroke(ctx);
-    nvgFillColor(ctx, mForegroundColor);
+    nvgFillColor(ctx, m_foreground_color);
     nvgFill(ctx);
 
     nvgFontFace(ctx, "sans");
 
-    if (!mCaption.empty()) {
+    if (!m_caption.empty()) {
         nvgFontSize(ctx, 14.0f);
         nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
-        nvgFillColor(ctx, mTextColor);
-        nvgText(ctx, mPos.x() + 3, mPos.y() + 1, mCaption.c_str(), NULL);
+        nvgFillColor(ctx, m_text_color);
+        nvgText(ctx, m_pos.x() + 3, m_pos.y() + 1, m_caption.c_str(), NULL);
     }
 
-    if (!mHeader.empty()) {
+    if (!m_header.empty()) {
         nvgFontSize(ctx, 18.0f);
         nvgTextAlign(ctx, NVG_ALIGN_RIGHT | NVG_ALIGN_TOP);
-        nvgFillColor(ctx, mTextColor);
-        nvgText(ctx, mPos.x() + mSize.x() - 3, mPos.y() + 1, mHeader.c_str(), NULL);
+        nvgFillColor(ctx, m_text_color);
+        nvgText(ctx, m_pos.x() + m_size.x() - 3, m_pos.y() + 1, m_header.c_str(), NULL);
     }
 
-    if (!mFooter.empty()) {
+    if (!m_footer.empty()) {
         nvgFontSize(ctx, 15.0f);
         nvgTextAlign(ctx, NVG_ALIGN_RIGHT | NVG_ALIGN_BOTTOM);
-        nvgFillColor(ctx, mTextColor);
-        nvgText(ctx, mPos.x() + mSize.x() - 3, mPos.y() + mSize.y() - 1, mFooter.c_str(), NULL);
+        nvgFillColor(ctx, m_text_color);
+        nvgText(ctx, m_pos.x() + m_size.x() - 3, m_pos.y() + m_size.y() - 1, m_footer.c_str(), NULL);
     }
 
     nvgBeginPath(ctx);
-    nvgRect(ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y());
+    nvgRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y());
     nvgStrokeColor(ctx, Color(100, 255));
     nvgStroke(ctx);
-}
-
-void Graph::save(Serializer &s) const {
-    Widget::save(s);
-    s.set("caption", mCaption);
-    s.set("header", mHeader);
-    s.set("footer", mFooter);
-    s.set("backgroundColor", mBackgroundColor);
-    s.set("foregroundColor", mForegroundColor);
-    s.set("textColor", mTextColor);
-    s.set("values", mValues);
-}
-
-bool Graph::load(Serializer &s) {
-    if (!Widget::load(s)) return false;
-    if (!s.get("caption", mCaption)) return false;
-    if (!s.get("header", mHeader)) return false;
-    if (!s.get("footer", mFooter)) return false;
-    if (!s.get("backgroundColor", mBackgroundColor)) return false;
-    if (!s.get("foregroundColor", mForegroundColor)) return false;
-    if (!s.get("textColor", mTextColor)) return false;
-    if (!s.get("values", mValues)) return false;
-    return true;
 }
 
 NAMESPACE_END(nanogui)

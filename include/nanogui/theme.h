@@ -29,62 +29,60 @@ public:
     Theme(NVGcontext *ctx);
 
     /* Fonts */
-    int mFontNormal;
-    int mFontBold;
-    int mFontIcons;
+    int m_font_normal;
+    int m_font_bold;
+    int m_font_icons;
 
     /* Spacing-related parameters */
-    int mStandardFontSize;
-    int mButtonFontSize;
-    int mTextBoxFontSize;
-    int mWindowCornerRadius;
-    int mWindowHeaderHeight;
-    int mWindowDropShadowSize;
-    int mButtonCornerRadius;
-    float mTabBorderWidth;
-    int mTabInnerMargin;
-    int mTabMinButtonWidth;
-    int mTabMaxButtonWidth;
-    int mTabControlWidth;
-    int mTabButtonHorizontalPadding;
-    int mTabButtonVerticalPadding;
+    int m_standard_font_size;
+    int m_button_font_size;
+    int m_text_box_font_size;
+    int m_window_corner_radius;
+    int m_window_header_height;
+    int m_window_drop_shadow_size;
+    int m_button_corner_radius;
+    float m_tab_border_width;
+    int m_tab_inner_margin;
+    int m_tab_min_button_width;
+    int m_tab_max_button_width;
+    int m_tab_control_width;
+    int m_tab_button_horizontal_padding;
+    int m_tab_button_vertical_padding;
 
     /* Generic colors */
-    Color mDropShadow;
-    Color mTransparent;
-    Color mBorderDark;
-    Color mBorderLight;
-    Color mBorderMedium;
-    Color mTextColor;
-    Color mDisabledTextColor;
-    Color mTextColorShadow;
-    Color mIconColor;
+    Color m_drop_shadow;
+    Color m_transparent;
+    Color m_border_dark;
+    Color m_border_light;
+    Color m_border_medium;
+    Color m_text_color;
+    Color m_disabled_text_color;
+    Color m_text_color_shadow;
+    Color m_icon_color;
 
     /* Button colors */
-    Color mButtonGradientTopFocused;
-    Color mButtonGradientBotFocused;
-    Color mButtonGradientTopUnfocused;
-    Color mButtonGradientBotUnfocused;
-    Color mButtonGradientTopPushed;
-    Color mButtonGradientBotPushed;
+    Color m_button_gradient_top_focused;
+    Color m_button_gradient_bot_focused;
+    Color m_button_gradient_top_unfocused;
+    Color m_button_gradient_bot_unfocused;
+    Color m_button_gradient_top_pushed;
+    Color m_button_gradient_bot_pushed;
 
     /* Window colors */
-    Color mWindowFillUnfocused;
-    Color mWindowFillFocused;
-    Color mWindowTitleUnfocused;
-    Color mWindowTitleFocused;
+    Color m_window_fill_unfocused;
+    Color m_window_fill_focused;
+    Color m_window_title_unfocused;
+    Color m_window_title_focused;
 
-    Color mWindowHeaderGradientTop;
-    Color mWindowHeaderGradientBot;
-    Color mWindowHeaderSepTop;
-    Color mWindowHeaderSepBot;
+    Color m_window_header_gradient_top;
+    Color m_window_header_gradient_bot;
+    Color m_window_header_sep_top;
+    Color m_window_header_sep_bot;
 
-    Color mWindowPopup;
-    Color mWindowPopupTransparent;
+    Color m_window_popup;
+    Color m_window_popup_transparent;
 protected:
     virtual ~Theme() { };
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 NAMESPACE_END(nanogui)

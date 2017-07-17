@@ -13,27 +13,27 @@ DECLARE_WIDGET(Slider);
 void register_basics(py::module &m) {
     py::class_<Label, Widget, ref<Label>, PyLabel>(m, "Label", D(Label))
         .def(py::init<Widget *, const std::string &, const std::string &, int>(),
-             py::arg("parent"), py::arg("caption"), py::arg("font") = std::string("sans"),
-             py::arg("fontSize") = -1,
+             "parent"_a, "caption"_a, "font"_a = std::string("sans"),
+             "font_size"_a = -1,
              D(Label, Label))
         .def("caption", &Label::caption, D(Label, caption))
-        .def("setCaption", &Label::setCaption, D(Label, setCaption))
+        .def("set_caption", &Label::set_caption, D(Label, set_caption))
         .def("font", &Label::font, D(Label, font))
-        .def("setFont", &Label::setFont, D(Label, setFont))
+        .def("set_font", &Label::set_font, D(Label, set_font))
         .def("color", &Label::color, D(Label, color))
-        .def("setColor", &Label::setColor, D(Label, setColor));
+        .def("set_color", &Label::set_color, D(Label, set_color));
 
 
     py::class_<Popup, Window, ref<Popup>, PyPopup> popup(m, "Popup", D(Popup));
     popup
-        .def(py::init<Widget *, Window *>(), py::arg("parent"), py::arg("parentWindow"), D(Popup, Popup))
-        .def("anchorPos", &Popup::anchorPos, D(Popup, anchorPos))
-        .def("setAnchorPos", &Popup::setAnchorPos, D(Popup, setAnchorPos))
-        .def("anchorHeight", &Popup::anchorHeight, D(Popup, anchorHeight))
-        .def("setAnchorHeight", &Popup::setAnchorHeight, D(Popup, setAnchorHeight))
-        .def("parentWindow", (Window*(Popup::*)(void)) &Popup::parentWindow, D(Popup, parentWindow))
+        .def(py::init<Widget *, Window *>(), "parent"_a, "parent_window"_a, D(Popup, Popup))
+        .def("anchor_pos", &Popup::anchor_pos, D(Popup, anchor_pos))
+        .def("set_anchor_pos", &Popup::set_anchor_pos, D(Popup, set_anchor_pos))
+        .def("anchor_height", &Popup::anchor_height, D(Popup, anchor_height))
+        .def("set_anchor_height", &Popup::set_anchor_height, D(Popup, set_anchor_height))
+        .def("parent_window", (Window*(Popup::*)(void)) &Popup::parent_window, D(Popup, parent_window))
         .def("side", &Popup::side, D(Popup, side))
-        .def("setSide", &Popup::setSide, D(Popup, setSide));
+        .def("set_side", &Popup::set_side, D(Popup, set_side));
 
     py::enum_<Popup::Side>(popup, "Side", D(Popup, Side))
         .value("Left", Popup::Side::Left)
@@ -44,13 +44,13 @@ void register_basics(py::module &m) {
     mdlg
         .def(py::init<Widget *, MessageDialog::Type, const std::string&,
                       const std::string&, const std::string&, const std::string&, bool>(),
-            py::arg("parent"), py::arg("type"), py::arg("title") = std::string("Untitled"),
-            py::arg("message") = std::string("Message"), py::arg("buttonText") = std::string("OK"),
-            py::arg("altButtonText") = std::string("Cancel"), py::arg("altButton") = false,
+            "parent"_a, "type"_a, "title"_a = std::string("Untitled"),
+            "message"_a = std::string("Message"), "button_text"_a = std::string("OK"),
+            "alt_button_text"_a = std::string("Cancel"), "alt_button"_a = false,
             D(MessageDialog, MessageDialog))
-        .def("messageLabel", (Label * (MessageDialog::*)()) &MessageDialog::messageLabel, D(MessageDialog, messageLabel))
+        .def("message_label", (Label * (MessageDialog::*)()) &MessageDialog::message_label, D(MessageDialog, message_label))
         .def("callback", &MessageDialog::callback, D(MessageDialog, callback))
-        .def("setCallback", &MessageDialog::setCallback, D(MessageDialog, setCallback));
+        .def("set_callback", &MessageDialog::set_callback, D(MessageDialog, set_callback));
 
     py::enum_<MessageDialog::Type>(mdlg, "Type", D(MessageDialog, Type))
         .value("Information", MessageDialog::Type::Information)
@@ -58,43 +58,43 @@ void register_basics(py::module &m) {
         .value("Warning", MessageDialog::Type::Warning);
 
     py::class_<VScrollPanel, Widget, ref<VScrollPanel>, PyVScrollPanel>(m, "VScrollPanel", D(VScrollPanel))
-        .def(py::init<Widget *>(), py::arg("parent"), D(VScrollPanel, VScrollPanel));
+        .def(py::init<Widget *>(), "parent"_a, D(VScrollPanel, VScrollPanel));
 
     py::class_<ComboBox, Widget, ref<ComboBox>, PyComboBox>(m, "ComboBox", D(ComboBox))
-        .def(py::init<Widget *>(), py::arg("parent"), D(ComboBox, ComboBox))
+        .def(py::init<Widget *>(), "parent"_a, D(ComboBox, ComboBox))
         .def(py::init<Widget *, const std::vector<std::string> &>(),
-             py::arg("parent"), py::arg("items")/*, D(ComboBox, ComboBox, 2)*/)
+             "parent"_a, "items"_a/*, D(ComboBox, ComboBox, 2)*/)
         .def(py::init<Widget *, const std::vector<std::string> &,
                       const std::vector<std::string> &>(),
-             py::arg("parent"), py::arg("items"), py::arg("itemsShort")/* ,D(ComboBox, ComboBox, 3)*/)
+             "parent"_a, "items"_a, "items_short"_a/* ,D(ComboBox, ComboBox, 3)*/)
         .def("callback", &ComboBox::callback, D(ComboBox, callback))
-        .def("setCallback", &ComboBox::setCallback, D(ComboBox, setCallback))
-        .def("selectedIndex", &ComboBox::selectedIndex, D(ComboBox, selectedIndex))
-        .def("setSelectedIndex", &ComboBox::setSelectedIndex, D(ComboBox, setSelectedIndex))
-        .def("setItems", (void(ComboBox::*)(const std::vector<std::string>&)) &ComboBox::setItems, D(ComboBox, setItems))
-        .def("setItems", (void(ComboBox::*)(const std::vector<std::string>&,
-                          const std::vector<std::string>&)) &ComboBox::setItems/*, D(ComboBox, setItems, 2)*/)
+        .def("set_callback", &ComboBox::set_callback, D(ComboBox, set_callback))
+        .def("selected_index", &ComboBox::selected_index, D(ComboBox, selected_index))
+        .def("set_selected_index", &ComboBox::set_selected_index, D(ComboBox, set_selected_index))
+        .def("set_items", (void(ComboBox::*)(const std::vector<std::string>&)) &ComboBox::set_items, D(ComboBox, set_items))
+        .def("set_items", (void(ComboBox::*)(const std::vector<std::string>&,
+                          const std::vector<std::string>&)) &ComboBox::set_items/*, D(ComboBox, set_items, 2)*/)
         .def("items", &ComboBox::items, D(ComboBox, items))
-        .def("itemsShort", &ComboBox::itemsShort, D(ComboBox, itemsShort));
+        .def("items_short", &ComboBox::items_short, D(ComboBox, items_short));
 
     py::class_<ProgressBar, Widget, ref<ProgressBar>, PyProgressBar>(m, "ProgressBar", D(ProgressBar))
-        .def(py::init<Widget *>(), py::arg("parent"), D(ProgressBar, ProgressBar))
+        .def(py::init<Widget *>(), "parent"_a, D(ProgressBar, ProgressBar))
         .def("value", &ProgressBar::value, D(ProgressBar, value))
-        .def("setValue", &ProgressBar::setValue, D(ProgressBar, setValue));
+        .def("set_value", &ProgressBar::set_value, D(ProgressBar, set_value));
 
     py::class_<Slider, Widget, ref<Slider>, PySlider>(m, "Slider", D(Slider))
-        .def(py::init<Widget *>(), py::arg("parent"), D(Slider, Slider))
+        .def(py::init<Widget *>(), "parent"_a, D(Slider, Slider))
         .def("value", &Slider::value, D(Slider, value))
-        .def("setValue", &Slider::setValue, D(Slider, setValue))
-        .def("highlightColor", &Slider::highlightColor, D(Slider, highlightColor))
-        .def("setHighlightColor", &Slider::setHighlightColor, D(Slider, setHighlightColor))
+        .def("set_value", &Slider::set_value, D(Slider, set_value))
+        .def("highlight_color", &Slider::highlight_color, D(Slider, highlight_color))
+        .def("set_highlight_color", &Slider::set_highlight_color, D(Slider, set_highlight_color))
         .def("range", &Slider::range, D(Slider, range))
-        .def("setRange", &Slider::setRange, D(Slider, setRange))
-        .def("highlightedRange", &Slider::highlightedRange, D(Slider, highlightedRange))
-        .def("setHighlightedRange", &Slider::setHighlightedRange, D(Slider, setHighlightedRange))
-        .def("setCallback", &Slider::setCallback, D(Slider, setCallback))
+        .def("set_range", &Slider::set_range, D(Slider, set_range))
+        .def("highlighted_range", &Slider::highlighted_range, D(Slider, highlighted_range))
+        .def("set_highlighted_range", &Slider::set_highlighted_range, D(Slider, set_highlighted_range))
+        .def("set_callback", &Slider::set_callback, D(Slider, set_callback))
         .def("callback", &Slider::callback, D(Slider, callback))
-        .def("setFinalCallback", &Slider::setFinalCallback, D(Slider, setFinalCallback))
-        .def("finalCallback", &Slider::finalCallback, D(Slider, finalCallback));
+        .def("set_final_callback", &Slider::set_final_callback, D(Slider, set_final_callback))
+        .def("final_callback", &Slider::final_callback, D(Slider, final_callback));
 }
 #endif

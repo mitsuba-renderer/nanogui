@@ -26,30 +26,25 @@ public:
     CheckBox(Widget *parent, const std::string &caption = "Untitled",
              const std::function<void(bool)> &callback = std::function<void(bool)>());
 
-    const std::string &caption() const { return mCaption; }
-    void setCaption(const std::string &caption) { mCaption = caption; }
+    const std::string &caption() const { return m_caption; }
+    void set_caption(const std::string &caption) { m_caption = caption; }
 
-    const bool &checked() const { return mChecked; }
-    void setChecked(const bool &checked) { mChecked = checked; }
+    const bool &checked() const { return m_checked; }
+    void set_checked(const bool &checked) { m_checked = checked; }
 
-    const bool &pushed() const { return mPushed; }
-    void setPushed(const bool &pushed) { mPushed = pushed; }
+    const bool &pushed() const { return m_pushed; }
+    void set_pushed(const bool &pushed) { m_pushed = pushed; }
 
-    std::function<void(bool)> callback() const { return mCallback; }
-    void setCallback(const std::function<void(bool)> &callback) { mCallback = callback; }
+    std::function<void(bool)> callback() const { return m_callback; }
+    void set_callback(const std::function<void(bool)> &callback) { m_callback = callback; }
 
-    virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) override;
-    virtual Vector2i preferredSize(NVGcontext *ctx) const override;
+    virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
+    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual void draw(NVGcontext *ctx) override;
-
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
 protected:
-    std::string mCaption;
-    bool mPushed, mChecked;
-    std::function<void(bool)> mCallback;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::string m_caption;
+    bool m_pushed, m_checked;
+    std::function<void(bool)> m_callback;
 };
 
 NAMESPACE_END(nanogui)

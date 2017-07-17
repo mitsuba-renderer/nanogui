@@ -37,35 +37,35 @@ use_gl_4_1 = False # Set to True to create an OpenGL 4.1 context.
 if use_gl_4_1:
     # NanoGUI presents many options for you to utilize at your discretion.
     # See include/nanogui/screen.h for what all of the options are.
-    screen = Screen((500, 700), "NanoGUI test [GL 4.1]", glMajor=4, glMinor=1)
+    screen = Screen((500, 700), "NanoGUI test [GL 4.1]", gl_major=4, gl_minor=1)
 else:
     screen = Screen((500, 700), "NanoGUI test")
 
 gui = FormHelper(screen)
-window = gui.addWindow((10, 10), "Form helper example")
+window = gui.add_window((10, 10), "Form helper example")
 
-gui.addGroup("Basic types")
-gui.addBoolVariable("bool", *make_accessors("bvar"))
-gui.addStringVariable("string", *make_accessors("strvar"))
+gui.add_group("Basic types")
+gui.add_bool_variable("bool", *make_accessors("bvar"))
+gui.add_string_variable("string", *make_accessors("strvar"))
 
-gui.addGroup("Validating fields")
-gui.addIntVariable("int", *make_accessors("ivar"))
-gui.addDoubleVariable("double", *make_accessors("dvar"))
+gui.add_group("Validating fields")
+gui.add_int_variable("int", *make_accessors("ivar"))
+gui.add_double_variable("double", *make_accessors("dvar"))
 
-gui.addGroup("Complex types")
-gui.addEnumVariable("Enumeration", *make_accessors("enumvar")) \
-   .setItems(["Item 1", "Item 2", "Item 3"])
-gui.addColorVariable("Color", *make_accessors("colvar"))
+gui.add_group("Complex types")
+gui.add_enum_variable("Enumeration", *make_accessors("enumvar")) \
+   .set_items(["Item 1", "Item 2", "Item 3"])
+gui.add_color_variable("Color", *make_accessors("colvar"))
 
-gui.addGroup("Other widgets")
+gui.add_group("Other widgets")
 
 
 def cb():
     print("Button pressed.")
-gui.addButton("A button", cb)
+gui.add_button("A button", cb)
 
-screen.setVisible(True)
-screen.performLayout()
+screen.set_visible(True)
+screen.perform_layout()
 window.center()
 
 nanogui.mainloop()

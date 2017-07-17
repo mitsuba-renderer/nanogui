@@ -18,30 +18,30 @@ class TestApp(Screen):
         super(TestApp, self).__init__((190, 170), "NanoGUI Test")
 
         window = Window(self, "Detached mode")
-        window.setPosition((15, 15))
-        window.setLayout(GroupLayout())
+        window.set_position((15, 15))
+        window.set_layout(GroupLayout())
 
         Label(window, "Push buttons", "sans-bold")
         b = Button(window, "Plain button")
 
         def cb():
             print("pushed!")
-        b.setCallback(cb)
+        b.set_callback(cb)
 
         b = Button(window, "Quit")
 
         def cb2():
-            self.setVisible(False)
-        b.setCallback(cb2)
+            self.set_visible(False)
+        b.set_callback(cb2)
 
-        self.performLayout()
+        self.perform_layout()
 
 
 if __name__ == "__main__":
     nanogui.init()
     test = TestApp()
-    test.drawAll()
-    test.setVisible(True)
+    test.draw_all()
+    test.set_visible(True)
 
     print("Launching detached mainloop")
     h = nanogui.mainloop(detach=test)

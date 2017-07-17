@@ -41,35 +41,35 @@ int main(int /* argc */, char ** /* argv */) {
             // NanoGUI presents many options for you to utilize at your discretion.
             // See include/nanogui/screen.h for what all of these represent.
             screen = new Screen(Vector2i(500, 700), "NanoGUI test [GL 4.1]",
-                                /*resizable*/true, /*fullscreen*/false, /*colorBits*/8,
-                                /*alphaBits*/8, /*depthBits*/24, /*stencilBits*/8,
-                                /*nSamples*/0, /*glMajor*/4, /*glMinor*/1);
+                                /*resizable*/true, /*fullscreen*/false, /*color_bits*/8,
+                                /*alpha_bits*/8, /*depth_bits*/24, /*stencil_bits*/8,
+                                /*n_samples*/0, /*gl_major*/4, /*gl_minor*/1);
         } else {
             screen = new Screen(Vector2i(500, 700), "NanoGUI test");
         }
 
         bool enabled = true;
         FormHelper *gui = new FormHelper(screen);
-        ref<Window> window = gui->addWindow(Eigen::Vector2i(10, 10), "Form helper example");
-        gui->addGroup("Basic types");
-        gui->addVariable("bool", bvar);
-        gui->addVariable("string", strval);
+        ref<Window> window = gui->add_window(Vector2i(10, 10), "Form helper example");
+        gui->add_group("Basic types");
+        gui->add_variable("bool", bvar);
+        gui->add_variable("string", strval);
 
-        gui->addGroup("Validating fields");
-        gui->addVariable("int", ivar)->setSpinnable(true);
-        gui->addVariable("float", fvar);
-        gui->addVariable("double", dvar)->setSpinnable(true);
+        gui->add_group("Validating fields");
+        gui->add_variable("int", ivar)->set_spinnable(true);
+        gui->add_variable("float", fvar);
+        gui->add_variable("double", dvar)->set_spinnable(true);
 
-        gui->addGroup("Complex types");
-        gui->addVariable("Enumeration", enumval, enabled)
-           ->setItems({"Item 1", "Item 2", "Item 3"});
-        gui->addVariable("Color", colval);
+        gui->add_group("Complex types");
+        gui->add_variable("Enumeration", enumval, enabled)
+           ->set_items({"Item 1", "Item 2", "Item 3"});
+        gui->add_variable("Color", colval);
 
-        gui->addGroup("Other widgets");
-        gui->addButton("A button", []() { std::cout << "Button pressed." << std::endl; });
+        gui->add_group("Other widgets");
+        gui->add_button("A button", []() { std::cout << "Button pressed." << std::endl; });
 
-        screen->setVisible(true);
-        screen->performLayout();
+        screen->set_visible(true);
+        screen->perform_layout();
         window->center();
 
         nanogui::mainloop();

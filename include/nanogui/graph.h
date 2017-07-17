@@ -25,39 +25,34 @@ class NANOGUI_EXPORT Graph : public Widget {
 public:
     Graph(Widget *parent, const std::string &caption = "Untitled");
 
-    const std::string &caption() const { return mCaption; }
-    void setCaption(const std::string &caption) { mCaption = caption; }
+    const std::string &caption() const { return m_caption; }
+    void set_caption(const std::string &caption) { m_caption = caption; }
 
-    const std::string &header() const { return mHeader; }
-    void setHeader(const std::string &header) { mHeader = header; }
+    const std::string &header() const { return m_header; }
+    void set_header(const std::string &header) { m_header = header; }
 
-    const std::string &footer() const { return mFooter; }
-    void setFooter(const std::string &footer) { mFooter = footer; }
+    const std::string &footer() const { return m_footer; }
+    void set_footer(const std::string &footer) { m_footer = footer; }
 
-    const Color &backgroundColor() const { return mBackgroundColor; }
-    void setBackgroundColor(const Color &backgroundColor) { mBackgroundColor = backgroundColor; }
+    const Color &background_color() const { return m_background_color; }
+    void set_background_color(const Color &background_color) { m_background_color = background_color; }
 
-    const Color &foregroundColor() const { return mForegroundColor; }
-    void setForegroundColor(const Color &foregroundColor) { mForegroundColor = foregroundColor; }
+    const Color &foreground_color() const { return m_foreground_color; }
+    void set_foreground_color(const Color &foreground_color) { m_foreground_color = foreground_color; }
 
-    const Color &textColor() const { return mTextColor; }
-    void setTextColor(const Color &textColor) { mTextColor = textColor; }
+    const Color &text_color() const { return m_text_color; }
+    void set_text_color(const Color &text_color) { m_text_color = text_color; }
 
-    const VectorXf &values() const { return mValues; }
-    VectorXf &values() { return mValues; }
-    void setValues(const VectorXf &values) { mValues = values; }
+    const std::vector<float> &values() const { return m_values; }
+    std::vector<float> &values() { return m_values; }
+    void set_values(const std::vector<float> &values) { m_values = values; }
 
-    virtual Vector2i preferredSize(NVGcontext *ctx) const override;
+    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual void draw(NVGcontext *ctx) override;
-
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
 protected:
-    std::string mCaption, mHeader, mFooter;
-    Color mBackgroundColor, mForegroundColor, mTextColor;
-    VectorXf mValues;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::string m_caption, m_header, m_footer;
+    Color m_background_color, m_foreground_color, m_text_color;
+    std::vector<float> m_values;
 };
 
 NAMESPACE_END(nanogui)

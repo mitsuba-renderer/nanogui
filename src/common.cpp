@@ -86,20 +86,20 @@ void mainloop(int refresh) {
 
     try {
         while (mainloop_active) {
-            int numScreens = 0;
+            int num_screens = 0;
             for (auto kv : __nanogui_screens) {
                 Screen *screen = kv.second;
                 if (!screen->visible()) {
                     continue;
-                } else if (glfwWindowShouldClose(screen->glfwWindow())) {
-                    screen->setVisible(false);
+                } else if (glfwWindowShouldClose(screen->glfw_window())) {
+                    screen->set_visible(false);
                     continue;
                 }
-                screen->drawAll();
-                numScreens++;
+                screen->draw_all();
+                num_screens++;
             }
 
-            if (numScreens == 0) {
+            if (num_screens == 0) {
                 /* Give up if there was nothing to draw */
                 mainloop_active = false;
                 break;
@@ -154,19 +154,19 @@ std::array<char, 8> utf8(int c) {
 }
 
 int __nanogui_get_image(NVGcontext *ctx, const std::string &name, uint8_t *data, uint32_t size) {
-    static std::map<std::string, int> iconCache;
-    auto it = iconCache.find(name);
-    if (it != iconCache.end())
+    static std::map<std::string, int> icon_cache;
+    auto it = icon_cache.find(name);
+    if (it != icon_cache.end())
         return it->second;
-    int iconID = nvgCreateImageMem(ctx, 0, data, size);
-    if (iconID == 0)
+    int icon_id = nvgCreateImageMem(ctx, 0, data, size);
+    if (icon_id == 0)
         throw std::runtime_error("Unable to load resource data.");
-    iconCache[name] = iconID;
-    return iconID;
+    icon_cache[name] = icon_id;
+    return icon_id;
 }
 
 std::vector<std::pair<int, std::string>>
-loadImageDirectory(NVGcontext *ctx, const std::string &path) {
+load_image_directory(NVGcontext *ctx, const std::string &path) {
     std::vector<std::pair<int, std::string> > result;
 #if !defined(_WIN32)
     DIR *dp = opendir(path.c_str());
@@ -177,8 +177,8 @@ loadImageDirectory(NVGcontext *ctx, const std::string &path) {
         const char *fname = ep->d_name;
 #else
     WIN32_FIND_DATA ffd;
-    std::string searchPath = path + "/*.*";
-    HANDLE handle = FindFirstFileA(searchPath.c_str(), &ffd);
+    std::string search_path = path + "/*.*";
+    HANDLE handle = FindFirstFileA(search_path.c_str(), &ffd);
     if (handle == INVALID_HANDLE_VALUE)
         throw std::runtime_error("Could not open image directory!");
     do {
@@ -186,12 +186,12 @@ loadImageDirectory(NVGcontext *ctx, const std::string &path) {
 #endif
         if (strstr(fname, "png") == nullptr)
             continue;
-        std::string fullName = path + "/" + std::string(fname);
-        int img = nvgCreateImage(ctx, fullName.c_str(), 0);
+        std::string full_name = path + "/" + std::string(fname);
+        int img = nvgCreateImage(ctx, full_name.c_str(), 0);
         if (img == 0)
             throw std::runtime_error("Could not open image data!");
         result.push_back(
-            std::make_pair(img, fullName.substr(0, fullName.length() - 4)));
+            std::make_pair(img, full_name.substr(0, full_name.length() - 4)));
 #if !defined(_WIN32)
     }
     closedir(dp);
@@ -280,11 +280,11 @@ std::string file_dialog(const std::vector<std::pair<std::string, std::string>> &
 }
 #endif
 
-void Object::decRef(bool dealloc) const noexcept {
-    --m_refCount;
-    if (m_refCount == 0 && dealloc) {
+void Object::dec_ref(bool dealloc) const noexcept {
+    --m_ref_count;
+    if (m_ref_count == 0 && dealloc) {
         delete this;
-    } else if (m_refCount < 0) {
+    } else if (m_ref_count < 0) {
         fprintf(stderr, "Internal error: Object reference count < 0!\n");
         abort();
     }

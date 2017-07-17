@@ -2,7 +2,7 @@
     nanogui/glcanvas.cpp -- Canvas widget for rendering full-fledged
     OpenGL content within its designated area. Very useful for
     displaying and manipulating 3D objects or scenes. Subclass it and
-    overload `drawGL` for rendering.
+    overload `draw_gl` for rendering.
 
     NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
@@ -17,25 +17,24 @@
 #include <nanogui/glcanvas.h>
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
-#include <nanogui/serializer/core.h>
 
 NAMESPACE_BEGIN(nanogui)
 
 GLCanvas::GLCanvas(Widget *parent)
-  : Widget(parent), mBackgroundColor(Vector4i(128, 128, 128, 255)),
-    mDrawBorder(true) {
-    mSize = Vector2i(250, 250);
+    : Widget(parent), m_background_color(Vector4i(128, 128, 128, 255)),
+      m_draw_border(true) {
+    m_size = Vector2i(250, 250);
 }
 
-void GLCanvas::drawWidgetBorder(NVGcontext *ctx) const {
+void GLCanvas::draw_widget_border(NVGcontext *ctx) const {
     nvgBeginPath(ctx);
     nvgStrokeWidth(ctx, 1.0f);
-    nvgRoundedRect(ctx, mPos.x() - 0.5f, mPos.y() - 0.5f,
-                   mSize.x() + 1, mSize.y() + 1, mTheme->mWindowCornerRadius);
-    nvgStrokeColor(ctx, mTheme->mBorderLight);
-    nvgRoundedRect(ctx, mPos.x() - 1.0f, mPos.y() - 1.0f,
-                   mSize.x() + 2, mSize.y() + 2, mTheme->mWindowCornerRadius);
-    nvgStrokeColor(ctx, mTheme->mBorderDark);
+    nvgRoundedRect(ctx, m_pos.x() - 0.5f, m_pos.y() - 0.5f,
+                   m_size.x() + 1, m_size.y() + 1, m_theme->m_window_corner_radius);
+    nvgStrokeColor(ctx, m_theme->m_border_light);
+    nvgRoundedRect(ctx, m_pos.x() - 1.0f, m_pos.y() - 1.0f,
+                   m_size.x() + 2, m_size.y() + 2, m_theme->m_window_corner_radius);
+    nvgStrokeColor(ctx, m_theme->m_border_dark);
     nvgStroke(ctx);
 }
 
@@ -43,50 +42,37 @@ void GLCanvas::draw(NVGcontext *ctx) {
     Widget::draw(ctx);
     nvgEndFrame(ctx);
 
-    if (mDrawBorder)
-        drawWidgetBorder(ctx);
+    if (m_draw_border)
+        draw_widget_border(ctx);
 
     const Screen* screen = dynamic_cast<const Screen*>(this->window()->parent());
     assert(screen);
 
-    float pixelRatio = screen->pixelRatio();
-    Vector2f screenSize = screen->size().cast<float>();
-    Vector2i positionInScreen = absolutePosition();
+    float pixel_ratio = screen->pixel_ratio();
+    Vector2f screen_size(screen->size());
+    Vector2i position_in_screen = absolute_position();
 
-    Vector2i size = (mSize.cast<float>() * pixelRatio).cast<int>(),
-             imagePosition = (Vector2f(positionInScreen[0],
-                                       screenSize[1] - positionInScreen[1] -
-                                       (float) mSize[1]) * pixelRatio).cast<int>();
+    Vector2i size(Vector2f(m_size) * pixel_ratio),
+             image_position(Vector2f(position_in_screen[0],
+                                    screen_size[1] - position_in_screen[1] -
+                                    (float) m_size[1]) * pixel_ratio);
 
-    GLint storedViewport[4];
-    glGetIntegerv(GL_VIEWPORT, storedViewport);
+    GLint stored_viewport[4];
+    glGetIntegerv(GL_VIEWPORT, stored_viewport);
 
-    glViewport(imagePosition[0], imagePosition[1], size[0] , size[1]);
+    glViewport(image_position[0], image_position[1], size[0] , size[1]);
 
     glEnable(GL_SCISSOR_TEST);
-    glScissor(imagePosition[0], imagePosition[1], size[0], size[1]);
-    glClearColor(mBackgroundColor[0], mBackgroundColor[1],
-                 mBackgroundColor[2], mBackgroundColor[3]);
+    glScissor(image_position[0], image_position[1], size[0], size[1]);
+    glClearColor(m_background_color[0], m_background_color[1],
+                 m_background_color[2], m_background_color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    this->drawGL();
+    draw_gl();
 
     glDisable(GL_SCISSOR_TEST);
-    glViewport(storedViewport[0], storedViewport[1],
-               storedViewport[2], storedViewport[3]);
-}
-
-void GLCanvas::save(Serializer &s) const {
-    Widget::save(s);
-    s.set("backgroundColor", mBackgroundColor);
-    s.set("drawBorder", mDrawBorder);
-}
-
-bool GLCanvas::load(Serializer &s) {
-    if (!Widget::load(s)) return false;
-    if (!s.get("backgroundColor", mBackgroundColor)) return false;
-    if (!s.get("drawBorder", mDrawBorder)) return false;
-    return true;
+    glViewport(stored_viewport[0], stored_viewport[1],
+               stored_viewport[2], stored_viewport[3]);
 }
 
 NAMESPACE_END(nanogui)

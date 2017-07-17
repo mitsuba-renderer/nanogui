@@ -1,15 +1,19 @@
 # NanoGUI
 
-[![Documentation Status](https://readthedocs.org/projects/nanogui/badge/?version=latest)](http://nanogui.readthedocs.org/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.org/wjakob/nanogui.svg?branch=master)](https://travis-ci.org/wjakob/nanogui)
-[![Build status](https://ci.appveyor.com/api/projects/status/m8h3uyvdb4ej2i02/branch/master?svg=true)](https://ci.appveyor.com/project/wjakob/nanogui/branch/master)
-
 NanoGUI is a minimalistic cross-platform widget library for OpenGL 3.x or higher.
 It supports automatic layout generation, stateful C++11 lambdas callbacks,
 a variety of useful widget types and Retina-capable rendering on Apple devices
 thanks to [NanoVG](https://github.com/memononen/NanoVG) by Mikko Mononen.
 Python bindings of all functionality are provided using
 [pybind11](https://github.com/wjakob/pybind11).
+
+**Note**: This repository contains an
+[Enoki](https://github.com/mitsuba-renderer/enoki)-compatible port of nanogui.
+In addition to the choice of vector library, the the repository here also
+adopts a different set of naming conventions for function and variable names
+that feels more natural in a mixed C++ & Python environment. (specifically,
+``underscore_case`` rather than ``camelCase``). The original repository is
+available [here](https://github.com/wjakob/nanogui).
 
 - [Documentation](https://nanogui.readthedocs.io)
 
@@ -19,7 +23,7 @@ Python bindings of all functionality are provided using
 ## Description
 NanoGUI builds on [GLFW](http://www.glfw.org/) for cross-platform OpenGL context
 creation and event handling, [GLAD](https://github.com/Dav1dde/glad) to use OpenGL
-3.x Windows, [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) for
+3.x Windows, [Enoki](https://github.com/mitsuba-renderer/enoki) for
 basic vector types, and [NanoVG](https://github.com/memononen/NanoVG) to draw
 2D primitives.
 
@@ -38,7 +42,7 @@ following two lines from the included example application add a new button to
 an existing window `window` and register an event callback.
 ```C++
 Button *b = new Button(window, "Plain button");
-b->setCallback([] { cout << "pushed!" << endl; });
+b->set_callback([] { cout << "pushed!" << endl; });
 ```
 
 The following lines from the example application create the coupled
@@ -46,22 +50,22 @@ slider and text box on the bottom of the second window (see the screenshot).
 ```C++
 /* Create an empty panel with a horizontal layout */
 Widget *panel = new Widget(window);
-panel->setLayout(new BoxLayout(BoxLayout::Horizontal, BoxLayout::Middle, 0, 20));
+panel->set_layout(new BoxLayout(BoxLayout::Horizontal, BoxLayout::Middle, 0, 20));
 
 /* Add a slider and set defaults */
 Slider *slider = new Slider(panel);
-slider->setValue(0.5f);
-slider->setFixedWidth(80);
+slider->set_value(0.5f);
+slider->set_fixed_width(80);
 
 /* Add a textbox and set defaults */
 TextBox *textBox = new TextBox(panel);
-textBox->setFixedSize(Vector2i(60, 25));
-textBox->setValue("50");
-textBox->setUnits("%");
+textBox->set_fixed_size(Vector2i(60, 25));
+textBox->set_value("50");
+textBox->set_units("%");
 
 /* Propagate slider changes to the text box */
-slider->setCallback([textBox](float value) {
-    textBox->setValue(std::to_string((int) (value * 100)));
+slider->set_callback([textBox](float value) {
+    textBox->set_value(std::to_string((int) (value * 100)));
 });
 ```
 
@@ -69,23 +73,23 @@ The Python version of this same piece of code looks like this:
 ```Python
 # Create an empty panel with a horizontal layout
 panel = Widget(window)
-panel.setLayout(BoxLayout(BoxLayout.Horizontal, BoxLayout.Middle, 0, 20))
+panel.set_layout(BoxLayout(BoxLayout.Horizontal, BoxLayout.Middle, 0, 20))
 
 # Add a slider and set defaults
 slider = Slider(panel)
-slider.setValue(0.5f)
-slider.setFixedWidth(80)
+slider.set_value(0.5f)
+slider.set_fixed_width(80)
 
 # Add a textbox and set defaults
 textBox = TextBox(panel)
-textBox.setFixedSize(Vector2i(60, 25))
-textBox.setValue("50")
-textBox.setUnits("%")
+textBox.set_fixed_size(Vector2i(60, 25))
+textBox.set_value("50")
+textBox.set_units("%")
 
 # Propagate slider changes to the text box
 def cb(value):
-    textBox.setValue("%i" % int(value * 100))
-slider.setCallback(cb)
+    textBox.set_value("%i" % int(value * 100))
+slider.set_callback(cb)
 ```
 
 ## "Simple mode"
@@ -102,26 +106,26 @@ application.
 /// dvar, bar, strvar, etc. are double/bool/string/.. variables
 
 FormHelper *gui = new FormHelper(screen);
-ref<Window> window = gui->addWindow(Eigen::Vector2i(10, 10), "Form helper example");
-gui->addGroup("Basic types");
-gui->addVariable("bool", bvar);
-gui->addVariable("string", strvar);
+ref<Window> window = gui->add_window(Vector2i(10, 10), "Form helper example");
+gui->add_group("Basic types");
+gui->add_variable("bool", bvar);
+gui->add_variable("string", strvar);
 
-gui->addGroup("Validating fields");
-gui->addVariable("int", ivar);
-gui->addVariable("float", fvar);
-gui->addVariable("double", dvar);
+gui->add_group("Validating fields");
+gui->add_variable("int", ivar);
+gui->add_variable("float", fvar);
+gui->add_variable("double", dvar);
 
-gui->addGroup("Complex types");
-gui->addVariable("Enumeration", enumval, enabled)
-   ->setItems({"Item 1", "Item 2", "Item 3"});
-gui->addVariable("Color", colval);
+gui->add_group("Complex types");
+gui->add_variable("Enumeration", enumval, enabled)
+   ->set_items({"Item 1", "Item 2", "Item 3"});
+gui->add_variable("Color", colval);
 
-gui->addGroup("Other widgets");
-gui->addButton("A button", [](){ std::cout << "Button pressed." << std::endl; });
+gui->add_group("Other widgets");
+gui->add_button("A button", [](){ std::cout << "Button pressed." << std::endl; });
 
-screen->setVisible(true);
-screen->performLayout();
+screen->set_visible(true);
+screen->perform_layout();
 window->center();
 ```
 

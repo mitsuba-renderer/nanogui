@@ -28,21 +28,18 @@ public:
     ColorWheel(Widget *parent, const Color& color = Color(1.0f, 0.0f, 0.0f, 1.0f));
 
     /// Set the change callback
-    std::function<void(const Color &)> callback() const                  { return mCallback;     }
-    void setCallback(const std::function<void(const Color &)> &callback) { mCallback = callback; }
+    std::function<void(const Color &)> callback() const                  { return m_callback;     }
+    void set_callback(const std::function<void(const Color &)> &callback) { m_callback = callback; }
 
     /// Get the current color
     Color color() const;
     /// Set the current color
-    void setColor(const Color& color);
+    void set_color(const Color& color);
 
-    virtual Vector2i preferredSize(NVGcontext *ctx) const override;
+    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual void draw(NVGcontext *ctx) override;
-    virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) override;
-    virtual bool mouseDragEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
-
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
+    virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
+    virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
 private:
     enum Region {
         None = 0,
@@ -52,16 +49,14 @@ private:
     };
 
     Color hue2rgb(float h) const;
-    Region adjustPosition(const Vector2i &p, Region consideredRegions = Both);
+    Region adjust_position(const Vector2i &p, Region considered_regions = Both);
 
 protected:
-    float mHue;
-    float mWhite;
-    float mBlack;
-    Region mDragRegion;
-    std::function<void(const Color &)> mCallback;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    float m_hue;
+    float m_white;
+    float m_black;
+    Region m_drag_region;
+    std::function<void(const Color &)> m_callback;
 };
 
 NAMESPACE_END(nanogui)

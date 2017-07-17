@@ -13,88 +13,74 @@
 #include <nanogui/entypo.h>
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
-#include <nanogui/serializer/core.h>
 
 NAMESPACE_BEGIN(nanogui)
 
-PopupButton::PopupButton(Widget *parent, const std::string &caption, int buttonIcon)
-    : Button(parent, caption, buttonIcon),
-      mChevronIcon(ENTYPO_ICON_CHEVRON_SMALL_RIGHT) {
+PopupButton::PopupButton(Widget *parent, const std::string &caption, int button_icon)
+    : Button(parent, caption, button_icon),
+      m_chevron_icon(ENTYPO_ICON_CHEVRON_SMALL_RIGHT) {
 
-    setFlags(Flags::ToggleButton | Flags::PopupButton);
+    set_flags(Flags::ToggleButton | Flags::PopupButton);
 
-    Window *parentWindow = window();
-    mPopup = new Popup(parentWindow->parent(), window());
-    mPopup->setSize(Vector2i(320, 250));
-    mPopup->setVisible(false);
+    Window *parent_window = window();
+    m_popup = new Popup(parent_window->parent(), window());
+    m_popup->set_size(Vector2i(320, 250));
+    m_popup->set_visible(false);
 }
 
-Vector2i PopupButton::preferredSize(NVGcontext *ctx) const {
-    return Button::preferredSize(ctx) + Vector2i(15, 0);
+Vector2i PopupButton::preferred_size(NVGcontext *ctx) const {
+    return Button::preferred_size(ctx) + Vector2i(15, 0);
 }
 
 void PopupButton::draw(NVGcontext* ctx) {
-    if (!mEnabled && mPushed)
-        mPushed = false;
+    if (!m_enabled && m_pushed)
+        m_pushed = false;
 
-    mPopup->setVisible(mPushed);
+    m_popup->set_visible(m_pushed);
     Button::draw(ctx);
 
-    if (mChevronIcon) {
-        auto icon = utf8(mChevronIcon);
-        NVGcolor textColor =
-            mTextColor.w() == 0 ? mTheme->mTextColor : mTextColor;
+    if (m_chevron_icon) {
+        auto icon = utf8(m_chevron_icon);
+        NVGcolor text_color =
+            m_text_color.w() == 0 ? m_theme->m_text_color : m_text_color;
 
-        nvgFontSize(ctx, (mFontSize < 0 ? mTheme->mButtonFontSize : mFontSize) * 1.5f);
+        nvgFontSize(ctx, (m_font_size < 0 ? m_theme->m_button_font_size : m_font_size) * 1.5f);
         nvgFontFace(ctx, "icons");
-        nvgFillColor(ctx, mEnabled ? textColor : mTheme->mDisabledTextColor);
+        nvgFillColor(ctx, m_enabled ? text_color : m_theme->m_disabled_text_color);
         nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 
         float iw = nvgTextBounds(ctx, 0, 0, icon.data(), nullptr, nullptr);
-        Vector2f iconPos(0, mPos.y() + mSize.y() * 0.5f - 1);
+        Vector2f icon_pos(0, m_pos.y() + m_size.y() * 0.5f - 1);
 
-        if (mPopup->side() == Popup::Right)
-            iconPos[0] = mPos.x() + mSize.x() - iw - 8;
+        if (m_popup->side() == Popup::Right)
+            icon_pos[0] = m_pos.x() + m_size.x() - iw - 8;
         else
-            iconPos[0] = mPos.x() + 8;
+            icon_pos[0] = m_pos.x() + 8;
 
-        nvgText(ctx, iconPos.x(), iconPos.y(), icon.data(), nullptr);
+        nvgText(ctx, icon_pos.x(), icon_pos.y(), icon.data(), nullptr);
     }
 }
 
-void PopupButton::performLayout(NVGcontext *ctx) {
-    Widget::performLayout(ctx);
+void PopupButton::perform_layout(NVGcontext *ctx) {
+    Widget::perform_layout(ctx);
 
-    const Window *parentWindow = window();
+    const Window *parent_window = window();
 
-    int posY = absolutePosition().y() - parentWindow->position().y() + mSize.y() /2;
-    if (mPopup->side() == Popup::Right)
-        mPopup->setAnchorPos(Vector2i(parentWindow->width() + 15, posY));
+    int pos_y = absolute_position().y() - parent_window->position().y() + m_size.y() /2;
+    if (m_popup->side() == Popup::Right)
+        m_popup->set_anchor_pos(Vector2i(parent_window->width() + 15, pos_y));
     else
-        mPopup->setAnchorPos(Vector2i(0 - 15, posY));
+        m_popup->set_anchor_pos(Vector2i(0 - 15, pos_y));
 }
 
-void PopupButton::setSide(Popup::Side side) {
-    if (mPopup->side() == Popup::Right &&
-        mChevronIcon == ENTYPO_ICON_CHEVRON_SMALL_RIGHT)
-        setChevronIcon(ENTYPO_ICON_CHEVRON_SMALL_LEFT);
-    else if (mPopup->side() == Popup::Left &&
-             mChevronIcon == ENTYPO_ICON_CHEVRON_SMALL_LEFT)
-        setChevronIcon(ENTYPO_ICON_CHEVRON_SMALL_RIGHT);
-    mPopup->setSide(side);
-}
-
-void PopupButton::save(Serializer &s) const {
-    Button::save(s);
-    s.set("chevronIcon", mChevronIcon);
-}
-
-bool PopupButton::load(Serializer &s) {
-    if (!Button::load(s))
-        return false;
-    if (!s.get("chevronIcon", mChevronIcon))
-        return false;
-    return true;
+void PopupButton::set_side(Popup::Side side) {
+    if (m_popup->side() == Popup::Right &&
+        m_chevron_icon == ENTYPO_ICON_CHEVRON_SMALL_RIGHT)
+        set_chevron_icon(ENTYPO_ICON_CHEVRON_SMALL_LEFT);
+    else if (m_popup->side() == Popup::Left &&
+             m_chevron_icon == ENTYPO_ICON_CHEVRON_SMALL_LEFT)
+        set_chevron_icon(ENTYPO_ICON_CHEVRON_SMALL_RIGHT);
+    m_popup->set_side(side);
 }
 
 NAMESPACE_END(nanogui)

@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8.12)
 
-project("NanoGUI")
+project(nanogui)
 
 if (POLICY CMP0058)
   cmake_policy(SET CMP0058 NEW)
@@ -26,6 +26,13 @@ option(NANOGUI_INSTALL       "Install NanoGUI on `make install`?" ON)
 
 set(NANOGUI_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling the Python plugin")
 
+# Allow overriding the pybind11 and Enoki version used to compile NanoGUI
+set(NANOGUI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11"
+    CACHE STRING "Path containing the 'pybind11' library used to compile nanogui.")
+set(NANOGUI_ENOKI_DIR    "${CMAKE_CURRENT_SOURCE_DIR}/ext/enoki"
+    CACHE STRING "Path containing the 'enoki' library used to compile nanogui.")
+mark_as_advanced(NANOGUI_PYBIND11_DIR NANOGUI_ENOKI_DIR)
+
 # Required libraries, flags, and include files for compiling and linking against nanogui (all targets)
 set(NANOGUI_EXTRA_LIBS "")
 set(NANOGUI_EXTRA_DEFS "")
@@ -35,14 +42,19 @@ set(NANOGUI_EXTRA_INCS "")
 set(LIBNANOGUI_EXTRA_SOURCE "")
 set(LIBNANOGUI_PYTHON_EXTRA_SOURCE "")
 
-if(APPLE AND NANOGUI_BUILD_SHARED)
+if (APPLE AND NANOGUI_BUILD_SHARED)
   set(CMAKE_MACOSX_RPATH ON)
+endif()
+
+set(NANOGUI_MASTER_PROJECT OFF)
+if (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+  set(NANOGUI_MASTER_PROJECT ON)
 endif()
 
 include(CheckCXXCompilerFlag)
 include(CheckCXXSourceRuns)
 
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Release' as none was specified.")
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
@@ -73,7 +85,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated-declarations")
 endif()
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw" "ext_build/glfw")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw"  "ext_build/glfw")
+add_subdirectory("${NANOGUI_ENOKI_DIR}" "ext_build/enoki")
+
+enoki_set_compile_flags()
+enoki_set_native_flags()
 
 # Python support: add NANOGUI_PYTHON flag to all targets
 if (NANOGUI_BUILD_PYTHON)
@@ -91,18 +107,11 @@ if (MSVC)
 
   # Parallel build on MSVC (all targets)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-
-  if (NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
-
-    # Disable Eigen vectorization for Windows 32 bit builds (issues with unaligned access segfaults)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DNANOGUI_EIGEN_DONT_ALIGN")
-  endif()
 endif()
 
 # Compile with compiler warnings turned on
-if(MSVC)
-  if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+if (MSVC)
+  if (CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
     string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
@@ -179,7 +188,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
     CHECK_CXX_COMPILER_AND_LINKER_FLAGS(HAS_LIBCPPABI "-stdlib=libc++" "-stdlib=libc++ -lc++abi")
-    if(HAS_LIBCPPABI)
+    if (HAS_LIBCPPABI)
       set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++abi")
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++abi")
       message(STATUS "NanoGUI: using libc++ and libc++abi.")
@@ -209,17 +218,13 @@ endif()
 list(APPEND NANOGUI_EXTRA_INCS
   "${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/include"
   "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg/src"
+  "${NANOGUI_ENOKI_DIR}/include"
 )
-
-if (NOT NANOGUI_EIGEN_INCLUDE_DIR)
-  set(NANOGUI_EIGEN_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/eigen")
-  list(APPEND NANOGUI_EXTRA_INCS "${NANOGUI_EIGEN_INCLUDE_DIR}")
-endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "BSD")
   include_directories(/usr/local/include)
   link_directories(/usr/local/lib)
-  if(${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD")
+  if (${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD")
     include_directories(/usr/X11R6/include/)
     link_directories(/usr/X11R6/lib)
   endif()
@@ -235,18 +240,23 @@ elseif (APPLE)
   find_library(iokit_library IOKit)
   list(APPEND NANOGUI_EXTRA_LIBS ${cocoa_library} ${opengl_library} ${corevideo_library} ${iokit_library})
   list(APPEND LIBNANOGUI_EXTRA_SOURCE src/darwin.mm)
-elseif(CMAKE_SYSTEM MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "BSD")
+elseif (CMAKE_SYSTEM MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "BSD")
   list(APPEND NANOGUI_EXTRA_LIBS GL Xxf86vm Xrandr Xinerama Xcursor Xi X11 pthread )
   if (NOT CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
     list(APPEND NANOGUI_EXTRA_LIBS rt)
   endif()
-  if(CMAKE_SYSTEM MATCHES "Linux")
+  if (CMAKE_SYSTEM MATCHES "Linux")
     list(APPEND NANOGUI_EXTRA_LIBS dl)
   endif()
 endif()
 
-include_directories(${NANOGUI_EIGEN_INCLUDE_DIR} ext/glfw/include ext/nanovg/src include ${CMAKE_CURRENT_BINARY_DIR})
-
+include_directories(
+  ${NANOGUI_ENOKI_DIR}/include
+  ext/glfw/include
+  ext/nanovg/src
+  include
+  ${CMAKE_CURRENT_BINARY_DIR}
+)
 
 # Run simple cmake converter to put font files into the data segment
 
@@ -330,10 +340,6 @@ add_library(nanogui-obj OBJECT
   include/nanogui/toolbutton.h
   include/nanogui/opengl.h
   include/nanogui/nanogui.h
-  include/nanogui/serializer/core.h
-  include/nanogui/serializer/opengl.h
-  include/nanogui/serializer/sparse.h
-  src/serializer.cpp
 )
 
 add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
@@ -405,8 +411,6 @@ if(NANOGUI_BUILD_EXAMPLE)
 endif()
 
 if (NANOGUI_BUILD_PYTHON)
-  # Detect Python
-
   # Try to autodetect Python (can be overridden manually if needed)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11/tools")
   set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
@@ -425,11 +429,12 @@ if (NANOGUI_BUILD_PYTHON)
   set_target_properties(nanogui-obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
   set_target_properties(glfw_objects PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-  include_directories("ext/pybind11/include" ${PYTHON_INCLUDE_DIR})
+  include_directories("${NANOGUI_PYBIND11_DIR}/include" ${PYTHON_INCLUDE_DIR})
+
   add_library(nanogui-python-obj OBJECT
     python/main.cpp
     python/constants.cpp
-    python/eigen.cpp
+    python/color.cpp
     python/widget.cpp
     python/layout.cpp
     python/basics.cpp
@@ -507,8 +512,7 @@ if (NANOGUI_BUILD_PYTHON)
   endif()
 endif()
 
-get_directory_property(NANOGUI_HAS_PARENT PARENT_DIRECTORY)
-if(NANOGUI_HAS_PARENT)
+if (NOT NANOGUI_MASTER_PROJECT)
   # This project is included from somewhere else. Export NANOGUI_EXTRA_LIBS variable
   set(NANOGUI_EXTRA_LIBS ${NANOGUI_EXTRA_LIBS} PARENT_SCOPE)
   set(NANOGUI_EXTRA_DEFS ${NANOGUI_EXTRA_DEFS} PARENT_SCOPE)
@@ -528,12 +532,11 @@ else()
     list(APPEND MKDOC_CXX_FLAGS_LIST -D${value})
   endforeach()
 
-  add_custom_target(mkdoc COMMAND
+  add_custom_target(mkdoc USES_TERMINAL COMMAND
     python3 ${PROJECT_SOURCE_DIR}/docs/mkdoc_rst.py
       ${MKDOC_CXX_FLAGS_LIST}
       ${PROJECT_SOURCE_DIR}/include/nanogui/*.h
       > ${CMAKE_CURRENT_SOURCE_DIR}/python/py_doc.h)
-
 endif()
 
 # vim: set et ts=2 sw=2 ft=cmake nospell:

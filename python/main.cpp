@@ -110,8 +110,8 @@ static void sigint_handler(int sig) {
 }
 #endif
 
-PYBIND11_PLUGIN(nanogui) {
-    py::module m("nanogui", "NanoGUI plugin");
+PYBIND11_MODULE(nanogui, m) {
+    m.attr("__doc__") = "NanoGUI plugin";
 
     py::class_<MainloopHandle>(m, "MainloopHandle")
         .def("join", &MainloopHandle::join);
@@ -119,7 +119,7 @@ PYBIND11_PLUGIN(nanogui) {
     m.def("init", &nanogui::init, D(init));
     m.def("shutdown", &nanogui::shutdown, D(shutdown));
     m.def("mainloop", [](int refresh, py::object detach) -> MainloopHandle* {
-        if (detach != py::none()) {
+        if (!detach.is(py::none())) {
             if (handle)
                 throw std::runtime_error("Main loop is already running!");
 
@@ -202,7 +202,7 @@ PYBIND11_PLUGIN(nanogui) {
 
             return nullptr;
         }
-    }, py::arg("refresh") = 50, py::arg("detach") = py::none(),
+    }, "refresh"_a = 50, "detach"_a = py::none(),
        D(mainloop), py::keep_alive<0, 2>());
 
     m.def("leave", &nanogui::leave, D(leave));
@@ -212,7 +212,7 @@ PYBIND11_PLUGIN(nanogui) {
         m.def("chdir_to_bundle_parent", &nanogui::chdir_to_bundle_parent);
     #endif
     m.def("utf8", [](int c) { return std::string(utf8(c).data()); }, D(utf8));
-    m.def("loadImageDirectory", &nanogui::loadImageDirectory, D(loadImageDirectory));
+    m.def("load_image_directory", &nanogui::load_image_directory, D(load_image_directory));
 
     py::enum_<Cursor>(m, "Cursor", D(Cursor))
         .value("Arrow", Cursor::Arrow)
@@ -245,8 +245,6 @@ PYBIND11_PLUGIN(nanogui) {
     register_misc(m);
     register_glutil(m);
     register_nanovg(m);
-
-    return m.ptr();
 }
 
 #endif

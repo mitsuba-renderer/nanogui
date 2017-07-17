@@ -15,158 +15,157 @@
 #include <nanogui/window.h>
 #include <nanogui/opengl.h>
 #include <nanogui/screen.h>
-#include <nanogui/serializer/core.h>
 
 NAMESPACE_BEGIN(nanogui)
 
 Widget::Widget(Widget *parent)
-    : mParent(nullptr), mTheme(nullptr), mLayout(nullptr),
-      mPos(Vector2i::Zero()), mSize(Vector2i::Zero()),
-      mFixedSize(Vector2i::Zero()), mVisible(true), mEnabled(true),
-      mFocused(false), mMouseFocus(false), mTooltip(""), mFontSize(-1.0f),
-      mCursor(Cursor::Arrow) {
+    : m_parent(nullptr), m_theme(nullptr), m_layout(nullptr),
+      m_pos(0), m_size(0), m_fixed_size(0), m_visible(true), m_enabled(true),
+      m_focused(false), m_mouse_focus(false), m_tooltip(""), m_font_size(-1.0f),
+      m_cursor(Cursor::Arrow) {
     if (parent)
-        parent->addChild(this);
+        parent->add_child(this);
 }
 
 Widget::~Widget() {
-    for (auto child : mChildren) {
+    for (auto child : m_children) {
         if (child)
-            child->decRef();
+            child->dec_ref();
     }
 }
 
-void Widget::setTheme(Theme *theme) {
-    if (mTheme.get() == theme)
+void Widget::set_theme(Theme *theme) {
+    if (m_theme.get() == theme)
         return;
-    mTheme = theme;
-    for (auto child : mChildren)
-        child->setTheme(theme);
+    m_theme = theme;
+    for (auto child : m_children)
+        child->set_theme(theme);
 }
 
-int Widget::fontSize() const {
-    return (mFontSize < 0 && mTheme) ? mTheme->mStandardFontSize : mFontSize;
+int Widget::font_size() const {
+    return (m_font_size < 0 && m_theme) ? m_theme->m_standard_font_size : m_font_size;
 }
 
-Vector2i Widget::preferredSize(NVGcontext *ctx) const {
-    if (mLayout)
-        return mLayout->preferredSize(ctx, this);
+Vector2i Widget::preferred_size(NVGcontext *ctx) const {
+    if (m_layout)
+        return m_layout->preferred_size(ctx, this);
     else
-        return mSize;
+        return m_size;
 }
 
-void Widget::performLayout(NVGcontext *ctx) {
-    if (mLayout) {
-        mLayout->performLayout(ctx, this);
+void Widget::perform_layout(NVGcontext *ctx) {
+    if (m_layout) {
+        m_layout->perform_layout(ctx, this);
     } else {
-        for (auto c : mChildren) {
-            Vector2i pref = c->preferredSize(ctx), fix = c->fixedSize();
-            c->setSize(Vector2i(
+        for (auto c : m_children) {
+            Vector2i pref = c->preferred_size(ctx), fix = c->fixed_size();
+            c->set_size(Vector2i(
                 fix[0] ? fix[0] : pref[0],
                 fix[1] ? fix[1] : pref[1]
             ));
-            c->performLayout(ctx);
+            c->perform_layout(ctx);
         }
     }
 }
 
-Widget *Widget::findWidget(const Vector2i &p) {
-    for (auto it = mChildren.rbegin(); it != mChildren.rend(); ++it) {
+Widget *Widget::find_widget(const Vector2i &p) {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
         Widget *child = *it;
-        if (child->visible() && child->contains(p - mPos))
-            return child->findWidget(p - mPos);
+        if (child->visible() && child->contains(p - m_pos))
+            return child->find_widget(p - m_pos);
     }
     return contains(p) ? this : nullptr;
 }
 
-bool Widget::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {
-    for (auto it = mChildren.rbegin(); it != mChildren.rend(); ++it) {
+bool Widget::mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
         Widget *child = *it;
-        if (child->visible() && child->contains(p - mPos) &&
-            child->mouseButtonEvent(p - mPos, button, down, modifiers))
+        if (child->visible() && child->contains(p - m_pos) &&
+            child->mouse_button_event(p - m_pos, button, down, modifiers))
             return true;
     }
-    if (button == GLFW_MOUSE_BUTTON_1 && down && !mFocused)
-        requestFocus();
+    if (button == GLFW_MOUSE_BUTTON_1 && down && !m_focused)
+        request_focus();
     return false;
 }
 
-bool Widget::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) {
-    for (auto it = mChildren.rbegin(); it != mChildren.rend(); ++it) {
-        Widget *child = *it;
-        if (!child->visible())
-            continue;
-        bool contained = child->contains(p - mPos), prevContained = child->contains(p - mPos - rel);
-        if (contained != prevContained)
-            child->mouseEnterEvent(p, contained);
-        if ((contained || prevContained) &&
-            child->mouseMotionEvent(p - mPos, rel, button, modifiers))
-            return true;
-    }
-    return false;
-}
-
-bool Widget::scrollEvent(const Vector2i &p, const Vector2f &rel) {
-    for (auto it = mChildren.rbegin(); it != mChildren.rend(); ++it) {
+bool Widget::mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
         Widget *child = *it;
         if (!child->visible())
             continue;
-        if (child->contains(p - mPos) && child->scrollEvent(p - mPos, rel))
+        bool contained = child->contains(p - m_pos), prev_contained = child->contains(p - m_pos - rel);
+        if (contained != prev_contained)
+            child->mouse_enter_event(p, contained);
+        if ((contained || prev_contained) &&
+            child->mouse_motion_event(p - m_pos, rel, button, modifiers))
             return true;
     }
     return false;
 }
 
-bool Widget::mouseDragEvent(const Vector2i &, const Vector2i &, int, int) {
+bool Widget::scroll_event(const Vector2i &p, const Vector2f &rel) {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
+        Widget *child = *it;
+        if (!child->visible())
+            continue;
+        if (child->contains(p - m_pos) && child->scroll_event(p - m_pos, rel))
+            return true;
+    }
     return false;
 }
 
-bool Widget::mouseEnterEvent(const Vector2i &, bool enter) {
-    mMouseFocus = enter;
+bool Widget::mouse_drag_event(const Vector2i &, const Vector2i &, int, int) {
     return false;
 }
 
-bool Widget::focusEvent(bool focused) {
-    mFocused = focused;
+bool Widget::mouse_enter_event(const Vector2i &, bool enter) {
+    m_mouse_focus = enter;
     return false;
 }
 
-bool Widget::keyboardEvent(int, int, int, int) {
+bool Widget::focus_event(bool focused) {
+    m_focused = focused;
     return false;
 }
 
-bool Widget::keyboardCharacterEvent(unsigned int) {
+bool Widget::keyboard_event(int, int, int, int) {
     return false;
 }
 
-void Widget::addChild(int index, Widget * widget) {
-    assert(index <= childCount());
-    mChildren.insert(mChildren.begin() + index, widget);
-    widget->incRef();
-    widget->setParent(this);
-    widget->setTheme(mTheme);
+bool Widget::keyboard_character_event(unsigned int) {
+    return false;
 }
 
-void Widget::addChild(Widget * widget) {
-    addChild(childCount(), widget);
+void Widget::add_child(int index, Widget * widget) {
+    assert(index <= child_count());
+    m_children.insert(m_children.begin() + index, widget);
+    widget->inc_ref();
+    widget->set_parent(this);
+    widget->set_theme(m_theme);
 }
 
-void Widget::removeChild(const Widget *widget) {
-    mChildren.erase(std::remove(mChildren.begin(), mChildren.end(), widget), mChildren.end());
-    widget->decRef();
+void Widget::add_child(Widget * widget) {
+    add_child(child_count(), widget);
 }
 
-void Widget::removeChild(int index) {
-    Widget *widget = mChildren[index];
-    mChildren.erase(mChildren.begin() + index);
-    widget->decRef();
+void Widget::remove_child(const Widget *widget) {
+    m_children.erase(std::remove(m_children.begin(), m_children.end(), widget),
+                     m_children.end());
+    widget->dec_ref();
 }
 
-int Widget::childIndex(Widget *widget) const {
-    auto it = std::find(mChildren.begin(), mChildren.end(), widget);
-    if (it == mChildren.end())
+void Widget::remove_child(int index) {
+    Widget *widget = m_children[index];
+    m_children.erase(m_children.begin() + index);
+    widget->dec_ref();
+}
+
+int Widget::child_index(Widget *widget) const {
+    auto it = std::find(m_children.begin(), m_children.end(), widget);
+    if (it == m_children.end())
         return -1;
-    return it - mChildren.begin();
+    return it - m_children.begin();
 }
 
 Window *Widget::window() {
@@ -182,61 +181,36 @@ Window *Widget::window() {
     }
 }
 
-void Widget::requestFocus() {
+void Widget::request_focus() {
     Widget *widget = this;
     while (widget->parent())
         widget = widget->parent();
-    ((Screen *) widget)->updateFocus(this);
+    ((Screen *) widget)->update_focus(this);
 }
 
 void Widget::draw(NVGcontext *ctx) {
     #if NANOGUI_SHOW_WIDGET_BOUNDS
         nvgStrokeWidth(ctx, 1.0f);
         nvgBeginPath(ctx);
-        nvgRect(ctx, mPos.x() - 0.5f, mPos.y() - 0.5f, mSize.x() + 1, mSize.y() + 1);
+        nvgRect(ctx, m_pos.x() - 0.5f, m_pos.y() - 0.5f, m_size.x() + 1, m_size.y() + 1);
         nvgStrokeColor(ctx, nvgRGBA(255, 0, 0, 255));
         nvgStroke(ctx);
     #endif
 
-    if (mChildren.empty())
+    if (m_children.empty())
         return;
 
     nvgSave(ctx);
-    nvgTranslate(ctx, mPos.x(), mPos.y());
-    for (auto child : mChildren) {
+    nvgTranslate(ctx, m_pos.x(), m_pos.y());
+    for (auto child : m_children) {
         if (child->visible()) {
             nvgSave(ctx);
-            nvgIntersectScissor(ctx, child->mPos.x(), child->mPos.y(), child->mSize.x(), child->mSize.y());
+            nvgIntersectScissor(ctx, child->m_pos.x(), child->m_pos.y(), child->m_size.x(), child->m_size.y());
             child->draw(ctx);
             nvgRestore(ctx);
         }
     }
     nvgRestore(ctx);
-}
-
-void Widget::save(Serializer &s) const {
-    s.set("position", mPos);
-    s.set("size", mSize);
-    s.set("fixedSize", mFixedSize);
-    s.set("visible", mVisible);
-    s.set("enabled", mEnabled);
-    s.set("focused", mFocused);
-    s.set("tooltip", mTooltip);
-    s.set("fontSize", mFontSize);
-    s.set("cursor", (int) mCursor);
-}
-
-bool Widget::load(Serializer &s) {
-    if (!s.get("position", mPos)) return false;
-    if (!s.get("size", mSize)) return false;
-    if (!s.get("fixedSize", mFixedSize)) return false;
-    if (!s.get("visible", mVisible)) return false;
-    if (!s.get("enabled", mEnabled)) return false;
-    if (!s.get("focused", mFocused)) return false;
-    if (!s.get("tooltip", mTooltip)) return false;
-    if (!s.get("fontSize", mFontSize)) return false;
-    if (!s.get("cursor", mCursor)) return false;
-    return true;
 }
 
 NAMESPACE_END(nanogui)

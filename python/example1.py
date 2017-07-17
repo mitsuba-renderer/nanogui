@@ -29,38 +29,38 @@ class TestApp(Screen):
         super(TestApp, self).__init__((1024, 768), "NanoGUI Test")
 
         window = Window(self, "Button demo")
-        window.setPosition((15, 15))
-        window.setLayout(GroupLayout())
+        window.set_position((15, 15))
+        window.set_layout(GroupLayout())
 
         Label(window, "Push buttons", "sans-bold")
         b = Button(window, "Plain button")
 
         def cb():
             print("pushed!")
-        b.setCallback(cb)
+        b.set_callback(cb)
 
         b = Button(window, "Styled", entypo.ICON_ROCKET)
-        b.setBackgroundColor(Color(0, 0, 1.0, 0.1))
-        b.setCallback(cb)
+        b.set_background_color(Color(0, 0, 1.0, 0.1))
+        b.set_callback(cb)
 
         Label(window, "Toggle buttons", "sans-bold")
         b = Button(window, "Toggle me")
-        b.setFlags(Button.Flags.ToggleButton)
+        b.set_flags(Button.Flags.ToggleButton)
 
         def change_cb(state):
             print("Toggle button state: %s" % str(state))
-        b.setChangeCallback(change_cb)
+        b.set_change_callback(change_cb)
 
         Label(window, "Radio buttons", "sans-bold")
         b = Button(window, "Radio button 1")
-        b.setFlags(Button.Flags.RadioButton)
+        b.set_flags(Button.Flags.RadioButton)
         b = Button(window, "Radio button 2")
-        b.setFlags(Button.Flags.RadioButton)
+        b.set_flags(Button.Flags.RadioButton)
 
         Label(window, "A tool palette", "sans-bold")
         tools = Widget(window)
-        tools.setLayout(BoxLayout(Orientation.Horizontal,
-                                  Alignment.Middle, 0, 6))
+        tools.set_layout(BoxLayout(Orientation.Horizontal,
+                                   Alignment.Middle, 0, 6))
 
         ToolButton(tools, entypo.ICON_CLOUD)
         ToolButton(tools, entypo.ICON_FF)
@@ -68,24 +68,24 @@ class TestApp(Screen):
         ToolButton(tools, entypo.ICON_INSTALL)
 
         Label(window, "Popup buttons", "sans-bold")
-        popupBtn = PopupButton(window, "Popup", entypo.ICON_EXPORT)
-        popup = popupBtn.popup()
-        popup.setLayout(GroupLayout())
+        popup_btn = PopupButton(window, "Popup", entypo.ICON_EXPORT)
+        popup = popup_btn.popup()
+        popup.set_layout(GroupLayout())
         Label(popup, "Arbitrary widgets can be placed here")
         CheckBox(popup, "A check box")
-        popupBtn = PopupButton(popup, "Recursive popup", entypo.ICON_FLASH)
-        popup = popupBtn.popup()
-        popup.setLayout(GroupLayout())
+        popup_btn = PopupButton(popup, "Recursive popup", entypo.ICON_FLASH)
+        popup = popup_btn.popup()
+        popup.set_layout(GroupLayout())
         CheckBox(popup, "Another check box")
 
         window = Window(self, "Basic widgets")
-        window.setPosition((200, 15))
-        window.setLayout(GroupLayout())
+        window.set_position((200, 15))
+        window.set_layout(GroupLayout())
 
         Label(window, "Message dialog", "sans-bold")
         tools = Widget(window)
-        tools.setLayout(BoxLayout(Orientation.Horizontal,
-                                  Alignment.Middle, 0, 6))
+        tools.set_layout(BoxLayout(Orientation.Horizontal,
+                                   Alignment.Middle, 0, 6))
 
         def cb2(result):
             print("Dialog result: %i" % result)
@@ -95,16 +95,16 @@ class TestApp(Screen):
         def cb():
             dlg = MessageDialog(self, MessageDialog.Type.Information, "Title",
                                 "This is an information message")
-            dlg.setCallback(cb2)
-        b.setCallback(cb)
+            dlg.set_callback(cb2)
+        b.set_callback(cb)
 
         b = Button(tools, "Warn")
 
         def cb():
             dlg = MessageDialog(self, MessageDialog.Type.Warning, "Title",
                                 "This is a warning message")
-            dlg.setCallback(cb2)
-        b.setCallback(cb)
+            dlg.set_callback(cb2)
+        b.set_callback(cb)
 
         b = Button(tools, "Ask")
 
@@ -112,47 +112,47 @@ class TestApp(Screen):
             dlg = MessageDialog(self, MessageDialog.Type.Warning, "Title",
                                 "This is a question message", "Yes", "No",
                                 True)
-            dlg.setCallback(cb2)
-        b.setCallback(cb)
+            dlg.set_callback(cb2)
+        b.set_callback(cb)
 
         import os
         import sys
         os.chdir(sys.path[0])
         try:
-            icons = nanogui.loadImageDirectory(self.nvgContext(), "icons")
+            icons = nanogui.load_image_directory(self.nvg_context(), "icons")
         except:
             try:
-                icons = nanogui.loadImageDirectory(self.nvgContext(), "../icons")
+                icons = nanogui.load_image_directory(self.nvg_context(), "../icons")
             except:
-                icons = nanogui.loadImageDirectory(self.nvgContext(), "../resources/icons")
+                icons = nanogui.load_image_directory(self.nvg_context(), "../resources/icons")
 
 
         Label(window, "Image panel & scroll panel", "sans-bold")
-        imagePanelBtn = PopupButton(window, "Image Panel")
-        imagePanelBtn.setIcon(entypo.ICON_FOLDER)
-        popup = imagePanelBtn.popup()
+        image_panel_btn = PopupButton(window, "Image Panel")
+        image_panel_btn.set_icon(entypo.ICON_FOLDER)
+        popup = image_panel_btn.popup()
         vscroll = VScrollPanel(popup)
-        imgPanel = ImagePanel(vscroll)
-        imgPanel.setImages(icons)
-        popup.setFixedSize((245, 150))
+        img_panel = ImagePanel(vscroll)
+        img_panel.set_images(icons)
+        popup.set_fixed_size((245, 150))
 
         img_window = Window(self, "Selected image")
-        img_window.setPosition((710, 15))
-        img_window.setLayout(GroupLayout())
+        img_window.set_position((710, 15))
+        img_window.set_layout(GroupLayout())
 
-        imgView = ImageView(img_window, icons[0][0])
+        img_view = ImageView(img_window, icons[0][0])
 
         def cb(i):
             print("Selected item %i" % i)
-            imgView.bindImage(icons[i][0])
-        imgPanel.setCallback(cb)
+            img_view.bind_image(icons[i][0])
+        img_panel.set_callback(cb)
 
-        imgView.setGridThreshold(3)
+        img_view.set_grid_threshold(3)
 
         Label(window, "File dialog", "sans-bold")
         tools = Widget(window)
-        tools.setLayout(BoxLayout(Orientation.Horizontal,
-                                  Alignment.Middle, 0, 6))
+        tools.set_layout(BoxLayout(Orientation.Horizontal,
+                                   Alignment.Middle, 0, 6))
         b = Button(tools, "Open")
         valid = [("png", "Portable Network Graphics"), ("txt", "Text file")]
 
@@ -160,14 +160,14 @@ class TestApp(Screen):
             result = nanogui.file_dialog(valid, False)
             print("File dialog result = %s" % result)
 
-        b.setCallback(cb)
+        b.set_callback(cb)
         b = Button(tools, "Save")
 
         def cb():
             result = nanogui.file_dialog(valid, True)
             print("File dialog result = %s" % result)
 
-        b.setCallback(cb)
+        b.set_callback(cb)
 
         Label(window, "Combo box", "sans-bold")
         ComboBox(window, ["Combo box item 1", "Combo box item 2",
@@ -177,7 +177,7 @@ class TestApp(Screen):
         def cb(state):
             print("Check box 1 state: %s" % state)
         chb = CheckBox(window, "Flag 1", cb)
-        chb.setChecked(True)
+        chb.set_checked(True)
 
         def cb(state):
             print("Check box 2 state: %s" % state)
@@ -189,123 +189,123 @@ class TestApp(Screen):
         Label(window, "Slider and text box", "sans-bold")
 
         panel = Widget(window)
-        panel.setLayout(BoxLayout(Orientation.Horizontal,
-                                  Alignment.Middle, 0, 20))
+        panel.set_layout(BoxLayout(Orientation.Horizontal,
+                                   Alignment.Middle, 0, 20))
 
         slider = Slider(panel)
-        slider.setValue(0.5)
-        slider.setFixedWidth(80)
+        slider.set_value(0.5)
+        slider.set_fixed_width(80)
 
-        textBox = TextBox(panel)
-        textBox.setFixedSize((60, 25))
-        textBox.setValue("50")
-        textBox.setUnits("%")
-        textBox.setFontSize(20)
-        textBox.setAlignment(TextBox.Alignment.Right)
+        text_box = TextBox(panel)
+        text_box.set_fixed_size((60, 25))
+        text_box.set_value("50")
+        text_box.set_units("%")
+        text_box.set_font_size(20)
+        text_box.set_alignment(TextBox.Alignment.Right)
 
         def cb(value):
-            textBox.setValue("%i" % int(value * 100))
-        slider.setCallback(cb)
+            text_box.set_value("%i" % int(value * 100))
+        slider.set_callback(cb)
 
         def cb(value):
             print("Final slider value: %i" % int(value * 100))
-        slider.setFinalCallback(cb)
+        slider.set_final_callback(cb)
 
         window = Window(self, "Misc. widgets")
-        window.setPosition((425, 15))
-        window.setLayout(GroupLayout())
+        window.set_position((425, 15))
+        window.set_layout(GroupLayout())
 
-        tabWidget = TabWidget(window)
-        layer = tabWidget.createTab("Color Wheel")
-        layer.setLayout(GroupLayout())
+        tab_widget = TabWidget(window)
+        layer = tab_widget.create_tab("Color Wheel")
+        layer.set_layout(GroupLayout())
 
         Label(layer, "Color wheel widget", "sans-bold")
         ColorWheel(layer)
 
-        layer = tabWidget.createTab("Function Graph")
-        layer.setLayout(GroupLayout())
+        layer = tab_widget.create_tab("Function Graph")
+        layer.set_layout(GroupLayout())
         Label(layer, "Function graph widget", "sans-bold")
 
         graph = Graph(layer, "Some function")
-        graph.setHeader("E = 2.35e-3")
-        graph.setFooter("Iteration 89")
+        graph.set_header("E = 2.35e-3")
+        graph.set_footer("Iteration 89")
         values = [0.5 * (0.5 * math.sin(i / 10.0) +
                          0.5 * math.cos(i / 23.0) + 1)
                   for i in range(100)]
-        graph.setValues(values)
-        tabWidget.setActiveTab(0)
+        graph.set_values(values)
+        tab_widget.set_active_tab(0)
 
         window = Window(self, "Grid of small widgets")
-        window.setPosition((425, 300))
+        window.set_position((425, 300))
         layout = GridLayout(Orientation.Horizontal, 2,
                             Alignment.Middle, 15, 5)
-        layout.setColAlignment(
+        layout.set_col_alignment(
             [Alignment.Maximum, Alignment.Fill])
-        layout.setSpacing(0, 10)
-        window.setLayout(layout)
+        layout.set_spacing(0, 10)
+        window.set_layout(layout)
 
         Label(window, "Floating point :", "sans-bold")
-        floatBox = TextBox(window)
-        floatBox.setEditable(True)
-        floatBox.setFixedSize((100, 20))
-        floatBox.setValue("50")
-        floatBox.setUnits("GiB")
-        floatBox.setDefaultValue("0.0")
-        floatBox.setFontSize(16)
-        floatBox.setFormat("[-]?[0-9]*\\.?[0-9]+")
+        float_box = TextBox(window)
+        float_box.set_editable(True)
+        float_box.set_fixed_size((100, 20))
+        float_box.set_value("50")
+        float_box.set_units("GiB")
+        float_box.set_default_value("0.0")
+        float_box.set_font_size(16)
+        float_box.set_format("[-]?[0-9]*\\.?[0-9]+")
 
         Label(window, "Positive integer :", "sans-bold")
-        intBox = IntBox(window)
-        intBox.setEditable(True)
-        intBox.setFixedSize((100, 20))
-        intBox.setValue(50)
-        intBox.setUnits("Mhz")
-        intBox.setDefaultValue("0")
-        intBox.setFontSize(16)
-        intBox.setFormat("[1-9][0-9]*")
-        intBox.setSpinnable(True)
-        intBox.setMinValue(1)
-        intBox.setValueIncrement(2)
+        int_box = IntBox(window)
+        int_box.set_editable(True)
+        int_box.set_fixed_size((100, 20))
+        int_box.set_value(50)
+        int_box.set_units("Mhz")
+        int_box.set_default_value("0")
+        int_box.set_font_size(16)
+        int_box.set_format("[1-9][0-9]*")
+        int_box.set_spinnable(True)
+        int_box.set_min_value(1)
+        int_box.set_value_increment(2)
 
         Label(window, "Checkbox :", "sans-bold")
 
         cb = CheckBox(window, "Check me")
-        cb.setFontSize(16)
-        cb.setChecked(True)
+        cb.set_font_size(16)
+        cb.set_checked(True)
 
         Label(window, "Combo box :", "sans-bold")
         cobo = ComboBox(window, ["Item 1", "Item 2", "Item 3"])
-        cobo.setFontSize(16)
-        cobo.setFixedSize((100, 20))
+        cobo.set_font_size(16)
+        cobo.set_fixed_size((100, 20))
 
         Label(window, "Color button :", "sans-bold")
-        popupBtn = PopupButton(window, "", 0)
-        popupBtn.setBackgroundColor(Color(1, 0.47, 0, 1))
-        popupBtn.setFontSize(16)
-        popupBtn.setFixedSize((100, 20))
-        popup = popupBtn.popup()
-        popup.setLayout(GroupLayout())
+        popup_btn = PopupButton(window, "", 0)
+        popup_btn.set_background_color(Color(1, 0.47, 0, 1))
+        popup_btn.set_font_size(16)
+        popup_btn.set_fixed_size((100, 20))
+        popup = popup_btn.popup()
+        popup.set_layout(GroupLayout())
 
         colorwheel = ColorWheel(popup)
-        colorwheel.setColor(popupBtn.backgroundColor())
+        colorwheel.set_color(popup_btn.background_color())
 
-        colorBtn = Button(popup, "Pick")
-        colorBtn.setFixedSize((100, 25))
+        color_btn = Button(popup, "Pick")
+        color_btn.set_fixed_size((100, 25))
         c = colorwheel.color()
-        colorBtn.setBackgroundColor(c)
+        color_btn.set_background_color(c)
 
         def cb(value):
-            colorBtn.setBackgroundColor(value)
+            color_btn.set_background_color(value)
 
-        colorwheel.setCallback(cb)
+        colorwheel.set_callback(cb)
 
         def cb(pushed):
             if (pushed):
-                popupBtn.setBackgroundColor(colorBtn.backgroundColor())
-                popupBtn.setPushed(False)
-        colorBtn.setChangeCallback(cb)
+                popup_btn.set_background_color(color_btn.background_color())
+                popup_btn.set_pushed(False)
+        color_btn.set_change_callback(cb)
 
-        self.performLayout()
+        self.perform_layout()
 
         try:
             import numpy as np
@@ -317,10 +317,10 @@ class TestApp(Screen):
 
                 # Vertex shader
                 """#version 330
-                uniform mat4 modelViewProj;
+                uniform mat4 model_view_proj;
                 in vec3 position;
                 void main() {
-                    gl_Position = modelViewProj * vec4(position, 1.0);
+                    gl_Position = model_view_proj * vec4(position, 1.0);
                 }""",
 
                 """#version 330
@@ -343,18 +343,18 @@ class TestApp(Screen):
                 dtype=np.float32)
 
             self.shader.bind()
-            self.shader.uploadIndices(indices)
-            self.shader.uploadAttrib("position", positions)
-            self.shader.setUniform("intensity", 0.5)
+            self.shader.upload_indices(indices)
+            self.shader.upload_attrib("position", positions)
+            self.shader.set_uniform("intensity", 0.5)
         except ImportError:
             self.shader = None
             pass
 
     def draw(self, ctx):
-        self.progress.setValue(math.fmod(time.time() / 10, 1))
+        self.progress.set_value(math.fmod(time.time() / 10, 1))
         super(TestApp, self).draw(ctx)
 
-    def drawContents(self):
+    def draw_contents(self):
         if self.shader is not None:
             import numpy as np
             self.shader.bind()
@@ -372,24 +372,24 @@ class TestApp(Screen):
             mvp[0:3, 0:3] *= 0.25
             mvp[0, :] *= self.size()[1] / self.size()[0]
 
-            self.shader.setUniform("modelViewProj", mvp)
-            self.shader.drawIndexed(gl.TRIANGLES, 0, 2)
-        super(TestApp, self).drawContents()
+            self.shader.set_uniform("model_view_proj", mvp)
+            self.shader.draw_indexed(gl.TRIANGLES, 0, 2)
+        super(TestApp, self).draw_contents()
 
-    def keyboardEvent(self, key, scancode, action, modifiers):
-        if super(TestApp, self).keyboardEvent(key, scancode,
+    def keyboard_event(self, key, scancode, action, modifiers):
+        if super(TestApp, self).keyboard_event(key, scancode,
                                               action, modifiers):
             return True
         if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
-            self.setVisible(False)
+            self.set_visible(False)
             return True
         return False
 
 if __name__ == "__main__":
     nanogui.init()
     test = TestApp()
-    test.drawAll()
-    test.setVisible(True)
+    test.draw_all()
+    test.set_visible(True)
     nanogui.mainloop()
     del test
     gc.collect()

@@ -27,73 +27,73 @@ NAMESPACE_BEGIN(nanogui)
  */
 class NANOGUI_EXPORT ImageView : public Widget {
 public:
-    ImageView(Widget* parent, GLuint imageID);
+    ImageView(Widget* parent, GLuint image_id);
     ~ImageView();
 
-    void bindImage(GLuint imageId);
+    void bind_image(GLuint image_id);
 
-    GLShader& imageShader() { return mShader; }
+    GLShader& image_shader() { return m_shader; }
 
-    Vector2f positionF() const { return mPos.cast<float>(); }
-    Vector2f sizeF() const { return mSize.cast<float>(); }
+    Vector2f position_f() const { return Vector2f(m_pos); }
+    Vector2f size_f() const { return Vector2f(m_size); }
 
-    const Vector2i& imageSize() const { return mImageSize; }
-    Vector2i scaledImageSize() const { return (mScale * mImageSize.cast<float>()).cast<int>(); }
-    Vector2f imageSizeF() const { return mImageSize.cast<float>(); }
-    Vector2f scaledImageSizeF() const { return (mScale * mImageSize.cast<float>()); }
+    const Vector2i& image_size() const { return m_image_size; }
+    Vector2i scaled_image_size() const { return Vector2i(m_scale * Vector2f(m_image_size)); }
+    Vector2f image_size_f() const { return Vector2f(m_image_size); }
+    Vector2f scaled_image_size_f() const { return (m_scale * Vector2f(m_image_size)); }
 
-    const Vector2f& offset() const { return mOffset; }
-    void setOffset(const Vector2f& offset) { mOffset = offset; }
-    float scale() const { return mScale; }
-    void setScale(float scale) { mScale = scale > 0.01f ? scale : 0.01f; }
+    const Vector2f& offset() const { return m_offset; }
+    void set_offset(const Vector2f& offset) { m_offset = offset; }
+    float scale() const { return m_scale; }
+    void set_scale(float scale) { m_scale = scale > 0.01f ? scale : 0.01f; }
 
-    bool fixedOffset() const { return mFixedOffset; }
-    void setFixedOffset(bool fixedOffset) { mFixedOffset = fixedOffset; }
-    bool fixedScale() const { return mFixedScale; }
-    void setFixedScale(bool fixedScale) { mFixedScale = fixedScale; }
+    bool fixed_offset() const { return m_fixed_offset; }
+    void set_fixed_offset(bool fixed_offset) { m_fixed_offset = fixed_offset; }
+    bool fixed_scale() const { return m_fixed_scale; }
+    void set_fixed_scale(bool fixed_scale) { m_fixed_scale = fixed_scale; }
 
-    float zoomSensitivity() const { return mZoomSensitivity; }
-    void setZoomSensitivity(float zoomSensitivity) { mZoomSensitivity = zoomSensitivity; }
+    float zoom_sensitivity() const { return m_zoom_sensitivity; }
+    void set_zoom_sensitivity(float zoom_sensitivity) { m_zoom_sensitivity = zoom_sensitivity; }
 
-    float gridThreshold() const { return mGridThreshold; }
-    void setGridThreshold(float gridThreshold) { mGridThreshold = gridThreshold; }
+    float grid_threshold() const { return m_grid_threshold; }
+    void set_grid_threshold(float grid_threshold) { m_grid_threshold = grid_threshold; }
 
-    float pixelInfoThreshold() const { return mPixelInfoThreshold; }
-    void setPixelInfoThreshold(float pixelInfoThreshold) { mPixelInfoThreshold = pixelInfoThreshold; }
+    float pixel_info_threshold() const { return m_pixel_info_threshold; }
+    void set_pixel_info_threshold(float pixel_info_threshold) { m_pixel_info_threshold = pixel_info_threshold; }
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    void setPixelInfoCallback(const std::function<std::pair<std::string, Color>(const Vector2i&)>& callback) {
-        mPixelInfoCallback = callback;
+    void set_pixel_info_callback(const std::function<std::pair<std::string, Color>(const Vector2i&)>& callback) {
+        m_pixel_info_callback = callback;
     }
-    const std::function<std::pair<std::string, Color>(const Vector2i&)>& pixelInfoCallback() const {
-        return mPixelInfoCallback;
+    const std::function<std::pair<std::string, Color>(const Vector2i&)>& pixel_info_callback() const {
+        return m_pixel_info_callback;
     }
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
-    void setFontScaleFactor(float fontScaleFactor) { mFontScaleFactor = fontScaleFactor; }
-    float fontScaleFactor() const { return mFontScaleFactor; }
+    void set_font_scale_factor(float font_scale_factor) { m_font_scale_factor = font_scale_factor; }
+    float font_scale_factor() const { return m_font_scale_factor; }
 
     // Image transformation functions.
 
     /// Calculates the image coordinates of the given pixel position on the widget.
-    Vector2f imageCoordinateAt(const Vector2f& position) const;
+    Vector2f image_coordinate_at(const Vector2f& position) const;
 
     /**
      * Calculates the image coordinates of the given pixel position on the widget.
      * If the position provided corresponds to a coordinate outside the range of
      * the image, the coordinates are clamped to edges of the image.
      */
-    Vector2f clampedImageCoordinateAt(const Vector2f& position) const;
+    Vector2f clamped_image_coordinate_at(const Vector2f& position) const;
 
     /// Calculates the position inside the widget for the given image coordinate.
-    Vector2f positionForCoordinate(const Vector2f& imageCoordinate) const;
+    Vector2f position_for_coordinate(const Vector2f& image_coordinate) const;
 
     /**
      * Modifies the internal state of the image viewer widget so that the pixel at the provided
      * position on the widget has the specified image coordinate. Also clamps the values of offset
      * to the sides of the widget.
      */
-    void setImageCoordinateAt(const Vector2f& position, const Vector2f& imageCoordinate);
+    void set_image_coordinate_at(const Vector2f& position, const Vector2f& image_coordinate);
 
     /// Centers the image without affecting the scaling factor.
     void center();
@@ -102,73 +102,71 @@ public:
     void fit();
 
     /// Set the scale while keeping the image centered
-    void setScaleCentered(float scale);
+    void set_scale_centered(float scale);
 
     /// Moves the offset by the specified amount. Does bound checking.
-    void moveOffset(const Vector2f& delta);
+    void move_offset(const Vector2f& delta);
 
     /**
      * Changes the scale factor by the provided amount modified by the zoom sensitivity member variable.
      * The scaling occurs such that the image coordinate under the focused position remains in
      * the same position before and after the scaling.
      */
-    void zoom(int amount, const Vector2f& focusPosition);
+    void zoom(int amount, const Vector2f& focus_position);
 
-    bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
-    bool keyboardCharacterEvent(unsigned int codepoint) override;
-    bool mouseDragEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
-    bool scrollEvent(const Vector2i &p, const Vector2f &rel) override;
+    bool keyboard_event(int key, int scancode, int action, int modifiers) override;
+    bool keyboard_character_event(unsigned int codepoint) override;
+    bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
+    bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
 
     /// Function indicating whether the grid is currently visible.
-    bool gridVisible() const;
+    bool grid_visible() const;
 
     /// Function indicating whether the pixel information is currently visible.
-    bool pixelInfoVisible() const;
+    bool pixel_info_visible() const;
 
     /// Function indicating whether any of the overlays are visible.
-    bool helpersVisible() const;
+    bool helpers_visible() const;
 
-    Vector2i preferredSize(NVGcontext* ctx) const override;
-    void performLayout(NVGcontext* ctx) override;
+    Vector2i preferred_size(NVGcontext* ctx) const override;
+    void perform_layout(NVGcontext* ctx) override;
     void draw(NVGcontext* ctx) override;
 
 private:
     // Helper image methods.
-    void updateImageParameters();
+    void update_image_parameters();
 
     // Helper drawing methods.
-    void drawWidgetBorder(NVGcontext* ctx) const;
-    void drawImageBorder(NVGcontext* ctx) const;
-    void drawHelpers(NVGcontext* ctx) const;
-    static void drawPixelGrid(NVGcontext* ctx, const Vector2f& upperLeftCorner,
-                              const Vector2f& lowerRightCorner, float stride);
-    void drawPixelInfo(NVGcontext* ctx, float stride) const;
-    void writePixelInfo(NVGcontext* ctx, const Vector2f& cellPosition,
-                        const Vector2i& pixel, float stride, float fontSize) const;
+    void draw_widget_border(NVGcontext* ctx) const;
+    void draw_image_border(NVGcontext* ctx) const;
+    void draw_helpers(NVGcontext* ctx) const;
+    static void draw_pixel_grid(NVGcontext* ctx, const Vector2f& upper_left_corner,
+                              const Vector2f& lower_right_corner, float stride);
+    void draw_pixel_info(NVGcontext* ctx, float stride) const;
+    void write_pixel_info(NVGcontext* ctx, const Vector2f& cell_position,
+                        const Vector2i& pixel, float stride, float font_size) const;
 
     // Image parameters.
-    GLShader mShader;
-    GLuint mImageID;
-    Vector2i mImageSize;
+    GLShader m_shader;
+    GLuint m_image_id;
+    Vector2i m_image_size;
 
     // Image display parameters.
-    float mScale;
-    Vector2f mOffset;
-    bool mFixedScale;
-    bool mFixedOffset;
+    float m_scale;
+    Vector2f m_offset;
+    bool m_fixed_scale;
+    bool m_fixed_offset;
 
     // Fine-tuning parameters.
-    float mZoomSensitivity = 1.1f;
+    float m_zoom_sensitivity = 1.1f;
 
     // Image info parameters.
-    float mGridThreshold = -1;
-    float mPixelInfoThreshold = -1;
+    float m_grid_threshold = -1;
+    float m_pixel_info_threshold = -1;
 
     // Image pixel data display members.
-    std::function<std::pair<std::string, Color>(const Vector2i&)> mPixelInfoCallback;
-    float mFontScaleFactor = 0.2f;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::function<std::pair<std::string, Color>(const Vector2i&)> m_pixel_info_callback;
+    float m_font_scale_factor = 0.2f;
 };
 
 NAMESPACE_END(nanogui)

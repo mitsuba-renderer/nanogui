@@ -39,13 +39,13 @@ class MyGLCanvas(GLCanvas):
 
                 # Vertex shader
                 """#version 330
-                uniform mat4 modelViewProj;
+                uniform mat4 model_view_proj;
                 in vec3 position;
                 in vec3 color;
                 out vec4 frag_color;
                 void main() {
-                    frag_color = 3.0 * modelViewProj * vec4(color, 1.0);
-                    gl_Position = modelViewProj * vec4(position, 1.0);
+                    frag_color = vec4(color, 1.0);
+                    gl_Position = model_view_proj * vec4(position, 1.0);
                 }""",
 
                 # Fragment shader
@@ -65,27 +65,26 @@ class MyGLCanvas(GLCanvas):
                 dtype=np.int32)
 
             positions = np.array(
-                [[-1, -1,  1,  1, -1, -1,  1,  1],
-                 [ 1,  1,  1,  1, -1, -1, -1, -1],
-                 [ 1, -1, -1,  1,  1, -1, -1,  1]],
+                [[-1, -1, 1, 1, -1, -1, 1, 1],
+                 [1, 1, 1, 1, -1, -1, -1, -1],
+                 [1, -1, -1, 1, 1, -1, -1, 1]],
                 dtype=np.float32)
 
             colors = np.array(
-                [[1, 0, 1, 0, 1, 0, 1, 0.5, 1, 1, 0.5, 0.5],
-                 [0, 1, 1, 0, 0, 1, 1, 0.5, 0, 0.5, 1, 1],
-                 [0, 0, 0, 1, 1, 1, 1, 0.5, 0.5, 0, 0, 0.5]],
+                [[1, 0, 1, 0, 1, 0, 0.5, 1],
+                 [0, 1, 1, 0, 0, 1, 0.5, 0],
+                 [0, 0, 0, 1, 1, 1, 0.5, 0.5]],
                 dtype=np.float32)
 
             self.shader.bind()
-            self.shader.uploadIndices(indices)
-
-            self.shader.uploadAttrib("position", positions)
-            self.shader.uploadAttrib("color", colors)
+            self.shader.upload_indices(indices)
+            self.shader.upload_attrib("position", positions)
+            self.shader.upload_attrib("color", colors)
         except ImportError:
             self.shader = None
             pass
 
-    def drawGL(self):
+    def draw_gl(self):
         if self.shader is not None:
             import numpy as np
             self.shader.bind()
@@ -95,35 +94,35 @@ class MyGLCanvas(GLCanvas):
             angle_y = self.rotation[1] * current_time
             angle_z = self.rotation[2] * current_time
 
-            mvp_rotX = np.matrix(
+            mvp_rot_x = np.matrix(
                 [[1, 0, 0, 0],
                  [0, np.cos(angle_x), -np.sin(angle_x), 0],
                  [0, np.sin(angle_x), np.cos(angle_x), 0],
                  [0, 0, 0, 1]],
                 dtype=np.float32)
 
-            mvp_rotY = np.matrix(
+            mvp_rot_y = np.matrix(
                 [[np.cos(angle_y), 0, np.sin(angle_y), 0],
                  [0, 1, 0, 0],
                  [-np.sin(angle_y), 0, np.cos(angle_y), 0],
                  [0, 0, 0, 1]],
                 dtype=np.float32)
 
-            mvp_rotZ = np.matrix(
+            mvp_rot_z = np.matrix(
                 [[np.cos(angle_z), -np.sin(angle_z), 0, 0],
                  [np.sin(angle_z), np.cos(angle_z), 0, 0],
                  [0, 0, 1, 0],
                  [0, 0, 0, 1]],
                 dtype=np.float32)
 
-            mvp = mvp_rotX * mvp_rotY * mvp_rotZ
+            mvp = mvp_rot_x * mvp_rot_y * mvp_rot_z
 
             mvp[0:3, 0:3] *= 0.25
 
-            self.shader.setUniform("modelViewProj", mvp)
+            self.shader.set_uniform("model_view_proj", mvp)
 
             gl.Enable(gl.DEPTH_TEST)
-            self.shader.drawIndexed(gl.TRIANGLES, 0, 12)
+            self.shader.draw_indexed(gl.TRIANGLES, 0, 12)
             gl.Disable(gl.DEPTH_TEST)
 
 
@@ -132,45 +131,45 @@ class TestApp(Screen):
         super(TestApp, self).__init__((800, 600), "NanoGUI Test", False)
 
         window = Window(self, "GLCanvas Demo")
-        window.setPosition((15, 15))
-        window.setLayout(GroupLayout())
+        window.set_position((15, 15))
+        window.set_layout(GroupLayout())
 
         self.canvas = MyGLCanvas(window)
-        self.canvas.setBackgroundColor(Color(0.5, 0.5, 0.5, 1.0))
-        self.canvas.setSize((400, 400))
+        self.canvas.set_background_color(Color(0.5, 0.5, 0.5, 1.0))
+        self.canvas.set_size((400, 400))
 
         self.canvas.rotation = [0.25, 0.5, 0.33]
 
         tools = Widget(window)
-        tools.setLayout(BoxLayout(Orientation.Horizontal,
+        tools.set_layout(BoxLayout(Orientation.Horizontal,
                                   Alignment.Middle, 0, 5))
 
         b0 = Button(tools, "Random Color")
         def cb0():
-            self.canvas.setBackgroundColor(Color(random.random(), random.random(), random.random(), 1.0))
-        b0.setCallback(cb0)
+            self.canvas.set_background_color(Color(random.random(), random.random(), random.random(), 1.0))
+        b0.set_callback(cb0)
 
         b1 = Button(tools, "Random Rotation")
         def cb1():
             self.canvas.rotation = [random.random(), random.random(), random.random()]
-        b1.setCallback(cb1)
+        b1.set_callback(cb1)
 
-        self.performLayout()
+        self.perform_layout()
 
-    def keyboardEvent(self, key, scancode, action, modifiers):
-        if super(TestApp, self).keyboardEvent(key, scancode,
+    def keyboard_event(self, key, scancode, action, modifiers):
+        if super(TestApp, self).keyboard_event(key, scancode,
                                               action, modifiers):
             return True
         if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
-            self.setVisible(False)
+            self.set_visible(False)
             return True
         return False
 
 if __name__ == "__main__":
     nanogui.init()
     test = TestApp()
-    test.drawAll()
-    test.setVisible(True)
+    test.draw_all()
+    test.set_visible(True)
     nanogui.mainloop()
     del test
     gc.collect()

@@ -11,27 +11,27 @@ void register_button(py::module &m) {
     py::class_<Button, Widget, ref<Button>, PyButton> button(m, "Button", D(Button));
     button
         .def(py::init<Widget *, const std::string &, int>(),
-             py::arg("parent"), py::arg("caption") = std::string("Untitled"), py::arg("icon") = 0, D(Button, Button))
+             "parent"_a, "caption"_a = std::string("Untitled"), "icon"_a = 0, D(Button, Button))
         .def("caption", &Button::caption, D(Button, caption))
-        .def("setCaption", &Button::setCaption, D(Button, setCaption))
-        .def("backgroundColor", &Button::backgroundColor, D(Button, backgroundColor))
-        .def("setBackgroundColor", &Button::setBackgroundColor, D(Button, setBackgroundColor))
-        .def("textColor", &Button::textColor, D(Button, textColor))
-        .def("setTextColor", &Button::setTextColor, D(Button, setTextColor))
+        .def("set_caption", &Button::set_caption, D(Button, set_caption))
+        .def("background_color", &Button::background_color, D(Button, background_color))
+        .def("set_background_color", &Button::set_background_color, D(Button, set_background_color))
+        .def("text_color", &Button::text_color, D(Button, text_color))
+        .def("set_text_color", &Button::set_text_color, D(Button, set_text_color))
         .def("icon", &Button::icon, D(Button, icon))
-        .def("setIcon", &Button::setIcon, D(Button, setIcon))
+        .def("set_icon", &Button::set_icon, D(Button, set_icon))
         .def("flags", &Button::flags, D(Button, flags))
-        .def("setFlags", &Button::setFlags, D(Button, setFlags))
-        .def("iconPosition", &Button::iconPosition, D(Button, iconPosition))
-        .def("setIconPosition", &Button::setIconPosition, D(Button, setIconPosition))
+        .def("set_flags", &Button::set_flags, D(Button, set_flags))
+        .def("icon_position", &Button::icon_position, D(Button, icon_position))
+        .def("set_icon_position", &Button::set_icon_position, D(Button, set_icon_position))
         .def("pushed", &Button::pushed, D(Button, pushed))
-        .def("setPushed", &Button::setPushed, D(Button, setPushed))
+        .def("set_pushed", &Button::set_pushed, D(Button, set_pushed))
         .def("callback", &Button::callback, D(Button, callback))
-        .def("setCallback", &Button::setCallback, D(Button, setCallback))
-        .def("changeCallback", &Button::changeCallback, D(Button, changeCallback))
-        .def("setChangeCallback", &Button::setChangeCallback, D(Button, setChangeCallback))
-        .def("buttonGroup", &Button::buttonGroup, D(Button, buttonGroup))
-        .def("setButtonGroup", &Button::setButtonGroup, D(Button, setButtonGroup));
+        .def("set_callback", &Button::set_callback, D(Button, set_callback))
+        .def("change_callback", &Button::change_callback, D(Button, change_callback))
+        .def("set_change_callback", &Button::set_change_callback, D(Button, set_change_callback))
+        .def("button_group", &Button::button_group, D(Button, button_group))
+        .def("set_button_group", &Button::set_button_group, D(Button, set_button_group));
 
     py::enum_<Button::IconPosition>(button, "IconPosition", D(Button, IconPosition))
         .value("Left", Button::IconPosition::Left)
@@ -47,35 +47,35 @@ void register_button(py::module &m) {
 
     py::class_<ToolButton, Button, ref<ToolButton>, PyToolButton>(m, "ToolButton", D(ToolButton))
         .def(py::init<Widget *,int, const std::string &>(),
-             py::arg("parent"), py::arg("icon"), py::arg("caption") = std::string(""),
+             "parent"_a, "icon"_a, "caption"_a = std::string(""),
              D(ToolButton, ToolButton));
 
-    py::class_<PopupButton, Button, ref<PopupButton>, PyPopupButton> popupBtn(m, "PopupButton", D(PopupButton));
-    popupBtn
+    py::class_<PopupButton, Button, ref<PopupButton>, PyPopupButton> popup_btn(m, "PopupButton", D(PopupButton));
+    popup_btn
         .def(py::init<Widget *, const std::string&, int>(),
-                py::arg("parent"), py::arg("caption") = std::string("Untitled"),
-                py::arg("buttonIcon") = 0, D(PopupButton, PopupButton))
+                "parent"_a, "caption"_a = std::string("Untitled"),
+                "button_icon"_a = 0, D(PopupButton, PopupButton))
         .def("popup", (Popup*(PopupButton::*)(void)) &PopupButton::popup, D(PopupButton, popup))
-        .def("chevronIcon", &PopupButton::chevronIcon, D(PopupButton, chevronIcon))
-        .def("setChevronIcon", &PopupButton::setChevronIcon, D(PopupButton, setChevronIcon))
+        .def("chevron_icon", &PopupButton::chevron_icon, D(PopupButton, chevron_icon))
+        .def("set_chevron_icon", &PopupButton::set_chevron_icon, D(PopupButton, set_chevron_icon))
         .def("side", &PopupButton::side, D(PopupButton, side))
-        .def("setSide", &PopupButton::setSide, D(PopupButton, setSide));
+        .def("set_side", &PopupButton::set_side, D(PopupButton, set_side));
 
     py::class_<CheckBox, Widget, ref<CheckBox>, PyCheckBox>(m, "CheckBox", D(CheckBox))
-        .def(py::init<Widget *, const std::string &>(), py::arg("parent"),
-             py::arg("caption") = std::string("Untitled"),
+        .def(py::init<Widget *, const std::string &>(), "parent"_a,
+             "caption"_a = std::string("Untitled"),
              D(CheckBox, CheckBox))
         .def(py::init<Widget *, const std::string &, const std::function<void(bool)>&>(),
-             py::arg("parent"), py::arg("caption"), py::arg("callback"),
+             "parent"_a, "caption"_a, "callback"_a,
              D(CheckBox, CheckBox))
         .def("caption", &CheckBox::caption, D(CheckBox, caption))
-        .def("setCaption", &CheckBox::setCaption, D(CheckBox, setCaption))
+        .def("set_caption", &CheckBox::set_caption, D(CheckBox, set_caption))
         .def("checked", &CheckBox::checked, D(CheckBox, checked))
-        .def("setChecked", &CheckBox::setChecked, D(CheckBox, setChecked))
+        .def("set_checked", &CheckBox::set_checked, D(CheckBox, set_checked))
         .def("pushed", &CheckBox::pushed, D(CheckBox, pushed))
-        .def("setPushed", &CheckBox::setPushed, D(CheckBox, setPushed))
+        .def("set_pushed", &CheckBox::set_pushed, D(CheckBox, set_pushed))
         .def("callback", &CheckBox::callback, D(CheckBox, callback))
-        .def("setCallback", &CheckBox::setCallback, D(CheckBox, setCallback));
+        .def("set_callback", &CheckBox::set_callback, D(CheckBox, set_callback));
 }
 
 #endif

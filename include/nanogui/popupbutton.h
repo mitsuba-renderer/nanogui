@@ -26,28 +26,23 @@ NAMESPACE_BEGIN(nanogui)
 class NANOGUI_EXPORT PopupButton : public Button {
 public:
     PopupButton(Widget *parent, const std::string &caption = "Untitled",
-                int buttonIcon = 0);
+                int button_icon = 0);
 
-    void setChevronIcon(int icon) { mChevronIcon = icon; }
-    int chevronIcon() const { return mChevronIcon; }
+    void set_chevron_icon(int icon) { m_chevron_icon = icon; }
+    int chevron_icon() const { return m_chevron_icon; }
 
-    void setSide(Popup::Side popupSide);
-    Popup::Side side() const { return mPopup->side(); }
+    void set_side(Popup::Side popup_side);
+    Popup::Side side() const { return m_popup->side(); }
 
-    Popup *popup() { return mPopup; }
-    const Popup *popup() const { return mPopup; }
+    Popup *popup() { return m_popup; }
+    const Popup *popup() const { return m_popup; }
 
     virtual void draw(NVGcontext* ctx) override;
-    virtual Vector2i preferredSize(NVGcontext *ctx) const override;
-    virtual void performLayout(NVGcontext *ctx) override;
-
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
+    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
+    virtual void perform_layout(NVGcontext *ctx) override;
 protected:
-    Popup *mPopup;
-    int mChevronIcon;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    Popup *m_popup;
+    int m_chevron_icon;
 };
 
 NAMESPACE_END(nanogui)

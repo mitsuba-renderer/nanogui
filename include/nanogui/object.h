@@ -28,13 +28,13 @@ public:
     Object() { }
 
     /// Copy constructor
-    Object(const Object &) : m_refCount(0) {}
+    Object(const Object &) : m_ref_count(0) {}
 
     /// Return the current reference count
-    int getRefCount() const { return m_refCount; };
+    int get_ref_count() const { return m_ref_count; };
 
     /// Increase the object's reference count by one
-    void incRef() const { ++m_refCount; }
+    void inc_ref() const { ++m_ref_count; }
 
     /** \brief Decrease the reference count of
      * the object and possibly deallocate it.
@@ -42,14 +42,16 @@ public:
      * The object will automatically be deallocated once
      * the reference count reaches zero.
      */
-    void decRef(bool dealloc = true) const noexcept;
+    void dec_ref(bool dealloc = true) const noexcept;
+
+    ENOKI_ALIGNED_OPERATOR_NEW()
 protected:
     /** \brief Virtual protected deconstructor.
      * (Will only be called by \ref ref)
      */
     virtual ~Object();
 private:
-    mutable std::atomic<int> m_refCount { 0 };
+    mutable std::atomic<int> m_ref_count { 0 };
 };
 
 /**
@@ -74,13 +76,13 @@ public:
     /// Construct a reference from a pointer
     ref(T *ptr) : m_ptr(ptr) {
         if (m_ptr)
-            ((Object *) m_ptr)->incRef();
+            ((Object *) m_ptr)->inc_ref();
     }
 
     /// Copy constructor
     ref(const ref &r) : m_ptr(r.m_ptr) {
         if (m_ptr)
-            ((Object *) m_ptr)->incRef();
+            ((Object *) m_ptr)->inc_ref();
     }
 
     /// Move constructor
@@ -91,14 +93,14 @@ public:
     /// Destroy this reference
     ~ref() {
         if (m_ptr)
-            ((Object *) m_ptr)->decRef();
+            ((Object *) m_ptr)->dec_ref();
     }
 
     /// Move another reference into the current one
     ref& operator=(ref&& r) noexcept {
         if (&r != this) {
             if (m_ptr)
-                ((Object *) m_ptr)->decRef();
+                ((Object *) m_ptr)->dec_ref();
             m_ptr = r.m_ptr;
             r.m_ptr = nullptr;
         }
@@ -109,9 +111,9 @@ public:
     ref& operator=(const ref& r) noexcept {
         if (m_ptr != r.m_ptr) {
             if (r.m_ptr)
-                ((Object *) r.m_ptr)->incRef();
+                ((Object *) r.m_ptr)->inc_ref();
             if (m_ptr)
-                ((Object *) m_ptr)->decRef();
+                ((Object *) m_ptr)->dec_ref();
             m_ptr = r.m_ptr;
         }
         return *this;
@@ -121,9 +123,9 @@ public:
     ref& operator=(T *ptr) noexcept {
         if (m_ptr != ptr) {
             if (ptr)
-                ((Object *) ptr)->incRef();
+                ((Object *) ptr)->inc_ref();
             if (m_ptr)
-                ((Object *) m_ptr)->decRef();
+                ((Object *) m_ptr)->dec_ref();
             m_ptr = ptr;
         }
         return *this;

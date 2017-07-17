@@ -17,7 +17,7 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-enum class Cursor;// do not put a docstring, this is already documented
+enum class Cursor; // do not put a docstring, this is already documented
 
 /**
  * \class Widget widget.h nanogui/widget.h
@@ -34,51 +34,51 @@ public:
     Widget(Widget *parent);
 
     /// Return the parent widget
-    Widget *parent() { return mParent; }
+    Widget *parent() { return m_parent; }
     /// Return the parent widget
-    const Widget *parent() const { return mParent; }
+    const Widget *parent() const { return m_parent; }
     /// Set the parent widget
-    void setParent(Widget *parent) { mParent = parent; }
+    void set_parent(Widget *parent) { m_parent = parent; }
 
     /// Return the used \ref Layout generator
-    Layout *layout() { return mLayout; }
+    Layout *layout() { return m_layout; }
     /// Return the used \ref Layout generator
-    const Layout *layout() const { return mLayout.get(); }
+    const Layout *layout() const { return m_layout.get(); }
     /// Set the used \ref Layout generator
-    void setLayout(Layout *layout) { mLayout = layout; }
+    void set_layout(Layout *layout) { m_layout = layout; }
 
     /// Return the \ref Theme used to draw this widget
-    Theme *theme() { return mTheme; }
+    Theme *theme() { return m_theme; }
     /// Return the \ref Theme used to draw this widget
-    const Theme *theme() const { return mTheme.get(); }
+    const Theme *theme() const { return m_theme.get(); }
     /// Set the \ref Theme used to draw this widget
-    virtual void setTheme(Theme *theme);
+    virtual void set_theme(Theme *theme);
 
     /// Return the position relative to the parent widget
-    const Vector2i &position() const { return mPos; }
+    const Vector2i &position() const { return m_pos; }
     /// Set the position relative to the parent widget
-    void setPosition(const Vector2i &pos) { mPos = pos; }
+    void set_position(const Vector2i &pos) { m_pos = pos; }
 
     /// Return the absolute position on screen
-    Vector2i absolutePosition() const {
-        return mParent ?
-            (parent()->absolutePosition() + mPos) : mPos;
+    Vector2i absolute_position() const {
+        return m_parent ?
+            (parent()->absolute_position() + m_pos) : m_pos;
     }
 
     /// Return the size of the widget
-    const Vector2i &size() const { return mSize; }
+    const Vector2i &size() const { return m_size; }
     /// set the size of the widget
-    void setSize(const Vector2i &size) { mSize = size; }
+    void set_size(const Vector2i &size) { m_size = size; }
 
     /// Return the width of the widget
-    int width() const { return mSize.x(); }
+    int width() const { return m_size.x(); }
     /// Set the width of the widget
-    void setWidth(int width) { mSize.x() = width; }
+    void set_width(int width) { m_size.x() = width; }
 
     /// Return the height of the widget
-    int height() const { return mSize.y(); }
+    int height() const { return m_size.y(); }
     /// Set the height of the widget
-    void setHeight(int height) { mSize.y() = height; }
+    void set_height(int height) { m_size.y() = height; }
 
     /**
      * \brief Set the fixed size of this widget
@@ -86,30 +86,30 @@ public:
      * If nonzero, components of the fixed size attribute override any values
      * computed by a layout generator associated with this widget. Note that
      * just setting the fixed size alone is not enough to actually change its
-     * size; this is done with a call to \ref setSize or a call to \ref performLayout()
+     * size; this is done with a call to \ref set_size or a call to \ref perform_layout()
      * in the parent widget.
      */
-    void setFixedSize(const Vector2i &fixedSize) { mFixedSize = fixedSize; }
+    void set_fixed_size(const Vector2i &fixed_size) { m_fixed_size = fixed_size; }
 
-    /// Return the fixed size (see \ref setFixedSize())
-    const Vector2i &fixedSize() const { return mFixedSize; }
+    /// Return the fixed size (see \ref set_fixed_size())
+    const Vector2i &fixed_size() const { return m_fixed_size; }
 
-    // Return the fixed width (see \ref setFixedSize())
-    int fixedWidth() const { return mFixedSize.x(); }
-    // Return the fixed height (see \ref setFixedSize())
-    int fixedHeight() const { return mFixedSize.y(); }
-    /// Set the fixed width (see \ref setFixedSize())
-    void setFixedWidth(int width) { mFixedSize.x() = width; }
-    /// Set the fixed height (see \ref setFixedSize())
-    void setFixedHeight(int height) { mFixedSize.y() = height; }
+    // Return the fixed width (see \ref set_fixed_size())
+    int fixed_width() const { return m_fixed_size.x(); }
+    // Return the fixed height (see \ref set_fixed_size())
+    int fixed_height() const { return m_fixed_size.y(); }
+    /// Set the fixed width (see \ref set_fixed_size())
+    void set_fixed_width(int width) { m_fixed_size.x() = width; }
+    /// Set the fixed height (see \ref set_fixed_size())
+    void set_fixed_height(int height) { m_fixed_size.y() = height; }
 
     /// Return whether or not the widget is currently visible (assuming all parents are visible)
-    bool visible() const { return mVisible; }
+    bool visible() const { return m_visible; }
     /// Set whether or not the widget is currently visible (assuming all parents are visible)
-    void setVisible(bool visible) { mVisible = visible; }
+    void set_visible(bool visible) { m_visible = visible; }
 
     /// Check if this widget is currently visible, taking parent widgets into account
-    bool visibleRecursive() const {
+    bool visible_recursive() const {
         bool visible = true;
         const Widget *widget = this;
         while (widget) {
@@ -120,10 +120,10 @@ public:
     }
 
     /// Return the number of child widgets
-    int childCount() const { return (int) mChildren.size(); }
+    int child_count() const { return (int) m_children.size(); }
 
     /// Return the list of child widgets of the current widget
-    const std::vector<Widget *> &children() const { return mChildren; }
+    const std::vector<Widget *> &children() const { return m_children; }
 
     /**
      * \brief Add a child widget to the current widget at
@@ -133,25 +133,25 @@ public:
      * since the constructor of \ref Widget automatically
      * adds the current widget to its parent
      */
-    virtual void addChild(int index, Widget *widget);
+    virtual void add_child(int index, Widget *widget);
 
     /// Convenience function which appends a widget at the end
-    void addChild(Widget *widget);
+    void add_child(Widget *widget);
 
     /// Remove a child widget by index
-    void removeChild(int index);
+    void remove_child(int index);
 
     /// Remove a child widget by value
-    void removeChild(const Widget *widget);
+    void remove_child(const Widget *widget);
 
     /// Retrieves the child at the specific position
-    const Widget* childAt(int index) const { return mChildren[index]; }
+    const Widget* child_at(int index) const { return m_children[index]; }
 
     /// Retrieves the child at the specific position
-    Widget* childAt(int index) { return mChildren[index]; }
+    Widget* child_at(int index) { return m_children[index]; }
 
     /// Returns the index of a specific child or -1 if not found
-    int childIndex(Widget* widget) const;
+    int child_index(Widget* widget) const;
 
     /// Variadic shorthand notation to construct and add a child widget
     template<typename WidgetClass, typename... Args>
@@ -162,104 +162,90 @@ public:
     /// Walk up the hierarchy and return the parent window
     Window *window();
 
-    /// Associate this widget with an ID value (optional)
-    void setId(const std::string &id) { mId = id; }
-    /// Return the ID value associated with this widget, if any
-    const std::string &id() const { return mId; }
-
     /// Return whether or not this widget is currently enabled
-    bool enabled() const { return mEnabled; }
+    bool enabled() const { return m_enabled; }
     /// Set whether or not this widget is currently enabled
-    void setEnabled(bool enabled) { mEnabled = enabled; }
+    void set_enabled(bool enabled) { m_enabled = enabled; }
 
     /// Return whether or not this widget is currently focused
-    bool focused() const { return mFocused; }
+    bool focused() const { return m_focused; }
     /// Set whether or not this widget is currently focused
-    void setFocused(bool focused) { mFocused = focused; }
+    void set_focused(bool focused) { m_focused = focused; }
     /// Request the focus to be moved to this widget
-    void requestFocus();
+    void request_focus();
 
-    const std::string &tooltip() const { return mTooltip; }
-    void setTooltip(const std::string &tooltip) { mTooltip = tooltip; }
+    const std::string &tooltip() const { return m_tooltip; }
+    void set_tooltip(const std::string &tooltip) { m_tooltip = tooltip; }
 
     /// Return current font size. If not set the default of the current theme will be returned
-    int fontSize() const;
+    int font_size() const;
     /// Set the font size of this widget
-    void setFontSize(int fontSize) { mFontSize = fontSize; }
+    void set_font_size(int font_size) { m_font_size = font_size; }
     /// Return whether the font size is explicitly specified for this widget
-    bool hasFontSize() const { return mFontSize > 0; }
+    bool has_font_size() const { return m_font_size > 0; }
 
     /// Return a pointer to the cursor of the widget
-    Cursor cursor() const { return mCursor; }
+    Cursor cursor() const { return m_cursor; }
     /// Set the cursor of the widget
-    void setCursor(Cursor cursor) { mCursor = cursor; }
+    void set_cursor(Cursor cursor) { m_cursor = cursor; }
 
     /// Check if the widget contains a certain position
     bool contains(const Vector2i &p) const {
-        auto d = (p-mPos).array();
-        return (d >= 0).all() && (d < mSize.array()).all();
+        auto d = p-m_pos;
+        return enoki::all(d >= 0) && enoki::all(d < m_size);
     }
 
     /// Determine the widget located at the given position value (recursive)
-    Widget *findWidget(const Vector2i &p);
+    Widget *find_widget(const Vector2i &p);
 
     /// Handle a mouse button event (default implementation: propagate to children)
-    virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers);
+    virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers);
 
     /// Handle a mouse motion event (default implementation: propagate to children)
-    virtual bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers);
+    virtual bool mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers);
 
     /// Handle a mouse drag event (default implementation: do nothing)
-    virtual bool mouseDragEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers);
+    virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers);
 
     /// Handle a mouse enter/leave event (default implementation: record this fact, but do nothing)
-    virtual bool mouseEnterEvent(const Vector2i &p, bool enter);
+    virtual bool mouse_enter_event(const Vector2i &p, bool enter);
 
     /// Handle a mouse scroll event (default implementation: propagate to children)
-    virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel);
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel);
 
     /// Handle a focus change event (default implementation: record the focus status, but do nothing)
-    virtual bool focusEvent(bool focused);
+    virtual bool focus_event(bool focused);
 
     /// Handle a keyboard event (default implementation: do nothing)
-    virtual bool keyboardEvent(int key, int scancode, int action, int modifiers);
+    virtual bool keyboard_event(int key, int scancode, int action, int modifiers);
 
     /// Handle text input (UTF-32 format) (default implementation: do nothing)
-    virtual bool keyboardCharacterEvent(unsigned int codepoint);
+    virtual bool keyboard_character_event(unsigned int codepoint);
 
     /// Compute the preferred size of the widget
-    virtual Vector2i preferredSize(NVGcontext *ctx) const;
+    virtual Vector2i preferred_size(NVGcontext *ctx) const;
 
     /// Invoke the associated layout generator to properly place child widgets, if any
-    virtual void performLayout(NVGcontext *ctx);
+    virtual void perform_layout(NVGcontext *ctx);
 
     /// Draw the widget (and all child widgets)
     virtual void draw(NVGcontext *ctx);
-
-    /// Save the state of the widget into the given \ref Serializer instance
-    virtual void save(Serializer &s) const;
-
-    /// Restore the state of the widget from the given \ref Serializer instance
-    virtual bool load(Serializer &s);
 
 protected:
     /// Free all resources used by the widget and any children
     virtual ~Widget();
 
 protected:
-    Widget *mParent;
-    ref<Theme> mTheme;
-    ref<Layout> mLayout;
-    std::string mId;
-    Vector2i mPos, mSize, mFixedSize;
-    std::vector<Widget *> mChildren;
-    bool mVisible, mEnabled;
-    bool mFocused, mMouseFocus;
-    std::string mTooltip;
-    int mFontSize;
-    Cursor mCursor;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    Widget *m_parent;
+    ref<Theme> m_theme;
+    ref<Layout> m_layout;
+    Vector2i m_pos, m_size, m_fixed_size;
+    std::vector<Widget *> m_children;
+    bool m_visible, m_enabled;
+    bool m_focused, m_mouse_focus;
+    std::string m_tooltip;
+    int m_font_size;
+    Cursor m_cursor;
 };
 
 NAMESPACE_END(nanogui)

@@ -24,144 +24,144 @@
 NAMESPACE_BEGIN(nanogui)
 
 TabWidget::TabWidget(Widget* parent)
-    : Widget(parent), mHeader(new TabHeader(this)), mContent(new StackedWidget(this)) {
-    mHeader->setCallback([this](int i) {
-        mContent->setSelectedIndex(i);
-        if (mCallback)
-            mCallback(i);
+    : Widget(parent), m_header(new TabHeader(this)), m_content(new StackedWidget(this)) {
+    m_header->set_callback([this](int i) {
+        m_content->set_selected_index(i);
+        if (m_callback)
+            m_callback(i);
     });
 }
 
-void TabWidget::setActiveTab(int tabIndex) {
-    mHeader->setActiveTab(tabIndex);
-    mContent->setSelectedIndex(tabIndex);
+void TabWidget::set_active_tab(int tab_index) {
+    m_header->set_active_tab(tab_index);
+    m_content->set_selected_index(tab_index);
 }
 
-int TabWidget::activeTab() const {
-    assert(mHeader->activeTab() == mContent->selectedIndex());
-    return mContent->selectedIndex();
+int TabWidget::active_tab() const {
+    assert(m_header->active_tab() == m_content->selected_index());
+    return m_content->selected_index();
 }
 
-int TabWidget::tabCount() const {
-    assert(mContent->childCount() == mHeader->tabCount());
-    return mHeader->tabCount();
+int TabWidget::tab_count() const {
+    assert(m_content->child_count() == m_header->tab_count());
+    return m_header->tab_count();
 }
 
-Widget* TabWidget::createTab(int index, const std::string &label) {
+Widget* TabWidget::create_tab(int index, const std::string &label) {
     Widget* tab = new Widget(nullptr);
-    addTab(index, label, tab);
+    add_tab(index, label, tab);
     return tab;
 }
 
-Widget* TabWidget::createTab(const std::string &label) {
-    return createTab(tabCount(), label);
+Widget* TabWidget::create_tab(const std::string &label) {
+    return create_tab(tab_count(), label);
 }
 
-void TabWidget::addTab(const std::string &name, Widget *tab) {
-    addTab(tabCount(), name, tab);
+void TabWidget::add_tab(const std::string &name, Widget *tab) {
+    add_tab(tab_count(), name, tab);
 }
 
-void TabWidget::addTab(int index, const std::string &label, Widget *tab) {
-    assert(index <= tabCount());
+void TabWidget::add_tab(int index, const std::string &label, Widget *tab) {
+    assert(index <= tab_count());
     // It is important to add the content first since the callback
     // of the header will automatically fire when a new tab is added.
-    mContent->addChild(index, tab);
-    mHeader->addTab(index, label);
-    assert(mHeader->tabCount() == mContent->childCount());
+    m_content->add_child(index, tab);
+    m_header->add_tab(index, label);
+    assert(m_header->tab_count() == m_content->child_count());
 }
 
-int TabWidget::tabLabelIndex(const std::string &label) {
-    return mHeader->tabIndex(label);
+int TabWidget::tab_label_index(const std::string &label) {
+    return m_header->tab_index(label);
 }
 
-int TabWidget::tabIndex(Widget* tab) {
-    return mContent->childIndex(tab);
+int TabWidget::tab_index(Widget* tab) {
+    return m_content->child_index(tab);
 }
 
-void TabWidget::ensureTabVisible(int index) {
-    if (!mHeader->isTabVisible(index))
-        mHeader->ensureTabVisible(index);
+void TabWidget::ensure_tab_visible(int index) {
+    if (!m_header->is_tab_visible(index))
+        m_header->ensure_tab_visible(index);
 }
 
-const Widget *TabWidget::tab(const std::string &tabName) const {
-    int index = mHeader->tabIndex(tabName);
-    if (index == mContent->childCount())
+const Widget *TabWidget::tab(const std::string &tab_name) const {
+    int index = m_header->tab_index(tab_name);
+    if (index == m_content->child_count())
         return nullptr;
-    return mContent->children()[index];
+    return m_content->children()[index];
 }
 
-Widget *TabWidget::tab(const std::string &tabName) {
-    int index = mHeader->tabIndex(tabName);
-    if (index == mContent->childCount())
+Widget *TabWidget::tab(const std::string &tab_name) {
+    int index = m_header->tab_index(tab_name);
+    if (index == m_content->child_count())
         return nullptr;
-    return mContent->children()[index];
+    return m_content->children()[index];
 }
 
-bool TabWidget::removeTab(const std::string &tabName) {
-    int index = mHeader->removeTab(tabName);
+bool TabWidget::remove_tab(const std::string &tab_name) {
+    int index = m_header->remove_tab(tab_name);
     if (index == -1)
         return false;
-    mContent->removeChild(index);
+    m_content->remove_child(index);
     return true;
 }
 
-void TabWidget::removeTab(int index) {
-    assert(mContent->childCount() < index);
-    mHeader->removeTab(index);
-    mContent->removeChild(index);
-    if (activeTab() == index)
-        setActiveTab(index == (index - 1) ? index - 1 : 0);
+void TabWidget::remove_tab(int index) {
+    assert(m_content->child_count() < index);
+    m_header->remove_tab(index);
+    m_content->remove_child(index);
+    if (active_tab() == index)
+        set_active_tab(index == (index - 1) ? index - 1 : 0);
 }
 
-const std::string &TabWidget::tabLabelAt(int index) const {
-    return mHeader->tabLabelAt(index);
+const std::string &TabWidget::tab_label_at(int index) const {
+    return m_header->tab_label_at(index);
 }
 
-void TabWidget::performLayout(NVGcontext* ctx) {
-    int headerHeight = mHeader->preferredSize(ctx).y();
-    int margin = mTheme->mTabInnerMargin;
-    mHeader->setPosition({ 0, 0 });
-    mHeader->setSize({ mSize.x(), headerHeight });
-    mHeader->performLayout(ctx);
-    mContent->setPosition({ margin, headerHeight + margin });
-    mContent->setSize({ mSize.x() - 2 * margin, mSize.y() - 2*margin - headerHeight });
-    mContent->performLayout(ctx);
+void TabWidget::perform_layout(NVGcontext* ctx) {
+    int header_height = m_header->preferred_size(ctx).y();
+    int margin = m_theme->m_tab_inner_margin;
+    m_header->set_position({ 0, 0 });
+    m_header->set_size({ m_size.x(), header_height });
+    m_header->perform_layout(ctx);
+    m_content->set_position({ margin, header_height + margin });
+    m_content->set_size({ m_size.x() - 2 * margin, m_size.y() - 2*margin - header_height });
+    m_content->perform_layout(ctx);
 }
 
-Vector2i TabWidget::preferredSize(NVGcontext* ctx) const {
-    auto contentSize = mContent->preferredSize(ctx);
-    auto headerSize = mHeader->preferredSize(ctx);
-    int margin = mTheme->mTabInnerMargin;
-    auto borderSize = Vector2i(2 * margin, 2 * margin);
-    Vector2i tabPreferredSize = contentSize + borderSize + Vector2i(0, headerSize.y());
-    return tabPreferredSize;
+Vector2i TabWidget::preferred_size(NVGcontext* ctx) const {
+    auto content_size = m_content->preferred_size(ctx);
+    auto header_size = m_header->preferred_size(ctx);
+    int margin = m_theme->m_tab_inner_margin;
+    auto border_size = Vector2i(2 * margin, 2 * margin);
+    Vector2i tab_preferred_size = content_size + border_size + Vector2i(0, header_size.y());
+    return tab_preferred_size;
 }
 
 void TabWidget::draw(NVGcontext* ctx) {
-    int tabHeight = mHeader->preferredSize(ctx).y();
-    auto activeArea = mHeader->activeButtonArea();
+    int tab_height = m_header->preferred_size(ctx).y();
+    auto active_area = m_header->active_button_area();
 
 
     for (int i = 0; i < 3; ++i) {
         nvgSave(ctx);
         if (i == 0)
-            nvgIntersectScissor(ctx, mPos.x(), mPos.y(), activeArea.first.x() + 1, mSize.y());
+            nvgIntersectScissor(ctx, m_pos.x(), m_pos.y(), active_area.first.x() + 1, m_size.y());
         else if (i == 1)
-            nvgIntersectScissor(ctx, mPos.x() + activeArea.second.x(), mPos.y(), mSize.x() - activeArea.second.x(), mSize.y());
+            nvgIntersectScissor(ctx, m_pos.x() + active_area.second.x(), m_pos.y(), m_size.x() - active_area.second.x(), m_size.y());
         else
-            nvgIntersectScissor(ctx, mPos.x(), mPos.y() + tabHeight + 2, mSize.x(), mSize.y());
+            nvgIntersectScissor(ctx, m_pos.x(), m_pos.y() + tab_height + 2, m_size.x(), m_size.y());
 
         nvgBeginPath(ctx);
         nvgStrokeWidth(ctx, 1.0f);
-        nvgRoundedRect(ctx, mPos.x() + 0.5f, mPos.y() + tabHeight + 1.5f, mSize.x() - 1,
-                       mSize.y() - tabHeight - 2, mTheme->mButtonCornerRadius);
-        nvgStrokeColor(ctx, mTheme->mBorderLight);
+        nvgRoundedRect(ctx, m_pos.x() + 0.5f, m_pos.y() + tab_height + 1.5f, m_size.x() - 1,
+                       m_size.y() - tab_height - 2, m_theme->m_button_corner_radius);
+        nvgStrokeColor(ctx, m_theme->m_border_light);
         nvgStroke(ctx);
 
         nvgBeginPath(ctx);
-        nvgRoundedRect(ctx, mPos.x() + 0.5f, mPos.y() + tabHeight + 0.5f, mSize.x() - 1,
-                       mSize.y() - tabHeight - 2, mTheme->mButtonCornerRadius);
-        nvgStrokeColor(ctx, mTheme->mBorderDark);
+        nvgRoundedRect(ctx, m_pos.x() + 0.5f, m_pos.y() + tab_height + 0.5f, m_size.x() - 1,
+                       m_size.y() - tab_height - 2, m_theme->m_button_corner_radius);
+        nvgStrokeColor(ctx, m_theme->m_border_dark);
         nvgStroke(ctx);
         nvgRestore(ctx);
     }

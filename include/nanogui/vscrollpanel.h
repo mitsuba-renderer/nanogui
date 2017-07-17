@@ -27,19 +27,15 @@ class NANOGUI_EXPORT VScrollPanel : public Widget {
 public:
     VScrollPanel(Widget *parent);
 
-    virtual void performLayout(NVGcontext *ctx) override;
-    virtual Vector2i preferredSize(NVGcontext *ctx) const override;
-    virtual bool mouseDragEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
-    virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel) override;
+    virtual void perform_layout(NVGcontext *ctx) override;
+    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
+    virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
     virtual void draw(NVGcontext *ctx) override;
-    virtual void save(Serializer &s) const override;
-    virtual bool load(Serializer &s) override;
 protected:
-    int mChildPreferredHeight;
-    float mScroll;
-    bool mUpdateLayout;
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    int m_child_preferred_height;
+    float m_scroll;
+    bool m_update_layout;
 };
 
 NAMESPACE_END(nanogui)
