@@ -90,18 +90,24 @@ bool Widget::mouse_button_event(const Vector2i &p, int button, bool down, int mo
 }
 
 bool Widget::mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) {
+    bool handled = false;
+
     for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
         Widget *child = *it;
         if (!child->visible())
             continue;
-        bool contained = child->contains(p - m_pos), prev_contained = child->contains(p - m_pos - rel);
+
+        bool contained      = child->contains(p - m_pos),
+             prev_contained = child->contains(p - m_pos - rel);
+
         if (contained != prev_contained)
-            child->mouse_enter_event(p, contained);
-        if ((contained || prev_contained) &&
-            child->mouse_motion_event(p - m_pos, rel, button, modifiers))
-            return true;
+            handled |= child->mouse_enter_event(p, contained);
+
+        if (contained || prev_contained)
+            handled |= child->mouse_motion_event(p - m_pos, rel, button, modifiers);
     }
-    return false;
+
+    return handled;
 }
 
 bool Widget::scroll_event(const Vector2i &p, const Vector2f &rel) {

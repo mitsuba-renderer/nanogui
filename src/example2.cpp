@@ -72,7 +72,7 @@ int main(int /* argc */, char ** /* argv */) {
         screen->perform_layout();
         window->center();
 
-        nanogui::mainloop();
+        nanogui::mainloop(0);
     }
 
     nanogui::shutdown();

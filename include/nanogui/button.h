@@ -74,6 +74,7 @@ public:
     const std::vector<Button *> &button_group() const { return m_button_group; }
 
     virtual Vector2i preferred_size(NVGcontext *ctx) const override;
+    virtual bool mouse_enter_event(const Vector2i &p, bool enter) override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
     virtual void draw(NVGcontext *ctx) override;
 protected:

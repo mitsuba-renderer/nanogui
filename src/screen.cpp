@@ -92,7 +92,7 @@ static float get_pixel_ratio(GLFWwindow *window) {
 Screen::Screen()
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
-      m_shutdown_glfw(false), m_fullscreen(false) {
+      m_shutdown_glfw(false), m_fullscreen(false), m_redraw(false) {
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
 }
 
@@ -102,7 +102,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
                unsigned int gl_major, unsigned int gl_minor)
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f), m_caption(caption),
-      m_shutdown_glfw(false), m_fullscreen(fullscreen) {
+      m_shutdown_glfw(false), m_fullscreen(fullscreen), m_redraw(false) {
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
 
     /* Request a forward compatible OpenGL gl_major.gl_minor core profile context.
@@ -306,6 +306,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     m_drag_active = false;
     m_last_interaction = glfwGetTime();
     m_process_events = true;
+    m_redraw = true;
     __nanogui_screens[m_glfw_window] = this;
 
     for (int i=0; i < (int) Cursor::CursorCount; ++i)
@@ -357,23 +358,16 @@ void Screen::set_size(const Vector2i &size) {
 }
 
 void Screen::draw_all() {
-    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    draw_contents();
-    draw_widgets();
-
-    glfwSwapBuffers(m_glfw_window);
-}
-
-void Screen::draw_widgets() {
-    if (!m_visible)
+    if (!m_redraw)
         return;
+    m_redraw = false;
 
     glfwMakeContextCurrent(m_glfw_window);
-
     glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
     glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
+
+    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 #if defined(_WIN32) || defined(__linux__)
     m_size = Vector2i(m_size / m_pixel_ratio);
@@ -386,6 +380,14 @@ void Screen::draw_widgets() {
 
     glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
     glBindSampler(0, 0);
+
+    draw_contents();
+    draw_widgets();
+
+    glfwSwapBuffers(m_glfw_window);
+}
+
+void Screen::draw_widgets() {
     nvgBeginFrame(m_nvg_context, m_size[0], m_size[1], m_pixel_ratio);
 
     draw(m_nvg_context);
@@ -468,18 +470,25 @@ bool Screen::resize_event(const Vector2i& size) {
     return false;
 }
 
-bool Screen::cursor_pos_callback_event(double x, double y) {
+void Screen::redraw() {
+    if (!m_redraw) {
+        m_redraw = true;
+        glfwPostEmptyEvent();
+    }
+}
+
+void Screen::cursor_pos_callback_event(double x, double y) {
     Vector2i p((int) x, (int) y);
 
 #if defined(_WIN32) || defined(__linux__)
     p = Vector2i(Vector2f(p) / m_pixel_ratio);
 #endif
 
-    bool ret = false;
     m_last_interaction = glfwGetTime();
     try {
         p -= Vector2i(1, 2);
 
+        bool ret = false;
         if (!m_drag_active) {
             Widget *widget = find_widget(p);
             if (widget != nullptr && widget->cursor() != m_cursor) {
@@ -496,15 +505,13 @@ bool Screen::cursor_pos_callback_event(double x, double y) {
             ret = mouse_motion_event(p, p - m_mouse_pos, m_mouse_state, m_modifiers);
 
         m_mouse_pos = p;
-
-        return ret;
+        m_redraw |= ret;
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
-        return false;
     }
 }
 
-bool Screen::mouse_button_callback_event(int button, int action, int modifiers) {
+void Screen::mouse_button_callback_event(int button, int action, int modifiers) {
     m_modifiers = modifiers;
     m_last_interaction = glfwGetTime();
     try {
@@ -513,7 +520,7 @@ bool Screen::mouse_button_callback_event(int button, int action, int modifiers) 
                 dynamic_cast<Window *>(m_focus_path[m_focus_path.size() - 2]);
             if (window && window->modal()) {
                 if (!window->contains(m_mouse_pos))
-                    return false;
+                    return;
             }
         }
 
@@ -546,43 +553,39 @@ bool Screen::mouse_button_callback_event(int button, int action, int modifiers) 
             m_drag_widget = nullptr;
         }
 
-        return mouse_button_event(m_mouse_pos, button, action == GLFW_PRESS,
-                                m_modifiers);
+        m_redraw |= mouse_button_event(m_mouse_pos, button,
+                                       action == GLFW_PRESS, m_modifiers);
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
-        return false;
     }
 }
 
-bool Screen::key_callback_event(int key, int scancode, int action, int mods) {
+void Screen::key_callback_event(int key, int scancode, int action, int mods) {
     m_last_interaction = glfwGetTime();
     try {
-        return keyboard_event(key, scancode, action, mods);
+        m_redraw |= keyboard_event(key, scancode, action, mods);
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
-        return false;
     }
 }
 
-bool Screen::char_callback_event(unsigned int codepoint) {
+void Screen::char_callback_event(unsigned int codepoint) {
     m_last_interaction = glfwGetTime();
     try {
-        return keyboard_character_event(codepoint);
+        m_redraw |= keyboard_character_event(codepoint);
     } catch (const std::exception &e) {
-        std::cerr << "Caught exception in event handler: " << e.what()
-                  << std::endl;
-        return false;
+        std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
 }
 
-bool Screen::drop_callback_event(int count, const char **filenames) {
+void Screen::drop_callback_event(int count, const char **filenames) {
     std::vector<std::string> arg(count);
     for (int i = 0; i < count; ++i)
         arg[i] = filenames[i];
-    return drop_event(arg);
+    m_redraw |= drop_event(arg);
 }
 
-bool Screen::scroll_callback_event(double x, double y) {
+void Screen::scroll_callback_event(double x, double y) {
     m_last_interaction = glfwGetTime();
     try {
         if (m_focus_path.size() > 1) {
@@ -590,18 +593,16 @@ bool Screen::scroll_callback_event(double x, double y) {
                 dynamic_cast<Window *>(m_focus_path[m_focus_path.size() - 2]);
             if (window && window->modal()) {
                 if (!window->contains(m_mouse_pos))
-                    return false;
+                    return;
             }
         }
-        return scroll_event(m_mouse_pos, Vector2f(x, y));
+        m_redraw |= scroll_event(m_mouse_pos, Vector2f(x, y));
     } catch (const std::exception &e) {
-        std::cerr << "Caught exception in event handler: " << e.what()
-                  << std::endl;
-        return false;
+        std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
 }
 
-bool Screen::resize_callback_event(int, int) {
+void Screen::resize_callback_event(int, int) {
     Vector2i fb_size, size;
     glfwGetFramebufferSize(m_glfw_window, &fb_size[0], &fb_size[1]);
     glfwGetWindowSize(m_glfw_window, &size[0], &size[1]);
@@ -611,17 +612,15 @@ bool Screen::resize_callback_event(int, int) {
 #endif
 
     if (m_fbsize == Vector2i(0, 0) || size == Vector2i(0, 0))
-        return false;
+        return;
 
     m_fbsize = fb_size; m_size = size;
     m_last_interaction = glfwGetTime();
 
     try {
-        return resize_event(m_size);
+        m_redraw |= resize_event(m_size);
     } catch (const std::exception &e) {
-        std::cerr << "Caught exception in event handler: " << e.what()
-                  << std::endl;
-        return false;
+        std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
 }
 

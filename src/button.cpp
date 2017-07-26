@@ -45,6 +45,11 @@ Vector2i Button::preferred_size(NVGcontext *ctx) const {
     return Vector2i((int)(tw + iw) + 20, font_size + 10);
 }
 
+bool Button::mouse_enter_event(const Vector2i &p, bool enter) {
+    Widget::mouse_enter_event(p, enter);
+    return true;
+}
+
 bool Button::mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) {
     Widget::mouse_button_event(p, button, down, modifiers);
     /* Temporarily increase the reference count of the button in case the

@@ -157,6 +157,11 @@ void Window::center() {
     ((Screen *) widget)->center_window(this);
 }
 
+bool Window::mouse_enter_event(const Vector2i &p, bool enter) {
+    Widget::mouse_enter_event(p, enter);
+    return true;
+}
+
 bool Window::mouse_drag_event(const Vector2i &, const Vector2i &rel,
                             int button, int /* modifiers */) {
     if (m_drag && (button & (1 << GLFW_MOUSE_BUTTON_1)) != 0) {

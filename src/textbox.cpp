@@ -279,6 +279,11 @@ void TextBox::draw(NVGcontext* ctx) {
     nvgRestore(ctx);
 }
 
+bool TextBox::mouse_enter_event(const Vector2i &p, bool enter) {
+    Widget::mouse_enter_event(p, enter);
+    return true;
+}
+
 bool TextBox::mouse_button_event(const Vector2i &p, int button, bool down,
                                int modifiers) {
 
@@ -346,10 +351,7 @@ bool TextBox::mouse_motion_event(const Vector2i &p, const Vector2i & /* rel */,
     else
         set_cursor(Cursor::IBeam);
 
-    if (m_editable && focused()) {
-        return true;
-    }
-    return false;
+    return m_editable;
 }
 
 bool TextBox::mouse_drag_event(const Vector2i &p, const Vector2i &/* rel */,

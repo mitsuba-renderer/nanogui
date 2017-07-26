@@ -44,7 +44,7 @@ if __name__ == "__main__":
     test.set_visible(True)
 
     print("Launching detached mainloop")
-    h = nanogui.mainloop(detach=test)
+    h = nanogui.mainloop(detach=test, refresh=0)
 
     print("Back in Python context")
     for i in range(10):

@@ -78,7 +78,8 @@ void mainloop(int refresh) {
                 std::chrono::milliseconds time(refresh);
                 while (mainloop_active) {
                     std::this_thread::sleep_for(time);
-                    glfwPostEmptyEvent();
+                    for (auto kv : __nanogui_screens)
+                        kv.second->redraw();
                 }
             }
         );

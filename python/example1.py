@@ -390,7 +390,7 @@ if __name__ == "__main__":
     test = TestApp()
     test.draw_all()
     test.set_visible(True)
-    nanogui.mainloop()
+    nanogui.mainloop(refresh=50)
     del test
     gc.collect()
     nanogui.shutdown()

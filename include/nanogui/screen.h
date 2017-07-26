@@ -104,6 +104,9 @@ public:
     /// Set window size
     void set_size(const Vector2i& size);
 
+    /// Send an event that will cause the screen to be redrawn at the next event loop iteration
+    void redraw();
+
     /// Draw the Screen contents
     virtual void draw_all();
 
@@ -170,13 +173,13 @@ public:
     void initialize(GLFWwindow *window, bool shutdown_glfw);
 
     /* Event handlers */
-    bool cursor_pos_callback_event(double x, double y);
-    bool mouse_button_callback_event(int button, int action, int modifiers);
-    bool key_callback_event(int key, int scancode, int action, int mods);
-    bool char_callback_event(unsigned int codepoint);
-    bool drop_callback_event(int count, const char **filenames);
-    bool scroll_callback_event(double x, double y);
-    bool resize_callback_event(int width, int height);
+    void cursor_pos_callback_event(double x, double y);
+    void mouse_button_callback_event(int button, int action, int modifiers);
+    void key_callback_event(int key, int scancode, int action, int mods);
+    void char_callback_event(unsigned int codepoint);
+    void drop_callback_event(int count, const char **filenames);
+    void scroll_callback_event(double x, double y);
+    void resize_callback_event(int width, int height);
 
     /* Internal helper functions */
     void update_focus(Widget *widget);
@@ -203,6 +206,7 @@ protected:
     std::string m_caption;
     bool m_shutdown_glfw;
     bool m_fullscreen;
+    bool m_redraw;
     std::function<void(Vector2i)> m_resize_callback;
 };
 

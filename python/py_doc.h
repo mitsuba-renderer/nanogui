@@ -290,6 +290,8 @@ static const char *__doc_nanogui_Button_m_text_color = R"doc()doc";
 
 static const char *__doc_nanogui_Button_mouse_button_event = R"doc()doc";
 
+static const char *__doc_nanogui_Button_mouse_enter_event = R"doc()doc";
+
 static const char *__doc_nanogui_Button_preferred_size = R"doc()doc";
 
 static const char *__doc_nanogui_Button_pushed = R"doc()doc";
@@ -1648,6 +1650,8 @@ static const char *__doc_nanogui_Screen_m_pixel_ratio = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_process_events = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_m_redraw = R"doc()doc";
+
 static const char *__doc_nanogui_Screen_m_resize_callback = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_shutdown_glfw = R"doc()doc";
@@ -1665,6 +1669,10 @@ static const char *__doc_nanogui_Screen_perform_layout = R"doc(Compute the layou
 static const char *__doc_nanogui_Screen_pixel_ratio =
 R"doc(Return the ratio between pixel and device coordinates (e.g. >= 2 on
 Mac Retina displays))doc";
+
+static const char *__doc_nanogui_Screen_redraw =
+R"doc(Send an event that will cause the screen to be redrawn at the next
+event loop iteration)doc";
 
 static const char *__doc_nanogui_Screen_resize_callback = R"doc(Set the resize callback)doc";
 
@@ -2068,6 +2076,8 @@ static const char *__doc_nanogui_TextBox_mouse_button_event = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_mouse_drag_event = R"doc()doc";
 
+static const char *__doc_nanogui_TextBox_mouse_enter_event = R"doc()doc";
+
 static const char *__doc_nanogui_TextBox_mouse_motion_event = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_paste_from_clipboard = R"doc()doc";
@@ -2444,6 +2454,8 @@ R"doc(Handle mouse events recursively and bring the current window to the
 top)doc";
 
 static const char *__doc_nanogui_Window_mouse_drag_event = R"doc(Handle window drag events)doc";
+
+static const char *__doc_nanogui_Window_mouse_enter_event = R"doc(Handle mouse enter/leave events)doc";
 
 static const char *__doc_nanogui_Window_perform_layout =
 R"doc(Invoke the associated layout generator to properly place child

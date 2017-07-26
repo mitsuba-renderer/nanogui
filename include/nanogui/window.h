@@ -47,6 +47,8 @@ public:
 
     /// Draw the window
     virtual void draw(NVGcontext *ctx) override;
+    /// Handle mouse enter/leave events
+    virtual bool mouse_enter_event(const Vector2i &p, bool enter) override;
     /// Handle window drag events
     virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
     /// Handle mouse events recursively and bring the current window to the top

@@ -26,7 +26,7 @@ Vector2i Slider::preferred_size(NVGcontext *) const {
 }
 
 bool Slider::mouse_drag_event(const Vector2i &p, const Vector2i & /* rel */,
-                            int /* button */, int /* modifiers */) {
+                              int /* button */, int /* modifiers */) {
     if (!m_enabled)
         return false;
 
@@ -34,10 +34,10 @@ bool Slider::mouse_drag_event(const Vector2i &p, const Vector2i & /* rel */,
     const float start_x = kr + kshadow + m_pos.x() - 1;
     const float width_x = m_size.x() - 2 * (kr + kshadow);
 
-    float value = (p.x() - start_x) / width_x;
+    float value = (p.x() - start_x) / width_x, old_value = m_value;
     value = value * (m_range.second - m_range.first) + m_range.first;
     m_value = std::min(std::max(value, m_range.first), m_range.second);
-    if (m_callback)
+    if (m_callback && m_value != old_value)
         m_callback(m_value);
     return true;
 }
@@ -50,10 +50,10 @@ bool Slider::mouse_button_event(const Vector2i &p, int /* button */, bool down, 
     const float start_x = kr + kshadow + m_pos.x() - 1;
     const float width_x = m_size.x() - 2 * (kr + kshadow);
 
-    float value = (p.x() - start_x) / width_x;
+    float value = (p.x() - start_x) / width_x, old_value = m_value;
     value = value * (m_range.second - m_range.first) + m_range.first;
     m_value = std::min(std::max(value, m_range.first), m_range.second);
-    if (m_callback)
+    if (m_callback && m_value != old_value)
         m_callback(m_value);
     if (m_final_callback && !down)
         m_final_callback(m_value);

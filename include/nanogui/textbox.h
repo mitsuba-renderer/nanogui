@@ -70,6 +70,7 @@ public:
     std::function<bool(const std::string& str)> callback() const { return m_callback; }
     void set_callback(const std::function<bool(const std::string& str)> &callback) { m_callback = callback; }
 
+    virtual bool mouse_enter_event(const Vector2i &p, bool enter) override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
     virtual bool mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
     virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
