@@ -399,7 +399,7 @@ struct Arcball {
     }
 
     Matrix4f matrix() const {
-        return quat_to_matrix(m_incr * m_quat);
+        return enoki::quat_to_matrix<Matrix4f>(m_incr * m_quat);
     }
 
     ENOKI_ALIGNED_OPERATOR_NEW()
