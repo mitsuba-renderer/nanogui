@@ -40,7 +40,7 @@ static void upload_attrib_py(GLShader &sh, const std::string &name, py::array M,
     }
 
     sh.upload_attrib(name, (size_t) M.shape(0), (size_t) M.shape(1),
-                     M.itemsize(), gl_type, integral, M.data(), version);
+                     (size_t) M.itemsize(), gl_type, integral, M.data(), version);
 }
 
 static void set_uniform_py(GLShader &sh, const std::string &name, py::object arg, bool warn = true) {
