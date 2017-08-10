@@ -178,7 +178,7 @@ void TabHeader::add_tab(int index, const std::string &label) {
 int TabHeader::remove_tab(const std::string &label) {
     auto element = std::find_if(m_tab_buttons.begin(), m_tab_buttons.end(),
                                 [&](const TabButton& tb) { return label == tb.label(); });
-    int index = std::distance(m_tab_buttons.begin(), element);
+    int index = (int) std::distance(m_tab_buttons.begin(), element);
     if (element == m_tab_buttons.end())
         return -1;
     m_tab_buttons.erase(element);
@@ -204,7 +204,7 @@ int TabHeader::tab_index(const std::string &label) {
                            [&](const TabButton& tb) { return label == tb.label(); });
     if (it == m_tab_buttons.end())
         return -1;
-    return it - m_tab_buttons.begin();
+    return (int) (it - m_tab_buttons.begin());
 }
 
 void TabHeader::ensure_tab_visible(int index) {
@@ -252,8 +252,8 @@ void TabHeader::ensure_tab_visible(int index) {
         ++last;
     }
 
-    m_visible_start = std::distance(m_tab_buttons.begin(), first);
-    m_visible_end = std::distance(m_tab_buttons.begin(), last);
+    m_visible_start = (int) std::distance(m_tab_buttons.begin(), first);
+    m_visible_end = (int) std::distance(m_tab_buttons.begin(), last);
 }
 
 std::pair<Vector2i, Vector2i> TabHeader::visible_button_area() const {
@@ -344,7 +344,7 @@ bool TabHeader::mouse_button_event(const Vector2i &p, int button, bool down, int
                 return true;
 
             // Update the active tab and invoke the callback.
-            set_active_tab(std::distance(m_tab_buttons.begin(), first_invisible));
+            set_active_tab((int) std::distance(m_tab_buttons.begin(), first_invisible));
             return true;
         }
     }
@@ -398,7 +398,7 @@ void TabHeader::calculate_visible_end() {
         current_position += tb.size().x();
         return current_position > last_position;
     });
-    m_visible_end = std::distance(m_tab_buttons.begin(), first_invisible);
+    m_visible_end = (int) std::distance(m_tab_buttons.begin(), first_invisible);
 }
 
 void TabHeader::draw_controls(NVGcontext* ctx) {
