@@ -13,7 +13,7 @@
 #pragma once
 
 #include <nanogui/opengl.h>
-#include <enoki/homogeneous.h>
+#include <enoki/transform.h>
 #include <enoki/quaternion.h>
 #include <map>
 
