@@ -34,7 +34,7 @@
 #include <nanogui/graph.h>
 #include <nanogui/tabwidget.h>
 #include <nanogui/glcanvas.h>
-#include <enoki/homogeneous.h>
+#include <enoki/transform.h>
 #include <iostream>
 #include <string>
 
