@@ -163,6 +163,9 @@ public:
     /// Walk up the hierarchy and return the parent window
     Window *window();
 
+    /// Walk up the hierarchy and return the parent screen
+    Screen *screen();
+
     /// Return whether or not this widget is currently enabled
     bool enabled() const { return m_enabled; }
     /// Set whether or not this widget is currently enabled

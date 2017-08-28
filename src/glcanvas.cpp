@@ -45,7 +45,7 @@ void GLCanvas::draw(NVGcontext *ctx) {
     if (m_draw_border)
         draw_widget_border(ctx);
 
-    const Screen* screen = dynamic_cast<const Screen*>(this->window()->parent());
+    const Screen* screen = this->screen();
     assert(screen);
 
     float pixel_ratio = screen->pixel_ratio();

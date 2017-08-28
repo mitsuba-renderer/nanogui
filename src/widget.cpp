@@ -187,7 +187,20 @@ Window *Widget::window() {
     }
 }
 
-void Widget::request_focus() {
+Screen *Widget::screen() {
+    Widget *widget = this;
+    while (true) {
+        if (!widget)
+            throw std::runtime_error(
+                "Widget:internal error (could not find parent screen)");
+        Screen *screen = dynamic_cast<Screen *>(widget);
+        if (screen)
+            return screen;
+        widget = widget->parent();
+    }
+}
+
+void Widget::requestFocus() {
     Widget *widget = this;
     while (widget->parent())
         widget = widget->parent();
