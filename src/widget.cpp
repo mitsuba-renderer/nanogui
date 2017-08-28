@@ -200,7 +200,7 @@ Screen *Widget::screen() {
     }
 }
 
-void Widget::requestFocus() {
+void Widget::request_focus() {
     Widget *widget = this;
     while (widget->parent())
         widget = widget->parent();
