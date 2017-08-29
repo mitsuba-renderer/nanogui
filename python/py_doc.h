@@ -1565,7 +1565,7 @@ Parameter ``gl_major``:
     therefore no GUI) being created.
 
 Parameter ``gl_minor``:
-    The requested OpenGL Minor version number. Default is 3, if
+    The requested OpenGL Minor version number. Default is 2, if
     changed the value must correspond to a forward compatible core
     profile (for portability reasons). For example, set this to 1 and
     gl_major to 4 for a forward compatible core OpenGL 4.1 profile.

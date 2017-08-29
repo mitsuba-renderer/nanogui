@@ -17,6 +17,13 @@
 #include <nanogui/button.h>
 #include <nanogui/glcanvas.h>
 
+#if defined(_WIN32)
+#  if defined(APIENTRY)
+#    undef APIENTRY
+#  endif
+#  include <windows.h>
+#endif
+
 using nanogui::Vector3f;
 using nanogui::Vector2i;
 

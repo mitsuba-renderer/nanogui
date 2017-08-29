@@ -68,14 +68,6 @@
 #  include <windows.h>
 #endif
 
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::string;
-using std::vector;
-using std::pair;
-using std::to_string;
-
 class GLTexture {
 public:
     using handle_type = std::unique_ptr<uint8_t[], void(*)(void*)>;
@@ -166,20 +158,20 @@ public:
         new Label(window, "Push buttons", "sans-bold");
 
         Button *b = new Button(window, "Plain button");
-        b->set_callback([] { cout << "pushed!" << endl; });
+        b->set_callback([] { std::cout << "pushed!" << std::endl; });
         b->set_tooltip("short tooltip");
 
         /* Alternative construction notation using variadic template */
         b = window->add<Button>("Styled", ENTYPO_ICON_ROCKET);
         b->set_background_color(Color(0, 0, 255, 25));
-        b->set_callback([] { cout << "pushed!" << endl; });
+        b->set_callback([] { std::cout << "pushed!" << std::endl; });
         b->set_tooltip("This button has a fairly long tooltip. It is so long, in "
                 "fact, that the shown text will span several lines.");
 
         new Label(window, "Toggle buttons", "sans-bold");
         b = new Button(window, "Toggle me");
         b->set_flags(Button::ToggleButton);
-        b->set_change_callback([](bool state) { cout << "Toggle button state: " << state << endl; });
+        b->set_change_callback([](bool state) { std::cout << "Toggle button state: " << state << std::endl; });
 
         new Label(window, "Radio buttons", "sans-bold");
         b = new Button(window, "Radio button 1");
@@ -219,26 +211,26 @@ public:
         b = new Button(tools, "Info");
         b->set_callback([&] {
             auto dlg = new MessageDialog(this, MessageDialog::Type::Information, "Title", "This is an information message");
-            dlg->set_callback([](int result) { cout << "Dialog result: " << result << endl; });
+            dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
         });
         b = new Button(tools, "Warn");
         b->set_callback([&] {
             auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Title", "This is a warning message");
-            dlg->set_callback([](int result) { cout << "Dialog result: " << result << endl; });
+            dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
         });
         b = new Button(tools, "Ask");
         b->set_callback([&] {
             auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Title", "This is a question message", "Yes", "No", true);
-            dlg->set_callback([](int result) { cout << "Dialog result: " << result << endl; });
+            dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
         });
 
-        vector<pair<int, string>>
-            icons = load_image_directory(m_nvg_context, "icons");
-        #if defined(_WIN32)
-            string resources_folder_path("../resources/");
-        #else
-            string resources_folder_path("./");
-        #endif
+#if defined(_WIN32)
+        /// Executable is in the Debug/Release/.. subdirectory
+        std::string resources_folder_path("../icons");
+#else
+        std::string resources_folder_path("./icons");
+#endif
+        std::vector<std::pair<int, std::string>> icons = load_image_directory(m_nvg_context, resources_folder_path);
 
         new Label(window, "Image panel & scroll panel", "sans-bold");
         PopupButton *image_panel_btn = new PopupButton(window, "Image Panel");
@@ -256,7 +248,7 @@ public:
         // Load all of the images by creating a GLTexture object and saving the pixel data.
         for (auto& icon : icons) {
             GLTexture texture(icon.second);
-            auto data = texture.load(resources_folder_path + icon.second + ".png");
+            auto data = texture.load(icon.second + ".png");
             m_images_data.emplace_back(std::move(texture), std::move(data));
         }
 
@@ -267,20 +259,20 @@ public:
         img_panel->set_callback([this, image_view](int i) {
             image_view->bind_image(m_images_data[i].first.texture());
             m_current_image = i;
-            cout << "Selected item " << i << '\n';
+            std::cout << "Selected item " << i << '\n';
         });
         image_view->set_grid_threshold(20);
         image_view->set_pixel_info_threshold(20);
         image_view->set_pixel_info_callback(
-            [this, image_view](const Vector2i& index) -> pair<string, Color> {
+            [this, image_view](const Vector2i& index) -> std::pair<std::string, Color> {
             auto& image_data = m_images_data[m_current_image].second;
             auto& texture_size = image_view->image_size();
-            string string_data;
+            std::string string_data;
             uint16_t channel_sum = 0;
             for (int i = 0; i != 4; ++i) {
                 auto& channel_data = image_data[4*index.y()*texture_size.x() + 4*index.x() + i];
                 channel_sum += channel_data;
-                string_data += (to_string(static_cast<int>(channel_data)) + "\n");
+                string_data += (std::to_string(static_cast<int>(channel_data)) + "\n");
             }
             float intensity = static_cast<float>(255 - (channel_sum / 4)) / 255.0f;
             float color_scale = intensity > 0.5f ? (intensity + 1) / 2 : intensity / 2;
@@ -294,24 +286,24 @@ public:
                                        Alignment::Middle, 0, 6));
         b = new Button(tools, "Open");
         b->set_callback([&] {
-            cout << "File dialog result: " << file_dialog(
-                    { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, false) << endl;
+            std::cout << "File dialog result: " << file_dialog(
+                    { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, false) << std::endl;
         });
         b = new Button(tools, "Save");
         b->set_callback([&] {
-            cout << "File dialog result: " << file_dialog(
-                    { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, true) << endl;
+            std::cout << "File dialog result: " << file_dialog(
+                    { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, true) << std::endl;
         });
 
         new Label(window, "Combo box", "sans-bold");
         new ComboBox(window, { "Combo box item 1", "Combo box item 2", "Combo box item 3"});
         new Label(window, "Check box", "sans-bold");
         CheckBox *cb = new CheckBox(window, "Flag 1",
-            [](bool state) { cout << "Check box 1 state: " << state << endl; }
+            [](bool state) { std::cout << "Check box 1 state: " << state << std::endl; }
         );
         cb->set_checked(true);
         cb = new CheckBox(window, "Flag 2",
-            [](bool state) { cout << "Check box 2 state: " << state << endl; }
+            [](bool state) { std::cout << "Check box 2 state: " << state << std::endl; }
         );
         new Label(window, "Progress bar", "sans-bold");
         m_progress = new ProgressBar(window);
@@ -334,7 +326,7 @@ public:
             text_box->set_value(std::to_string((int) (value * 100)));
         });
         slider->set_final_callback([&](float value) {
-            cout << "Final slider value: " << (int) (value * 100) << endl;
+            std::cout << "Final slider value: " << (int) (value * 100) << std::endl;
         });
         text_box->set_fixed_size(Vector2i(60,25));
         text_box->set_font_size(20);
@@ -376,14 +368,14 @@ public:
         tab_widget->set_callback([tab_widget, this, counter] (int index) mutable {
             if (index == (tab_widget->tab_count()-1)) {
                 // When the "+" tab has been clicked, simply add a new tab.
-                string tab_name = "Dynamic " + to_string(counter);
+                std::string tab_name = "Dynamic " + std::to_string(counter);
                 Widget* layer_dyn = tab_widget->create_tab(index, tab_name);
                 layer_dyn->set_layout(new GroupLayout());
                 layer_dyn->add<Label>("Function graph widget", "sans-bold");
                 Graph *graph_dyn = layer_dyn->add<Graph>("Dynamic function");
 
                 graph_dyn->set_header("E = 2.35e-3");
-                graph_dyn->set_footer("Iteration " + to_string(index*counter));
+                graph_dyn->set_footer("Iteration " + std::to_string(index*counter));
                 std::vector<float> &func_dyn = graph_dyn->values();
                 func_dyn.resize(100);
                 for (int i = 0; i < 100; ++i)
@@ -604,7 +596,7 @@ private:
     nanogui::ProgressBar *m_progress;
     nanogui::GLShader m_shader;
 
-    using images_data_type = vector<pair<GLTexture, GLTexture::handle_type>>;
+    using images_data_type = std::vector<std::pair<GLTexture, GLTexture::handle_type>>;
     images_data_type m_images_data;
     int m_current_image;
 };

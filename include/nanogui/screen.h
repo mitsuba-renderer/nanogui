@@ -70,7 +70,7 @@ public:
      *     being created.
      *
      * \param gl_minor
-     *     The requested OpenGL Minor version number.  Default is 3, if changed
+     *     The requested OpenGL Minor version number.  Default is 2, if changed
      *     the value must correspond to a forward compatible core profile (for
      *     portability reasons).  For example, set this to 1 and \ref gl_major to 4
      *     for a forward compatible core OpenGL 4.1 profile.  Requesting an
@@ -81,7 +81,7 @@ public:
            bool resizable = true, bool fullscreen = false, int color_bits = 8,
            int alpha_bits = 8, int depth_bits = 24, int stencil_bits = 8,
            int n_samples = 0,
-           unsigned int gl_major = 3, unsigned int gl_minor = 3);
+           unsigned int gl_major = 3, unsigned int gl_minor = 2);
 
     /// Release all resources
     virtual ~Screen();

@@ -96,7 +96,7 @@ void register_widget(py::module &m) {
         .def(py::init<const Vector2i &, const std::string &, bool, bool, int, int, int, int, int, unsigned int, unsigned int>(),
             "size"_a, "caption"_a, "resizable"_a = true, "fullscreen"_a = false,
             "color_bits"_a = 8, "alpha_bits"_a = 8, "depth_bits"_a = 24, "stencil_bits"_a = 8,
-            "n_samples"_a = 0, "gl_major"_a = 3, "gl_minor"_a = 3, D(Screen, Screen))
+            "n_samples"_a = 0, "gl_major"_a = 3, "gl_minor"_a = 2, D(Screen, Screen))
         .def("caption", &Screen::caption, D(Screen, caption))
         .def("set_caption", &Screen::set_caption, D(Screen, set_caption))
         .def("background", &Screen::background, D(Screen, background))
