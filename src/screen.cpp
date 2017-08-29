@@ -32,7 +32,12 @@
 #endif
 
 /* Allow enforcing the GL2 implementation of NanoVG */
-#define NANOVG_GL3_IMPLEMENTATION
+#if defined(NANOGUI_USE_OPENGL)
+#  define NANOVG_GL3_IMPLEMENTATION
+#else
+#  define NANOVG_GLES2_IMPLEMENTATION
+#endif
+
 #include <nanovg_gl.h>
 
 NAMESPACE_BEGIN(nanogui)
@@ -105,12 +110,19 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
       m_shutdown_glfw(false), m_fullscreen(fullscreen), m_redraw(false) {
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
 
+#if defined(NANOGUI_USE_OPENGL)
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+
     /* Request a forward compatible OpenGL gl_major.gl_minor core profile context.
        Default value is an OpenGL 3.3 core profile context. */
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gl_major);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl_minor);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#else
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+#endif
 
     glfwWindowHint(GLFW_SAMPLES, n_samples);
     glfwWindowHint(GLFW_RED_BITS, color_bits);
@@ -282,8 +294,12 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 
     /* Detect framebuffer properties and set up compatible NanoVG context */
     GLint n_stencil_bits = 0, n_samples = 0;
+#if defined(NANOGUI_USE_OPENGL)
     glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
         GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits);
+#else
+    n_stencil_bits = 8;
+#endif
     glGetIntegerv(GL_SAMPLES, &n_samples);
 
     int flags = 0;
@@ -295,7 +311,12 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     flags |= NVG_DEBUG;
 #endif
 
+#if defined(NANOGUI_USE_OPENGL)
     m_nvg_context = nvgCreateGL3(flags);
+#else
+    m_nvg_context = nvgCreateGLES2(flags);
+#endif
+
     if (m_nvg_context == nullptr)
         throw std::runtime_error("Could not initialize NanoVG!");
 
@@ -323,8 +344,13 @@ Screen::~Screen() {
         if (m_cursors[i])
             glfwDestroyCursor(m_cursors[i]);
     }
-    if (m_nvg_context)
+    if (m_nvg_context) {
+#if defined(NANOGUI_USE_OPENGL)
         nvgDeleteGL3(m_nvg_context);
+#else
+        nvgDeleteGLES2(m_nvg_context);
+#endif
+    }
     if (m_glfw_window && m_shutdown_glfw)
         glfwDestroyWindow(m_glfw_window);
 }
@@ -379,7 +405,9 @@ void Screen::draw_all() {
 #endif
 
     glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
+#if defined(NANOGUI_USE_OPENGL)
     glBindSampler(0, 0);
+#endif
 
     draw_contents();
     draw_widgets();

@@ -41,8 +41,14 @@
 #include <memory>
 #include <utility>
 
-#if defined(__GNUC__)
+#if defined(__GNUG__)
+/// Uh oh, stb-image needs some refactoring..
 #  pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#  pragma GCC diagnostic ignored "-Wshift-negative-value"
+#  if !defined(__clang__)
+#    pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#    pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#  endif
 #endif
 #if defined(_WIN32)
 #  pragma warning(push)
@@ -119,11 +125,19 @@ public:
         GLint internal_format;
         GLint format;
         switch (n) {
+#if defined(NANOGUI_USE_OPENGL)
             case 1: internal_format = GL_R8; format = GL_RED; break;
             case 2: internal_format = GL_RG8; format = GL_RG; break;
             case 3: internal_format = GL_RGB8; format = GL_RGB; break;
             case 4: internal_format = GL_RGBA8; format = GL_RGBA; break;
             default: internal_format = 0; format = 0; break;
+#else
+            case 1: internal_format = GL_LUMINANCE; format = GL_LUMINANCE; break;
+            case 2: internal_format = GL_LUMINANCE_ALPHA; format = GL_LUMINANCE_ALPHA; break;
+            case 3: internal_format = GL_RGB; format = GL_RGB; break;
+            case 4: internal_format = GL_RGBA; format = GL_RGBA; break;
+            default: internal_format = 0; format = 0; break;
+#endif
         }
         glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, GL_UNSIGNED_BYTE, texture_data.get());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -499,6 +513,7 @@ public:
             /* An identifying name */
             "a_simple_shader",
 
+#if defined(NANOGUI_USE_OPENGL)
             /* Vertex shader */
             "#version 330\n"
             "uniform mat4 model_view_proj;\n"
@@ -514,6 +529,20 @@ public:
             "void main() {\n"
             "    color = vec4(vec3(intensity), 1.0);\n"
             "}"
+#else // GLES2
+            /* Vertex shader */
+            "uniform mat4 model_view_proj;\n"
+            "attribute vec3 position;\n"
+            "void main() {\n"
+            "    gl_Position = model_view_proj * vec4(position, 1.0);\n"
+            "}",
+
+            /* Fragment shader */
+            "uniform float intensity;\n"
+            "void main() {\n"
+            "    gl_FragColor = vec4(vec3(intensity), 1.0);\n"
+            "}"
+#endif
         );
 
         uint32_t indices[3*2] = {

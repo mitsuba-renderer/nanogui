@@ -113,6 +113,14 @@ static void sigint_handler(int sig) {
 PYBIND11_MODULE(nanogui, m) {
     m.attr("__doc__") = "NanoGUI plugin";
 
+#if defined(NANOGUI_USE_OPENGL)
+    m.attr("opengl") = true;
+    m.attr("gles2") = false;
+#else
+    m.attr("opengl") = false;
+    m.attr("gles2") = true;
+#endif
+
     py::class_<MainloopHandle>(m, "MainloopHandle")
         .def("join", &MainloopHandle::join);
 

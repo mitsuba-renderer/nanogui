@@ -11,66 +11,11 @@
     BSD-style license that can be found in the LICENSE.txt file.
 */
 
-#include <nanogui/opengl.h>
-#include <nanogui/glutil.h>
 #include <nanogui/screen.h>
-#include <nanogui/window.h>
 #include <nanogui/layout.h>
-#include <nanogui/label.h>
-#include <nanogui/checkbox.h>
+#include <nanogui/window.h>
 #include <nanogui/button.h>
-#include <nanogui/toolbutton.h>
-#include <nanogui/popupbutton.h>
-#include <nanogui/combobox.h>
-#include <nanogui/progressbar.h>
-#include <nanogui/entypo.h>
-#include <nanogui/messagedialog.h>
-#include <nanogui/textbox.h>
-#include <nanogui/slider.h>
-#include <nanogui/imagepanel.h>
-#include <nanogui/imageview.h>
-#include <nanogui/vscrollpanel.h>
-#include <nanogui/colorwheel.h>
-#include <nanogui/graph.h>
-#include <nanogui/tabwidget.h>
 #include <nanogui/glcanvas.h>
-#include <enoki/transform.h>
-#include <iostream>
-#include <string>
-
-// Includes for the GLTexture class.
-#include <cstdint>
-#include <memory>
-#include <utility>
-
-#if defined(__GNUC__)
-#  pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
-#if defined(_WIN32)
-#  pragma warning(push)
-#  pragma warning(disable: 4457 4456 4005 4312)
-#endif
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
-#if defined(_WIN32)
-#  pragma warning(pop)
-#endif
-#if defined(_WIN32)
-#  if defined(APIENTRY)
-#    undef APIENTRY
-#  endif
-#  include <windows.h>
-#endif
-
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::string;
-using std::vector;
-using std::pair;
-using std::to_string;
 
 using nanogui::Vector3f;
 using nanogui::Vector2i;
@@ -84,6 +29,7 @@ public:
             /* An identifying name */
             "a_simple_shader",
 
+#if defined(NANOGUI_USE_OPENGL)
             /* Vertex shader */
             "#version 330\n"
             "uniform mat4 model_view_proj;\n"
@@ -102,6 +48,23 @@ public:
             "void main() {\n"
             "    color = frag_color;\n"
             "}"
+#else // GLES2
+            /* Vertex shader */
+            "uniform mat4 model_view_proj;\n"
+            "attribute vec3 position;\n"
+            "attribute vec3 color;\n"
+            "varying vec4 frag_color;\n"
+            "void main() {\n"
+            "    frag_color = vec4(color, 1.0);\n"
+            "    gl_Position = model_view_proj * vec4(position, 1.0);\n"
+            "}",
+
+            /* Fragment shader */
+            "varying vec4 frag_color;\n"
+            "void main() {\n"
+            "    gl_FragColor = frag_color;\n"
+            "}"
+#endif
         );
 
         uint32_t indices[3*12] = {
@@ -250,7 +213,7 @@ int main(int /* argc */, char ** /* argv */) {
         #if defined(_WIN32)
             MessageBoxA(nullptr, error_msg.c_str(), NULL, MB_ICONERROR | MB_OK);
         #else
-            std::cerr << error_msg << endl;
+            std::cerr << error_msg << std::endl;
         #endif
         return -1;
     }

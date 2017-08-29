@@ -33,29 +33,51 @@ class MyGLCanvas(GLCanvas):
             import numpy as np
 
             self.shader = GLShader()
-            self.shader.init(
-                # An identifying name
-                "a_simple_shader",
+            if nanogui.opengl:
+                self.shader.init(
+                    # An identifying name
+                    "a_simple_shader",
 
-                # Vertex shader
-                """#version 330
-                uniform mat4 model_view_proj;
-                in vec3 position;
-                in vec3 color;
-                out vec4 frag_color;
-                void main() {
-                    frag_color = vec4(color, 1.0);
-                    gl_Position = model_view_proj * vec4(position, 1.0);
-                }""",
+                    # Vertex shader
+                    """#version 330
+                    uniform mat4 model_view_proj;
+                    in vec3 position;
+                    in vec3 color;
+                    out vec4 frag_color;
+                    void main() {
+                        frag_color = vec4(color, 1.0);
+                        gl_Position = model_view_proj * vec4(position, 1.0);
+                    }""",
 
-                # Fragment shader
-                """#version 330
-                out vec4 color;
-                in vec4 frag_color;
-                void main() {
-                    color = frag_color;
-                }"""
-            )
+                    # Fragment shader
+                    """#version 330
+                    out vec4 color;
+                    in vec4 frag_color;
+                    void main() {
+                        color = frag_color;
+                    }"""
+                )
+            else: # GLES 2
+                self.shader.init(
+                    # An identifying name
+                    "a_simple_shader",
+
+                    # Vertex shader
+                    """uniform mat4 model_view_proj;
+                    attribute vec3 position;
+                    attribute vec3 color;
+                    varying vec4 frag_color;
+                    void main() {
+                        frag_color = vec4(color, 1.0);
+                        gl_Position = model_view_proj * vec4(position, 1.0);
+                    }""",
+
+                    # Fragment shader
+                    """varying vec4 frag_color;
+                    void main() {
+                        gl_FragColor = frag_color;
+                    }"""
+                )
 
             # Draw a cube
             indices = np.array(

@@ -76,6 +76,7 @@ static void set_uniform_py(GLShader &sh, const std::string &name, py::object arg
             glUniform4iv(id, 1, value.data());
         else
             throw py::type_error("set_uniform(): invalid dimension/size!");
+#if defined(NANOGUI_USE_OPENGL)
     } else if (dtype.kind() == 'u') {
         auto value = py::array_t<unsigned int, py::array::forcecast>(value_);
 
@@ -89,6 +90,9 @@ static void set_uniform_py(GLShader &sh, const std::string &name, py::object arg
             glUniform4uiv(id, 1, value.data());
         else
             throw py::type_error("set_uniform(): invalid dimension/size!");
+#endif
+    } else {
+        throw py::type_error("set_uniform(): invalid type!");
     }
 }
 
@@ -174,13 +178,19 @@ void register_glutil(py::module &m) {
            "sfactor"_a, "dfactor"_a);
     gl.def("Scissor", [](GLint x, GLint y, GLsizei w, GLsizei h) { glScissor(x, y, w, h); });
     gl.def("Cull", [](GLenum mode) { glCullFace(mode); });
+#if defined(NANOGUI_USE_OPENGL)
     gl.def("PointSize", [](GLfloat size) { glPointSize(size); });
+#endif
     gl.def("LineWidth", [](GLfloat size) { glLineWidth(size); });
 
     /* Primitive types */
-    C(POINTS); C(LINE_STRIP); C(LINE_LOOP); C(LINES); C(LINE_STRIP_ADJACENCY);
-    C(LINES_ADJACENCY); C(TRIANGLE_STRIP); C(TRIANGLE_FAN); C(TRIANGLES);
+    C(POINTS); C(LINE_STRIP); C(LINE_LOOP); C(LINES);
+    C(TRIANGLE_STRIP); C(TRIANGLE_FAN); C(TRIANGLES);
+
+#if defined(NANOGUI_USE_OPENGL)
     C(TRIANGLE_STRIP_ADJACENCY); C(TRIANGLES_ADJACENCY);
+    C(LINE_STRIP_ADJACENCY); C(LINES_ADJACENCY);
+#endif
 
     /* Depth testing */
     C(DEPTH_TEST); C(NEVER); C(LESS); C(EQUAL); C(LEQUAL); C(GREATER);
@@ -197,8 +207,12 @@ void register_glutil(py::module &m) {
     C(FRONT); C(BACK); C(FRONT_AND_BACK);
 
     /* Remaining gl_enable/glDisable enums */
-    C(SCISSOR_TEST); C(STENCIL_TEST); C(PROGRAM_POINT_SIZE);
-    C(LINE_SMOOTH); C(POLYGON_SMOOTH); C(CULL_FACE);
+    C(SCISSOR_TEST); C(STENCIL_TEST);
+    C(CULL_FACE);
+
+#if defined(NANOGUI_USE_OPENGL)
+    C(PROGRAM_POINT_SIZE); C(LINE_SMOOTH);  C(POLYGON_SMOOTH);
+#endif
 }
 
 #endif

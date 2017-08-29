@@ -13,6 +13,16 @@
 #include <iostream>
 #include <fstream>
 
+#if !defined(GL_RGBA8)
+#  define GL_RGBA8            0x8058
+#endif
+#if !defined(GL_BGRA)
+#  define GL_BGRA             0x80E1
+#endif
+#if !defined(GL_DEPTH24_STENCIL8)
+#  define GL_DEPTH24_STENCIL8 0x8FF0
+#endif
+
 NAMESPACE_BEGIN(nanogui)
 
 static GLuint create_shader_helper(GLint type, const std::string &name,
@@ -52,8 +62,10 @@ static GLuint create_shader_helper(GLint type, const std::string &name,
             std::cerr << "vertex shader";
         else if (type == GL_FRAGMENT_SHADER)
             std::cerr << "fragment shader";
+#if defined(NANOGUI_USE_OPENGL)
         else if (type == GL_GEOMETRY_SHADER)
             std::cerr << "geometry shader";
+#endif
         std::cerr << " \"" << name << "\":" << std::endl;
         std::cerr << shader_string << std::endl << std::endl;
         glGetShaderInfoLog(id, sizeof(buffer), nullptr, buffer);
@@ -91,27 +103,38 @@ bool GLShader::init(const std::string &name,
     for (auto def : m_definitions)
         defines += std::string("#define ") + def.first + std::string(" ") + def.second + "\n";
 
+#if defined(NANOGUI_USE_OPENGL)
     glGenVertexArrays(1, &m_vertex_array_object);
+#endif
     m_name = name;
     m_vertex_shader =
         create_shader_helper(GL_VERTEX_SHADER, name, defines, vertex_str);
+#if defined(NANOGUI_USE_OPENGL)
     m_geometry_shader =
         create_shader_helper(GL_GEOMETRY_SHADER, name, defines, geometry_str);
+#else
+    if (!geometry_str.empty())
+        throw std::runtime_error("Geometry shaders are not supported on GLES2!");
+#endif
     m_fragment_shader =
         create_shader_helper(GL_FRAGMENT_SHADER, name, defines, fragment_str);
 
     if (!m_vertex_shader || !m_fragment_shader)
         return false;
+#if defined(NANOGUI_USE_OPENGL)
     if (!geometry_str.empty() && !m_geometry_shader)
         return false;
+#endif
 
     m_program_shader = glCreateProgram();
 
     glAttachShader(m_program_shader, m_vertex_shader);
     glAttachShader(m_program_shader, m_fragment_shader);
 
+#if defined(NANOGUI_USE_OPENGL)
     if (m_geometry_shader)
         glAttachShader(m_program_shader, m_geometry_shader);
+#endif
 
     glLinkProgram(m_program_shader);
 
@@ -131,7 +154,20 @@ bool GLShader::init(const std::string &name,
 
 void GLShader::bind() {
     glUseProgram(m_program_shader);
+#if defined(NANOGUI_USE_OPENGL)
     glBindVertexArray(m_vertex_array_object);
+#else
+    for (const auto &it : m_buffer_objects) {
+        const auto &buf = it.second;
+        if (buf.attrib_id == -1) {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf.id);
+        } else {
+            glBindBuffer(GL_ARRAY_BUFFER, buf.id);
+            glEnableVertexAttribArray(buf.attrib_id);
+            glVertexAttribPointer(buf.attrib_id, (GLint) buf.dim, buf.gl_type, buf.integral, 0, 0);
+        }
+    }
+#endif
 }
 
 GLint GLShader::attrib(const std::string &name, bool warn) const {
@@ -151,7 +187,7 @@ GLint GLShader::uniform(const std::string &name, bool warn) const {
 void GLShader::upload_attrib(const std::string &name, size_t dim, size_t count,
                              size_t comp_size, GLuint gl_type, bool integral,
                              const void *data, int version) {
-    int attrib_id = 0;
+    GLint attrib_id = -1;
     if (name != "indices") {
         attrib_id = attrib(name);
         if (attrib_id < 0)
@@ -167,6 +203,8 @@ void GLShader::upload_attrib(const std::string &name, size_t dim, size_t count,
         buffer.version = version;
         buffer.size = size;
         buffer.comp_size = comp_size;
+        buffer.attrib_id = attrib_id;
+        buffer.integral = integral;
     } else {
         glGenBuffers(1, &buffer_id);
         Buffer buffer;
@@ -176,6 +214,8 @@ void GLShader::upload_attrib(const std::string &name, size_t dim, size_t count,
         buffer.comp_size = comp_size;
         buffer.size = size;
         buffer.version = version;
+        buffer.attrib_id = attrib_id;
+        buffer.integral = integral;
         m_buffer_objects[name] = buffer;
     }
 
@@ -202,12 +242,12 @@ size_t GLShader::attrib_size(const std::string &name) const {
 }
 
 void GLShader::download_attrib(const std::string &name, void *data) {
+#if defined(NANOGUI_USE_OPENGL)
     auto it = m_buffer_objects.find(name);
     if (it == m_buffer_objects.end())
         throw std::runtime_error("download_attrib(" + m_name + ", " + name + ") : buffer not found!");
 
     const Buffer &buf = it->second;
-
     if (name == "indices") {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf.id);
         glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, buf.size, data);
@@ -215,6 +255,10 @@ void GLShader::download_attrib(const std::string &name, void *data) {
         glBindBuffer(GL_ARRAY_BUFFER, buf.id);
         glGetBufferSubData(GL_ARRAY_BUFFER, 0, buf.size, data);
     }
+#else
+    (void) name; (void) data;
+    throw std::runtime_error("download_attrib(): unsupported on GLES2!");
+#endif
 }
 
 void GLShader::share_attrib(const GLShader &other_shader, const std::string &name, const std::string &_as) {
@@ -277,15 +321,19 @@ void GLShader::free() {
         glDeleteBuffers(1, &buf.second.id);
     m_buffer_objects.clear();
 
+#if defined(NANOGUI_USE_OPENGL)
     if (m_vertex_array_object) {
         glDeleteVertexArrays(1, &m_vertex_array_object);
         m_vertex_array_object = 0;
     }
+#endif
 
     glDeleteProgram(m_program_shader); m_program_shader = 0;
     glDeleteShader(m_vertex_shader);   m_vertex_shader = 0;
     glDeleteShader(m_fragment_shader); m_fragment_shader = 0;
+#if defined(NANOGUI_USE_OPENGL)
     glDeleteShader(m_geometry_shader); m_geometry_shader = 0;
+#endif
 }
 
 //  ----------------------------------------------------
@@ -297,18 +345,26 @@ void GLFramebuffer::init(const Vector2i &size, int n_samples) {
     glGenRenderbuffers(1, &m_color);
     glBindRenderbuffer(GL_RENDERBUFFER, m_color);
 
+#if defined(NANOGUI_USE_OPENGL)
     if (n_samples <= 1)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, size.x(), size.y());
     else
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, n_samples, GL_RGBA8, size.x(), size.y());
+#else
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, size.x(), size.y());
+#endif
 
     glGenRenderbuffers(1, &m_depth);
     glBindRenderbuffer(GL_RENDERBUFFER, m_depth);
 
+#if defined(NANOGUI_USE_OPENGL)
     if (n_samples <= 1)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, size.x(), size.y());
     else
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, n_samples, GL_DEPTH24_STENCIL8, size.x(), size.y());
+#else
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, size.x(), size.y());
+#endif
 
     glGenFramebuffers(1, &m_framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
@@ -317,8 +373,10 @@ void GLFramebuffer::init(const Vector2i &size, int n_samples) {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depth);
 
+#if defined(NANOGUI_USE_OPENGL)
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
+#endif
 
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -335,17 +393,22 @@ void GLFramebuffer::free() {
 
 void GLFramebuffer::bind() {
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
+#if defined(NANOGUI_USE_OPENGL)
     if (m_samples > 1)
         glEnable(GL_MULTISAMPLE);
+#endif
 }
 
 void GLFramebuffer::release() {
+#if defined(NANOGUI_USE_OPENGL)
     if (m_samples > 1)
         glDisable(GL_MULTISAMPLE);
+#endif
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void GLFramebuffer::blit() {
+#if defined(NANOGUI_USE_OPENGL)
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glDrawBuffer(GL_BACK);
@@ -354,9 +417,13 @@ void GLFramebuffer::blit() {
                       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#else
+    throw std::runtime_error("GLFramebuffer::blit(): Unimplemented for GLES2!");
+#endif
 }
 
 void GLFramebuffer::download_tga(const std::string &filename) {
+#if defined(NANOGUI_USE_OPENGL)
     uint8_t *temp = new uint8_t[hprod(m_size) * 4];
 
     std::cout << "Writing \"" << filename  << "\" (" << m_size.x() << "x" << m_size.y() << ") .. ";
@@ -399,6 +466,10 @@ void GLFramebuffer::download_tga(const std::string &filename) {
 
     delete[] temp;
     std::cout << "done." << std::endl;
+#else
+    (void) filename;
+    throw std::runtime_error("GLFramebuffer::download_tga(): Unimplemented for GLES2!");
+#endif
 }
 
 NAMESPACE_END(nanogui)

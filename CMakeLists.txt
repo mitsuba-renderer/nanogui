@@ -18,11 +18,22 @@ else()
   set(NANOGUI_USE_GLAD_DEFAULT OFF)
 endif()
 
+set(NANOGUI_USE_OPENGL_DEFAULT ON)
+set(NANOGUI_USE_GLES2_DEFAULT OFF)
+
+if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
+  set(NANOGUI_USE_OPENGL_DEFAULT OFF)
+  set(NANOGUI_USE_GLES2_DEFAULT ON)
+endif()
+
+
 option(NANOGUI_BUILD_EXAMPLE "Build NanoGUI example application?" ON)
 option(NANOGUI_BUILD_SHARED  "Build NanoGUI as a shared library?" ON)
 option(NANOGUI_BUILD_PYTHON  "Build a Python plugin for NanoGUI?" ON)
 option(NANOGUI_USE_GLAD      "Use Glad OpenGL loader library?" ${NANOGUI_USE_GLAD_DEFAULT})
 option(NANOGUI_INSTALL       "Install NanoGUI on `make install`?" ON)
+option(NANOGUI_USE_OPENGL    "Use OpenGL backend?" ${NANOGUI_USE_OPENGL_DEFAULT})
+option(NANOGUI_USE_GLES2     "Use GLES2 backend?" ${NANOGUI_USE_GLES2_DEFAULT})
 
 set(NANOGUI_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling the Python plugin")
 
@@ -49,6 +60,12 @@ endif()
 set(NANOGUI_MASTER_PROJECT OFF)
 if (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
   set(NANOGUI_MASTER_PROJECT ON)
+endif()
+
+if (EXISTS /opt/vc/include)
+  # Auto-detect GLES include directory on Raspberry PI
+  include_directories(/opt/vc/include)
+  list(APPEND NANOGUI_EXTRA_INCS "/opt/vc/include")
 endif()
 
 include(CheckCXXCompilerFlag)
@@ -96,6 +113,14 @@ if (NANOGUI_BUILD_PYTHON)
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_PYTHON)
 endif()
 
+if (NANOGUI_USE_OPENGL)
+  list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_OPENGL)
+endif()
+
+if (NANOGUI_USE_GLES2)
+  list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_GLES2)
+endif()
+
 # Shared library mode: add dllimport/dllexport flags to all symbols
 if (NANOGUI_BUILD_SHARED)
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_SHARED -DNVG_SHARED -DGLAD_GLAPI_EXPORT)
@@ -129,7 +154,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|Intel)$")
   elseif (HAS_CPP11_FLAG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
   else()
-    message(FATAL_ERROR "Unsupported compiler -- pybind11 requires C++11 support!")
+    message(FATAL_ERROR "Unsupported compiler -- nanogui requires C++11 support!")
   endif()
 endif()
 

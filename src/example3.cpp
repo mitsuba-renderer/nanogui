@@ -13,18 +13,21 @@
 
 // GLFW
 //
-#if defined(NANOGUI_GLAD)
-    #if defined(NANOGUI_SHARED) && !defined(GLAD_GLAPI_EXPORT)
-        #define GLAD_GLAPI_EXPORT
-    #endif
-
-    #include <glad/glad.h>
-#else
-    #if defined(__APPLE__)
-        #define GLFW_INCLUDE_GLCOREARB
-    #else
-        #define GL_GLEXT_PROTOTYPES
-    #endif
+#if defined(NANOGUI_USE_OPENGL)
+#  if defined(NANOGUI_GLAD)
+#    if defined(NANOGUI_SHARED) && !defined(GLAD_GLAPI_EXPORT)
+#      define GLAD_GLAPI_EXPORT
+#    endif
+#    include <glad/glad.h>
+#  else
+#    if defined(__APPLE__)
+#      define GLFW_INCLUDE_GLCOREARB
+#    else
+#      define GL_GLEXT_PROTOTYPES
+#    endif
+#  endif
+#elif defined(NANOGUI_USE_GLES2)
+#  define GLFW_INCLUDE_ES2
 #endif
 
 #include <GLFW/glfw3.h>
@@ -56,10 +59,17 @@ int main(int /* argc */, char ** /* argv */) {
 
     glfwSetTime(0);
 
+#if defined(NANOGUI_USE_OPENGL)
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#else
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+#endif
 
     glfwWindowHint(GLFW_SAMPLES, 0);
     glfwWindowHint(GLFW_RED_BITS, 8);

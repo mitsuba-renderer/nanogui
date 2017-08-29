@@ -311,25 +311,43 @@ class TestApp(Screen):
             import numpy as np
 
             self.shader = GLShader()
-            self.shader.init(
-                # An identifying name
-                "a_simple_shader",
+            if nanogui.opengl:
+                self.shader.init(
+                    # An identifying name
+                    "a_simple_shader",
 
-                # Vertex shader
-                """#version 330
-                uniform mat4 model_view_proj;
-                in vec3 position;
-                void main() {
-                    gl_Position = model_view_proj * vec4(position, 1.0);
-                }""",
+                    # Vertex shader
+                    """#version 330
+                    uniform mat4 model_view_proj;
+                    in vec3 position;
+                    void main() {
+                        gl_Position = model_view_proj * vec4(position, 1.0);
+                    }""",
 
-                """#version 330
-                out vec4 color;
-                uniform float intensity;
-                void main() {
-                    color = vec4(vec3(intensity), 1.0);
-                }"""
-            )
+                    """#version 330
+                    out vec4 color;
+                    uniform float intensity;
+                    void main() {
+                        color = vec4(vec3(intensity), 1.0);
+                    }"""
+                )
+            else: # GLES2
+                self.shader.init(
+                    # An identifying name
+                    "a_simple_shader",
+
+                    # Vertex shader
+                    """uniform mat4 model_view_proj;
+                    attribute vec3 position;
+                    void main() {
+                        gl_Position = model_view_proj * vec4(position, 1.0);
+                    }""",
+
+                    """uniform float intensity;
+                    void main() {
+                        gl_FragColor = vec4(vec3(intensity), 1.0);
+                    }"""
+                )
 
             # Draw 2 triangles
             indices = np.array(

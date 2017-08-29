@@ -17,8 +17,11 @@
 #include <enoki/quaternion.h>
 #include <map>
 
-#ifndef GL_HALF_FLOAT
+#if !defined(GL_HALF_FLOAT)
 #  define GL_HALF_FLOAT 0x140B
+#endif
+#if !defined(GL_DOUBLE)
+#  define GL_DOUBLE     0x140A
 #endif
 
 NAMESPACE_BEGIN(nanogui)
@@ -37,8 +40,8 @@ template <> struct gl_type<uint16_t> { static constexpr GLuint value = GL_UNSIGN
 template <> struct gl_type<int16_t> { static constexpr GLuint value = GL_SHORT; };
 template <> struct gl_type<uint8_t> { static constexpr GLuint value = GL_UNSIGNED_BYTE; };
 template <> struct gl_type<int8_t> { static constexpr GLuint value = GL_BYTE; };
-template <> struct gl_type<double> { static constexpr GLuint value = GL_DOUBLE; };
 template <> struct gl_type<float> { static constexpr GLuint value = GL_FLOAT; };
+template <> struct gl_type<double> { static constexpr GLuint value = GL_DOUBLE; };
 template <> struct gl_type<enoki::half> { static constexpr GLuint value = GL_HALF_FLOAT; };
 NAMESPACE_END(detail)
 
@@ -59,9 +62,7 @@ using enoki::scalar_t;
 class NANOGUI_EXPORT GLShader {
 public:
     /// Create an unitialized OpenGL shader
-    GLShader()
-        : m_vertex_shader(0), m_fragment_shader(0), m_geometry_shader(0),
-          m_program_shader(0), m_vertex_array_object(0) { }
+    GLShader() = default;
 
     /**
      * \brief Initialize the shader using the specified source strings.
@@ -264,19 +265,25 @@ protected:
      */
     struct Buffer {
         GLuint id;
+        GLint attrib_id;
         GLuint gl_type;
         size_t dim;
         size_t comp_size;
         size_t size;
         int version;
+        bool integral;
     };
 
     std::string m_name;
-    GLuint m_vertex_shader;
-    GLuint m_fragment_shader;
-    GLuint m_geometry_shader;
-    GLuint m_program_shader;
-    GLuint m_vertex_array_object;
+    GLuint m_vertex_shader = 0;
+    GLuint m_fragment_shader = 0;
+#if defined(NANOGUI_USE_OPENGL)
+    GLuint m_geometry_shader = 0;
+#endif
+    GLuint m_program_shader = 0;
+#if defined(NANOGUI_USE_OPENGL)
+    GLuint m_vertex_array_object = 0;
+#endif
     std::map<std::string, Buffer> m_buffer_objects;
     std::map<std::string, std::string> m_definitions;
 };

@@ -15,31 +15,41 @@
 
 #include <nanogui/common.h>
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-#if defined(NANOGUI_GLAD)
-    #if defined(NANOGUI_SHARED) && !defined(GLAD_GLAPI_EXPORT)
-        #define GLAD_GLAPI_EXPORT
-    #endif
-
-    #include <glad/glad.h>
-#else
-    #if defined(__APPLE__)
-        #define GLFW_INCLUDE_GLCOREARB
-    #else
-        #define GL_GLEXT_PROTOTYPES
-    #endif
-#endif
+#if !defined(DOXYGEN_SHOULD_SKIP_THIS)
+#  if defined(NANOGUI_USE_OPENGL)
+#    if defined(NANOGUI_GLAD)
+#      if defined(NANOGUI_SHARED) && !defined(GLAD_GLAPI_EXPORT)
+#        define GLAD_GLAPI_EXPORT
+#      endif
+#      include <glad/glad.h>
+#    else
+#      if defined(__APPLE__)
+#        define GLFW_INCLUDE_GLCOREARB
+#      else
+#        define GL_GLEXT_PROTOTYPES
+#      endif
+#    endif
+#  elif defined(NANOGUI_USE_GLES2)
+#    define GLFW_INCLUDE_ES2
+#  else
+#    error You must select a backend (OpenGL/GLES2)
+#  endif
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
 #include <GLFW/glfw3.h>
+
+#if defined(NANOGUI_USE_GLES2)
+#  include <GLES2/gl2ext.h>
+#endif
+
 #include <nanovg.h>
 
 // Special treatment of linux Nvidia opengl headers
-#if !defined(_WIN32) && !defined(__APPLE__)
+#if !defined(_WIN32) && !defined(__APPLE__) && defined(NANOGUI_USE_OPENGL)
   #if !defined(GL_UNIFORM_BUFFER)
     #warning NanoGUI suspects you have the NVIDIA OpenGL headers installed.  \
              Compilation will likely fail. If it does, you have two choices: \
-             (1) Re-install the mesa-lib_gl header files.                     \
+             (1) Re-install the mesa-lib_gl header files.                    \
              (2) Compile with NANOGUI_USE_GLAD.
   #endif
 #endif

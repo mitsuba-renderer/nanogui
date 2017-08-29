@@ -1,10 +1,10 @@
 # NanoGUI
 
-NanoGUI is a minimalistic cross-platform widget library for OpenGL 3.x or higher.
-It supports automatic layout generation, stateful C++11 lambdas callbacks,
-a variety of useful widget types and Retina-capable rendering on Apple devices
-thanks to [NanoVG](https://github.com/memononen/NanoVG) by Mikko Mononen.
-Python bindings of all functionality are provided using
+NanoGUI is a minimalistic cross-platform widget library for OpenGL 3.x and GLES
+2 (or higher).  It supports automatic layout generation, stateful C++11 lambdas
+callbacks, a variety of useful widget types and high-DPI rendering on modern
+display devices thanks to [NanoVG](https://github.com/memononen/NanoVG) by
+Mikko Mononen.  Python bindings of all functionality are provided using
 [pybind11](https://github.com/wjakob/pybind11).
 
 **Note**: This repository contains an
@@ -23,7 +23,7 @@ available [here](https://github.com/wjakob/nanogui).
 ## Description
 NanoGUI builds on [GLFW](http://www.glfw.org/) for cross-platform OpenGL context
 creation and event handling, [GLAD](https://github.com/Dav1dde/glad) to use OpenGL
-3.x Windows, [Enoki](https://github.com/mitsuba-renderer/enoki) for
+3.x/GLES2 windows, [Enoki](https://github.com/mitsuba-renderer/enoki) for
 basic vector types, and [NanoVG](https://github.com/memononen/NanoVG) to draw
 2D primitives.
 
@@ -32,7 +32,7 @@ code to draw good-looking static widgets; what NanoGUI does is to flesh it
 out into a complete GUI toolkit with event handling, layout generation, etc.
 
 NanoGUI currently works on Mac OS X (Clang) Linux (GCC or Clang) and Windows
-(Visual Studio ≥ 2015); it requires a recent C++11 capable compiler. All
+(Visual Studio ≥ 2017); it requires a recent C++14-capable compiler. All
 dependencies are jointly built using a CMake-based build system.
 
 ## Creating widgets

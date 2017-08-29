@@ -40,6 +40,7 @@ namespace {
         return tokens;
     }
 
+#if defined(NANOGUI_USE_OPENGL)
     constexpr char const *const default_image_view_vertex_shader =
         R"(#version 330
         uniform vec2 scale_factor;
@@ -65,6 +66,30 @@ namespace {
         })";
 
 }
+#else // GLES2
+    constexpr char const *const default_image_view_vertex_shader =
+        R"(uniform vec2 scale_factor;
+        uniform vec2 position;
+        attribute vec2 vertex;
+        varying vec2 uv;
+        void main() {
+            uv = vertex;
+            vec2 scaled_vertex = (vertex * scale_factor) + position;
+            gl_Position  = vec4(2.0*scaled_vertex.x - 1.0,
+                                1.0 - 2.0*scaled_vertex.y,
+                                0.0, 1.0);
+
+        })";
+
+    constexpr char const *const default_image_view_fragment_shader =
+        R"(uniform sampler2D image;
+        varying vec2 uv;
+        void main() {
+            gl_FragColor = texture2D(image, uv);
+        })";
+
+}
+#endif
 
 ImageView::ImageView(Widget* parent, GLuint image_id)
     : Widget(parent), m_image_id(image_id), m_scale(1.0f), m_offset(0),
@@ -322,12 +347,16 @@ void ImageView::draw(NVGcontext* ctx) {
 }
 
 void ImageView::update_image_parameters() {
+#if defined(NANOGUI_USE_OPENGL)
     // Query the width of the OpenGL texture.
     glBindTexture(GL_TEXTURE_2D, m_image_id);
     GLint w, h;
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
     m_image_size = Vector2i(w, h);
+#else
+    std::cout << "Warning: ImageVIew::update_image_parameters(): not supported on GLES2!" << std::endl;;
+#endif
 }
 
 void ImageView::draw_widget_border(NVGcontext* ctx) const {
@@ -430,7 +459,7 @@ void ImageView::draw_pixel_info(NVGcontext* ctx, float stride) const {
 }
 
 void ImageView::write_pixel_info(NVGcontext* ctx, const Vector2f& cell_position,
-                               const Vector2i& pixel, float stride, float font_size) const {
+                                 const Vector2i& pixel, float stride, float font_size) const {
     auto pixel_data = m_pixel_info_callback(pixel);
     auto pixel_data_rows = tokenize(pixel_data.first);
 
