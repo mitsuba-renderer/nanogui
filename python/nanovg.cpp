@@ -68,9 +68,7 @@ void register_nanovg(py::module &m) {
     py::class_<NVGpaint>(nvg, "NVGpaint");
 
     py::class_<NVGcolor>(nvg, "NVGcolor")
-        .def("__init__",
-             [](NVGcolor &c, const Color &c2) { new (&c) NVGcolor(c2); }
-        );
+        .def(py::init([](const Color &c) { return new NVGcolor(c); }));
 
     py::implicitly_convertible<Color, NVGcolor>();
 

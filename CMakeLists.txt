@@ -115,10 +115,15 @@ endif()
 
 if (NANOGUI_USE_OPENGL)
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_OPENGL)
+  message(STATUS "NanoGUI: using OpenGL backend.")
 endif()
 
 if (NANOGUI_USE_GLES2)
+  if (NANOGUI_USE_OPENGL)
+    message(FATAL_ERROR "OpenGL and GLES 2 can't be enabled at the same time. Please choose one.")
+  endif()
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_GLES2)
+  message(STATUS "NanoGUI: using GLES 2 backend.")
 endif()
 
 # Shared library mode: add dllimport/dllexport flags to all symbols
