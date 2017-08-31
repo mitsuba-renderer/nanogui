@@ -8,12 +8,21 @@ Mikko Mononen.  Python bindings of all functionality are provided using
 [pybind11](https://github.com/wjakob/pybind11).
 
 **Note**: This repository contains an
-[Enoki](https://github.com/mitsuba-renderer/enoki)-compatible port of nanogui.
-In addition to the choice of vector library, the the repository here also
-adopts a different set of naming conventions for function and variable names
-that feels more natural in a mixed C++ & Python environment. (specifically,
-``underscore_case`` rather than ``camelCase``). The original repository is
-available [here](https://github.com/wjakob/nanogui).
+[Enoki](https://github.com/mitsuba-renderer/enoki)-compatible port of the
+original [NanoGUI](https://github.com/wjakob/nanogui).
+
+This repository incorporates a number of additional changes that go beyond the
+choice of vector library:
+
+1. a different set of naming conventions is used for function and variable
+   names that feels more natural in a mixed C++ & Python environment.
+   (specifically, ``underscore_case`` rather than ``camelCase``).
+
+2. both OpenGL and GLES 2 are supported. The latter e.g. allows NanoGUI to run
+   on ARM devices including the Raspberry Pi.
+
+3. the event loop is much more conservative by default and only issues redraw
+   calls when explicitly requested by an event callback.
 
 - [Documentation](https://nanogui.readthedocs.io)
 
