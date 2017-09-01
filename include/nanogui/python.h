@@ -74,3 +74,9 @@
     virtual bool resize_event(const ::nanogui::Vector2i &size) override { \
         PYBIND11_OVERLOAD(bool, Parent, resize_event, size); \
     }
+
+extern "C" {
+    /* Dummy handle types -- will never be instantiated */
+    typedef struct NVGcontext { int unused; } NVGcontext;
+    typedef struct GLFWwindow { int unused; } GLFWwindow;
+};

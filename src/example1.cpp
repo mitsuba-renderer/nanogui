@@ -618,7 +618,7 @@ int main(int /* argc */, char ** /* argv */) {
         #if defined(_WIN32)
             MessageBoxA(nullptr, error_msg.c_str(), NULL, MB_ICONERROR | MB_OK);
         #else
-            std::cerr << error_msg << endl;
+            std::cerr << error_msg << std::endl;
         #endif
         return -1;
     }

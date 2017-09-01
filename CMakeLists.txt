@@ -26,7 +26,6 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7" OR ${CMAKE_SYSTEM_PROCESSOR} MATCH
   set(NANOGUI_USE_GLES2_DEFAULT ON)
 endif()
 
-
 option(NANOGUI_BUILD_EXAMPLES "Build NanoGUI example application?" ON)
 option(NANOGUI_BUILD_SHARED   "Build NanoGUI as a shared library?" ON)
 option(NANOGUI_BUILD_PYTHON   "Build a Python plugin for NanoGUI?" ON)
@@ -102,7 +101,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated-declarations")
 endif()
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw"  "ext_build/glfw")
 add_subdirectory("${NANOGUI_ENOKI_DIR}" "ext_build/enoki")
 
 enoki_set_compile_flags()
@@ -226,6 +224,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     endif()
   endif()
 endif()
+
+
+# Build GLFW
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw"  "ext_build/glfw")
 
 if (NANOGUI_USE_GLAD)
   # Build and include GLAD on Windows

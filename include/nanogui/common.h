@@ -98,8 +98,11 @@
 // These will produce broken links in the docs build
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-struct NVGcontext { /* Opaque handle type, never de-referenced within NanoGUI */ };
-struct GLFWwindow { /* Opaque handle type, never de-referenced within NanoGUI */ };
+extern "C" {
+    /* Opaque handle types */
+    typedef struct NVGcontext NVGcontext;
+    typedef struct GLFWwindow GLFWwindow;
+};
 
 struct NVGcolor;
 struct NVGglyphPosition;
