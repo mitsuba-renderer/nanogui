@@ -27,13 +27,13 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7" OR ${CMAKE_SYSTEM_PROCESSOR} MATCH
 endif()
 
 
-option(NANOGUI_BUILD_EXAMPLE "Build NanoGUI example application?" ON)
-option(NANOGUI_BUILD_SHARED  "Build NanoGUI as a shared library?" ON)
-option(NANOGUI_BUILD_PYTHON  "Build a Python plugin for NanoGUI?" ON)
-option(NANOGUI_USE_GLAD      "Use Glad OpenGL loader library?" ${NANOGUI_USE_GLAD_DEFAULT})
-option(NANOGUI_INSTALL       "Install NanoGUI on `make install`?" ON)
-option(NANOGUI_USE_OPENGL    "Use OpenGL backend?" ${NANOGUI_USE_OPENGL_DEFAULT})
-option(NANOGUI_USE_GLES2     "Use GLES2 backend?" ${NANOGUI_USE_GLES2_DEFAULT})
+option(NANOGUI_BUILD_EXAMPLES "Build NanoGUI example application?" ON)
+option(NANOGUI_BUILD_SHARED   "Build NanoGUI as a shared library?" ON)
+option(NANOGUI_BUILD_PYTHON   "Build a Python plugin for NanoGUI?" ON)
+option(NANOGUI_USE_GLAD       "Use Glad OpenGL loader library?" ${NANOGUI_USE_GLAD_DEFAULT})
+option(NANOGUI_INSTALL        "Install NanoGUI on `make install`?" ON)
+option(NANOGUI_USE_OPENGL     "Use OpenGL backend?" ${NANOGUI_USE_OPENGL_DEFAULT})
+option(NANOGUI_USE_GLES2      "Use GLES2 backend?" ${NANOGUI_USE_GLES2_DEFAULT})
 
 set(NANOGUI_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling the Python plugin")
 
@@ -423,7 +423,7 @@ elseif(MSVC)
 endif()
 
 # Build example application if desired
-if(NANOGUI_BUILD_EXAMPLE)
+if (NANOGUI_BUILD_EXAMPLES)
   add_executable(example1 src/example1.cpp)
   add_executable(example2 src/example2.cpp)
   add_executable(example3 src/example3.cpp)
@@ -486,7 +486,9 @@ if (NANOGUI_BUILD_PYTHON)
     set_property(TARGET nanogui-python-obj APPEND PROPERTY COMPILE_OPTIONS "-Wno-unused-variable")
   endif()
 
-  set_target_properties(nanogui-python PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)
+  if (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+    set_target_properties(nanogui-python PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)
+  endif()
   # The prefix and extension are provided by FindPythonLibsNew.cmake
   set_target_properties(nanogui-python PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}")
   set_target_properties(nanogui-python PROPERTIES SUFFIX "${PYTHON_MODULE_EXTENSION}")

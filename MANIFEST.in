@@ -1,0 +1,7 @@
+include README.md LICENSE.txt
+global-include CMakeLists.txt *.cmake
+recursive-include src *.cpp
+recursive-include include *.h
+recursive-include python *.cpp *.h
+recursive-include resources *.ttf
+recursive-include ext *.h *.c *.cpp *.pc.in *.h.in *.cmake.in

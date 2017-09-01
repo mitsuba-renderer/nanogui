@@ -24,6 +24,9 @@ choice of vector library:
 3. the event loop is much more conservative by default and only issues redraw
    calls when explicitly requested by an event callback.
 
+4. Python integration: the library comes with a ``pip``-compatible ``setup.py``
+   installation script.
+
 - [Documentation](https://nanogui.readthedocs.io)
 
 ## Example screenshot
