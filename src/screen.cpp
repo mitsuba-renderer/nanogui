@@ -406,11 +406,6 @@ void Screen::draw_all() {
 
     glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
 
-#if defined(NANOGUI_USE_OPENGL)
-    if (&glBindSampler != nullptr)
-        glBindSampler(0, 0);
-#endif
-
     draw_contents();
     draw_widgets();
 
