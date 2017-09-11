@@ -148,7 +148,7 @@ the rest should just work automatically.
 
 On Debian/Ubuntu, make sure that you have installed the following packages
 ```bash
-$ apt-get install cmake xorg-dev libglu1-mesa-dev
+$ apt-get install cmake xorg-dev libglu1-mesa-dev libxxf86vm-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
 ```
 To also get the Python bindings, you'll need to run
 ```bash

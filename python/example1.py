@@ -337,13 +337,15 @@ class TestApp(Screen):
                     "a_simple_shader",
 
                     # Vertex shader
-                    """uniform mat4 model_view_proj;
+                    """precision highp float;
+                    uniform mat4 model_view_proj;
                     attribute vec3 position;
                     void main() {
                         gl_Position = model_view_proj * vec4(position, 1.0);
                     }""",
 
-                    """uniform float intensity;
+                    """precision highp float;
+                    uniform float intensity;
                     void main() {
                         gl_FragColor = vec4(vec3(intensity), 1.0);
                     }"""

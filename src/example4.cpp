@@ -57,6 +57,7 @@ public:
             "}"
 #else // GLES2
             /* Vertex shader */
+            "precision highp float;\n"
             "uniform mat4 model_view_proj;\n"
             "attribute vec3 position;\n"
             "attribute vec3 color;\n"
@@ -67,6 +68,7 @@ public:
             "}",
 
             /* Fragment shader */
+            "precision highp float;\n"
             "varying vec4 frag_color;\n"
             "void main() {\n"
             "    gl_FragColor = frag_color;\n"

@@ -63,7 +63,8 @@ class MyGLCanvas(GLCanvas):
                     "a_simple_shader",
 
                     # Vertex shader
-                    """uniform mat4 model_view_proj;
+                    """precision highp float;
+                    uniform mat4 model_view_proj;
                     attribute vec3 position;
                     attribute vec3 color;
                     varying vec4 frag_color;
@@ -73,7 +74,8 @@ class MyGLCanvas(GLCanvas):
                     }""",
 
                     # Fragment shader
-                    """varying vec4 frag_color;
+                    """precision highp float;
+                    varying vec4 frag_color;
                     void main() {
                         gl_FragColor = frag_color;
                     }"""

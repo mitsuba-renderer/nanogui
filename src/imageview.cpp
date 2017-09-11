@@ -68,7 +68,8 @@ namespace {
 }
 #else // GLES2
     constexpr char const *const default_image_view_vertex_shader =
-        R"(uniform vec2 scale_factor;
+        R"(precision highp float;
+        uniform vec2 scale_factor;
         uniform vec2 position;
         attribute vec2 vertex;
         varying vec2 uv;
@@ -82,7 +83,8 @@ namespace {
         })";
 
     constexpr char const *const default_image_view_fragment_shader =
-        R"(uniform sampler2D image;
+        R"(precision highp float;
+        uniform sampler2D image;
         varying vec2 uv;
         void main() {
             gl_FragColor = texture2D(image, uv);

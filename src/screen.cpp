@@ -120,8 +120,10 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #else
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #endif
 
     glfwWindowHint(GLFW_SAMPLES, n_samples);
@@ -144,10 +146,16 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
                                        caption.c_str(), nullptr, nullptr);
     }
 
-    if (!m_glfw_window)
+    if (!m_glfw_window) {
+#if defined(NANOGUI_USE_OPENGL)
         throw std::runtime_error("Could not create an OpenGL " +
                                  std::to_string(gl_major) + "." +
                                  std::to_string(gl_minor) + " context!");
+#else
+        (void) gl_major; (void) gl_minor;
+        throw std::runtime_error("Could not create an GLES 2 context!");
+#endif
+    }
 
     glfwMakeContextCurrent(m_glfw_window);
 
