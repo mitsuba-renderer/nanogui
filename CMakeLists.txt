@@ -27,10 +27,10 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7" OR ${CMAKE_SYSTEM_PROCESSOR} MATCH
 endif()
 
 option(NANOGUI_BUILD_EXAMPLES "Build NanoGUI example application?" ON)
-option(NANOGUI_BUILD_SHARED   "Build NanoGUI as a shared library?" ON)
-option(NANOGUI_BUILD_PYTHON   "Build a Python plugin for NanoGUI?" ON)
-option(NANOGUI_USE_GLAD       "Use Glad OpenGL loader library?" ${NANOGUI_USE_GLAD_DEFAULT})
-option(NANOGUI_INSTALL        "Install NanoGUI on `make install`?" ON)
+option(NANOGUI_BUILD_SHARED  "Build NanoGUI as a shared library?" ON)
+option(NANOGUI_BUILD_PYTHON  "Build a Python plugin for NanoGUI?" ON)
+option(NANOGUI_USE_GLAD      "Use Glad OpenGL loader library?" ${NANOGUI_USE_GLAD_DEFAULT})
+option(NANOGUI_INSTALL       "Install NanoGUI on `make install`?" ON)
 option(NANOGUI_USE_OPENGL     "Use OpenGL backend?" ${NANOGUI_USE_OPENGL_DEFAULT})
 option(NANOGUI_USE_GLES2      "Use GLES2 backend?" ${NANOGUI_USE_GLES2_DEFAULT})
 
@@ -213,15 +213,15 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if (CMAKE_CXX_FLAGS MATCHES "-stdlib=libc\\+\\+")
     message(STATUS "NanoGUI: using libc++.")
   else()
-    CHECK_CXX_COMPILER_AND_LINKER_FLAGS(HAS_LIBCPP "-stdlib=libc++" "-stdlib=libc++")
-    if (HAS_LIBCPP)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-      set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
+  CHECK_CXX_COMPILER_AND_LINKER_FLAGS(HAS_LIBCPP "-stdlib=libc++" "-stdlib=libc++")
+  if (HAS_LIBCPP)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
       message(STATUS "NanoGUI: using libc++.")
-    else()
-      message(STATUS "NanoGUI: NOT using libc++.")
-    endif()
+  else()
+    message(STATUS "NanoGUI: NOT using libc++.")
+  endif()
   endif()
 endif()
 
@@ -233,8 +233,8 @@ if (NANOGUI_USE_GLAD)
   # Build and include GLAD on Windows
   list(APPEND LIBNANOGUI_EXTRA_SOURCE
      "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/src/glad.c"
-     "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/glad/glad.h"
-     "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/KHR/khrplatform.h")
+	 "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/glad/glad.h"
+	 "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/KHR/khrplatform.h")
   if (MSVC)
     set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/src/glad.c"
       PROPERTIES COMPILE_FLAGS "/wd4055 ")
@@ -440,10 +440,12 @@ if (NANOGUI_BUILD_EXAMPLES)
   add_executable(example2 src/example2.cpp)
   add_executable(example3 src/example3.cpp)
   add_executable(example4 src/example4.cpp)
+  add_executable(example_icons src/example_icons.cpp)
   target_link_libraries(example1 nanogui ${NANOGUI_EXTRA_LIBS})
   target_link_libraries(example2 nanogui ${NANOGUI_EXTRA_LIBS})
   target_link_libraries(example3 nanogui ${NANOGUI_EXTRA_LIBS})
   target_link_libraries(example4 nanogui ${NANOGUI_EXTRA_LIBS})
+  target_link_libraries(example_icons nanogui ${NANOGUI_EXTRA_LIBS})
 
   # Copy icons for example application
   file(COPY resources/icons DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -472,7 +474,8 @@ if (NANOGUI_BUILD_PYTHON)
 
   add_library(nanogui-python-obj OBJECT
     python/main.cpp
-    python/constants.cpp
+    python/constants_glfw.cpp
+    python/constants_entypo.cpp
     python/color.cpp
     python/widget.cpp
     python/layout.cpp
@@ -499,7 +502,7 @@ if (NANOGUI_BUILD_PYTHON)
   endif()
 
   if (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
-    set_target_properties(nanogui-python PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)
+  set_target_properties(nanogui-python PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)
   endif()
   # The prefix and extension are provided by FindPythonLibsNew.cmake
   set_target_properties(nanogui-python PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}")

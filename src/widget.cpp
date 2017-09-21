@@ -21,8 +21,8 @@ NAMESPACE_BEGIN(nanogui)
 Widget::Widget(Widget *parent)
     : m_parent(nullptr), m_theme(nullptr), m_layout(nullptr),
       m_pos(0), m_size(0), m_fixed_size(0), m_visible(true), m_enabled(true),
-      m_focused(false), m_mouse_focus(false), m_tooltip(""), m_font_size(-1.0f),
-      m_cursor(Cursor::Arrow) {
+      m_focused(false), m_mouse_focus(false), m_tooltip(""), m_font_size(-1.f),
+      m_icon_extra_scale(1.f), m_cursor(Cursor::Arrow) {
     if (parent)
         parent->add_child(this);
 }

@@ -12,14 +12,15 @@
 #include <nanogui/checkbox.h>
 #include <nanogui/opengl.h>
 #include <nanogui/theme.h>
-#include <nanogui/entypo.h>
 
 NAMESPACE_BEGIN(nanogui)
 
 CheckBox::CheckBox(Widget *parent, const std::string &caption,
                    const std::function<void(bool) > &callback)
     : Widget(parent), m_caption(caption), m_pushed(false), m_checked(false),
-      m_callback(callback) { }
+      m_callback(callback) {
+    m_icon_extra_scale = 1.2f; // widget override
+}
 
 bool CheckBox::mouse_button_event(const Vector2i &p, int button, bool down,
                                 int modifiers) {
@@ -77,13 +78,13 @@ void CheckBox::draw(NVGcontext *ctx) {
     nvgFill(ctx);
 
     if (m_checked) {
-        nvgFontSize(ctx, 1.8 * m_size.y());
+        nvgFontSize(ctx, icon_scale() * m_size.y());
         nvgFontFace(ctx, "icons");
         nvgFillColor(ctx, m_enabled ? m_theme->m_icon_color
                                    : m_theme->m_disabled_text_color);
         nvgTextAlign(ctx, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
         nvgText(ctx, m_pos.x() + m_size.y() * 0.5f + 1,
-                m_pos.y() + m_size.y() * 0.5f, utf8(ENTYPO_ICON_CHECK).data(),
+                m_pos.y() + m_size.y() * 0.5f, utf8(m_theme->m_check_box_icon).data(),
                 nullptr);
     }
 }

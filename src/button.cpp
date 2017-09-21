@@ -30,7 +30,7 @@ Vector2i Button::preferred_size(NVGcontext *ctx) const {
 
     if (m_icon) {
         if (nvg_is_font_icon(m_icon)) {
-            ih *= 1.5f;
+            ih *= icon_scale();
             nvgFontFace(ctx, "icons");
             nvgFontSize(ctx, ih);
             iw = nvgTextBounds(ctx, 0, 0, utf8(m_icon).data(), nullptr, nullptr)
@@ -174,7 +174,7 @@ void Button::draw(NVGcontext *ctx) {
 
         float iw, ih = font_size;
         if (nvg_is_font_icon(m_icon)) {
-            ih *= 1.5f;
+            ih *= icon_scale();
             nvgFontSize(ctx, ih);
             nvgFontFace(ctx, "icons");
             iw = nvgTextBounds(ctx, 0, 0, icon.data(), nullptr, nullptr);

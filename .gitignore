@@ -21,14 +21,14 @@ nanogui*.pyd
 libnanogui.so
 libnanogui.dylib
 .vscode/
-
 # html documentation specific
+*.pyc
 docs/_build
 docs/doxyoutput
-docs/generated_api
+docs/api
 
-# python build-specific
-*.py[cod]
-*.egg-info
-_build/
-_generate/
+# entypo update generation
+# this is it's own repo: https://github.com/svenevs/nanogui-entypo
+# should not ever be needed again unless there are new
+# icons added :)
+resources/nanogui-entypo

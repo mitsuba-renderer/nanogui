@@ -13,6 +13,7 @@
 #pragma once
 
 #include <nanogui/object.h>
+#include <nanogui/theme.h>
 #include <vector>
 #include <algorithm>
 
@@ -188,6 +189,18 @@ public:
     /// Return whether the font size is explicitly specified for this widget
     bool has_font_size() const { return m_font_size > 0; }
 
+    /**
+     * The amount of extra scaling applied to *icon* fonts.
+     * See \ref nanogui::Widget::m_icon_extra_scale.
+     */
+    float icon_extra_scale() const { return m_icon_extra_scale; }
+
+    /**
+     * Sets the amount of extra scaling applied to *icon* fonts.
+     * See \ref nanogui::Widget::m_icon_extra_scale.
+     */
+    void set_icon_extra_scale(float scale) { m_icon_extra_scale = scale; }
+
     /// Return a pointer to the cursor of the widget
     Cursor cursor() const { return m_cursor; }
     /// Set the cursor of the widget
@@ -239,16 +252,76 @@ protected:
     /// Free all resources used by the widget and any children
     virtual ~Widget();
 
+    /**
+     * Convenience definition for subclasses to get the full icon scale for this
+     * class of Widget.  It simple returns the value
+     * ``m_theme->m_icon_scale * this->m_icon_extra_scale``.
+     *
+     * \remark
+     *     See also: \ref nanogui::Theme::m_icon_scale and
+     *     \ref nanogui::Widget::m_icon_extra_scale.  This tiered scaling
+     *     strategy may not be appropriate with fonts other than ``entypo.ttf``.
+     */
+    float icon_scale() const { return m_theme->m_icon_scale * m_icon_extra_scale; }
+
 protected:
     Widget *m_parent;
     ref<Theme> m_theme;
     ref<Layout> m_layout;
     Vector2i m_pos, m_size, m_fixed_size;
     std::vector<Widget *> m_children;
-    bool m_visible, m_enabled;
+    /**
+     * Whether or not this Widget is currently visible.  When a Widget is not
+     * currently visible, no time is wasted executing its drawing method.
+     */
+    bool m_visible;
+
+    /**
+     * Whether or not this Widget is currently enabled.  Various different kinds
+     * of derived types use this to determine whether or not user input will be
+     * accepted.  For example, when ``m_enabled == false``, the state of a
+     * CheckBox cannot be changed, or a TextBox will not allow new input.
+     */
+    bool m_enabled;
     bool m_focused, m_mouse_focus;
     std::string m_tooltip;
     int m_font_size;
+    
+    /**
+     * \brief The amount of extra icon scaling used in addition the the theme's
+     *        default icon font scale.  Default value is ``1.0``, which implies
+     *        that \ref nanogui::Widget::icon_scale simply returns the value
+     *        of \ref nanogui::Theme::m_icon_scale.
+     *
+     * Most widgets do not need extra scaling, but some (e.g., CheckBox, TextBox)
+     * need to adjust the Theme's default icon scaling
+     * (\ref nanogui::Theme::m_icon_scale) to properly display icons within their
+     * bounds (upscale, or downscale).
+     *
+     * \rst
+     * .. note::
+     *
+     *    When using ``nvgFontSize`` for icons in subclasses, make sure to call
+     *    the :func:`nanogui::Widget::icon_scale` function.  Expected usage when
+     *    *drawing* icon fonts is something like:
+     *
+     *    .. code-block:: cpp
+     *
+     *       virtual void draw(NVGcontext *ctx) {
+     *           // fontSize depends on the kind of Widget.  Search for `FontSize`
+     *           // in the Theme class (e.g., standard vs button)
+     *           float ih = font_size;
+     *           // assuming your Widget has a declared `mIcon`
+     *           if (nvgIsFontIcon(mIcon)) {
+     *               ih *= icon_scale();
+     *               nvgFontFace(ctx, "icons");
+     *               nvgFontSize(ctx, ih);
+     *               /// remaining drawing code (see button.cpp for more)
+     *           }
+     *       }
+     * \endrst
+     */
+    float m_icon_extra_scale;
     Cursor m_cursor;
 };
 

@@ -13,6 +13,7 @@
 
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
+#include <nanogui/entypo.h>
 #include <nanogui_resources.h>
 
 NAMESPACE_BEGIN(nanogui)
@@ -20,35 +21,37 @@ NAMESPACE_BEGIN(nanogui)
 Theme::Theme(NVGcontext *ctx) {
     m_standard_font_size                 = 16;
     m_button_font_size                   = 20;
-    m_text_box_font_size                  = 20;
+    m_text_box_font_size                 = 20;
+    m_icon_scale                         = 0.77f;
+    
     m_window_corner_radius               = 2;
     m_window_header_height               = 30;
-    m_window_drop_shadow_size             = 10;
+    m_window_drop_shadow_size            = 10;
     m_button_corner_radius               = 2;
     m_tab_border_width                   = 0.75f;
     m_tab_inner_margin                   = 5;
-    m_tab_min_button_width                = 20;
-    m_tab_max_button_width                = 160;
+    m_tab_min_button_width               = 20;
+    m_tab_max_button_width               = 160;
     m_tab_control_width                  = 20;
-    m_tab_button_horizontal_padding       = 10;
-    m_tab_button_vertical_padding         = 2;
+    m_tab_button_horizontal_padding      = 10;
+    m_tab_button_vertical_padding        = 2;
 
-    m_drop_shadow                       = Color(0, 128);
-    m_transparent                      = Color(0, 0);
-    m_border_dark                       = Color(29, 255);
-    m_border_light                      = Color(92, 255);
-    m_border_medium                     = Color(35, 255);
-    m_text_color                        = Color(255, 160);
+    m_drop_shadow                        = Color(0, 128);
+    m_transparent                        = Color(0, 0);
+    m_border_dark                        = Color(29, 255);
+    m_border_light                       = Color(92, 255);
+    m_border_medium                      = Color(35, 255);
+    m_text_color                         = Color(255, 160);
     m_disabled_text_color                = Color(255, 80);
     m_text_color_shadow                  = Color(0, 160);
-    m_icon_color                        = m_text_color;
+    m_icon_color                         = m_text_color;
 
-    m_button_gradient_top_focused         = Color(64, 255);
-    m_button_gradient_bot_focused         = Color(48, 255);
-    m_button_gradient_top_unfocused       = Color(74, 255);
-    m_button_gradient_bot_unfocused       = Color(58, 255);
-    m_button_gradient_top_pushed          = Color(41, 255);
-    m_button_gradient_bot_pushed          = Color(29, 255);
+    m_button_gradient_top_focused        = Color(64, 255);
+    m_button_gradient_bot_focused        = Color(48, 255);
+    m_button_gradient_top_unfocused      = Color(74, 255);
+    m_button_gradient_bot_unfocused      = Color(58, 255);
+    m_button_gradient_top_pushed         = Color(41, 255);
+    m_button_gradient_bot_pushed         = Color(29, 255);
 
     /* Window-related */
     m_window_fill_unfocused              = Color(43, 230);
@@ -56,20 +59,34 @@ Theme::Theme(NVGcontext *ctx) {
     m_window_title_unfocused             = Color(220, 160);
     m_window_title_focused               = Color(255, 190);
 
-    m_window_header_gradient_top          = m_button_gradient_top_unfocused;
-    m_window_header_gradient_bot          = m_button_gradient_bot_unfocused;
-    m_window_header_sep_top               = m_border_light;
-    m_window_header_sep_bot               = m_border_dark;
+    m_window_header_gradient_top         = m_button_gradient_top_unfocused;
+    m_window_header_gradient_bot         = m_button_gradient_bot_unfocused;
+    m_window_header_sep_top              = m_border_light;
+    m_window_header_sep_bot              = m_border_dark;
 
-    m_window_popup                      = Color(50, 255);
+    m_window_popup                       = Color(50, 255);
     m_window_popup_transparent           = Color(50, 0);
 
+    m_check_box_icon                    = ENTYPO_ICON_CHECK;
+    m_message_information_icon          = ENTYPO_ICON_INFO_WITH_CIRCLE;
+    m_message_question_icon             = ENTYPO_ICON_HELP_WITH_CIRCLE;
+    m_message_warning_icon              = ENTYPO_ICON_WARNING;
+    m_message_alt_button_icon           = ENTYPO_ICON_CIRCLE_WITH_CROSS;
+    m_message_primary_button_icon       = ENTYPO_ICON_CHECK;
+    m_popup_chevron_right_icon          = ENTYPO_ICON_CHEVRON_RIGHT;
+    m_popup_chevron_left_icon           = ENTYPO_ICON_CHEVRON_LEFT;
+    m_tab_header_left_icon              = ENTYPO_ICON_ARROW_BOLD_LEFT;
+    m_tab_header_right_icon             = ENTYPO_ICON_ARROW_BOLD_RIGHT;
+    m_text_box_up_icon                  = ENTYPO_ICON_CHEVRON_UP;
+    m_text_box_down_icon                = ENTYPO_ICON_CHEVRON_DOWN;
+
     m_font_normal = nvgCreateFontMem(ctx, "sans", roboto_regular_ttf,
-                                   roboto_regular_ttf_size, 0);
+                                     roboto_regular_ttf_size, 0);
     m_font_bold = nvgCreateFontMem(ctx, "sans-bold", roboto_bold_ttf,
-                                 roboto_bold_ttf_size, 0);
+                                   roboto_bold_ttf_size, 0);
     m_font_icons = nvgCreateFontMem(ctx, "icons", entypo_ttf,
-                                  entypo_ttf_size, 0);
+                                    entypo_ttf_size, 0);
+
     if (m_font_normal == -1 || m_font_bold == -1 || m_font_icons == -1)
         throw std::runtime_error("Could not load fonts!");
 }

@@ -17,7 +17,6 @@
 #include <nanogui/textbox.h>
 #include <nanogui/opengl.h>
 #include <nanogui/theme.h>
-#include <nanogui/entypo.h>
 #include <regex>
 #include <iostream>
 
@@ -45,6 +44,7 @@ TextBox::TextBox(Widget *parent,const std::string &value)
       m_text_offset(0),
       m_last_click(0) {
     if (m_theme) m_font_size = m_theme->m_text_box_font_size;
+    m_icon_extra_scale = .8f;
 }
 
 void TextBox::set_editable(bool editable) {
@@ -150,14 +150,14 @@ void TextBox::draw(NVGcontext* ctx) {
         spin_arrows_width = 14.f;
 
         nvgFontFace(ctx, "icons");
-        nvgFontSize(ctx, ((m_font_size < 0) ? m_theme->m_button_font_size : m_font_size) * 1.2f);
+        nvgFontSize(ctx, ((m_font_size < 0) ? m_theme->m_button_font_size : m_font_size) * icon_scale());
 
         bool spinning = m_mouse_down_pos.x() != -1;
 
         /* up button */ {
             bool hover = m_mouse_focus && spin_area(m_mouse_pos) == SpinArea::Top;
             nvgFillColor(ctx, (m_enabled && (hover || spinning)) ? m_theme->m_text_color : m_theme->m_disabled_text_color);
-            auto icon = utf8(ENTYPO_ICON_CHEVRON_UP);
+            auto icon = utf8(m_theme->m_text_box_up_icon);
             nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
             Vector2f icon_pos(m_pos.x() + 4.f,
                              m_pos.y() + m_size.y()/2.f - x_spacing/2.f);
@@ -167,7 +167,7 @@ void TextBox::draw(NVGcontext* ctx) {
         /* down button */ {
             bool hover = m_mouse_focus && spin_area(m_mouse_pos) == SpinArea::Bottom;
             nvgFillColor(ctx, (m_enabled && (hover || spinning)) ? m_theme->m_text_color : m_theme->m_disabled_text_color);
-            auto icon = utf8(ENTYPO_ICON_CHEVRON_DOWN);
+            auto icon = utf8(m_theme->m_text_box_down_icon);
             nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
             Vector2f icon_pos(m_pos.x() + 4.f,
                              m_pos.y() + m_size.y()/2.f + x_spacing/2.f + 1.5f);
