@@ -1,6 +1,4 @@
 /*
-    nanogui/common.h -- common definitions used by NanoGUI
-
     NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
     by Mikko Mononen.
@@ -8,7 +6,11 @@
     All rights reserved. Use of this source code is governed by a
     BSD-style license that can be found in the LICENSE.txt file.
 */
-/** \file */
+/**
+ * \file nanogui/common.h
+ *
+ * \brief Common definitions used by NanoGUI.
+ */
 
 #pragma once
 
@@ -71,7 +73,7 @@
 #endif
 
 /* Force usage of discrete GPU on laptops (macro must be invoked in main application) */
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(DOXYGEN_DOCUMENTATION_BUILD)
 #define NANOGUI_FORCE_DISCRETE_GPU() \
     extern "C" { \
         __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1; \
@@ -96,7 +98,7 @@
 #endif
 
 // These will produce broken links in the docs build
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+#if !defined(DOXYGEN_SHOULD_SKIP_THIS)
 
 extern "C" {
     /* Opaque handle types */
@@ -111,26 +113,24 @@ struct GLFWcursor;
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
 // Define command key for windows/mac/linux
-#ifdef __APPLE__
-/// If on OSX, maps to ``GLFW_MOD_SUPER``.  Otherwise, maps to ``GLFW_MOD_CONTROL``.
-#define SYSTEM_COMMAND_MOD GLFW_MOD_SUPER
+#if defined(__APPLE__) || defined(DOXYGEN_DOCUMENTATION_BUILD)
+    /// If on OSX, maps to ``GLFW_MOD_SUPER``.  Otherwise, maps to ``GLFW_MOD_CONTROL``.
+    #define SYSTEM_COMMAND_MOD GLFW_MOD_SUPER
 #else
-/// If on OSX, maps to ``GLFW_MOD_SUPER``.  Otherwise, maps to ``GLFW_MOD_CONTROL``.
-#define SYSTEM_COMMAND_MOD GLFW_MOD_CONTROL
+    #define SYSTEM_COMMAND_MOD GLFW_MOD_CONTROL
 #endif
 
 NAMESPACE_BEGIN(nanogui)
 
-/// Cursor shapes available to use in GLFW.
+/// Cursor shapes available to use in GLFW.  Shape of actual cursor determined by Operating System.
 enum class Cursor {
-    Arrow = 0,
-    IBeam,
-    Crosshair,
-    Hand,
-    HResize,
-    VResize,
-    /// Not a cursor --- should always be last: enables a loop over the cursor types.
-    CursorCount
+    Arrow = 0,  ///< The arrow cursor.
+    IBeam,      ///< The I-beam cursor.
+    Crosshair,  ///< The crosshair cursor.
+    Hand,       ///< The hand cursor.
+    HResize,    ///< The horizontal resize cursor.
+    VResize,    ///< The vertical resize cursor.
+    CursorCount ///< Not a cursor --- should always be last: enables a loop over the cursor types.
 };
 
 /* Import some common Enoki types */
@@ -386,7 +386,7 @@ extern NANOGUI_EXPORT void shutdown();
  *     specify a negative value here.
  *
  * \param detach
- *     This pararameter only exists in the Python bindings. When the active
+ *     This parameter only exists in the Python bindings. When the active
  *     \c Screen instance is provided via the \c detach parameter, the
  *     ``mainloop()`` function becomes non-blocking and returns
  *     immediately (in this case, the main loop runs in parallel on a newly
@@ -450,7 +450,7 @@ extern NANOGUI_EXPORT void chdir_to_bundle_parent();
  *
  * \rst
  * NanoGUI uses this to convert the icon character codes
- * defined in :ref:`file_include_nanogui_entypo.h`.
+ * defined in :ref:`file_nanogui_entypo.h`.
  * \endrst
  *
  * \param c

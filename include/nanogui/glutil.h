@@ -17,10 +17,12 @@
 #include <enoki/quaternion.h>
 #include <map>
 
-#if !defined(GL_HALF_FLOAT)
+/// Ensures that ``GL_HALF_FLOAT`` and ``GL_DOUBLE`` are defined properly for all platforms.
+#if !defined(GL_HALF_FLOAT) || defined(DOXYGEN_DOCUMENTATION_BUILD)
 #  define GL_HALF_FLOAT 0x140B
 #endif
-#if !defined(GL_DOUBLE)
+
+#if !defined(GL_DOUBLE) || defined(DOXYGEN_DOCUMENTATION_BUILD)
 #  define GL_DOUBLE     0x140A
 #endif
 

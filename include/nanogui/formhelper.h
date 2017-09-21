@@ -1,7 +1,4 @@
 /*
-    nanogui/formhelper.h -- helper class to construct forms for editing a set
-    of variables of various types
-
     NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
     by Mikko Mononen.
@@ -9,7 +6,12 @@
     All rights reserved. Use of this source code is governed by a
     BSD-style license that can be found in the LICENSE.txt file.
 */
-/** \file */
+/**
+ * \file nanogui/formhelper.h
+ *
+ * \brief Helper class to construct forms for editing a set of variables of
+ *        various types.
+ */
 
 #pragma once
 
@@ -33,21 +35,21 @@ NAMESPACE_BEGIN(detail)
  * \rst
  * The partial template specializations are:
  *
- * - Inheritance from :ref:`class_nanogui__ComboBox` for ``enum`` types:
+ * - Inheritance from :class:`nanogui::ComboBox` for ``enum`` types:
  *
  *   .. code-block:: cpp
  *
  *      template <typename T>
  *      class FormWidget<T, typename std::is_enum<T>::type> : public ComboBox
  *
- * - Inheritance from :ref:`class_nanogui__IntBox` for integral types:
+ * - Inheritance from :class:`nanogui::IntBox` for integral types:
  *
  *   .. code-block:: cpp
  *
  *      template <typename T>
  *      class FormWidget<T, typename std::is_integral<T>::type> : public IntBox<T>
  *
- * - Inheritance from :ref:`class_nanogui__FloatBox` for floating point types:
+ * - Inheritance from :class:`nanogui::FloatBox` for floating point types:
  *
  *   .. code-block:: cpp
  *
@@ -56,28 +58,28 @@ NAMESPACE_BEGIN(detail)
  *
  * The full template specializations are:
  *
- * - Inheritance from :ref:`class_nanogui__CheckBox` for booleans:
+ * - Inheritance from :class:`nanogui::CheckBox` for booleans:
  *
  *   .. code-block:: cpp
  *
  *      template <>
  *      class FormWidget<bool, std::true_type> : public CheckBox
  *
- * - Inheritance from :ref:`class_nanogui__TextBox` for strings:
+ * - Inheritance from :class:`nanogui::TextBox` for strings:
  *
  *   .. code-block:: cpp
  *
  *      template <>
  *      class FormWidget<std::string, std::true_type> : public TextBox
  *
- * - Inheritance from :ref:`class_nanogui__ColorPicker` for `Color` types:
+ * - Inheritance from :class:`nanogui::ColorPicker` for :class:`nanogui::Color` types:
  *
  *   .. code-block:: cpp
  *
  *      template <>
  *      class FormWidget<Color, std::true_type> : public ColorPicker
  *
- * Please refer to the bottom of :ref:`program_listing_file_include_nanogui_formhelper.h`
+ * Please refer to the bottom of :ref:`program_listing_file_nanogui_formhelper.h`
  * for the implementation details.
  * \endrst
  */
@@ -218,6 +220,8 @@ public:
 
     /// Access the currently active \ref Window instance
     Window *window() { return m_window; }
+
+    /// Set the active \ref Window instance.
     void set_window(Window *window) {
         m_window = window;
         m_layout = dynamic_cast<AdvancedGridLayout *>(window->layout());
@@ -228,88 +232,170 @@ public:
 
     /// Specify a fixed size for newly added widgets
     void set_fixed_size(const Vector2i &fw) { m_fixed_size = fw; }
+
+    /// The current fixed size being used for newly added widgets.
     Vector2i fixed_size() { return m_fixed_size; }
 
-    /* Set the font size / name of labels, group headers, and data widgets */
+    /// The font name being used for group headers.
     const std::string &group_font_name() const { return m_group_font_name; }
+
+    /// Sets the font name to be used for group headers.
     void set_group_font_name(const std::string &name) { m_group_font_name = name; }
+
+    /// The font name being used for labels.
     const std::string &label_font_name() const { return m_label_font_name; }
+
+    /// Sets the font name being used for labels.
     void set_label_font_name(const std::string &name) { m_label_font_name = name; }
+
+    /// The size of the font being used for group headers.
     int group_font_size() const { return m_group_font_size; }
+
+    /// Sets the size of the font being used for group headers.
     void set_group_font_size(int value) { m_group_font_size = value; }
+
+    /// The size of the font being used for labels.
     int label_font_size() const { return m_label_font_size; }
+
+    /// Sets the size of the font being used for labels.
     void set_label_font_size(int value) { m_label_font_size = value; }
+
+    /// The size of the font being used for non-group / non-label widgets.
     int widget_font_size() const { return m_widget_font_size; }
+
+    /// Sets the size of the font being used for non-group / non-label widgets.
     void set_widget_font_size(int value) { m_widget_font_size = value; }
 
 protected:
+    /// A reference to the \ref nanogui::Screen this FormHelper is assisting.
     ref<Screen> m_screen;
+    /// A reference to the \ref nanogui::Window this FormHelper is controlling.
     ref<Window> m_window;
+    /// A reference to the \ref nanogui::AdvancedGridLayout this FormHelper is using.
     ref<AdvancedGridLayout> m_layout;
+    /// The callbacks associated with all widgets this FormHelper is managing.
     std::vector<std::function<void()>> m_refresh_callbacks;
+    /// The group header font name.
     std::string m_group_font_name = "sans-bold";
+    /// The label font name.
     std::string m_label_font_name = "sans";
+    /// The fixed size for newly added widgets.
     Vector2i m_fixed_size = Vector2i(0, 20);
+    /// The font size for group headers.
     int m_group_font_size = 20;
+    /// The font size for labels.
     int m_label_font_size = 16;
+    /// The font size for non-group / non-label widgets.
     int m_widget_font_size = 16;
+    /// The spacing used **before** new groups.
     int m_pre_group_spacing = 15;
+    /// The spacing used **after** each group.
     int m_post_group_spacing = 5;
+    /// The spacing between all other widgets.
     int m_variable_spacing = 5;
 };
 
 NAMESPACE_BEGIN(detail)
 
-// template specialization unsupported
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
-/* Various types of form widgets for different input types below */
+/**
+ * A specialization for adding a CheckBox to a FormHelper.
+ */
 template <> class FormWidget<bool, std::true_type> : public CheckBox {
 public:
+    /// Creates a new FormWidget with underlying type CheckBox.
     FormWidget(Widget *p) : CheckBox(p, "") { set_fixed_width(20); }
+
+    /// Pass-through function for \ref nanogui::CheckBox::set_checked.
     void set_value(bool v) { set_checked(v); }
+
+    /// Pass-through function for \ref nanogui::Widget::set-enabled.
     void set_editable(bool e) { set_enabled(e); }
+
+    /// Returns the value of \ref nanogui::CheckBox::checked.
     bool value() const { return checked(); }
 };
 
+/**
+ * A specialization for adding a ComboBox to a FormHelper.
+ *
+ * \tparam T
+ *     The type being used inside the ComboBox.
+ */
 template <typename T> class FormWidget<T, typename std::is_enum<T>::type> : public ComboBox {
 public:
+    /// Creates a new FormWidget with underlying type ComboBox.
     FormWidget(Widget *p) : ComboBox(p) { }
+
+    /// Pass-through function for \ref nanogui::ComboBox::selected_index.
     T value() const { return (T) selected_index(); }
+
+    /// Pass-through function for \ref nanogui::ComboBox::set_selected_index.
     void set_value(T value) { set_selected_index((int) value); m_selected_index = (int) value; }
+
+    /// Pass-through function for \ref nanogui::ComboBox::set_callback.
     void set_callback(const std::function<void(const T &)> &cb) {
         ComboBox::set_callback([cb](int v) { cb((T) v); });
     }
+
+    /// Pass-through function for \ref nanogui::Widget::set_enabled.
     void set_editable(bool e) { set_enabled(e); }
 };
 
+/**
+ * A specialization for adding an IntBox to a FormHelper.
+ *
+ * \tparam T
+ *     The **integral** type being used for the IntBox.
+ */
 template <typename T> class FormWidget<T, typename std::is_integral<T>::type> : public IntBox<T> {
 public:
+    /// Creates a new FormWidget with underlying type IntBox.
     FormWidget(Widget *p) : IntBox<T>(p) { this->set_alignment(TextBox::Alignment::Right); }
 };
 
+/**
+ * A specialization for adding a FloatBox to a FormHelper.
+ *
+ * \tparam T
+ *     The **floating point** type being used for the FloatBox.
+ */
 template <typename T> class FormWidget<T, typename std::is_floating_point<T>::type> : public FloatBox<T> {
 public:
+    /// Creates a new FormWidget with underlying type FloatBox.
     FormWidget(Widget *p) : FloatBox<T>(p) { this->set_alignment(TextBox::Alignment::Right); }
 };
 
+/**
+ * A specialization for adding a TextBox to a FormHelper.
+ */
 template <> class FormWidget<std::string, std::true_type> : public TextBox {
 public:
+    /// Creates a new FormWidget with underlying type TextBox.
     FormWidget(Widget *p) : TextBox(p) { set_alignment(TextBox::Alignment::Left); }
+
+    /// Pass-through function for \ref nanogui::TextBox::set_callback.
     void set_callback(const std::function<void(const std::string&)> &cb) {
         TextBox::set_callback([cb](const std::string &str) { cb(str); return true; });
     }
 };
 
+/**
+ * A specialization for adding a ColorPicker to a FormHelper.
+ */
 template <> class FormWidget<Color, std::true_type> : public ColorPicker {
 public:
+    /// Creates a new FormWidget with underlying type ColorPicker.
     FormWidget(Widget *p) : ColorPicker(p) { }
+
+    /// Pass-through function for \ref nanogui::ColorPicker::set_color.
     void set_value(const Color &c) { set_color(c); }
+
+    /// Pass-through function for \ref nanogui::Widget::set_enabled.
     void set_editable(bool e) { set_enabled(e); }
+
+    /// Returns the value of \ref nanogui::ColorPicker::color.
     Color value() const { return color(); }
 };
-
-#endif // DOXYGEN_SHOULD_SKIP_THIS
 
 NAMESPACE_END(detail)
 NAMESPACE_END(nanogui)
