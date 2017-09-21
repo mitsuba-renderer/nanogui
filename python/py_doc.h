@@ -379,21 +379,73 @@ The method for the alpha component is **always** ``w()``.
 
 static const char *__doc_nanogui_ColorPicker = R"doc(Push button with a popup to tweak a color value.)doc";
 
-static const char *__doc_nanogui_ColorPicker_ColorPicker = R"doc()doc";
+static const char *__doc_nanogui_ColorPicker_ColorPicker =
+R"doc(Attaches a ColorPicker to the specified parent.
 
-static const char *__doc_nanogui_ColorPicker_callback = R"doc(Set the change callback)doc";
+Parameter ``parent``:
+    The Widget to add this ColorPicker to.
+
+Parameter ``color``:
+    The color initially selected by this ColorPicker (default: Red).)doc";
+
+static const char *__doc_nanogui_ColorPicker_callback = R"doc(The callback executed when the ColorWheel changes.)doc";
 
 static const char *__doc_nanogui_ColorPicker_color = R"doc(Get the current color)doc";
 
-static const char *__doc_nanogui_ColorPicker_m_callback = R"doc()doc";
+static const char *__doc_nanogui_ColorPicker_final_callback =
+R"doc(The callback to execute when a new Color is selected on the ColorWheel
+**and** the user clicks the nanogui::ColorPicker::m_pick_button or
+nanogui::ColorPicker::m_reset_button.)doc";
 
-static const char *__doc_nanogui_ColorPicker_m_color_wheel = R"doc()doc";
+static const char *__doc_nanogui_ColorPicker_m_callback = R"doc(The "fast" callback executed when the ColorWheel has changed.)doc";
 
-static const char *__doc_nanogui_ColorPicker_m_pick_button = R"doc()doc";
+static const char *__doc_nanogui_ColorPicker_m_color_wheel =
+R"doc(The ColorWheel for this ColorPicker (the actual widget allowing
+selection).)doc";
 
-static const char *__doc_nanogui_ColorPicker_set_callback = R"doc()doc";
+static const char *__doc_nanogui_ColorPicker_m_final_callback =
+R"doc(The callback to execute when a new Color is selected on the ColorWheel
+**and** the user clicks the nanogui::ColorPicker::m_pick_button or
+nanogui::ColorPicker::m_reset_button.)doc";
+
+static const char *__doc_nanogui_ColorPicker_m_pick_button =
+R"doc(The Button used to signal that the current value on the ColorWheel is
+the desired color to be chosen. The default value for the caption of
+this Button is ``"Pick"``. You can change it using
+nanogui::ColorPicker::set_pick_button_caption if you need.
+
+The color of this Button will not affect nanogui::ColorPicker::color
+until the user has actively selected by clicking this pick button.
+Similarly, the nanogui::ColorPicker::m_callback function is only
+called when a user selects a new Color using by clicking this Button.)doc";
+
+static const char *__doc_nanogui_ColorPicker_m_reset_button =
+R"doc(Remains the Color of the active color selection, until the user picks
+a new Color on the ColorWheel **and** selects the
+nanogui::ColorPicker::m_pick_button. The default value for the caption
+of this Button is ``"Reset"``. You can change it using
+nanogui::ColorPicker::set_reset_button_caption if you need.)doc";
+
+static const char *__doc_nanogui_ColorPicker_pick_button_caption = R"doc(The current caption of the nanogui::ColorPicker::m_pick_button.)doc";
+
+static const char *__doc_nanogui_ColorPicker_reset_button_caption = R"doc(The current caption of the nanogui::ColorPicker::m_reset_button.)doc";
+
+static const char *__doc_nanogui_ColorPicker_set_callback =
+R"doc(Sets the callback is executed as the ColorWheel itself is changed. Set
+this callback if you need to receive updates for the ColorWheel
+changing before the user clicks nanogui::ColorPicker::mPickButton or
+nanogui::ColorPicker::mPickButton.)doc";
 
 static const char *__doc_nanogui_ColorPicker_set_color = R"doc(Set the current color)doc";
+
+static const char *__doc_nanogui_ColorPicker_set_final_callback =
+R"doc(The callback to execute when a new Color is selected on the ColorWheel
+**and** the user clicks the nanogui::ColorPicker::m_pick_button or
+nanogui::ColorPicker::m_reset_button.)doc";
+
+static const char *__doc_nanogui_ColorPicker_set_pick_button_caption = R"doc(Sets the current caption of the nanogui::ColorPicker::m_pick_button.)doc";
+
+static const char *__doc_nanogui_ColorPicker_set_reset_button_caption = R"doc(Sets the current caption of the nanogui::ColorPicker::m_reset_button.)doc";
 
 static const char *__doc_nanogui_ColorWheel = R"doc(Fancy analog widget to select a color value.)doc";
 
@@ -823,6 +875,8 @@ static const char *__doc_nanogui_GLShader_Buffer =
 R"doc(A wrapper struct for maintaining various aspects of items being
 managed by OpenGL.)doc";
 
+static const char *__doc_nanogui_GLShader_Buffer_attrib_id = R"doc()doc";
+
 static const char *__doc_nanogui_GLShader_Buffer_comp_size = R"doc()doc";
 
 static const char *__doc_nanogui_GLShader_Buffer_dim = R"doc()doc";
@@ -830,6 +884,8 @@ static const char *__doc_nanogui_GLShader_Buffer_dim = R"doc()doc";
 static const char *__doc_nanogui_GLShader_Buffer_gl_type = R"doc()doc";
 
 static const char *__doc_nanogui_GLShader_Buffer_id = R"doc()doc";
+
+static const char *__doc_nanogui_GLShader_Buffer_integral = R"doc()doc";
 
 static const char *__doc_nanogui_GLShader_Buffer_size = R"doc()doc";
 
@@ -2122,89 +2178,208 @@ static const char *__doc_nanogui_Theme = R"doc(Storage class for basic theme-rel
 
 static const char *__doc_nanogui_Theme_Theme = R"doc()doc";
 
-static const char *__doc_nanogui_Theme_m_border_dark = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_border_dark =
+R"doc(The dark border color (default: intensity=``29``, alpha=``255``; see
+nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_border_light = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_border_light =
+R"doc(The light border color (default: intensity=``92``, alpha=``255``; see
+nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_border_medium = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_border_medium =
+R"doc(The medium border color (default: intensity=``35``, alpha=``255``; see
+nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_button_corner_radius = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_button_corner_radius =
+R"doc(Rounding radius for Button (and derived types) widgets (default:
+``2``).)doc";
 
-static const char *__doc_nanogui_Theme_m_button_font_size = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_button_font_size = R"doc(The font size for buttons (default: ``20``).)doc";
 
-static const char *__doc_nanogui_Theme_m_button_gradient_bot_focused = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_button_gradient_bot_focused =
+R"doc(The bottom gradient color for buttons in focus (default:
+intensity=``48``, alpha=``255``; see nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_button_gradient_bot_pushed = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_button_gradient_bot_pushed =
+R"doc(The bottom gradient color for buttons currently pushed (default:
+intensity=``29``, alpha=``255``; see nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_button_gradient_bot_unfocused = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_button_gradient_bot_unfocused =
+R"doc(The bottom gradient color for buttons not in focus (default:
+intensity=``58``, alpha=``255``; see nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_button_gradient_top_focused = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_button_gradient_top_focused =
+R"doc(The top gradient color for buttons in focus (default:
+intensity=``64``, alpha=``255``; see nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_button_gradient_top_pushed = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_button_gradient_top_pushed =
+R"doc(The top gradient color for buttons currently pushed (default:
+intensity=``41``, alpha=``255``; see nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_button_gradient_top_unfocused = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_button_gradient_top_unfocused =
+R"doc(The top gradient color for buttons not in focus (default:
+intensity=``74``, alpha=``255``; see nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_disabled_text_color = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_check_box_icon = R"doc(Icon to use for Check_box widgets (default: ``ENTYPO_ICON_CHECK``).)doc";
 
-static const char *__doc_nanogui_Theme_m_drop_shadow = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_disabled_text_color =
+R"doc(The disable dtext color (default: intensity=``255``, alpha=``80``; see
+nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_font_bold = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_drop_shadow =
+R"doc(The color of the drop shadow drawn behind widgets (default:
+intensity=``0``, alpha=``128``; see nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_font_icons = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_font_bold =
+R"doc(The bold font face (default: ``"sans-bold"`` from
+``resources/roboto_regular.ttf``).)doc";
 
-static const char *__doc_nanogui_Theme_m_font_normal = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_font_icons =
+R"doc(The icon font face (default: ``"icons"`` from
+``resources/entypo.ttf``).)doc";
 
-static const char *__doc_nanogui_Theme_m_icon_color = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_font_normal =
+R"doc(The standard font face (default: ``"sans"`` from
+``resources/roboto_regular.ttf``).)doc";
 
-static const char *__doc_nanogui_Theme_m_standard_font_size = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_icon_color = R"doc(The icon color (default: nanogui::Theme::m_text_color).)doc";
 
-static const char *__doc_nanogui_Theme_m_tab_border_width = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_icon_scale =
+R"doc(The amount of scaling that is applied to each icon to fit the size of
+NanoGUI widgets. The default value is ``0.77f``, setting to e.g.
+higher than ``1.0f`` is generally discouraged.)doc";
 
-static const char *__doc_nanogui_Theme_m_tab_button_horizontal_padding = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_message_alt_button_icon =
+R"doc(Icon to use on Message_dialog alt button (default:
+``ENTYPO_ICON_CIRCLE_WITH_CROSS``).)doc";
 
-static const char *__doc_nanogui_Theme_m_tab_button_vertical_padding = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_message_information_icon =
+R"doc(Icon to use for informational Message_dialog widgets (default:
+``ENTYPO_ICON_INFO_WITH_CIRCLE``).)doc";
 
-static const char *__doc_nanogui_Theme_m_tab_control_width = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_message_primary_button_icon =
+R"doc(Icon to use on Message_dialog primary button (default:
+``ENTYPO_ICON_CHECK``).)doc";
 
-static const char *__doc_nanogui_Theme_m_tab_inner_margin = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_message_question_icon =
+R"doc(Icon to use for interrogative Message_dialog widgets (default:
+``ENTYPO_ICON_HELP_WITH_CIRCLE``).)doc";
 
-static const char *__doc_nanogui_Theme_m_tab_max_button_width = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_message_warning_icon =
+R"doc(Icon to use for warning Message_dialog widgets (default:
+``ENTYPO_ICON_WARNING``).)doc";
 
-static const char *__doc_nanogui_Theme_m_tab_min_button_width = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_popup_chevron_left_icon =
+R"doc(Icon to use for Popup_button widgets opening to the left (default:
+``ENTYPO_ICON_CHEVRON_LEFT``).)doc";
 
-static const char *__doc_nanogui_Theme_m_text_box_font_size = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_popup_chevron_right_icon =
+R"doc(Icon to use for Popup_button widgets opening to the right (default:
+``ENTYPO_ICON_CHEVRON_RIGHT``).)doc";
 
-static const char *__doc_nanogui_Theme_m_text_color = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_standard_font_size =
+R"doc(The font size for all widgets other than buttons and textboxes
+(default: `` 16``).)doc";
 
-static const char *__doc_nanogui_Theme_m_text_color_shadow = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_tab_border_width = R"doc(The border width for Tab_header widgets (default: ``0.75f``).)doc";
 
-static const char *__doc_nanogui_Theme_m_transparent = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_tab_button_horizontal_padding =
+R"doc(The amount of horizontal padding for a Tab_header widget (default:
+``10``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_corner_radius = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_tab_button_vertical_padding =
+R"doc(The amount of vertical padding for a Tab_header widget (default:
+``2``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_drop_shadow_size = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_tab_control_width =
+R"doc(Used to help specify what lies "in bound" for a Tab_header widget
+(default: ``20``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_fill_focused = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_tab_header_left_icon =
+R"doc(Icon to indicate hidden tabs to the left on a Tab_header (default:
+``ENTYPO_ICON_ARROW_BOLD_LEFT``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_fill_unfocused = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_tab_header_right_icon =
+R"doc(Icon to indicate hidden tabs to the right on a Tab_header (default:
+``ENTYPO_ICON_ARROW_BOLD_RIGHT``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_header_gradient_bot = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_tab_inner_margin = R"doc(The inner margin on a Tab_header widget (default: ``5``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_header_gradient_top = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_tab_max_button_width =
+R"doc(The maximum size for buttons on a Tab_header widget (default:
+``160``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_header_height = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_tab_min_button_width = R"doc(The minimum size for buttons on a Tab_header widget (default: ``20``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_header_sep_bot = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_text_box_down_icon =
+R"doc(Icon to use when a Text_box has a down toggle (e.g. Int_box) (default:
+``ENTYPO_ICON_CHEVRON_DOWN``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_header_sep_top = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_text_box_font_size = R"doc(The font size for text boxes (default: ``20``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_popup = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_text_box_up_icon =
+R"doc(Icon to use when a Text_box has an up toggle (e.g. Int_box) (default:
+``ENTYPO_ICON_CHEVRON_UP``).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_popup_transparent = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_text_color =
+R"doc(The text color (default: intensity=``255``, alpha=``160``; see
+nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_title_focused = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_text_color_shadow =
+R"doc(The text shadow color (default: intensity=``0``, alpha=``160``; see
+nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_window_title_unfocused = R"doc()doc";
+static const char *__doc_nanogui_Theme_m_transparent =
+R"doc(The transparency color (default: intensity=``0``, alpha=``0``; see
+nanogui::Color::Color(int,int)).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_corner_radius = R"doc(Rounding radius for Window widget corners (default: ``2``).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_drop_shadow_size =
+R"doc(Size of drop shadow rendered behind the Window widgets (default:
+``10``).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_fill_focused =
+R"doc(The fill color for a Window that is in focus (default:
+intensity=``45``, alpha=``230``; see nanogui::Color::Color(int,int)).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_fill_unfocused =
+R"doc(The fill color for a Window that is not in focus (default:
+intensity=``43``, alpha=``230``; see nanogui::Color::Color(int,int)).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_header_gradient_bot =
+R"doc(The bottom gradient color for Window headings (default:
+nanogui::Theme::m_button_gradient_bot_unfocused).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_header_gradient_top =
+R"doc(The top gradient color for Window headings (default:
+nanogui::Theme::m_button_gradient_top_unfocused).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_header_height = R"doc(Default size of Window widget titles (default: ``30``).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_header_sep_bot =
+R"doc(The Window header bottom separation color (default:
+nanogui::Theme::m_border_dark).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_header_sep_top =
+R"doc(The Window header top separation color (default:
+nanogui::Theme::m_border_light).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_popup =
+R"doc(The popup window color (default: intensity=``50``, alpha=``255``; see
+nanogui::Color::Color(int,int))).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_popup_transparent =
+R"doc(The transparent popup window color (default: intensity=``50``,
+alpha=``0``; see nanogui::Color::Color(int,int))).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_title_focused =
+R"doc(The title color for a Window that is in focus (default:
+intensity=``255``, alpha=``190``; see nanogui::Color::Color(int,int)).)doc";
+
+static const char *__doc_nanogui_Theme_m_window_title_unfocused =
+R"doc(The title color for a Window that is not in focus (default:
+intensity=``220``, alpha=``160``; see nanogui::Color::Color(int,int)).)doc";
 
 static const char *__doc_nanogui_ToolButton = R"doc(Simple radio+toggle button with an icon.)doc";
 
@@ -2294,6 +2469,20 @@ static const char *__doc_nanogui_Widget_has_font_size = R"doc(Return whether the
 
 static const char *__doc_nanogui_Widget_height = R"doc(Return the height of the widget)doc";
 
+static const char *__doc_nanogui_Widget_icon_extra_scale =
+R"doc(The amount of extra scaling applied to *icon* fonts. See
+nanogui::Widget::m_icon_extra_scale.)doc";
+
+static const char *__doc_nanogui_Widget_icon_scale =
+R"doc(Convenience definition for subclasses to get the full icon scale for
+this class of Widget. It simple returns the value
+``m_theme->m_icon_scale * this->m_icon_extra_scale``.
+
+Remark:
+    See also: nanogui::Theme::m_icon_scale and
+    nanogui::Widget::m_icon_extra_scale. This tiered scaling strategy
+    may not be appropriate with fonts other than ``entypo.ttf``.)doc";
+
 static const char *__doc_nanogui_Widget_keyboard_character_event = R"doc(Handle text input (UTF-32 format) (default implementation: do nothing))doc";
 
 static const char *__doc_nanogui_Widget_keyboard_event = R"doc(Handle a keyboard event (default implementation: do nothing))doc";
@@ -2306,13 +2495,49 @@ static const char *__doc_nanogui_Widget_m_children = R"doc()doc";
 
 static const char *__doc_nanogui_Widget_m_cursor = R"doc()doc";
 
-static const char *__doc_nanogui_Widget_m_enabled = R"doc()doc";
+static const char *__doc_nanogui_Widget_m_enabled =
+R"doc(Whether or not this Widget is currently enabled. Various different
+kinds of derived types use this to determine whether or not user input
+will be accepted. For example, when ``m_enabled == false``, the state
+of a CheckBox cannot be changed, or a TextBox will not allow new
+input.)doc";
 
 static const char *__doc_nanogui_Widget_m_fixed_size = R"doc()doc";
 
 static const char *__doc_nanogui_Widget_m_focused = R"doc()doc";
 
 static const char *__doc_nanogui_Widget_m_font_size = R"doc()doc";
+
+static const char *__doc_nanogui_Widget_m_icon_extra_scale =
+R"doc(The amount of extra icon scaling used in addition the the theme's
+default icon font scale. Default value is ``1.0``, which implies that
+nanogui::Widget::icon_scale simply returns the value of
+nanogui::Theme::m_icon_scale.
+
+Most widgets do not need extra scaling, but some (e.g., CheckBox,
+TextBox) need to adjust the Theme's default icon scaling
+(nanogui::Theme::m_icon_scale) to properly display icons within their
+bounds (upscale, or downscale).
+
+```
+Note:
+When using ``nvgFontSize`` for icons in subclasses, make sure to call
+the :func:`nanogui::Widget::icon_scale` function.  Expected usage when
+*drawing* icon fonts is something like:
+virtual void draw(NVGcontext *ctx) {
+// fontSize depends on the kind of Widget.  Search for `FontSize`
+// in the Theme class (e.g., standard vs button)
+float ih = font_size;
+// assuming your Widget has a declared `mIcon`
+if (nvgIsFontIcon(mIcon)) {
+ih *= icon_scale();
+nvgFontFace(ctx, "icons");
+nvgFontSize(ctx, ih);
+/// remaining drawing code (see button.cpp for more)
+}
+}
+
+```)doc";
 
 static const char *__doc_nanogui_Widget_m_layout = R"doc()doc";
 
@@ -2328,7 +2553,9 @@ static const char *__doc_nanogui_Widget_m_theme = R"doc()doc";
 
 static const char *__doc_nanogui_Widget_m_tooltip = R"doc()doc";
 
-static const char *__doc_nanogui_Widget_m_visible = R"doc()doc";
+static const char *__doc_nanogui_Widget_m_visible =
+R"doc(Whether or not this Widget is currently visible. When a Widget is not
+currently visible, no time is wasted executing its drawing method.)doc";
 
 static const char *__doc_nanogui_Widget_mouse_button_event =
 R"doc(Handle a mouse button event (default implementation: propagate to
@@ -2362,6 +2589,8 @@ static const char *__doc_nanogui_Widget_remove_child_2 = R"doc(Remove a child wi
 
 static const char *__doc_nanogui_Widget_request_focus = R"doc(Request the focus to be moved to this widget)doc";
 
+static const char *__doc_nanogui_Widget_screen = R"doc(Walk up the hierarchy and return the parent screen)doc";
+
 static const char *__doc_nanogui_Widget_scroll_event =
 R"doc(Handle a mouse scroll event (default implementation: propagate to
 children))doc";
@@ -2388,6 +2617,10 @@ static const char *__doc_nanogui_Widget_set_focused = R"doc(Set whether or not t
 static const char *__doc_nanogui_Widget_set_font_size = R"doc(Set the font size of this widget)doc";
 
 static const char *__doc_nanogui_Widget_set_height = R"doc(Set the height of the widget)doc";
+
+static const char *__doc_nanogui_Widget_set_icon_extra_scale =
+R"doc(Sets the amount of extra scaling applied to *icon* fonts. See
+nanogui::Widget::m_icon_extra_scale.)doc";
 
 static const char *__doc_nanogui_Widget_set_layout = R"doc(Set the used Layout generator)doc";
 

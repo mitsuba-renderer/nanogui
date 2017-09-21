@@ -14,15 +14,17 @@ import math
 import time
 import gc
 
-from nanogui import Color, Screen, Window, GroupLayout, BoxLayout, \
+from nanogui import Color, ColorPicker, Screen, Window, GroupLayout, BoxLayout, \
                     ToolButton, Label, Button, Widget, \
-                    PopupButton, CheckBox, MessageDialog, VScrollPanel, \
+                    Popup, PopupButton, CheckBox, MessageDialog, VScrollPanel, \
                     ImagePanel, ImageView, ComboBox, ProgressBar, Slider, \
                     TextBox, ColorWheel, Graph, GridLayout, \
                     Alignment, Orientation, TabWidget, IntBox, GLShader
 
 from nanogui import gl, glfw, entypo
 
+# A simple counter, used for dynamic tab creation with TabWidget callback
+counter = 1
 
 class TestApp(Screen):
     def __init__(self):
@@ -60,7 +62,7 @@ class TestApp(Screen):
         Label(window, "A tool palette", "sans-bold")
         tools = Widget(window)
         tools.set_layout(BoxLayout(Orientation.Horizontal,
-                                   Alignment.Middle, 0, 6))
+                                  Alignment.Middle, 0, 6))
 
         ToolButton(tools, entypo.ICON_CLOUD)
         ToolButton(tools, entypo.ICON_CONTROLLER_FAST_FORWARD)
@@ -73,10 +75,17 @@ class TestApp(Screen):
         popup.set_layout(GroupLayout())
         Label(popup, "Arbitrary widgets can be placed here")
         CheckBox(popup, "A check box")
+        # popup right
         popup_btn = PopupButton(popup, "Recursive popup", entypo.ICON_FLASH)
-        popup = popup_btn.popup()
-        popup.set_layout(GroupLayout())
-        CheckBox(popup, "Another check box")
+        popup_right = popup_btn.popup()
+        popup_right.set_layout(GroupLayout())
+        CheckBox(popup_right, "Another check box")
+        # popup left
+        popup_btn = PopupButton(popup, "Recursive popup", entypo.ICON_FLASH)
+        popup_btn.set_side(Popup.Side.Left)
+        popup_left = popup_btn.popup()
+        popup_left.set_layout(GroupLayout())
+        CheckBox(popup_left, "Another check box");
 
         window = Window(self, "Basic widgets")
         window.set_position((200, 15))
@@ -85,7 +94,7 @@ class TestApp(Screen):
         Label(window, "Message dialog", "sans-bold")
         tools = Widget(window)
         tools.set_layout(BoxLayout(Orientation.Horizontal,
-                                   Alignment.Middle, 0, 6))
+                                  Alignment.Middle, 0, 6))
 
         def cb2(result):
             print("Dialog result: %i" % result)
@@ -152,7 +161,7 @@ class TestApp(Screen):
         Label(window, "File dialog", "sans-bold")
         tools = Widget(window)
         tools.set_layout(BoxLayout(Orientation.Horizontal,
-                                   Alignment.Middle, 0, 6))
+                                  Alignment.Middle, 0, 6))
         b = Button(tools, "Open")
         valid = [("png", "Portable Network Graphics"), ("txt", "Text file")]
 
@@ -190,7 +199,7 @@ class TestApp(Screen):
 
         panel = Widget(window)
         panel.set_layout(BoxLayout(Orientation.Horizontal,
-                                   Alignment.Middle, 0, 20))
+                                  Alignment.Middle, 0, 20))
 
         slider = Slider(panel)
         slider.set_value(0.5)
@@ -233,6 +242,35 @@ class TestApp(Screen):
                          0.5 * math.cos(i / 23.0) + 1)
                   for i in range(100)]
         graph.set_values(values)
+        tab_widget.set_active_tab(0)
+
+        # Dummy tab used to represent the last tab button.
+        tab_widget.create_tab("+")
+
+        def tab_cb(index):
+            if index == (tab_widget.tab_count() - 1):
+                global counter
+                # When the "+" tab has been clicked, simply add a new tab.
+                tabName  = "Dynamic {0}".format(counter)
+                layer_dyn = tab_widget.create_tab(index, tabName)
+                layer_dyn.set_layout(GroupLayout())
+                Label(layer_dyn, "Function graph widget", "sans-bold")
+                graph_dyn = Graph(layer_dyn, "Dynamic function")
+
+                graph_dyn.set_header("E = 2.35e-3")
+                graph_dyn.set_footer("Iteration {0}".format(index*counter))
+                values_dyn = [0.5 * abs((0.5 * math.sin(i / 10.0 + counter)) +
+                                       (0.5 * math.cos(i / 23.0 + 1 + counter)))
+                             for i in range(100)]
+                graph_dyn.set_values(values_dyn)
+                counter += 1
+                # We must invoke perform layout from the screen instance to keep everything in order.
+                # This is essential when creating tabs dynamically.
+                self.perform_layout()
+                # Ensure that the newly added header is visible on screen
+                tab_widget.ensure_tab_visible(index)
+
+        tab_widget.set_callback(tab_cb)
         tab_widget.set_active_tab(0)
 
         window = Window(self, "Grid of small widgets")
@@ -278,32 +316,58 @@ class TestApp(Screen):
         cobo.set_font_size(16)
         cobo.set_fixed_size((100, 20))
 
-        Label(window, "Color button :", "sans-bold")
-        popup_btn = PopupButton(window, "", 0)
-        popup_btn.set_background_color(Color(1, 0.47, 0, 1))
-        popup_btn.set_font_size(16)
-        popup_btn.set_fixed_size((100, 20))
-        popup = popup_btn.popup()
-        popup.set_layout(GroupLayout())
+        Label(window, "Color picker :", "sans-bold");
+        cp = ColorPicker(window, Color(255, 120, 0, 255));
+        cp.set_fixed_size((100, 20));
 
-        colorwheel = ColorWheel(popup)
-        colorwheel.set_color(popup_btn.background_color())
+        def cp_final_cb(color):
+            print(
+                "ColorPicker Final Callback: [{0}, {1}, {2}, {3}]".format(color.r,
+                                                                          color.g,
+                                                                          color.b,
+                                                                          color.w)
+            )
 
-        color_btn = Button(popup, "Pick")
-        color_btn.set_fixed_size((100, 25))
-        c = colorwheel.color()
-        color_btn.set_background_color(c)
+        cp.set_final_callback(cp_final_cb)
 
-        def cb(value):
-            color_btn.set_background_color(value)
+        # setup a fast callback for the color picker widget on a new window
+        # for demonstrative purposes
+        window = Window(self, "Color Picker Fast Callback")
+        window.set_position((425, 300))
+        layout = GridLayout(Orientation.Horizontal, 2,
+                            Alignment.Middle, 15, 5)
+        layout.set_col_alignment(
+            [Alignment.Maximum, Alignment.Fill])
+        layout.set_spacing(0, 10)
+        window.set_layout(layout)
+        window.set_position((425, 500))
+        Label(window, "Combined: ");
+        b = Button(window, "ColorWheel", entypo.ICON_500PX)
+        Label(window, "Red: ")
+        red_int_box = IntBox(window)
+        red_int_box.set_editable(False)
+        Label(window, "Green: ")
+        green_int_box = IntBox(window)
+        green_int_box.set_editable(False)
+        Label(window, "Blue: ")
+        blue_int_box = IntBox(window)
+        blue_int_box.set_editable(False)
+        Label(window, "Alpha: ")
+        alpha_int_box = IntBox(window)
 
-        colorwheel.set_callback(cb)
+        def cp_fast_cb(color):
+            b.set_background_color(color)
+            b.set_text_color(color.contrasting_color())
+            red = int(color.r * 255.0)
+            red_int_box.set_value(red)
+            green = int(color.g * 255.0)
+            green_int_box.set_value(green)
+            blue = int(color.b * 255.0)
+            blue_int_box.set_value(blue)
+            alpha = int(color.w * 255.0)
+            alpha_int_box.set_value(alpha)
 
-        def cb(pushed):
-            if (pushed):
-                popup_btn.set_background_color(color_btn.background_color())
-                popup_btn.set_pushed(False)
-        color_btn.set_change_callback(cb)
+        cp.set_callback(cp_fast_cb)
 
         self.perform_layout()
 
@@ -318,10 +382,10 @@ class TestApp(Screen):
 
                     # Vertex shader
                     """#version 330
-                    uniform mat4 model_view_proj;
+                        uniform mat4 model_view_proj;
                     in vec3 position;
                     void main() {
-                        gl_Position = model_view_proj * vec4(position, 1.0);
+                            gl_Position = model_view_proj * vec4(position, 1.0);
                     }""",
 
                     """#version 330

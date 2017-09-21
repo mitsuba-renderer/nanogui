@@ -31,6 +31,7 @@
 #include <nanogui/imageview.h>
 #include <nanogui/vscrollpanel.h>
 #include <nanogui/colorwheel.h>
+#include <nanogui/colorpicker.h>
 #include <nanogui/graph.h>
 #include <nanogui/tabwidget.h>
 #include <iostream>
@@ -195,10 +196,17 @@ public:
         popup->set_layout(new GroupLayout());
         new Label(popup, "Arbitrary widgets can be placed here");
         new CheckBox(popup, "A check box");
+        // popup right
         popup_btn = new PopupButton(popup, "Recursive popup", ENTYPO_ICON_FLASH);
-        popup = popup_btn->popup();
-        popup->set_layout(new GroupLayout());
-        new CheckBox(popup, "Another check box");
+        Popup *popup_right = popup_btn->popup();
+        popup_right->set_layout(new GroupLayout());
+        new CheckBox(popup_right, "Another check box");
+        // popup left
+        popup_btn = new PopupButton(popup, "Recursive popup", ENTYPO_ICON_FLASH);
+        popup_btn->set_side(Popup::Side::Left);
+        Popup *popup_left = popup_btn->popup();
+        popup_left->set_layout(new GroupLayout());
+        new CheckBox(popup_left, "Another check box");
 
         window = new Window(this, "Basic widgets");
         window->set_position(Vector2i(200, 15));
@@ -464,31 +472,51 @@ public:
         cobo->set_font_size(16);
         cobo->set_fixed_size(Vector2i(100,20));
 
-        new Label(window, "Color button :", "sans-bold");
-        popup_btn = new PopupButton(window, "", 0);
-        popup_btn->set_background_color(Color(255, 120, 0, 255));
-        popup_btn->set_font_size(16);
-        popup_btn->set_fixed_size(Vector2i(100, 20));
-        popup = popup_btn->popup();
-        popup->set_layout(new GroupLayout());
-
-        ColorWheel *colorwheel = new ColorWheel(popup);
-        colorwheel->set_color(popup_btn->background_color());
-
-        Button *color_btn = new Button(popup, "Pick");
-        color_btn->set_fixed_size(Vector2i(100, 25));
-        Color c = colorwheel->color();
-        color_btn->set_background_color(c);
-
-        colorwheel->set_callback([color_btn](const Color &value) {
-            color_btn->set_background_color(value);
+        new Label(window, "Color picker :", "sans-bold");
+        auto cp = new ColorPicker(window, {255, 120, 0, 255});
+        cp->set_fixed_size({100, 20});
+        cp->set_final_callback([](const Color &c) {
+            std::cout << "ColorPicker final callback: ["
+                      << c.r() << ", "
+                      << c.g() << ", "
+                      << c.b() << ", "
+                      << c.w() << "]" << std::endl;
         });
+        // setup a fast callback for the color picker widget on a new window
+        // for demonstrative purposes
+        window = new Window(this, "Color Picker Fast Callback");
+        layout = new GridLayout(Orientation::Horizontal, 2,
+                                 Alignment::Middle, 15, 5);
+        layout->set_col_alignment(
+            { Alignment::Maximum, Alignment::Fill });
+        layout->set_spacing(0, 10);
+        window->set_layout(layout);
+        window->set_position(Vector2i(425, 500));
+        new Label(window, "Combined: ");
+        b = new Button(window, "Color_wheel", ENTYPO_ICON_500PX);
+        new Label(window, "Red: ");
+        auto red_int_box = new IntBox<int>(window);
+        red_int_box->set_editable(false);
+        new Label(window, "Green: ");
+        auto green_int_box = new IntBox<int>(window);
+        green_int_box->set_editable(false);
+        new Label(window, "Blue: ");
+        auto blue_int_box = new IntBox<int>(window);
+        blue_int_box->set_editable(false);
+        new Label(window, "Alpha: ");
+        auto alpha_int_box = new IntBox<int>(window);
 
-        color_btn->set_change_callback([color_btn, popup_btn](bool pushed) {
-            if (pushed) {
-                popup_btn->set_background_color(color_btn->background_color());
-                popup_btn->set_pushed(false);
-            }
+        cp->set_callback([b,red_int_box,blue_int_box,green_int_box,alpha_int_box](const Color &c) {
+            b->set_background_color(c);
+            b->set_text_color(c.contrasting_color());
+            int red = (int) (c.r() * 255.0f);
+            red_int_box->set_value(red);
+            int green = (int) (c.g() * 255.0f);
+            green_int_box->set_value(green);
+            int blue = (int) (c.b() * 255.0f);
+            blue_int_box->set_value(blue);
+            int alpha = (int) (c.w() * 255.0f);
+            alpha_int_box->set_value(alpha);
         });
 
         perform_layout();
