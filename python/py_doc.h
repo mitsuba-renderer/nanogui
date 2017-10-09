@@ -84,6 +84,8 @@ static const char *__doc_nanogui_AdvancedGridLayout_append_row = R"doc(Append a 
 
 static const char *__doc_nanogui_AdvancedGridLayout_col_count = R"doc(Return the number of cols)doc";
 
+static const char *__doc_nanogui_AdvancedGridLayout_compute_layout = R"doc()doc";
+
 static const char *__doc_nanogui_AdvancedGridLayout_m_anchor = R"doc(The mapping of widgets to their specified anchor points.)doc";
 
 static const char *__doc_nanogui_AdvancedGridLayout_m_col_stretch = R"doc(The stretch for each column of this AdvancedGridLayout.)doc";
@@ -2579,7 +2581,15 @@ static const char *__doc_nanogui_VScrollPanel_perform_layout = R"doc()doc";
 
 static const char *__doc_nanogui_VScrollPanel_preferred_size = R"doc()doc";
 
+static const char *__doc_nanogui_VScrollPanel_scroll =
+R"doc(Return the current scroll amount as a value between 0 and 1. 0 means
+scrolled to the top and 1 to the bottom.)doc";
+
 static const char *__doc_nanogui_VScrollPanel_scroll_event = R"doc()doc";
+
+static const char *__doc_nanogui_VScrollPanel_set_scroll =
+R"doc(Set the scroll amount to a value between 0 and 1. 0 means scrolled to
+the top and 1 to the bottom.)doc";
 
 static const char *__doc_nanogui_Widget =
 R"doc(Base class of all widgets.
@@ -2928,6 +2938,21 @@ Parameter ``filetypes``:
 Parameter ``save``:
     Set to ``True`` if you would like subsequent file dialogs to open
     at whatever folder they were in when they close this one.)doc";
+
+static const char *__doc_nanogui_file_dialog_2 =
+R"doc(Open a native file open dialog, which allows multiple selection.
+
+Parameter ``filetypes``:
+    Pairs of permissible formats with descriptions like ``("png",
+    "Portable Network Graphics")``.
+
+Parameter ``save``:
+    Set to ``True`` if you would like subsequent file dialogs to open
+    at whatever folder they were in when they close this one.
+
+Parameter ``multiple``:
+    Set to ``True`` if you would like to be able to select multiple
+    files at once. May not be simultaneously true with \p save.)doc";
 
 static const char *__doc_nanogui_init =
 R"doc(Static initialization; should be called once before invoking **any**

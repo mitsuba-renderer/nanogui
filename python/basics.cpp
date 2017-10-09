@@ -58,7 +58,9 @@ void register_basics(py::module &m) {
         .value("Warning", MessageDialog::Type::Warning);
 
     py::class_<VScrollPanel, Widget, ref<VScrollPanel>, PyVScrollPanel>(m, "VScrollPanel", D(VScrollPanel))
-        .def(py::init<Widget *>(), "parent"_a, D(VScrollPanel, VScrollPanel));
+        .def(py::init<Widget *>(), "parent"_a, D(VScrollPanel, VScrollPanel))
+        .def("scroll", &VScrollPanel::scroll, D(VScrollPanel, scroll))
+        .def("set_scroll", &VScrollPanel::set_scroll, D(VScrollPanel, set_scroll));
 
     py::class_<ComboBox, Widget, ref<ComboBox>, PyComboBox>(m, "ComboBox", D(ComboBox))
         .def(py::init<Widget *>(), "parent"_a, D(ComboBox, ComboBox))

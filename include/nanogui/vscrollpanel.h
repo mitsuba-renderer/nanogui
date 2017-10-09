@@ -28,10 +28,10 @@ public:
     VScrollPanel(Widget *parent);
 
     /// Return the current scroll amount as a value between 0 and 1. 0 means scrolled to the top and 1 to the bottom.
-    float scroll() const { return mScroll; }
+    float scroll() const { return m_scroll; }
 
     /// Set the scroll amount to a value between 0 and 1. 0 means scrolled to the top and 1 to the bottom.
-    void set_scroll(float scroll) { mScroll = scroll; }
+    void set_scroll(float scroll) { m_scroll = scroll; }
 
     virtual void perform_layout(NVGcontext *ctx) override;
     virtual Vector2i preferred_size(NVGcontext *ctx) const override;
