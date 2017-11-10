@@ -105,9 +105,9 @@ public:
      *     shader will be used.
      */
     bool init_from_files(const std::string &name,
-                         const std::string &vertex_fname,
-                         const std::string &fragment_fname,
-                         const std::string &geometry_fname = "");
+                       const std::string &vertex_fname,
+                       const std::string &fragment_fname,
+                       const std::string &geometry_fname = "");
 
     /// Return the name of the shader
     const std::string &name() const { return m_name; }
@@ -352,6 +352,8 @@ struct Arcball {
           m_speed_factor(2.0f) { }
 
     Quaternion4f &state() { return m_quat; }
+
+    const Quaternion4f &state() const { return m_quat; }
 
     void set_state(const Quaternion4f &state) {
         m_active = false;
