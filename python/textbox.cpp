@@ -30,6 +30,8 @@ void register_textbox(py::module &m) {
         .def("set_units_image", &TextBox::set_units_image, D(TextBox, set_units_image))
         .def("format", &TextBox::format, D(TextBox, format))
         .def("set_format", &TextBox::set_format, D(TextBox, set_format))
+        .def("placeholder", &TextBox::placeholder, D(TextBox, placeholder))
+        .def("set_placeholder", &TextBox::set_placeholder, D(TextBox, set_placeholder))
         .def("callback", &TextBox::callback, D(TextBox, callback))
         .def("set_callback", &TextBox::set_callback, D(TextBox, set_callback));
 

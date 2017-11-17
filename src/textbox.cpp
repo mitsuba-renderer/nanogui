@@ -194,8 +194,9 @@ void TextBox::draw(NVGcontext* ctx) {
     }
 
     nvgFontSize(ctx, font_size());
-    nvgFillColor(ctx,
-                 m_enabled ? m_theme->m_text_color : m_theme->m_disabled_text_color);
+    nvgFillColor(ctx, m_enabled && (!m_committed || !m_value.empty()) ?
+        m_theme->m_text_color :
+        m_theme->m_disabled_text_color);
 
     // clip visible text area
     float clip_x = m_pos.x() + x_spacing + spin_arrows_width - 1.0f;
@@ -210,7 +211,7 @@ void TextBox::draw(NVGcontext* ctx) {
     draw_pos.x() += m_text_offset;
 
     if (m_committed) {
-        nvgText(ctx, draw_pos.x(), draw_pos.y(), m_value.c_str(), nullptr);
+        nvgText(ctx, draw_pos.x(), draw_pos.y(), m_value.empty() ? m_placeholder.c_str() : m_value.c_str(), nullptr);
     } else {
         const int max_glyphs = 1024;
         NVGglyphPosition glyphs[max_glyphs];

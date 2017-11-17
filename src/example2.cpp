@@ -27,6 +27,7 @@ int ivar = 12345678;
 double dvar = 3.1415926;
 float fvar = (float)dvar;
 std::string strval = "A string";
+std::string strval2 = "";
 test_enum enumval = Item2;
 Color colval(0.5f, 0.5f, 0.7f, 1.f);
 
@@ -54,6 +55,7 @@ int main(int /* argc */, char ** /* argv */) {
         gui->add_group("Basic types");
         gui->add_variable("bool", bvar);
         gui->add_variable("string", strval);
+        gui->add_variable("placeholder", strval2)->set_placeholder("placeholder");
 
         gui->add_group("Validating fields");
         gui->add_variable("int", ivar)->set_spinnable(true);

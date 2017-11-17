@@ -182,6 +182,8 @@ static const char *__doc_nanogui_Arcball_speed_factor = R"doc()doc";
 
 static const char *__doc_nanogui_Arcball_state = R"doc()doc";
 
+static const char *__doc_nanogui_Arcball_state_2 = R"doc()doc";
+
 static const char *__doc_nanogui_BoxLayout =
 R"doc(Simple horizontal/vertical box layout
 
@@ -2286,6 +2288,8 @@ static const char *__doc_nanogui_TextBox_m_mouse_drag_pos = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_m_mouse_pos = R"doc()doc";
 
+static const char *__doc_nanogui_TextBox_m_placeholder = R"doc()doc";
+
 static const char *__doc_nanogui_TextBox_m_selection_pos = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_m_spinnable = R"doc()doc";
@@ -2312,6 +2316,10 @@ static const char *__doc_nanogui_TextBox_mouse_motion_event = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_paste_from_clipboard = R"doc()doc";
 
+static const char *__doc_nanogui_TextBox_placeholder =
+R"doc(Return the placeholder text to be displayed while the text box is
+empty.)doc";
+
 static const char *__doc_nanogui_TextBox_position2Cursor_index = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_preferred_size = R"doc()doc";
@@ -2327,6 +2335,10 @@ static const char *__doc_nanogui_TextBox_set_default_value = R"doc()doc";
 static const char *__doc_nanogui_TextBox_set_editable = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_set_format = R"doc(Specify a regular expression specifying valid formats)doc";
+
+static const char *__doc_nanogui_TextBox_set_placeholder =
+R"doc(Specify a placeholder text to be displayed while the text box is
+empty.)doc";
 
 static const char *__doc_nanogui_TextBox_set_spinnable = R"doc()doc";
 
