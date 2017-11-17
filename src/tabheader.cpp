@@ -441,10 +441,11 @@ void TabHeader::draw_controls(NVGcontext* ctx) {
         arrow_color = m_theme->m_button_gradient_bot_pushed;
     nvgFillColor(ctx, arrow_color);
     nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-    float y_scale_right = 0.5f;
-    float x_scale_right = 1.0f - x_scale_left - right_width / theme()->m_tab_control_width;
-    auto left_controls_pos = Vector2f(m_pos) + Vector2f(m_size.x() - theme()->m_tab_control_width, 0);
-    Vector2f right_icon_pos = left_controls_pos + Vector2f(x_scale_right*theme()->m_tab_control_width, y_scale_right*m_size.y());
+    float y_scale_right = .5f;
+    float x_scale_right = 1.f - x_scale_left - right_width / theme()->m_tab_control_width;
+    Vector2f right_icon_pos = Vector2f(m_pos) + Vector2f((float) m_size.x(), (float) m_size.y()*y_scale_right) -
+                            Vector2f(x_scale_right*theme()->m_tab_control_width + right_width, 0);
+
     nvgText(ctx, right_icon_pos.x(), right_icon_pos.y() + 1, icon_right.data(), nullptr);
 }
 
