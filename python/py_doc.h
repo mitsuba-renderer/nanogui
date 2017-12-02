@@ -2195,9 +2195,47 @@ static const char *__doc_nanogui_TabWidget_set_callback =
 R"doc(Sets the callable objects which is invoked when a tab is changed. The
 argument provided to the callback is the index of the new active tab.)doc";
 
-static const char *__doc_nanogui_TabWidget_tab = R"doc()doc";
+static const char *__doc_nanogui_TabWidget_tab =
+R"doc(Returns a ``const`` pointer to the Widget associated with the
+specified label.
 
-static const char *__doc_nanogui_TabWidget_tab_2 = R"doc()doc";
+Parameter ``label``:
+    The label used to create the tab.
+
+Returns:
+    The Widget associated with this label, or ``nullptr`` if not
+    found.)doc";
+
+static const char *__doc_nanogui_TabWidget_tab_2 =
+R"doc(Returns a pointer to the Widget associated with the specified label.
+
+Parameter ``label``:
+    The label used to create the tab.
+
+Returns:
+    The Widget associated with this label, or ``nullptr`` if not
+    found.)doc";
+
+static const char *__doc_nanogui_TabWidget_tab_3 =
+R"doc(Returns a ``const`` pointer to the Widget associated with the
+specified index.
+
+Parameter ``index``:
+    The current index of the desired Widget.
+
+Returns:
+    The Widget at the specified index, or ``nullptr`` if ``index`` is
+    not a valid index.)doc";
+
+static const char *__doc_nanogui_TabWidget_tab_4 =
+R"doc(Returns a pointer to the Widget associated with the specified index.
+
+Parameter ``index``:
+    The current index of the desired Widget.
+
+Returns:
+    The Widget at the specified index, or ``nullptr`` if ``index`` is
+    not a valid index.)doc";
 
 static const char *__doc_nanogui_TabWidget_tab_count = R"doc()doc";
 

@@ -28,7 +28,7 @@ NAMESPACE_BEGIN(nanogui)
  */
 class NANOGUI_EXPORT TabWidget : public Widget {
 public:
-    TabWidget(Widget* parent);
+    TabWidget(Widget *parent);
 
     void set_active_tab(int tab_index);
     int active_tab() const;
@@ -84,8 +84,53 @@ public:
      */
     void ensure_tab_visible(int index);
 
-    const Widget* tab(const std::string &label) const;
-    Widget* tab(const std::string &label);
+    /**
+     * \brief Returns a ``const`` pointer to the Widget associated with the
+     *        specified label.
+     *
+     * \param label
+     *     The label used to create the tab.
+     *
+     * \return
+     *     The Widget associated with this label, or ``nullptr`` if not found.
+     */
+    const Widget *tab(const std::string &label) const;
+
+    /**
+     * \brief Returns a pointer to the Widget associated with the specified label.
+     *
+     * \param label
+     *     The label used to create the tab.
+     *
+     * \return
+     *     The Widget associated with this label, or ``nullptr`` if not found.
+     */
+    Widget *tab(const std::string &label);
+
+    /**
+     * \brief Returns a ``const`` pointer to the Widget associated with the
+     *        specified index.
+     *
+     * \param index
+     *     The current index of the desired Widget.
+     *
+     * \return
+     *     The Widget at the specified index, or ``nullptr`` if ``index`` is not
+     *     a valid index.
+     */
+    const Widget *tab(int index) const;
+
+    /**
+     * \brief Returns a pointer to the Widget associated with the specified index.
+     *
+     * \param index
+     *     The current index of the desired Widget.
+     *
+     * \return
+     *     The Widget at the specified index, or ``nullptr`` if ``index`` is not
+     *     a valid index.
+     */
+    Widget *tab(int index);
 
     virtual void perform_layout(NVGcontext* ctx) override;
     virtual Vector2i preferred_size(NVGcontext* ctx) const override;
