@@ -85,14 +85,14 @@ static float get_pixel_ratio(GLFWwindow *window) {
         if (fscanf(fp, "%f", &ratio) != 1)
             return 1;
     } else {
-    /* Try to read the pixel ratio from GTK */
+        /* Try to read the pixel ratio from GTK */
         fp = popen("gsettings get org.gnome.desktop.interface scaling-factor", "r");
-    if (!fp)
-        return 1;
+        if (!fp)
+            return 1;
 
         int ratioInt = 1;
         if (fscanf(fp, "uint32 %i", &ratioInt) != 1)
-        return 1;
+            return 1;
         ratio = ratioInt;
     }
     if (pclose(fp) != 0)
@@ -279,7 +279,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
-            Screen* s = it->second;
+            Screen *s = it->second;
 
             if (!s->m_process_events)
                 return;
@@ -288,6 +288,18 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
         }
     );
 
+    // notify when the screen has lost focus (e.g. application switch)
+    glfwSetWindowFocusCallback(m_glfw_window,
+        [](GLFWwindow *w, int focused) {
+            auto it = __nanogui_screens.find(w);
+            if (it == __nanogui_screens.end())
+                return;
+
+            Screen *s = it->second;
+            // focus_event: 0 when false, 1 when true
+            s->focus_event(focused != 0);
+        }
+    );
     initialize(m_glfw_window, true);
 }
 
