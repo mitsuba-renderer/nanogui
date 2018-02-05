@@ -25,10 +25,55 @@ NAMESPACE_BEGIN(nanogui)
  *
  * \brief A wrapper around the widgets TabHeader and StackedWidget which hooks
  *        the two classes together.
+ *
+ * \rst
+ *
+ * .. warning::
+ *
+ *    Unlike other widgets, children may **not** be added *directly* to a
+ *    TabWidget.  For example, the following code will raise an exception:
+ *
+ *    .. code-block:: cpp
+ *
+ *       // `this` might be say a nanogui::Screen instance
+ *       Window *window = new Window(this, "Window Title");
+ *       TabWidget *tab_widget = window->add<TabWidget>();
+ *       // this label would be a direct child of tabWidget,
+ *       // which is forbidden, so an exception will be raised
+ *       new Label(tab_widget, "Some Label");
+ *
+ *    Instead, you are expected to be creating tabs and adding widgets to those.
+ *
+ *    .. code-block:: cpp
+ *
+ *       // `this` might be say a nanogui::Screen instance
+ *       Window *window = new Window(this, "Window Title");
+ *       TabWidget *tab_widget = window->add<TabWidget>();
+ *       // Create a tab first
+ *       auto *layer = tab_widget->createTab("Tab Name");
+ *       // Add children to the created tabs
+ *       layer->setLayout(new GroupLayout());
+ *       new Label(layer, "Some Label");
+ *
+ *    A slightly more involved example of creating a TabWidget can also be found
+ *    in :ref:`nanogui_example_1` (search for ``tabWidget`` in the file).
+ *
+ * \endrst
  */
 class NANOGUI_EXPORT TabWidget : public Widget {
 public:
     TabWidget(Widget *parent);
+
+    /**
+     * \brief Forcibly prevent mis-use of the class by throwing an exception.
+     *        Children are not to be added directly to the TabWidget, see
+     *        the class level documentation (\ref TabWidget) for an example.
+     *
+     * \throws std::runtime_error
+     *     An exception is always thrown, as children are not allowed to be
+     *     added directly to this Widget.
+     */
+    virtual void add_child(int index, Widget *widget) override;
 
     void set_active_tab(int tab_index);
     int active_tab() const;
