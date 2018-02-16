@@ -139,7 +139,19 @@ void register_glutil(py::module &m) {
              D(GLShader, draw_indexed), "type"_a,
              "offset"_a, "count"_a)
         .def("set_uniform", &set_uniform_py, "name"_a,
-             "value"_a, "warn"_a = true);
+             "value"_a, "warn"_a = true)
+        .def("attrib_buffer", &GLShader::attrib_buffer, D(GLShader, attrib_buffer));
+
+    py::class_<GLShader::Buffer>(m, "Buffer", D(GLShader, Buffer))
+        .def(py::init<>())
+        .def_readonly("id", &GLShader::Buffer::id, D(GLShader, Buffer, id))
+        .def_readonly("attrib_id", &GLShader::Buffer::attrib_id, D(GLShader, Buffer, attrib_id))
+        .def_readonly("gl_type", &GLShader::Buffer::gl_type, D(GLShader, Buffer, gl_type))
+        .def_readonly("dim", &GLShader::Buffer::dim, D(GLShader, Buffer, dim))
+        .def_readonly("comp_size", &GLShader::Buffer::comp_size, D(GLShader, Buffer, comp_size))
+        .def_readonly("size", &GLShader::Buffer::size, D(GLShader, Buffer, size))
+        .def_readonly("version", &GLShader::Buffer::version, D(GLShader, Buffer, version))
+        .def_readonly("integral", &GLShader::Buffer::integral, D(GLShader, Buffer, integral));
 
     py::class_<Arcball>(m, "Arcball", D(Arcball))
         .def(py::init<float>(), "speed_factor"_a = 2.f, D(Arcball, Arcball))
@@ -153,7 +165,9 @@ void register_glutil(py::module &m) {
         .def("active", &Arcball::active, D(Arcball, active))
         .def("button", &Arcball::button, "pos"_a, "pressed"_a, D(Arcball, button))
         .def("motion", &Arcball::motion, "pos"_a, D(Arcball, motion))
-        .def("matrix", &Arcball::matrix, D(Arcball, matrix));
+        .def("matrix", &Arcball::matrix, D(Arcball, matrix))
+        .def("active_state", &Arcball::active_state, D(Arcball, active_state))
+        .def("interrupt", &Arcball::interrupt, D(Arcball, interrupt));
 
     m.def("translate", &enoki::translate<Matrix4f, Vector3f>, "v"_a);
     m.def("scale", &enoki::scale<Matrix4f, Vector3f>, "v"_a);

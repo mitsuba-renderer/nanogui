@@ -17,7 +17,7 @@ NAMESPACE_BEGIN(nanogui)
 
 PopupButton::PopupButton(Widget *parent, const std::string &caption, int button_icon)
     : Button(parent, caption, button_icon) {
-    
+
     m_chevron_icon = m_theme->m_popup_chevron_right_icon;
 
     set_flags(Flags::ToggleButton | Flags::PopupButton);
@@ -26,7 +26,7 @@ PopupButton::PopupButton(Widget *parent, const std::string &caption, int button_
     m_popup = new Popup(parent_window->parent(), window());
     m_popup->set_size(Vector2i(320, 250));
     m_popup->set_visible(false);
-    
+
     m_icon_extra_scale = 0.8f; // widget override
 }
 

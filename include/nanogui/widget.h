@@ -286,7 +286,7 @@ protected:
     bool m_focused, m_mouse_focus;
     std::string m_tooltip;
     int m_font_size;
-    
+
     /**
      * \brief The amount of extra icon scaling used in addition the the theme's
      *        default icon font scale.  Default value is ``1.0``, which implies

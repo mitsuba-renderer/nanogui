@@ -46,7 +46,7 @@ public:
         m_callback = callback;
         m_callback(background_color());
     }
-    
+
     /**
      * The callback to execute when a new Color is selected on the ColorWheel
      * **and** the user clicks the \ref nanogui::ColorPicker::m_pick_button or

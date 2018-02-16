@@ -331,9 +331,19 @@ void GLShader::free() {
     glDeleteProgram(m_program_shader); m_program_shader = 0;
     glDeleteShader(m_vertex_shader);   m_vertex_shader = 0;
     glDeleteShader(m_fragment_shader); m_fragment_shader = 0;
+
 #if defined(NANOGUI_USE_OPENGL)
     glDeleteShader(m_geometry_shader); m_geometry_shader = 0;
 #endif
+}
+
+const GLShader::Buffer &GLShader::attrib_buffer(const std::string &name) {
+    for (auto &pair : m_buffer_objects) {
+        if (pair.first == name)
+            return pair.second;
+    }
+
+    throw std::runtime_error(m_name + ": attrib_buffer: " + name + " not found!");
 }
 
 //  ----------------------------------------------------

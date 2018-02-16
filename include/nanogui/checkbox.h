@@ -87,7 +87,7 @@ protected:
      * \ref nanogui::CheckBox::mouse_button_event for specific conditions.
      */
     bool m_pushed;
-    
+
     /// Whether or not this CheckBox is currently checked or unchecked.
     bool m_checked;
 

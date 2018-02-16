@@ -23,7 +23,7 @@ Theme::Theme(NVGcontext *ctx) {
     m_button_font_size                   = 20;
     m_text_box_font_size                 = 20;
     m_icon_scale                         = 0.77f;
-    
+
     m_window_corner_radius               = 2;
     m_window_header_height               = 30;
     m_window_drop_shadow_size            = 10;

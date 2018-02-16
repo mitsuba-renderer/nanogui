@@ -56,7 +56,7 @@ public:
 
     /// Returns the caption of this Button.
     const std::string &caption() const { return m_caption; }
-    
+
     /// Sets the caption of this Button.
     void set_caption(const std::string &caption) { m_caption = caption; }
 
@@ -128,28 +128,28 @@ protected:
      * \endrst
      */
     int m_icon;
-    
+
     /// The position to draw the icon at.
     IconPosition m_icon_position;
-    
+
     /// Whether or not this Button is currently pushed.
     bool m_pushed;
-    
+
     /// The current flags of this button (see \ref nanogui::Button::Flags for options).
     int m_flags;
-    
+
     /// The background color of this Button.
     Color m_background_color;
 
     /// The color of the caption text of this Button.
     Color m_text_color;
- 
+
     /// The callback issued for all types of buttons.
     std::function<void()> m_callback;
-    
+
     /// The callback issued for toggle buttons.
     std::function<void(bool)> m_change_callback;
-    
+
     /// The button group for radio buttons.
     std::vector<Button *> m_button_group;
 };
