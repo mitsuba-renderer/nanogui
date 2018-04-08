@@ -64,13 +64,20 @@ bool VScrollPanel::mouse_drag_event(const Vector2i &p, const Vector2i &rel,
 
 bool VScrollPanel::scroll_event(const Vector2i &p, const Vector2f &rel) {
     if (!m_children.empty() && m_child_preferred_height > m_size.y()) {
+        auto child = m_children[0];
         float scroll_amount = rel.y() * (m_size.y() / 20.0f);
         float scrollh = height() *
-            std::min(1.0f, height() / (float)m_child_preferred_height);
+            std::min(1.0f, height() / (float) m_child_preferred_height);
 
         m_scroll = std::max((float) 0.0f, std::min((float) 1.0f,
                 m_scroll - scroll_amount / (float)(m_size.y() - 8 - scrollh)));
+
+        Vector2i old_pos = child->position();
+        child->set_position(Vector2i(0, -m_scroll*(m_child_preferred_height - m_size.y())));
+        Vector2i new_pos = child->position();
         m_update_layout = true;
+        child->mouse_motion_event(p-m_pos, old_pos - new_pos, 0, 0);
+
         return true;
     } else {
         return Widget::scroll_event(p, rel);
@@ -86,8 +93,10 @@ void VScrollPanel::draw(NVGcontext *ctx) {
     float scrollh = height() *
         std::min(1.0f, height() / (float) m_child_preferred_height);
 
-    if (m_update_layout)
+    if (m_update_layout) {
+        m_update_layout = false;
         child->perform_layout(ctx);
+    }
 
     nvgSave(ctx);
     nvgTranslate(ctx, m_pos.x(), m_pos.y());

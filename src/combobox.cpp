@@ -11,27 +11,29 @@
 
 #include <nanogui/combobox.h>
 #include <nanogui/layout.h>
+#include <nanogui/vscrollpanel.h>
 #include <cassert>
 
 NAMESPACE_BEGIN(nanogui)
 
-ComboBox::ComboBox(Widget *parent) : PopupButton(parent), m_selected_index(0) {
+ComboBox::ComboBox(Widget *parent)
+    : PopupButton(parent), m_container(popup()), m_selected_index(0) {
 }
 
 ComboBox::ComboBox(Widget *parent, const std::vector<std::string> &items)
-    : PopupButton(parent), m_selected_index(0) {
+    : PopupButton(parent), m_container(popup()), m_selected_index(0) {
     set_items(items);
 }
 
 ComboBox::ComboBox(Widget *parent, const std::vector<std::string> &items, const std::vector<std::string> &items_short)
-    : PopupButton(parent), m_selected_index(0) {
+    : PopupButton(parent), m_container(popup()), m_selected_index(0) {
     set_items(items, items_short);
 }
 
 void ComboBox::set_selected_index(int idx) {
     if (m_items_short.empty())
         return;
-    const std::vector<Widget *> &children = popup()->children();
+    const std::vector<Widget *> &children = m_container->children();
     ((Button *) children[m_selected_index])->set_pushed(false);
     ((Button *) children[idx])->set_pushed(true);
     m_selected_index = idx;
@@ -42,14 +44,24 @@ void ComboBox::set_items(const std::vector<std::string> &items, const std::vecto
     assert(items.size() == items_short.size());
     m_items = items;
     m_items_short = items_short;
+
     if (m_selected_index < 0 || m_selected_index >= (int) items.size())
         m_selected_index = 0;
-    while (m_popup->child_count() != 0)
-        m_popup->remove_child(m_popup->child_count()-1);
-    m_popup->set_layout(new GroupLayout(10));
+    while (m_container->child_count() != 0)
+        m_container->remove_child(m_container->child_count()-1);
+
+    if (m_scroll == nullptr && items.size() > 8) {
+        m_scroll = new VScrollPanel(m_popup);
+        m_scroll->set_fixed_height(300);
+        m_container = new Widget(m_scroll);
+        m_popup->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle));
+    }
+
+    m_container->set_layout(new GroupLayout(10));
+
     int index = 0;
     for (const auto &str: items) {
-        Button *button = new Button(m_popup, str);
+        Button *button = new Button(m_container, str);
         button->set_flags(Button::RadioButton);
         button->set_callback([&, index] {
             m_selected_index = index;
@@ -65,6 +77,8 @@ void ComboBox::set_items(const std::vector<std::string> &items, const std::vecto
 }
 
 bool ComboBox::scroll_event(const Vector2i &p, const Vector2f &rel) {
+    set_pushed(false);
+    popup()->set_visible(false);
     if (rel.y() < 0) {
         set_selected_index(std::min(m_selected_index+1, (int)(items().size()-1)));
         if (m_callback)
