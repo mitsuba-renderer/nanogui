@@ -135,10 +135,12 @@ public:
         using Matrix4f = enoki::Matrix<float, 4>;
 
         float f_time = (float)glfwGetTime();
-        Matrix4f mvp =
+        Matrix4f mvp = enoki::identity<Matrix4f>();
+
+        mvp =
             enoki::rotate<Matrix4f>(Vector3f(1, 0, 0), m_rotation[0] * f_time) *
-            enoki::rotate<Matrix4f>(Vector3f(0, 1, 0), m_rotation[2] * f_time) *
-            enoki::rotate<Matrix4f>(Vector3f(0, 0, 1), m_rotation[3] * f_time);
+            enoki::rotate<Matrix4f>(Vector3f(0, 1, 0), m_rotation[1] * f_time) *
+            enoki::rotate<Matrix4f>(Vector3f(0, 0, 1), m_rotation[2] * f_time);
 
         m_shader.set_uniform("model_view_proj", enoki::scale<Matrix4f>(Vector3f(.5f)) * mvp);
 
@@ -152,7 +154,6 @@ private:
     nanogui::GLShader m_shader;
     Vector3f m_rotation;
 };
-
 
 class ExampleApplication : public nanogui::Screen {
 public:
@@ -213,7 +214,7 @@ int main(int /* argc */, char ** /* argv */) {
             nanogui::ref<ExampleApplication> app = new ExampleApplication();
             app->draw_all();
             app->set_visible(true);
-            nanogui::mainloop();
+            nanogui::mainloop(50);
         }
 
         nanogui::shutdown();

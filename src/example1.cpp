@@ -46,6 +46,7 @@
 /// Uh oh, stb-image needs some refactoring..
 #  pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #  pragma GCC diagnostic ignored "-Wshift-negative-value"
+#  pragma GCC diagnostic ignored "-Wunused-function"
 #  if !defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wmisleading-indentation"
 #    pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -57,6 +58,7 @@
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_STATIC 1
 #include <stb_image.h>
 
 #if defined(_WIN32)
@@ -238,7 +240,15 @@ public:
 #else
         std::string resources_folder_path("./icons");
 #endif
-        std::vector<std::pair<int, std::string>> icons = load_image_directory(m_nvg_context, resources_folder_path);
+        std::vector<std::pair<int, std::string>> icons;
+
+#if !defined(EMSCRIPTEN)
+        try {
+            icons = load_image_directory(m_nvg_context, resources_folder_path);
+        } catch (const std::exception &e) {
+            std::cerr << "Warning: " << e.what() << std::endl;
+        }
+#endif
 
         new Label(window, "Image panel & scroll panel", "sans-bold");
         PopupButton *image_panel_btn = new PopupButton(window, "Image Panel");
@@ -261,7 +271,8 @@ public:
         }
 
         // Set the first texture
-        auto image_view = new ImageView(image_window, m_images_data[0].first.texture());
+        auto image_view = new ImageView(image_window,
+                m_images_data.empty() ? 0 : m_images_data[0].first.texture());
         m_current_image = 0;
         // Change the active textures.
         img_panel->set_callback([this, image_view](int i) {

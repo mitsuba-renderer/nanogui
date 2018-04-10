@@ -12,25 +12,54 @@ if (NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/src")
     "by calling \"git submodule update --init --recursive\"")
 endif()
 
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+    "MinSizeRel" "RelWithDebInfo")
+endif()
+string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
+
 if (WIN32)
   set(NANOGUI_USE_GLAD_DEFAULT ON)
 else()
   set(NANOGUI_USE_GLAD_DEFAULT OFF)
 endif()
 
-set(NANOGUI_USE_OPENGL_DEFAULT ON)
-set(NANOGUI_USE_GLES2_DEFAULT OFF)
+set(NANOGUI_BUILD_SHARED_DEFAULT OFF)
+set(NANOGUI_USE_OPENGL_DEFAULT   ON)
+set(NANOGUI_USE_GLES2_DEFAULT    OFF)
+set(NANOGUI_USE_PYTHON_DEFAULT   ON)
+set(NANOGUI_BUILD_GLFW_DEFAULT   ON)
 
 if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
   set(NANOGUI_USE_OPENGL_DEFAULT OFF)
   set(NANOGUI_USE_GLES2_DEFAULT ON)
 endif()
 
+if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
+  set(CMAKE_CXX_COMPILER_ID "Emscripten")
+  set(NANOGUI_BUILD_SHARED_DEFAULT OFF)
+  set(NANOGUI_USE_OPENGL_DEFAULT   OFF)
+  set(NANOGUI_USE_GLES2_DEFAULT    ON)
+  set(NANOGUI_USE_PYTHON_DEFAULT   OFF)
+  set(NANOGUI_USE_GLAD_DEFAULT     OFF)
+  set(NANOGUI_BUILD_GLFW_DEFAULT   OFF)
+
+  set(CMAKE_STATIC_LIBRARY_SUFFIX ".bc")
+  set(CMAKE_EXECUTABLE_SUFFIX ".bc")
+  set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_CXX_COMPILER> -o <TARGET> <LINK_FLAGS> <OBJECTS>")
+  if (U_CMAKE_BUILD_TYPE MATCHES REL)
+    add_compile_options(-O3 -DNDEBUG)
+  endif()
+endif()
+
 option(NANOGUI_BUILD_EXAMPLES "Build NanoGUI example application?" ON)
-option(NANOGUI_BUILD_SHARED  "Build NanoGUI as a shared library?" ON)
-option(NANOGUI_BUILD_PYTHON  "Build a Python plugin for NanoGUI?" ON)
-option(NANOGUI_USE_GLAD      "Use Glad OpenGL loader library?" ${NANOGUI_USE_GLAD_DEFAULT})
-option(NANOGUI_INSTALL       "Install NanoGUI on `make install`?" ON)
+option(NANOGUI_BUILD_SHARED   "Build NanoGUI as a shared library?" ${NANOGUI_BUILD_SHARED_DEFAULT})
+option(NANOGUI_BUILD_PYTHON   "Build a Python plugin for NanoGUI?" ${NANOGUI_USE_PYTHON_DEFAULT})
+option(NANOGUI_USE_GLAD       "Use Glad OpenGL loader library?" ${NANOGUI_USE_GLAD_DEFAULT})
+option(NANOGUI_BUILD_GLFW     "Build GLFW" ${NANOGUI_BUILD_GLFW_DEFAULT})
+option(NANOGUI_INSTALL        "Install NanoGUI on `make install`?" ON)
 option(NANOGUI_USE_OPENGL     "Use OpenGL backend?" ${NANOGUI_USE_OPENGL_DEFAULT})
 option(NANOGUI_USE_GLES2      "Use GLES2 backend?" ${NANOGUI_USE_GLES2_DEFAULT})
 
@@ -87,20 +116,6 @@ macro(CHECK_CXX_COMPILER_AND_LINKER_FLAGS _RESULT _CXX_FLAGS _LINKER_FLAGS)
   set(CMAKE_REQUIRED_LIBRARIES "")
 endmacro()
 
-# Compile GLFW
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
-set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
-set(GLFW_BUILD_INSTALL OFF CACHE BOOL " " FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
-set(GLFW_USE_CHDIR OFF CACHE BOOL " " FORCE)
-set(BUILD_SHARED_LIBS ${NANOGUI_BUILD_SHARED} CACHE BOOL " " FORCE)
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  # Quench annoying deprecation warnings when compiling GLFW on OSX
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated-declarations")
-endif()
-
 add_subdirectory("${NANOGUI_ENOKI_DIR}" "ext_build/enoki")
 
 enoki_set_compile_flags()
@@ -126,7 +141,10 @@ endif()
 
 # Shared library mode: add dllimport/dllexport flags to all symbols
 if (NANOGUI_BUILD_SHARED)
+  message(STATUS "NanoGUI: building shared library.")
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_SHARED -DNVG_SHARED -DGLAD_GLAPI_EXPORT)
+else()
+  message(STATUS "NanoGUI: building static library.")
 endif()
 
 if (MSVC)
@@ -148,7 +166,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|Intel)$")
+if (CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|Emscripten|Intel)$")
   CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
   CHECK_CXX_COMPILER_FLAG("-std=c++11" HAS_CPP11_FLAG)
 
@@ -226,15 +244,30 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 
-# Build GLFW
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw"  "ext_build/glfw")
+# Compile GLFW
+if (NANOGUI_BUILD_GLFW)
+  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
+  set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
+  set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
+  set(GLFW_BUILD_INSTALL OFF CACHE BOOL " " FORCE)
+  set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
+  set(GLFW_USE_CHDIR OFF CACHE BOOL " " FORCE)
+  set(BUILD_SHARED_LIBS ${NANOGUI_BUILD_SHARED} CACHE BOOL " " FORCE)
 
-# Two targets have now been defined: `glfw_objects`, which will be merged into
-# NanoGUI at the end, and `glfw`.  The `glfw` target is the library itself
-# (e.g., libglfw.so), but can be skipped as we do not need to link against it
-# (because we merge `glfw_objects` into NanoGUI).  Skipping is required for
-# XCode, but preferable for all build systems (reduces build artifacts).
-set_target_properties(glfw PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Quench annoying deprecation warnings when compiling GLFW on OSX
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated-declarations")
+  endif()
+
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw"  "ext_build/glfw")
+
+  # Two targets have now been defined: `glfw_objects`, which will be merged into
+  # NanoGUI at the end, and `glfw`.  The `glfw` target is the library itself
+  # (e.g., libglfw.so), but can be skipped as we do not need to link against it
+  # (because we merge `glfw_objects` into NanoGUI).  Skipping is required for
+  # XCode, but preferable for all build systems (reduces build artifacts).
+  set_target_properties(glfw PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+endif()
 
 if (NANOGUI_USE_GLAD)
   # Build and include GLAD on Windows
@@ -267,7 +300,9 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "BSD")
 endif()
 
 # Required core libraries on various platforms
-if (WIN32)
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Emscripten")
+  # No dependencies
+elseif (WIN32)
   list(APPEND NANOGUI_EXTRA_LIBS opengl32)
 elseif (APPLE)
   find_library(cocoa_library Cocoa)
@@ -293,11 +328,14 @@ endif()
 
 include_directories(
   ${NANOGUI_ENOKI_DIR}/include
-  ext/glfw/include
   ext/nanovg/src
   include
   ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+if (NANOGUI_BUILD_GLFW)
+  include_directories(ext/glfw/include)
+endif()
 
 # Run simple cmake converter to put font files into the data segment
 
@@ -333,14 +371,7 @@ else()
   set(NANOGUI_LIBRARY_TYPE "STATIC")
 endif()
 
-if (APPLE OR CMAKE_SYSTEM MATCHES "Linux")
-  # Include coroutine support for running the mainloop in detached mode
-  add_definitions(-DCORO_SJLJ)
-  include_directories(ext/coro)
-  list(APPEND LIBNANOGUI_PYTHON_EXTRA_SOURCE ext/coro/coro.c)
-endif()
-
-if (APPLE)
+if (APPLE AND NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Emscripten")
   # Use automatic reference counting for Objective-C portions
   add_compile_options(-fobjc-arc)
 endif()
@@ -388,25 +419,24 @@ add_library(nanogui-obj OBJECT
   include/nanogui/nanogui.h
 )
 
-# XCode has a serious bug where the XCode project produces an invalid target
-# that will not get linked if it consists only of objects from object libraries,
-# it will not generate any products (executables, libraries). The only work
-# around is to add a dummy source file to the library definition. This is an
-# XCode, not a CMake bug. See: https://itk.org/Bug/view.php?id=14044
+set(NANOGUI_LIB_CONTENTS $<TARGET_OBJECTS:nanogui-obj>)
 if (CMAKE_GENERATOR STREQUAL Xcode)
-  set(XCODE_DUMMY ${CMAKE_CURRENT_BINARY_DIR}/xcode_dummy.cpp)
-  file(WRITE ${XCODE_DUMMY} "")
-  add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
-    ${XCODE_DUMMY}
-    $<TARGET_OBJECTS:nanogui-obj>
-    $<TARGET_OBJECTS:glfw_objects>
-  )
-else()
-  add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
-    $<TARGET_OBJECTS:nanogui-obj>
-    $<TARGET_OBJECTS:glfw_objects>
-  )
+  # XCode has a serious bug where the XCode project produces an invalid target
+  # that will not get linked if it consists only of objects from object libraries,
+  # it will not generate any products (executables, libraries). The only work
+  # around is to add a dummy source file to the library definition. This is an
+  # XCode, not a CMake bug. See: https://itk.org/Bug/view.php?id=14044
+
+  set(NANOGUI_XCODE_DUMMY ${CMAKE_CURRENT_BINARY_DIR}/xcode_dummy.cpp)
+  file(WRITE ${NANOGUI_XCODE_DUMMY} "")
+  set(NANOGUI_LIB_CONTENTS ${NANOGUI_LIB_CONTENTS} ${CMAKE_CURRENT_BINARY_DIR}/xcode_dummy.cpp)
 endif()
+
+if (NANOGUI_BUILD_GLFW)
+  set(NANOGUI_LIB_CONTENTS ${NANOGUI_LIB_CONTENTS} $<TARGET_OBJECTS:glfw_objects>)
+endif()
+
+add_library(nanogui ${NANOGUI_LIBRARY_TYPE} ${NANOGUI_LIB_CONTENTS})
 
 if (NANOGUI_BUILD_SHARED)
   set_property(TARGET nanogui-obj PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -474,6 +504,13 @@ if (NANOGUI_BUILD_EXAMPLES)
 endif()
 
 if (NANOGUI_BUILD_PYTHON)
+  if (APPLE OR CMAKE_SYSTEM MATCHES "Linux")
+    # Include coroutine support for running the mainloop in detached mode
+    add_definitions(-DCORO_SJLJ)
+    include_directories(ext/coro)
+    list(APPEND LIBNANOGUI_PYTHON_EXTRA_SOURCE ext/coro/coro.c)
+  endif()
+
   # Try to autodetect Python (can be overridden manually if needed)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11/tools")
   set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
@@ -485,12 +522,16 @@ if (NANOGUI_BUILD_PYTHON)
   else()
     message(STATUS "NanoGUI: building the Python plugin.")
   endif()
+else()
+  message(STATUS "NanoGUI: not building the Python plugin.")
 endif()
 
 if (NANOGUI_BUILD_PYTHON)
   # Need PIC code in libnanogui even when compiled as a static library
   set_target_properties(nanogui-obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
-  set_target_properties(glfw_objects PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  if (NANOGUI_BUILD_GLFW)
+    set_target_properties(glfw_objects PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  endif()
 
   include_directories("${NANOGUI_PYBIND11_DIR}/include" ${PYTHON_INCLUDE_DIR})
 
@@ -583,9 +624,8 @@ if (NOT NANOGUI_MASTER_PROJECT)
   set(NANOGUI_EXTRA_LIBS ${NANOGUI_EXTRA_LIBS} PARENT_SCOPE)
   set(NANOGUI_EXTRA_DEFS ${NANOGUI_EXTRA_DEFS} PARENT_SCOPE)
   set(NANOGUI_EXTRA_INCS ${NANOGUI_EXTRA_INCS} PARENT_SCOPE)
-else()
+elseif (NANOGUI_BUILD_PYTHON)
   # Create documentation for python plugin (optional target for developers)
-
   string(REPLACE " " ";" MKDOC_CXX_FLAGS_LIST ${CMAKE_CXX_FLAGS})
   get_property(MKDOC_INCLUDE_DIRECTORIES DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
   get_property(MKDOC_COMPILE_DEFINITIONS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)

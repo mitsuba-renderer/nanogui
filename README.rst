@@ -21,8 +21,31 @@ supports automatic layout generation, stateful C++11 lambdas callbacks, a variet
 useful widget types and Retina-capable rendering on Apple devices thanks to NanoVG_ by
 Mikko Mononen. Python bindings of all functionality are provided using pybind11_.
 
+**Note**: This repository contains an Enoki_-compatible port of the original
+NanoGUI_.
+
+This repository incorporates a number of additional changes that go beyond the
+choice of vector library:
+
+1. a different set of naming conventions is used for function and variable
+   names that feels more natural in a mixed C++ & Python environment.
+   (specifically, ``underscore_case`` rather than ``camelCase``).
+
+2. both OpenGL and GLES 2 are supported. The latter e.g. allows NanoGUI to run
+   on ARM devices including the Raspberry Pi.
+
+3. the event loop is much more conservative by default and only issues redraw
+   calls when explicitly requested by an event callback.
+
+4. Python integration: the library comes with a ``pip``-compatible ``setup.py``
+   installation script.
+
+5. WebAssembly code generation works out of the box (via Emscripten).
+
 .. _NanoVG: https://github.com/memononen/NanoVG
 .. _pybind11: https://github.com/wjakob/pybind11
+.. _NanoGUI: https://github.com/wjakob/nanogui
+.. _Enoki: https://github.com/mitsuba-renderer/enoki
 
 .. end_brief_description
 
@@ -45,7 +68,7 @@ Description
 .. begin_long_description
 
 NanoGUI builds on GLFW_ for cross-platform OpenGL context creation and event handling,
-GLAD_ to use OpenGL 3.x or higher Windows, Eigen_ for basic vector types, and NanoVG_ to
+GLAD_ to use OpenGL 3.x or higher Windows, Enoki_ for basic vector types, and NanoVG_ to
 draw 2D primitives.
 
 Note that the dependency library NanoVG already includes some basic example code to draw
@@ -59,6 +82,7 @@ jointly built using a CMake-based build system.
 .. _GLFW: http://www.glfw.org/
 .. _GLAD: https://github.com/Dav1dde/glad
 .. _Eigen: http://eigen.tuxfamily.org/index.php?title=Main_Page
+.. _Enoki: https://github.com/mitsuba-renderer/enoki
 
 .. end_long_description
 

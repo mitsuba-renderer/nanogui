@@ -27,6 +27,10 @@
 #  include <sys/dir.h>
 #endif
 
+#if defined(EMSCRIPTEN)
+#  include <emscripten/emscripten.h>
+#endif
+
 NAMESPACE_BEGIN(nanogui)
 
 extern std::map<GLFWwindow *, Screen *> __nanogui_screens;
@@ -61,9 +65,59 @@ void init() {
 
 static bool mainloop_active = false;
 
+#if defined(EMSCRIPTEN)
+static size_t emscripten_last = 0;
+static size_t emscripten_refresh = 0;
+#endif
+
 void mainloop(int refresh) {
     if (mainloop_active)
         throw std::runtime_error("Main loop is already running!");
+
+    auto mainloop_iteration = []() {
+        int num_screens = 0;
+
+        #if defined(EMSCRIPTEN)
+            size_t emscripten_now = (size_t) (glfwGetTime() * 1000);
+            bool emscripten_redraw = false;
+            if (emscripten_now - emscripten_last > emscripten_refresh) {
+                emscripten_redraw = true;
+                emscripten_last = emscripten_now;
+            }
+        #endif
+
+        for (auto kv : __nanogui_screens) {
+            Screen *screen = kv.second;
+            if (!screen->visible()) {
+                continue;
+            } else if (glfwWindowShouldClose(screen->glfw_window())) {
+                screen->set_visible(false);
+                continue;
+            }
+            #if defined(EMSCRIPTEN)
+                if (emscripten_redraw)
+                    screen->redraw();
+            #endif
+            screen->draw_all();
+            num_screens++;
+        }
+
+        if (num_screens == 0) {
+            /* Give up if there was nothing to draw */
+            mainloop_active = false;
+            return;
+        }
+
+        #if !defined(EMSCRIPTEN)
+            /* Wait for mouse/keyboard or empty refresh events */
+            glfwWaitEvents();
+        #endif
+    };
+
+#if defined(EMSCRIPTEN)
+    emscripten_refresh = refresh;
+    emscripten_set_main_loop(mainloop_iteration, 0, 1);
+#endif
 
     mainloop_active = true;
 
@@ -86,29 +140,8 @@ void mainloop(int refresh) {
     }
 
     try {
-        while (mainloop_active) {
-            int num_screens = 0;
-            for (auto kv : __nanogui_screens) {
-                Screen *screen = kv.second;
-                if (!screen->visible()) {
-                    continue;
-                } else if (glfwWindowShouldClose(screen->glfw_window())) {
-                    screen->set_visible(false);
-                    continue;
-                }
-                screen->draw_all();
-                num_screens++;
-            }
-
-            if (num_screens == 0) {
-                /* Give up if there was nothing to draw */
-                mainloop_active = false;
-                break;
-            }
-
-            /* Wait for mouse/keyboard or empty refresh events */
-            glfwWaitEvents();
-        }
+        while (mainloop_active)
+            mainloop_iteration();
 
         /* Process events once more */
         glfwPollEvents();
@@ -223,7 +256,9 @@ std::vector<std::string> file_dialog(const std::vector<std::pair<std::string, st
         throw std::invalid_argument("save and multiple must not both be true.");
     }
 
-#if defined(_WIN32)
+#if defined(EMSCRIPTEN)
+    throw std::runtime_error("Opening files is not supported when NanoGUI is compiled via Emscripten");
+#elif defined(_WIN32)
     OPENFILENAME ofn;
     ZeroMemory(&ofn, sizeof(OPENFILENAME));
     ofn.lStructSize = sizeof(OPENFILENAME);

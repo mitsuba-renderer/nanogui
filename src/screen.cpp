@@ -19,6 +19,11 @@
 #include <map>
 #include <iostream>
 
+#if defined(EMSCRIPTEN)
+#  include <emscripten/emscripten.h>
+#  include <emscripten/html5.h>
+#endif
+
 #if defined(_WIN32)
 #  define NOMINMAX
 #  undef APIENTRY
@@ -98,7 +103,8 @@ static float get_pixel_ratio(GLFWwindow *window) {
     if (pclose(fp) != 0)
         return 1;
     return ratio >= 1 ? ratio : 1;
-
+#elif defined(EMSCRIPTEN)
+    return emscripten_get_device_pixel_ratio();
 #else
     Vector2i fb_size, size;
     glfwGetFramebufferSize(window, &fb_size[0], &fb_size[1]);
@@ -311,9 +317,12 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 
     m_pixel_ratio = get_pixel_ratio(window);
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
     if (m_pixel_ratio != 1 && !m_fullscreen)
         glfwSetWindowSize(window, m_size.x() * m_pixel_ratio, m_size.y() * m_pixel_ratio);
+    #if defined(EMSCRIPTEN)
+        emscripten_set_element_css_size("#canvas", m_size.x(), m_size.y());
+    #endif
 #endif
 
 #if defined(NANOGUI_GLAD)
@@ -409,7 +418,7 @@ void Screen::set_caption(const std::string &caption) {
 void Screen::set_size(const Vector2i &size) {
     Widget::set_size(size);
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
     glfwSetWindowSize(m_glfw_window, size.x() * m_pixel_ratio, size.y() * m_pixel_ratio);
 #else
     glfwSetWindowSize(m_glfw_window, size.x(), size.y());
@@ -428,7 +437,7 @@ void Screen::draw_all() {
     glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
     m_size = Vector2i(m_size / m_pixel_ratio);
     m_fbsize = Vector2i(m_size * m_pixel_ratio);
 #else
@@ -538,7 +547,7 @@ void Screen::redraw() {
 void Screen::cursor_pos_callback_event(double x, double y) {
     Vector2i p((int) x, (int) y);
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
     p = Vector2i(Vector2f(p) / m_pixel_ratio);
 #endif
 
@@ -665,7 +674,7 @@ void Screen::resize_callback_event(int, int) {
     glfwGetFramebufferSize(m_glfw_window, &fb_size[0], &fb_size[1]);
     glfwGetWindowSize(m_glfw_window, &size[0], &size[1]);
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
     size = Vector2i(Vector2f(size) / m_pixel_ratio);
 #endif
 
