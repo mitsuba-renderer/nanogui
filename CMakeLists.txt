@@ -371,7 +371,7 @@ else()
   set(NANOGUI_LIBRARY_TYPE "STATIC")
 endif()
 
-if (APPLE AND NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Emscripten")
+if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   # Use automatic reference counting for Objective-C portions
   add_compile_options(-fobjc-arc)
 endif()
