@@ -3,7 +3,10 @@ cmake_minimum_required (VERSION 2.8.12)
 project(nanogui)
 
 if (POLICY CMP0058)
-  cmake_policy(SET CMP0058 NEW)
+  cmake_policy(SET CMP0058 NEW) # Ninja requires custom command byproducts to be explicit.
+endif()
+if (POLICY CMP0068)
+  cmake_policy(SET CMP0068 NEW) # RPATH settings on macOS don't affect install_name.
 endif()
 
 if (NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/src")
