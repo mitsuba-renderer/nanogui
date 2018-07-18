@@ -216,6 +216,7 @@ void GLShader::upload_attrib(const std::string &name, size_t dim, size_t count,
         buffer.version = version;
         buffer.attrib_id = attrib_id;
         buffer.integral = integral;
+        buffer.owned = true;
         m_buffer_objects[name] = buffer;
     }
 
@@ -266,7 +267,9 @@ void GLShader::share_attrib(const GLShader &other_shader, const std::string &nam
     auto it = other_shader.m_buffer_objects.find(name);
     if (it == other_shader.m_buffer_objects.end())
         throw std::runtime_error("share_attribute(" + other_shader.m_name + ", " + name + "): attribute not found!");
-    const Buffer &buffer = it->second;
+    Buffer buffer = it->second;
+    buffer.owned = false;
+    m_buffer_objects[name] = buffer;
 
     if (name != "indices") {
         int attrib_id = attrib(as);
@@ -289,7 +292,8 @@ void GLShader::invalidate_attribs() {
 void GLShader::free_attrib(const std::string &name) {
     auto it = m_buffer_objects.find(name);
     if (it != m_buffer_objects.end()) {
-        glDeleteBuffers(1, &it->second.id);
+        if (it->second.owned)
+            glDeleteBuffers(1, &it->second.id);
         m_buffer_objects.erase(it);
     }
 }
@@ -317,8 +321,10 @@ void GLShader::draw_array(int type, uint32_t offset, uint32_t count) {
 }
 
 void GLShader::free() {
-    for (auto &buf: m_buffer_objects)
-        glDeleteBuffers(1, &buf.second.id);
+    for (auto &buf: m_buffer_objects) {
+        if (buf.second.owned)
+            glDeleteBuffers(1, &buf.second.id);
+    }
     m_buffer_objects.clear();
 
 #if defined(NANOGUI_USE_OPENGL)
