@@ -79,6 +79,7 @@ public:
         size_t size;      ///< Size of the entire buffer in bytes
         int version;      ///< Version tag associated with the data contained in this buffer.
         bool integral;    ///< Distinguishes between integral and floating point buffers
+        bool owned;       ///< Was this buffer allocated by the curent GLShader?
     };
 
 
