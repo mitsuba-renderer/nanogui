@@ -113,6 +113,28 @@ static float get_pixel_ratio(GLFWwindow *window) {
 #endif
 }
 
+#if defined(EMSCRIPTEN)
+static EM_BOOL nanogui_emscripten_resize_callback(int eventType, const EmscriptenUiEvent *, void *) {
+    double ratio = emscripten_get_device_pixel_ratio();
+
+    int w1, h1;
+    emscripten_get_canvas_element_size("#canvas", &w1, &h1);
+
+    double w2, h2;
+    emscripten_get_element_css_size("#canvas", &w2, &h2);
+
+    double w3 = w2 * ratio, h3 = h2 * ratio;
+
+    if (w1 != (int) w3 || h1 != (int) h3)
+        emscripten_set_canvas_element_size("#canvas", w3, h3);
+
+    for (auto it: __nanogui_screens)
+        it.second->redraw();
+
+    return true;
+}
+#endif
+
 Screen::Screen()
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
@@ -317,12 +339,28 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 
     m_pixel_ratio = get_pixel_ratio(window);
 
-#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
+#if defined(EMSCRIPTEN)
+    double w, h;
+    emscripten_get_element_css_size("#canvas", &w, &h);
+
+    if (w != m_size[0] || h != m_size[1]) {
+        /* The canvas element is configured as width/height: auto, expand to
+           the available space instead of using the specified window resolution */
+        nanogui_emscripten_resize_callback(0, nullptr, nullptr);
+        emscripten_set_resize_callback(nullptr, nullptr, false,
+                                       nanogui_emscripten_resize_callback);
+        m_size = Vector2i((int) w,  (int) h);
+    } else {
+        double ratio = emscripten_get_device_pixel_ratio(),
+               w2 = w * ratio, h2 = h * ratio;
+        if (w != w2 || h != h2)  {
+            emscripten_set_canvas_element_size("#canvas", (int) w2, (int) h2);
+            emscripten_set_element_css_size("#canvas", w, h);
+        }
+    }
+#elif defined(_WIN32) || defined(__linux__)
     if (m_pixel_ratio != 1 && !m_fullscreen)
         glfwSetWindowSize(window, m_size.x() * m_pixel_ratio, m_size.y() * m_pixel_ratio);
-    #if defined(EMSCRIPTEN)
-        emscripten_set_element_css_size("#canvas", m_size.x(), m_size.y());
-    #endif
 #endif
 
 #if defined(NANOGUI_GLAD)
@@ -431,20 +469,26 @@ void Screen::draw_all() {
     m_redraw = false;
 
     glfwMakeContextCurrent(m_glfw_window);
-    glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
-    glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
 
-    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    #if !defined(EMSCRIPTEN)
+        glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
+        glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
+    #else
+        emscripten_get_canvas_element_size("#canvas", &m_size[0], &m_size[1]);
+        m_fbsize = m_size;
+    #endif
 
 #if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
-    m_size = Vector2i(m_size / m_pixel_ratio);
-    m_fbsize = Vector2i(m_size * m_pixel_ratio);
+    m_fbsize = m_size;
+    m_size = Vector2i(Vector2f(m_size) / m_pixel_ratio);
 #else
     /* Recompute pixel ratio on OSX */
     if (m_size[0])
         m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
 #endif
+
+    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
 
@@ -670,25 +714,28 @@ void Screen::scroll_callback_event(double x, double y) {
 }
 
 void Screen::resize_callback_event(int, int) {
+#if defined(EMSCRIPTEN)
+    return;
+#endif
     Vector2i fb_size, size;
     glfwGetFramebufferSize(m_glfw_window, &fb_size[0], &fb_size[1]);
     glfwGetWindowSize(m_glfw_window, &size[0], &size[1]);
-
-#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
-    size = Vector2i(Vector2f(size) / m_pixel_ratio);
-#endif
-
     if (m_fbsize == Vector2i(0, 0) || size == Vector2i(0, 0))
         return;
-
     m_fbsize = fb_size; m_size = size;
+
+#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
+    m_size = Vector2i(Vector2f(m_size) / m_pixel_ratio);
+#endif
+
     m_last_interaction = glfwGetTime();
 
     try {
-        m_redraw |= resize_event(m_size);
+        resize_event(m_size);
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
+    redraw();
 }
 
 void Screen::update_focus(Widget *widget) {

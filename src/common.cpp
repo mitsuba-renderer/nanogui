@@ -116,6 +116,9 @@ void mainloop(int refresh) {
 
 #if defined(EMSCRIPTEN)
     emscripten_refresh = refresh;
+    /* The following will throw an exception and enter the main
+       loop within Emscripten. This means that none of the code below
+       (or in the caller, for that matter) will be executed */
     emscripten_set_main_loop(mainloop_iteration, 0, 1);
 #endif
 

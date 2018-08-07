@@ -201,7 +201,7 @@ protected:
     bool m_drag_active;
     Widget *m_drag_widget = nullptr;
     double m_last_interaction;
-    bool m_process_events;
+    bool m_process_events = true;
     Color m_background;
     std::string m_caption;
     bool m_shutdown_glfw;
