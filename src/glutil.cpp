@@ -334,12 +334,25 @@ void GLShader::free() {
     }
 #endif
 
-    glDeleteProgram(m_program_shader); m_program_shader = 0;
-    glDeleteShader(m_vertex_shader);   m_vertex_shader = 0;
-    glDeleteShader(m_fragment_shader); m_fragment_shader = 0;
+    if (m_program_shader) {
+        glDeleteProgram(m_program_shader);
+        m_program_shader = 0;
+    }
+    if (m_vertex_shader) {
+        glDeleteShader(m_vertex_shader);
+        m_vertex_shader = 0;
+    }
+
+    if (m_fragment_shader) {
+        glDeleteShader(m_fragment_shader);
+        m_fragment_shader = 0;
+    }
 
 #if defined(NANOGUI_USE_OPENGL)
-    glDeleteShader(m_geometry_shader); m_geometry_shader = 0;
+if (m_geometry_shader) {
+    glDeleteShader(m_geometry_shader);
+    m_geometry_shader = 0;
+}
 #endif
 }
 
