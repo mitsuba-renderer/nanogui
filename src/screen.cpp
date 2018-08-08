@@ -128,8 +128,11 @@ static EM_BOOL nanogui_emscripten_resize_callback(int eventType, const Emscripte
     if (w1 != (int) w3 || h1 != (int) h3)
         emscripten_set_canvas_element_size("#canvas", w3, h3);
 
-    for (auto it: __nanogui_screens)
-        it.second->redraw();
+    for (auto it: __nanogui_screens) {
+        Screen *screen = it.second;
+        screen->resize_event(Vector2i((int) w2, (int) h2));
+        screen->redraw();
+    }
 
     return true;
 }
