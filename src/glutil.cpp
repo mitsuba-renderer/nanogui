@@ -269,15 +269,15 @@ void GLShader::share_attrib(const GLShader &other_shader, const std::string &nam
         throw std::runtime_error("share_attribute(" + other_shader.m_name + ", " + name + "): attribute not found!");
     Buffer buffer = it->second;
     buffer.owned = false;
+    buffer.attrib_id = attrib(as);
     m_buffer_objects[name] = buffer;
 
     if (name != "indices") {
-        int attrib_id = attrib(as);
-        if (attrib_id < 0)
+        if (buffer.attrib_id < 0)
             return;
-        glEnableVertexAttribArray(attrib_id);
+        glEnableVertexAttribArray(buffer.attrib_id);
         glBindBuffer(GL_ARRAY_BUFFER, buffer.id);
-        glVertexAttribPointer(attrib_id, (GLint) buffer.dim, buffer.gl_type,
+        glVertexAttribPointer(buffer.attrib_id, (GLint) buffer.dim, buffer.gl_type,
                               buffer.comp_size == 1 ? GL_TRUE : GL_FALSE, 0, 0);
     } else {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.id);
