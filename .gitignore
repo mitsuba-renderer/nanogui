@@ -14,12 +14,22 @@ rules.ninja
 Makefile
 bin2c
 example[1-9]
+example[1-9].bc
+example[1-9].wasm
+example[1-9].js
+example[1-9].exe
 example_icons
+example_icons.bc
+example_icons.js
+example_icons.wasm
+example_icons.exe
 icons
 *~
 nanogui*.so
 nanogui*.pyd
 libnanogui.so
+libnanogui.a
+libnanogui.bc
 libnanogui.dylib
 .vscode/
 # html documentation specific
