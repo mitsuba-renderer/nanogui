@@ -145,6 +145,9 @@ public:
     void set_shutdown_glfw(bool v) { m_shutdown_glfw = v; }
     bool shutdown_glfw() { return m_shutdown_glfw; }
 
+    /// Is a tooltip currently fading in?
+    bool tooltip_fade_in_progress() const;
+
     using Widget::perform_layout;
 
     /// Compute the layout of all widgets

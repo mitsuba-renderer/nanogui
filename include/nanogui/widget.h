@@ -214,6 +214,7 @@ public:
 
     /// Determine the widget located at the given position value (recursive)
     Widget *find_widget(const Vector2i &p);
+    const Widget *find_widget(const Vector2i &p) const;
 
     /// Handle a mouse button event (default implementation: propagate to children)
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers);

@@ -77,6 +77,15 @@ Widget *Widget::find_widget(const Vector2i &p) {
     return contains(p) ? this : nullptr;
 }
 
+const Widget *Widget::find_widget(const Vector2i &p) const {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
+        Widget *child = *it;
+        if (child->visible() && child->contains(p - m_pos))
+            return child->find_widget(p - m_pos);
+    }
+    return contains(p) ? this : nullptr;
+}
+
 bool Widget::mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) {
     for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
         Widget *child = *it;

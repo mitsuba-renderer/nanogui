@@ -467,38 +467,38 @@ void Screen::set_size(const Vector2i &size) {
 }
 
 void Screen::draw_all() {
-    if (!m_redraw)
-        return;
-    m_redraw = false;
+    if (m_redraw) {
+        m_redraw = false;
 
-    glfwMakeContextCurrent(m_glfw_window);
+        glfwMakeContextCurrent(m_glfw_window);
 
-    #if !defined(EMSCRIPTEN)
-        glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
-        glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
-    #else
-        emscripten_get_canvas_element_size("#canvas", &m_size[0], &m_size[1]);
-        m_fbsize = m_size;
-    #endif
+        #if !defined(EMSCRIPTEN)
+            glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
+            glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
+        #else
+            emscripten_get_canvas_element_size("#canvas", &m_size[0], &m_size[1]);
+            m_fbsize = m_size;
+        #endif
 
 #if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
-    m_fbsize = m_size;
-    m_size = Vector2i(Vector2f(m_size) / m_pixel_ratio);
+        m_fbsize = m_size;
+        m_size = Vector2i(Vector2f(m_size) / m_pixel_ratio);
 #else
-    /* Recompute pixel ratio on OSX */
-    if (m_size[0])
-        m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
+        /* Recompute pixel ratio on OSX */
+        if (m_size[0])
+            m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
 #endif
 
-    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
+        glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
 
-    draw_contents();
-    draw_widgets();
+        draw_contents();
+        draw_widgets();
 
-    glfwSwapBuffers(m_glfw_window);
+        glfwSwapBuffers(m_glfw_window);
+    }
 }
 
 void Screen::draw_widgets() {
@@ -587,7 +587,9 @@ bool Screen::resize_event(const Vector2i& size) {
 void Screen::redraw() {
     if (!m_redraw) {
         m_redraw = true;
-        glfwPostEmptyEvent();
+        #if !defined(EMSCRIPTEN)
+            glfwPostEmptyEvent();
+        #endif
     }
 }
 
@@ -798,6 +800,15 @@ void Screen::move_window_to_front(Window *window) {
             }
         }
     } while (changed);
+}
+
+bool Screen::tooltip_fade_in_progress() const {
+    double elapsed = glfwGetTime() - m_last_interaction;
+    if (elapsed < 0.25f || elapsed > 1.25f)
+        return false;
+    /* Temporarily increase the frame rate to fade in the tooltip */
+    const Widget *widget = find_widget(m_mouse_pos);
+    return widget && !widget->tooltip().empty();
 }
 
 NAMESPACE_END(nanogui)

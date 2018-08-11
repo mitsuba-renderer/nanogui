@@ -60,7 +60,7 @@ void register_widget(py::module &m) {
         .def("has_font_size", &Widget::has_font_size, D(Widget, has_font_size))
         .def("cursor", &Widget::cursor, D(Widget, cursor))
         .def("set_cursor", &Widget::set_cursor, D(Widget, set_cursor))
-        .def("find_widget", &Widget::find_widget, D(Widget, find_widget))
+        .def("find_widget", (Widget *(Widget::*)(const Vector2i &)) &Widget::find_widget, D(Widget, find_widget))
         .def("contains", &Widget::contains, D(Widget, contains))
         .def("mouse_button_event", &Widget::mouse_button_event, "p"_a, "button"_a,
              "down"_a, "modifiers"_a, D(Widget, mouse_button_event))

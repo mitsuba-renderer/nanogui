@@ -95,7 +95,7 @@ void mainloop(int refresh) {
                 continue;
             }
             #if defined(EMSCRIPTEN)
-                if (emscripten_redraw)
+                if (emscripten_redraw || screen->tooltip_fade_in_progress())
                     screen->redraw();
             #endif
             screen->draw_all();
@@ -125,22 +125,40 @@ void mainloop(int refresh) {
     mainloop_active = true;
 
     std::thread refresh_thread;
-    if (refresh > 0) {
-        /* If there are no mouse/keyboard events, try to refresh the
-           view roughly every 50 ms (default); this is to support animations
-           such as progress bars while keeping the system load
-           reasonably low */
-        refresh_thread = std::thread(
-            [refresh]() {
-                std::chrono::milliseconds time(refresh);
-                while (mainloop_active) {
-                    std::this_thread::sleep_for(time);
-                    for (auto kv : __nanogui_screens)
-                        kv.second->redraw();
-                }
-            }
-        );
+    std::chrono::milliseconds quantum;
+    size_t quantum_count = 1;
+    if (refresh >= 0) {
+        quantum = std::chrono::milliseconds(refresh);
+        while (quantum.count() > 50) {
+            quantum /= 2;
+            quantum_count *= 2;
+        }
+    } else {
+        quantum = std::chrono::milliseconds(50);
+        quantum_count = std::numeric_limits<size_t>::max();
     }
+
+    /* If there are no mouse/keyboard events, try to refresh the
+       view roughly every 50 ms (default); this is to support animations
+       such as progress bars while keeping the system load
+       reasonably low */
+    refresh_thread = std::thread(
+        [quantum, quantum_count]() {
+            while (true) {
+                for (size_t i = 0; i < quantum_count; ++i) {
+                    if (!mainloop_active)
+                        return;
+                    std::this_thread::sleep_for(quantum);
+                    for (auto kv : __nanogui_screens) {
+                        if (kv.second->tooltip_fade_in_progress())
+                            kv.second->redraw();
+                    }
+                }
+                for (auto kv : __nanogui_screens)
+                    kv.second->redraw();
+            }
+        }
+    );
 
     try {
         while (mainloop_active)
@@ -153,8 +171,7 @@ void mainloop(int refresh) {
         leave();
     }
 
-    if (refresh > 0)
-        refresh_thread.join();
+    refresh_thread.join();
 }
 
 void leave() {
