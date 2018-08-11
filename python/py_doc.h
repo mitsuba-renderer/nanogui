@@ -850,9 +850,13 @@ static const char *__doc_nanogui_ComboBox_items_short = R"doc(The short descript
 
 static const char *__doc_nanogui_ComboBox_m_callback = R"doc(The callback for this ComboBox.)doc";
 
+static const char *__doc_nanogui_ComboBox_m_container = R"doc(Container containing the buttons)doc";
+
 static const char *__doc_nanogui_ComboBox_m_items = R"doc(The items associated with this ComboBox.)doc";
 
 static const char *__doc_nanogui_ComboBox_m_items_short = R"doc(The short descriptions of items associated with this ComboBox.)doc";
+
+static const char *__doc_nanogui_ComboBox_m_scroll = R"doc(Scroll panel used to store the combo box contents)doc";
 
 static const char *__doc_nanogui_ComboBox_m_selected_index = R"doc(The current index this ComboBox has selected.)doc";
 
@@ -1126,6 +1130,8 @@ static const char *__doc_nanogui_GLShader_Buffer_id = R"doc(The OpenGL buffer ha
 
 static const char *__doc_nanogui_GLShader_Buffer_integral = R"doc(Distinguishes between integral and floating point buffers)doc";
 
+static const char *__doc_nanogui_GLShader_Buffer_owned = R"doc(Was this buffer allocated by the curent GLShader?)doc";
+
 static const char *__doc_nanogui_GLShader_Buffer_size = R"doc(Size of the entire buffer in bytes)doc";
 
 static const char *__doc_nanogui_GLShader_Buffer_version = R"doc(Version tag associated with the data contained in this buffer.)doc";
@@ -1305,9 +1311,9 @@ static const char *__doc_nanogui_Graph_caption = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_draw = R"doc()doc";
 
-static const char *__doc_nanogui_Graph_footer = R"doc()doc";
+static const char *__doc_nanogui_Graph_fill_color = R"doc()doc";
 
-static const char *__doc_nanogui_Graph_foreground_color = R"doc()doc";
+static const char *__doc_nanogui_Graph_footer = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_header = R"doc()doc";
 
@@ -1315,11 +1321,13 @@ static const char *__doc_nanogui_Graph_m_background_color = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_m_caption = R"doc()doc";
 
+static const char *__doc_nanogui_Graph_m_fill_color = R"doc()doc";
+
 static const char *__doc_nanogui_Graph_m_footer = R"doc()doc";
 
-static const char *__doc_nanogui_Graph_m_foreground_color = R"doc()doc";
-
 static const char *__doc_nanogui_Graph_m_header = R"doc()doc";
+
+static const char *__doc_nanogui_Graph_m_stroke_color = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_m_text_color = R"doc()doc";
 
@@ -1331,15 +1339,19 @@ static const char *__doc_nanogui_Graph_set_background_color = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_set_caption = R"doc()doc";
 
+static const char *__doc_nanogui_Graph_set_fill_color = R"doc()doc";
+
 static const char *__doc_nanogui_Graph_set_footer = R"doc()doc";
 
-static const char *__doc_nanogui_Graph_set_foreground_color = R"doc()doc";
-
 static const char *__doc_nanogui_Graph_set_header = R"doc()doc";
+
+static const char *__doc_nanogui_Graph_set_stroke_color = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_set_text_color = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_set_values = R"doc()doc";
+
+static const char *__doc_nanogui_Graph_stroke_color = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_text_color = R"doc()doc";
 

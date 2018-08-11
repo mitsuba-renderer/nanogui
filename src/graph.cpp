@@ -18,7 +18,8 @@ NAMESPACE_BEGIN(nanogui)
 Graph::Graph(Widget *parent, const std::string &caption)
     : Widget(parent), m_caption(caption) {
     m_background_color = Color(20, 128);
-    m_foreground_color = Color(255, 192, 0, 128);
+    m_fill_color = Color(255, 192, 0, 128);
+    m_stroke_color = Color(100, 255);
     m_text_color = Color(240, 192);
 }
 
@@ -47,10 +48,12 @@ void Graph::draw(NVGcontext *ctx) {
     }
 
     nvgLineTo(ctx, m_pos.x() + m_size.x(), m_pos.y() + m_size.y());
-    nvgStrokeColor(ctx, Color(100, 255));
+    nvgStrokeColor(ctx, m_stroke_color);
     nvgStroke(ctx);
-    nvgFillColor(ctx, m_foreground_color);
-    nvgFill(ctx);
+    if (m_fill_color.w() > 0) {
+        nvgFillColor(ctx, m_fill_color);
+        nvgFill(ctx);
+    }
 
     nvgFontFace(ctx, "sans");
 
