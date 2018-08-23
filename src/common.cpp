@@ -12,6 +12,7 @@
 #include <nanogui/screen.h>
 
 #if defined(_WIN32)
+#  define NOMINMAX
 #  include <windows.h>
 #endif
 
