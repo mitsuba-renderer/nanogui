@@ -314,6 +314,8 @@ elseif (APPLE)
   find_library(iokit_library IOKit)
   list(APPEND NANOGUI_EXTRA_LIBS ${cocoa_library} ${opengl_library} ${corevideo_library} ${iokit_library})
   list(APPEND LIBNANOGUI_EXTRA_SOURCE src/darwin.mm)
+  # Disable OpenGL deprecation warnings
+  add_definitions(-DGL_SILENCE_DEPRECATION)
 elseif (CMAKE_SYSTEM MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "BSD")
   list(APPEND NANOGUI_EXTRA_LIBS Xxf86vm Xrandr Xinerama Xcursor Xi X11 pthread)
   if (NANOGUI_USE_OPENGL)
