@@ -49,8 +49,8 @@ NAMESPACE_END(detail)
 
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
-using enoki::array_size;
-using enoki::array_depth;
+using enoki::array_size_v;
+using enoki::array_depth_v;
 using enoki::scalar_t;
 
 //  ----------------------------------------------------
@@ -161,7 +161,7 @@ public:
     void upload_attrib(const std::string &name, T *data, size_t dim,
                        size_t count, int version = -1) {
         upload_attrib(name, dim, count, sizeof(T), detail::gl_type<T>::value,
-                      std::is_integral<T>::value, data, version);
+                      std::is_integral_v<T>, data, version);
     }
 
     /// Upload an index buffer
@@ -221,7 +221,7 @@ public:
     void draw_indexed(int type, uint32_t offset, uint32_t count);
 
     /// Initialize a uniform parameter with a scalar value
-    template <typename T, std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     void set_uniform(const std::string &name, const T &v, bool warn = true) {
         GLint id = uniform(name, warn);
         if (std::is_integral<T>::value)
@@ -230,46 +230,41 @@ public:
             glUniform1f(id, (float) v);
     }
 
-    /// Initialize a uniform parameter with a 2D vector
+    /// Initialize a uniform parameter with an Enoki array
     template <typename T,
-              std::enable_if_t<enoki::array_size<T>::value == 2 &&
-                               enoki::array_depth<T>::value == 1, int> = 0>
+              std::enable_if_t<array_depth_v<T> == 1, int> = 0>
     void set_uniform(const std::string &name, const T &v, bool warn = true) {
         GLint id = uniform(name, warn);
-        if (std::is_integral<scalar_t<T>>::value)
-            glUniform2i(id, (int) v.x(), (int) v.y());
-        else
-            glUniform2f(id, (float) v.x(), (float) v.y());
-    }
 
-    /// Initialize a uniform parameter with a 3D vector
-    template <typename T,
-              std::enable_if_t<enoki::array_size<T>::value == 3 &&
-                               enoki::array_depth<T>::value == 1, int> = 0>
-    void set_uniform(const std::string &name, const T &v, bool warn = true) {
-        GLint id = uniform(name, warn);
-        if (std::is_integral<scalar_t<T>>::value)
-            glUniform3i(id, (int) v.x(), (int) v.y(), (int) v.z());
-        else
-            glUniform3f(id, (float) v.x(), (float) v.y(), (float) v.z());
-    }
-
-    /// Initialize a uniform parameter with a 4D vector
-    template <typename T,
-              std::enable_if_t<enoki::array_size<T>::value == 4 &&
-                               enoki::array_depth<T>::value == 1, int> = 0>
-    void set_uniform(const std::string &name, const T &v, bool warn = true) {
-        GLint id = uniform(name, warn);
-        if (std::is_integral<scalar_t<T>>::value)
-            glUniform4i(id, (int) v.x(), (int) v.y(), (int) v.z(), (int) v.w());
-        else
-            glUniform4f(id, (float) v.x(), (float) v.y(), (float) v.z(), (float) v.w());
+        if constexpr (array_size_v<T> == 1) {
+            if constexpr (std::is_integral<T>::value)
+                glUniform1i(id, (int) v);
+            else
+                glUniform1f(id, (float) v);
+        } else if constexpr (array_size_v<T> == 2) {
+            if constexpr (std::is_integral_v<scalar_t<T>>)
+                glUniform2i(id, (int) v.x(), (int) v.y());
+            else
+                glUniform2f(id, (float) v.x(), (float) v.y());
+        } else if constexpr (array_size_v<T> == 3) {
+            if constexpr (std::is_integral_v<scalar_t<T>>)
+                glUniform3i(id, (int) v.x(), (int) v.y(), (int) v.z());
+            else
+                glUniform3f(id, (float) v.x(), (float) v.y(), (float) v.z());
+        } else if constexpr (array_size_v<T> == 4) {
+            if constexpr (std::is_integral_v<scalar_t<T>>)
+                glUniform4i(id, (int) v.x(), (int) v.y(), (int) v.z(), (int) v.w());
+            else
+                glUniform4f(id, (float) v.x(), (float) v.y(), (float) v.z(), (float) v.w());
+        } else {
+            static_assert(enoki::detail::false_v<T>, "set_uniform(): Unexpected type!");
+        }
     }
 
     /// Initialize a uniform parameter with a 4x4 matrix (float)
     template <typename T,
-              std::enable_if_t<enoki::array_size<T>::value == 4 &&
-                               enoki::array_depth<T>::value == 2, int> = 0>
+              std::enable_if_t<array_size_v<T> == 4 &&
+                               array_depth_v<T> == 2, int> = 0>
     void set_uniform(const std::string &name, const T &v, bool warn = true) {
         GLint id = uniform(name, warn);
         glUniformMatrix4fv(id, 1, GL_FALSE, (const GLfloat *) v.data());
@@ -657,8 +652,6 @@ struct Arcball {
      * be in focus.
      */
     void interrupt() { button(Vector2i(0), false); }
-
-    ENOKI_ALIGNED_OPERATOR_NEW()
 protected:
     bool m_active;
     Vector2i m_last_pos;

@@ -12,6 +12,7 @@
 #include <nanogui/glutil.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #if !defined(GL_RGBA8)
 #  define GL_RGBA8            0x8058

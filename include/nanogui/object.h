@@ -43,8 +43,6 @@ public:
      * the reference count reaches zero.
      */
     void dec_ref(bool dealloc = true) const noexcept;
-
-    ENOKI_ALIGNED_OPERATOR_NEW()
 protected:
     /** \brief Virtual protected deconstructor.
      * (Will only be called by \ref ref)
