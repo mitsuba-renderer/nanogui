@@ -174,6 +174,9 @@ public:
     /// Default constructor: represents black (``r, g, b, a = 0``)
     Color() : Color(0, 0, 0, 0) { }
 
+    /// Initialize from a 4D vector
+    Color(const Vector4f &color) : Vector4f(color) { }
+
     /**
      * Copies (x, y, z) from the input vector, and uses the value specified by
      * the ``alpha`` parameter for this Color object's alpha component.
@@ -289,7 +292,7 @@ public:
      * \param a
      * The alpha component of the color, will be divided by ``255.0``.
      */
-    Color(int r, int g, int b, int a) : Color(Vector4i(r, g, b, a)) { }
+    Color(int r, int g, int b, int a) : Color(Vector4f(r, g, b, a) / 255.f) { }
 
     /// Return a reference to the red channel
     float &r() { return x(); }

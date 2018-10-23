@@ -48,7 +48,7 @@ void PopupButton::draw(NVGcontext* ctx) {
 
         nvgFontSize(ctx, (m_font_size < 0 ? m_theme->m_button_font_size : m_font_size) * icon_scale());
         nvgFontFace(ctx, "icons");
-        nvgFillColor(ctx, m_enabled ? text_color : m_theme->m_disabled_text_color);
+        nvgFillColor(ctx, m_enabled ? text_color : NVGcolor(m_theme->m_disabled_text_color));
         nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 
         float iw = nvgTextBounds(ctx, 0, 0, icon.data(), nullptr, nullptr);
