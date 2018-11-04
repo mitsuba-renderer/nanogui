@@ -1,5 +1,8 @@
-#if !defined(__PYTHON_H)
-#define __PYTHON_H
+#pragma once
+
+#if defined(_MSC_VER)
+#  pragma warning (disable:5033) // 'register' is no longer a supported storage class
+#endif
 
 #include <nanogui/nanogui.h>
 #include <nanogui/opengl.h>
@@ -43,6 +46,3 @@ using namespace nanogui;
 
 /// Make pybind aware of the ref-counted wrapper type
 PYBIND11_DECLARE_HOLDER_TYPE(T, ref<T>);
-
-#endif /* __PYTHON_H */
-

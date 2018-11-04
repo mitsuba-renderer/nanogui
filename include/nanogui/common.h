@@ -292,7 +292,7 @@ public:
      * \param a
      * The alpha component of the color, will be divided by ``255.0``.
      */
-    Color(int r, int g, int b, int a) : Color(Vector4f(r, g, b, a) / 255.f) { }
+    Color(int r, int g, int b, int a) : Color(Vector4f((float) r, (float) g, (float) b, (float) a) / 255.f) { }
 
     /// Return a reference to the red channel
     float &r() { return x(); }

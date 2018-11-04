@@ -12,6 +12,11 @@
 
 #pragma once
 
+
+#if defined(_MSC_VER)
+#  pragma warning (disable:5033) // 'register' is no longer a supported storage class
+#endif
+
 #include <nanogui/common.h>
 #include <pybind11/pybind11.h>
 
