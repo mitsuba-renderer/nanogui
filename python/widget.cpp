@@ -33,7 +33,7 @@ void register_widget(py::module &m) {
         .def("visible", &Widget::visible, D(Widget, visible))
         .def("set_visible", &Widget::set_visible, D(Widget, set_visible))
         .def("visible_recursive", &Widget::visible_recursive, D(Widget, visible_recursive))
-        .def("children", (std::vector<Widget *>&(Widget::*)(void)) &Widget::children,
+        .def("children", (const std::vector<Widget *>&(Widget::*)(void)) &Widget::children,
              D(Widget, children), py::return_value_policy::reference)
         .def("add_child", (void (Widget::*) (int, Widget *)) &Widget::add_child, D(Widget, add_child))
         .def("add_child", (void (Widget::*) (Widget *)) &Widget::add_child, D(Widget, add_child, 2))

@@ -69,11 +69,13 @@ option(NANOGUI_USE_GLES2      "Use GLES2 backend?" ${NANOGUI_USE_GLES2_DEFAULT})
 set(NANOGUI_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling the Python plugin")
 
 # Allow overriding the pybind11 and Enoki version used to compile NanoGUI
-set(NANOGUI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11"
-    CACHE STRING "Path containing the 'pybind11' library used to compile nanogui.")
-set(NANOGUI_ENOKI_DIR    "${CMAKE_CURRENT_SOURCE_DIR}/ext/enoki"
-    CACHE STRING "Path containing the 'enoki' library used to compile nanogui.")
-mark_as_advanced(NANOGUI_PYBIND11_DIR NANOGUI_ENOKI_DIR)
+set(ENOKI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/enoki/ext/pybind11"
+  CACHE STRING "Path containing the 'pybind11' library used to compile Enoki.")
+set(NANOGUI_PYBIND11_DIR "${ENOKI_PYBIND11_DIR}"
+  CACHE STRING "Path containing the 'pybind11' library used to compile nanogui.")
+set(NANOGUI_ENOKI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/enoki"
+  CACHE STRING "Path containing the 'enoki' library used to compile nanogui.")
+mark_as_advanced(ENOKI_PYBIND11_DIR NANOGUI_PYBIND11_DIR NANOGUI_ENOKI_DIR)
 
 # Required libraries, flags, and include files for compiling and linking against nanogui (all targets)
 set(NANOGUI_EXTRA_LIBS "")
@@ -522,7 +524,7 @@ if (NANOGUI_BUILD_PYTHON)
   endif()
 
   # Try to autodetect Python (can be overridden manually if needed)
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11/tools")
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/ext/enoki/ext/pybind11/tools")
   set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
   find_package(PythonLibsNew ${NANOGUI_PYTHON_VERSION})
   if (NOT PYTHONLIBS_FOUND)
