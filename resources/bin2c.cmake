@@ -23,9 +23,9 @@ foreach(bin ${INPUT_LIST})
   # Read hex data from file
   file(READ ${bin} filedata HEX)
   # Convert hex data for C compatibility
-  string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata ${filedata})
+  string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata "${filedata}00")
   # Append data to c file
-  file(APPEND ${OUTPUT_C} "uint8_t ${filename}[] = {${filedata}};\n\nuint32_t ${filename}_size = sizeof(${filename});\n\n")
+  file(APPEND ${OUTPUT_C} "uint8_t ${filename}[] = {${filedata}};\n\nuint32_t ${filename}_size = sizeof(${filename}) - 1;\n\n")
   # Append extern definitions to h file
   file(APPEND ${OUTPUT_H} "extern uint8_t ${filename}[];\n\nextern uint32_t ${filename}_size;\n\n")
 endforeach()
