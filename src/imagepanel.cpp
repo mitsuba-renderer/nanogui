@@ -39,15 +39,15 @@ int ImagePanel::index_for_position(const Vector2i &p) const {
 }
 
 bool ImagePanel::mouse_motion_event(const Vector2i &p, const Vector2i & /* rel */,
-                              int /* button */, int /* modifiers */) {
+                                    int /* button */, int /* modifiers */) {
     m_mouse_index = index_for_position(p);
     return true;
 }
 
 bool ImagePanel::mouse_button_event(const Vector2i &p, int /* button */, bool down,
-                                  int /* modifiers */) {
+                                    int /* modifiers */) {
     int index = index_for_position(p);
-    if (index >= 0 && m_callback && down)
+    if (index >= 0 && index < m_images.size() && m_callback && down)
         m_callback(index);
     return true;
 }
@@ -63,7 +63,7 @@ Vector2i ImagePanel::preferred_size(NVGcontext *) const {
 void ImagePanel::draw(NVGcontext* ctx) {
     Vector2i grid = grid_size();
 
-    for (size_t i=0; i<m_images.size(); ++i) {
+    for (size_t i = 0; i < m_images.size(); ++i) {
         Vector2i p = m_pos + Vector2i(m_margin) +
             Vector2i((int) i % grid.x(), (int) i / grid.x()) * (m_thumb_size + m_spacing);
         int imgw, imgh;
