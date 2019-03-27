@@ -25,10 +25,14 @@
 #endif
 
 #if defined(_WIN32)
-#  define NOMINMAX
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
 #  undef APIENTRY
 
-#  define WIN32_LEAN_AND_MEAN
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+# endif
 #  include <windows.h>
 
 #  define GLFW_EXPOSE_NATIVE_WGL
