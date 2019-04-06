@@ -729,7 +729,7 @@ void Screen::resize_callback_event(int, int) {
     Vector2i fb_size, size;
     glfwGetFramebufferSize(m_glfw_window, &fb_size[0], &fb_size[1]);
     glfwGetWindowSize(m_glfw_window, &size[0], &size[1]);
-    if (m_fbsize == Vector2i(0, 0) || size == Vector2i(0, 0))
+    if (fb_size == Vector2i(0, 0) || size == Vector2i(0, 0))
         return;
     m_fbsize = fb_size; m_size = size;
 
