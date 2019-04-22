@@ -32,9 +32,9 @@ int ImagePanel::index_for_position(const Vector2i &p) const {
                   (float)(m_thumb_size + m_spacing);
     float icon_region = m_thumb_size / (float)(m_thumb_size + m_spacing);
     bool over_image = pp.x() - std::floor(pp.x()) < icon_region &&
-                     pp.y() - std::floor(pp.y()) < icon_region;
+                      pp.y() - std::floor(pp.y()) < icon_region;
     Vector2i grid_pos(pp), grid = grid_size();
-    over_image &= all(grid_pos >= 0 && grid_pos < grid);
+    over_image &= all(grid_pos >= 0 && grid_pos < grid && pp >= 0);
     return over_image ? (grid_pos.x() + grid_pos.y() * grid.x()) : -1;
 }
 
@@ -47,7 +47,7 @@ bool ImagePanel::mouse_motion_event(const Vector2i &p, const Vector2i & /* rel *
 bool ImagePanel::mouse_button_event(const Vector2i &p, int /* button */, bool down,
                                     int /* modifiers */) {
     int index = index_for_position(p);
-    if (index >= 0 && index < m_images.size() && m_callback && down)
+    if (index >= 0 && index < (int) m_images.size() && m_callback && down)
         m_callback(index);
     return true;
 }
