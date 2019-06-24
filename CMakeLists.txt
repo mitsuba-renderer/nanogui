@@ -397,6 +397,7 @@ add_definitions(${NANOGUI_EXTRA_DEFS})
 add_library(nanogui-obj OBJECT
   # Merge NanoVG into the NanoGUI library
   ext/nanovg/src/nanovg.c
+  ext/nanovg/src/stb_image.h
   # Merge GLAD into the NanoGUI library (only if needed)
   ${LIBNANOGUI_EXTRA_SOURCE}
   # Fonts etc.
@@ -458,7 +459,7 @@ if (NANOGUI_BUILD_SHARED)
 endif()
 
 # Compile/link flags for NanoGUI
-set_property(TARGET nanogui-obj APPEND PROPERTY COMPILE_DEFINITIONS "NANOGUI_BUILD;NVG_BUILD")
+set_property(TARGET nanogui-obj APPEND PROPERTY COMPILE_DEFINITIONS "NANOGUI_BUILD;NVG_BUILD;NVG_STB_IMAGE_IMPLEMENTATION")
 
 if (NANOGUI_USE_GLAD AND NANOGUI_BUILD_SHARED)
   set_property(TARGET nanogui-obj APPEND PROPERTY COMPILE_DEFINITIONS
