@@ -645,6 +645,12 @@ void Screen::cursor_pos_callback_event(double x, double y) {
 void Screen::mouse_button_callback_event(int button, int action, int modifiers) {
     m_modifiers = modifiers;
     m_last_interaction = glfwGetTime();
+
+    #if defined(__APPLE__)
+        if (button == GLFW_MOUSE_BUTTON_1 && modifiers == GLFW_MOD_CONTROL)
+            button = GLFW_MOUSE_BUTTON_2;
+    #endif
+
     try {
         if (m_focus_path.size() > 1) {
             const Window *window =
