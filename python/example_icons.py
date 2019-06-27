@@ -29,17 +29,17 @@ if __name__ == "__main__":
     # create a fixed size screen with one window
     screen = Screen((width, height), "NanoGUI Icons", False)
     window = Window(screen, "All Icons")
-    window.setPosition((0, 0))
-    window.setFixedSize((width, height))
+    window.set_position((0, 0))
+    window.set_fixed_size((width, height))
 
     # attach a vertical scroll panel
     vscroll = VScrollPanel(window)
-    vscroll.setFixedSize((width, height))
+    vscroll.set_fixed_size((width, height))
 
     # vscroll should only have *ONE* child. this is what `wrapper` is for
     wrapper = Widget(vscroll)
-    wrapper.setFixedSize((width, height))
-    wrapper.setLayout(GridLayout())  # defaults: 2 columns
+    wrapper.set_fixed_size((width, height))
+    wrapper.set_layout(GridLayout())  # defaults: 2 columns
 
     # NOTE: don't __dict__ crawl in real code!
     # this is just because it's more convenient to do this for enumerating all
@@ -47,12 +47,12 @@ if __name__ == "__main__":
     for key in entypo.__dict__.keys():
         if key.startswith("ICON_"):
             b = Button(wrapper, "entypo.{0}".format(key), entypo.__dict__[key])
-            b.setIconPosition(Button.IconPosition.Left)
-            b.setFixedWidth(half_width)
+            b.set_icon_position(Button.IconPosition.Left)
+            b.set_fixed_width(half_width)
 
-    screen.performLayout()
-    screen.drawAll()
-    screen.setVisible(True)
+    screen.perform_layout()
+    screen.draw_all()
+    screen.set_visible(True)
 
     nanogui.mainloop()
 
