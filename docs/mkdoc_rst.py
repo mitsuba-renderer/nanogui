@@ -59,7 +59,7 @@ except:
     # This file is tailored to the NanoGUI documentation build system, the clang
     # module required is present in a full recursive clone here.
     base_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    clang_parent_folder = os.path.join(base_path, "ext/pybind11/tools/")
+    clang_parent_folder = os.path.join(base_path, "ext/enoki/ext/pybind11/tools/")
     if not os.path.isdir(clang_parent_folder):
         raise RuntimeError(
              "The NanoGUI dependencies repository (pybind11, etc.) appear to be missing!\n"
