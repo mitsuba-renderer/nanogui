@@ -321,7 +321,7 @@ void ImageView::draw(NVGcontext* ctx) {
 
     // Calculate several variables that need to be send to OpenGL in order for the image to be
     // properly displayed inside the widget.
-    const Screen* screen = dynamic_cast<const Screen*>(this->window()->parent());
+    const Screen* screen = dynamic_cast<const Screen*>(this->screen());
     assert(screen);
     Vector2f screen_size(screen->size());
     Vector2f scale_factor = m_scale * image_size_f() / screen_size;
@@ -349,6 +349,10 @@ void ImageView::draw(NVGcontext* ctx) {
 }
 
 void ImageView::update_image_parameters() {
+    if (m_image_id == 0) {
+        m_image_size = 0;
+        return;
+    }
 #if defined(NANOGUI_USE_OPENGL)
     // Query the width of the OpenGL texture.
     glBindTexture(GL_TEXTURE_2D, m_image_id);
