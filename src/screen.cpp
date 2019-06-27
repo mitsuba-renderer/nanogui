@@ -668,24 +668,27 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
 
         auto drop_widget = find_widget(m_mouse_pos);
         if (m_drag_active && action == GLFW_RELEASE &&
-            drop_widget != m_drag_widget)
-            m_drag_widget->mouse_button_event(
+            drop_widget != m_drag_widget) {
+            m_redraw |= m_drag_widget->mouse_button_event(
                 m_mouse_pos - m_drag_widget->parent()->absolute_position(), button,
                 false, m_modifiers);
+        }
 
         if (drop_widget != nullptr && drop_widget->cursor() != m_cursor) {
             m_cursor = drop_widget->cursor();
             glfwSetCursor(m_glfw_window, m_cursors[(int) m_cursor]);
         }
 
-        if (action == GLFW_PRESS && (button == GLFW_MOUSE_BUTTON_1 || button == GLFW_MOUSE_BUTTON_2)) {
+        bool btn12 = button == GLFW_MOUSE_BUTTON_1 || button == GLFW_MOUSE_BUTTON_2;
+
+        if (!m_drag_active && action == GLFW_PRESS && btn12) {
             m_drag_widget = find_widget(m_mouse_pos);
             if (m_drag_widget == this)
                 m_drag_widget = nullptr;
             m_drag_active = m_drag_widget != nullptr;
             if (!m_drag_active)
                 update_focus(nullptr);
-        } else {
+        } else if (m_drag_active && action == GLFW_RELEASE && btn12) {
             m_drag_active = false;
             m_drag_widget = nullptr;
         }
