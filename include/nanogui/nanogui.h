@@ -35,7 +35,5 @@
 #include <nanogui/colorwheel.h>
 #include <nanogui/graph.h>
 #include <nanogui/formhelper.h>
-#include <nanogui/stackedwidget.h>
-#include <nanogui/tabheader.h>
 #include <nanogui/tabwidget.h>
 #include <nanogui/glcanvas.h>

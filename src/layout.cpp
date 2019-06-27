@@ -380,7 +380,7 @@ void AdvancedGridLayout::perform_layout(NVGcontext *ctx, Widget *widget) const {
             grid[axis][i] += grid[axis][i-1];
 
         for (Widget *w : widget->children()) {
-            if (!w->visible())
+            if (!w->visible() || dynamic_cast<const Window *>(w) != nullptr)
                 continue;
             Anchor anchor = this->anchor(w);
 
@@ -428,7 +428,7 @@ void AdvancedGridLayout::compute_layout(NVGcontext *ctx, const Widget *widget,
 
     container_size -= extra;
 
-    for (int axis=0; axis<2; ++axis) {
+    for (int axis = 0; axis < 2; ++axis) {
         std::vector<int> &grid = _grid[axis];
         const std::vector<int> &sizes = axis == 0 ? m_cols : m_rows;
         const std::vector<float> &stretch = axis == 0 ? m_col_stretch : m_row_stretch;
@@ -437,7 +437,7 @@ void AdvancedGridLayout::compute_layout(NVGcontext *ctx, const Widget *widget,
         for (int phase = 0; phase < 2; ++phase) {
             for (auto pair : m_anchor) {
                 const Widget *w = pair.first;
-                if (!w->visible())
+                if (!w->visible() || dynamic_cast<const Window *>(w) != nullptr)
                     continue;
                 const Anchor &anchor = pair.second;
                 if ((anchor.size[axis] == 1) != (phase == 0))
@@ -467,9 +467,8 @@ void AdvancedGridLayout::compute_layout(NVGcontext *ctx, const Widget *widget,
                         (std::string) anchor);
                 float amt = (target_size - current_size) / total_stretch;
                 for (int i = anchor.pos[axis];
-                     i < anchor.pos[axis] + anchor.size[axis]; ++i) {
+                     i < anchor.pos[axis] + anchor.size[axis]; ++i)
                     grid[i] += (int) std::round(amt * stretch[i]);
-                }
             }
         }
 

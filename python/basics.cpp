@@ -29,8 +29,10 @@ void register_basics(py::module &m) {
         .def(py::init<Widget *, Window *>(), "parent"_a, "parent_window"_a, D(Popup, Popup))
         .def("anchor_pos", &Popup::anchor_pos, D(Popup, anchor_pos))
         .def("set_anchor_pos", &Popup::set_anchor_pos, D(Popup, set_anchor_pos))
-        .def("anchor_height", &Popup::anchor_height, D(Popup, anchor_height))
-        .def("set_anchor_height", &Popup::set_anchor_height, D(Popup, set_anchor_height))
+        .def("anchor_offset", &Popup::anchor_offset, D(Popup, anchor_offset))
+        .def("set_anchor_offset", &Popup::set_anchor_offset, D(Popup, set_anchor_offset))
+        .def("anchor_size", &Popup::anchor_size, D(Popup, anchor_size))
+        .def("set_anchor_size", &Popup::set_anchor_size, D(Popup, set_anchor_size))
         .def("parent_window", (Window*(Popup::*)(void)) &Popup::parent_window, D(Popup, parent_window))
         .def("side", &Popup::side, D(Popup, side))
         .def("set_side", &Popup::set_side, D(Popup, set_side));

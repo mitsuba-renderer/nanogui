@@ -225,14 +225,16 @@ class TestApp(Screen):
         window.set_layout(GroupLayout())
 
         tab_widget = TabWidget(window)
-        layer = tab_widget.create_tab("Color Wheel")
+        layer = Widget(tab_widget)
         layer.set_layout(GroupLayout())
+        tab_widget.append_tab("Color Wheel", layer)
 
         Label(layer, "Color wheel widget", "sans-bold")
         ColorWheel(layer)
 
-        layer = tab_widget.create_tab("Function Graph")
+        layer = Widget(tab_widget)
         layer.set_layout(GroupLayout())
+        tab_widget.append_tab("Function Graph", layer)
         Label(layer, "Function graph widget", "sans-bold")
 
         graph = Graph(layer, "Some function")
@@ -242,36 +244,34 @@ class TestApp(Screen):
                          0.5 * math.cos(i / 23.0) + 1)
                   for i in range(100)]
         graph.set_values(values)
-        tab_widget.set_active_tab(0)
 
         # Dummy tab used to represent the last tab button.
-        tab_widget.create_tab("+")
+        plus_id = tab_widget.append_tab("+", Widget(tab_widget))
 
         def tab_cb(index):
-            if index == (tab_widget.tab_count() - 1):
+            if index == plus_id:
                 global counter
                 # When the "+" tab has been clicked, simply add a new tab.
-                tabName  = "Dynamic {0}".format(counter)
-                layer_dyn = tab_widget.create_tab(index, tabName)
+                tab_name  = "Dynamic {0}".format(counter)
+                layer_dyn = Widget(tab_widget)
                 layer_dyn.set_layout(GroupLayout())
+                new_id = tab_widget.insert_tab(tab_widget.tab_count() - 1,
+                                               tab_name, layer_dyn)
                 Label(layer_dyn, "Function graph widget", "sans-bold")
                 graph_dyn = Graph(layer_dyn, "Dynamic function")
 
                 graph_dyn.set_header("E = 2.35e-3")
                 graph_dyn.set_footer("Iteration {0}".format(index*counter))
                 values_dyn = [0.5 * abs((0.5 * math.sin(i / 10.0 + counter)) +
-                                       (0.5 * math.cos(i / 23.0 + 1 + counter)))
-                             for i in range(100)]
+                                        (0.5 * math.cos(i / 23.0 + 1 + counter)))
+                              for i in range(100)]
                 graph_dyn.set_values(values_dyn)
                 counter += 1
-                # We must invoke perform layout from the screen instance to keep everything in order.
-                # This is essential when creating tabs dynamically.
+                # We must invoke the layout manager after adding tabs dynamically
                 self.perform_layout()
-                # Ensure that the newly added header is visible on screen
-                tab_widget.ensure_tab_visible(index)
+                tab_widget.set_selected_id(new_id)
 
         tab_widget.set_callback(tab_cb)
-        tab_widget.set_active_tab(0)
 
         window = Window(self, "Grid of small widgets")
         window.set_position((425, 300))

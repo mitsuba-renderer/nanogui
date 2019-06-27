@@ -11,6 +11,7 @@
 
 #include <nanogui/popupbutton.h>
 #include <nanogui/theme.h>
+#include <nanogui/screen.h>
 #include <nanogui/opengl.h>
 
 NAMESPACE_BEGIN(nanogui)
@@ -22,8 +23,7 @@ PopupButton::PopupButton(Widget *parent, const std::string &caption, int button_
 
     set_flags(Flags::ToggleButton | Flags::PopupButton);
 
-    Window *parent_window = window();
-    m_popup = new Popup(parent_window->parent(), window());
+    m_popup = new Popup(screen(), window());
     m_popup->set_size(Vector2i(320, 250));
     m_popup->set_visible(false);
 
@@ -68,11 +68,17 @@ void PopupButton::perform_layout(NVGcontext *ctx) {
 
     const Window *parent_window = window();
 
-    int pos_y = absolute_position().y() - parent_window->position().y() + m_size.y() /2;
-    if (m_popup->side() == Popup::Right)
-        m_popup->set_anchor_pos(Vector2i(parent_window->width() + 15, pos_y));
-    else
-        m_popup->set_anchor_pos(Vector2i(0 - 15, pos_y));
+    int anchor_size = m_popup->anchor_size();
+
+    if (parent_window) {
+        int pos_y = absolute_position().y() - parent_window->position().y() + m_size.y() / 2;
+        if (m_popup->side() == Popup::Right)
+            m_popup->set_anchor_pos(Vector2i(parent_window->width() + anchor_size, pos_y));
+        else
+            m_popup->set_anchor_pos(Vector2i(-anchor_size, pos_y));
+    } else {
+        m_popup->set_position(absolute_position() + Vector2i(width() + anchor_size + 1,  m_size.y() / 2 - anchor_size));
+    }
 }
 
 void PopupButton::set_side(Popup::Side side) {

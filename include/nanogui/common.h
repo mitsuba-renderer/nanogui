@@ -350,8 +350,7 @@ class ProgressBar;
 class Screen;
 class Serializer;
 class Slider;
-class StackedWidget;
-class TabHeader;
+class TabWidgetBase;
 class TabWidget;
 class TextBox;
 class GLCanvas;
@@ -485,7 +484,7 @@ extern NANOGUI_EXPORT std::vector<std::pair<int, std::string>>
     load_image_directory(NVGcontext *ctx, const std::string &path);
 
 /// Convenience function for instanting a PNG icon from the application's data segment (via bin2c)
-#define nvg_image_icon(ctx, name) nanogui::__nanogui_get_image(ctx, #name, name##_png, name##_png_size)
+#define nvgImageIcon(ctx, name) nanogui::__nanogui_get_image(ctx, #name, name##_png, name##_png_size)
 /// Helper function used by nvg_image_icon
 extern NANOGUI_EXPORT int __nanogui_get_image(NVGcontext *ctx, const std::string &name, uint8_t *data, uint32_t size);
 

@@ -29,8 +29,8 @@ class NANOGUI_EXPORT Popup : public Window {
 public:
     enum Side { Left = 0, Right };
 
-    /// Create a new popup parented to a screen (first argument) and a parent window
-    Popup(Widget *parent, Window *parent_window);
+    /// Create a new popup parented to a screen (first argument) and a parent window (if applicable)
+    Popup(Widget *parent, Window *parent_window = nullptr);
 
     /// Return the anchor position in the parent window; the placement of the popup is relative to it
     void set_anchor_pos(const Vector2i &anchor_pos) { m_anchor_pos = anchor_pos; }
@@ -38,9 +38,14 @@ public:
     const Vector2i &anchor_pos() const { return m_anchor_pos; }
 
     /// Set the anchor height; this determines the vertical shift relative to the anchor position
-    void set_anchor_height(int anchor_height) { m_anchor_height = anchor_height; }
+    void set_anchor_offset(int anchor_offset) { m_anchor_offset = anchor_offset; }
     /// Return the anchor height; this determines the vertical shift relative to the anchor position
-    int anchor_height() const { return m_anchor_height; }
+    int anchor_offset() const { return m_anchor_offset; }
+
+    /// Set the anchor width
+    void set_anchor_size(int anchor_size) { m_anchor_size = anchor_size; }
+    /// Return the anchor width
+    int anchor_size() const { return m_anchor_size; }
 
     /// Set the side of the parent window at which popup will appear
     void set_side(Side popup_side) { m_side = popup_side; }
@@ -64,7 +69,7 @@ protected:
 protected:
     Window *m_parent_window;
     Vector2i m_anchor_pos;
-    int m_anchor_height;
+    int m_anchor_offset, m_anchor_size;
     Side m_side;
 };
 

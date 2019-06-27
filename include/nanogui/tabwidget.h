@@ -1,8 +1,6 @@
 /*
-    nanogui/tabwidget.h -- A wrapper around the widgets TabHeader and StackedWidget
-    which hooks the two classes together.
-
-    The tab widget was contributed by Stefan Ivanov.
+    nanogui/tabwidget.h -- Widget for organizing multiple
+    sub-widgets into tabs
 
     NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
@@ -17,8 +15,113 @@
 
 #include <nanogui/widget.h>
 #include <functional>
+#include <unordered_map>
 
 NAMESPACE_BEGIN(nanogui)
+
+/**
+ * \class TabWidgetBase tabwidget.h nanogui/tabwidget.h
+ *
+ * \brief Basic implementation of a tab widget with (optionally) draggable and
+ * closeable tabs and popup menus. No rendering of the content is done---for an
+ * example implementation, refer to \ref TabWidget.
+ */
+class NANOGUI_EXPORT TabWidgetBase : public Widget {
+public:
+    /// Construct a new tab widget
+    TabWidgetBase(Widget *parent, const std::string &font = "sans-bold");
+
+    /// Return the total number of tabs
+    int tab_count() const { return (int) m_tab_captions.size(); };
+
+    /// Return the ID of the tab at a given index
+    int tab_id(int index) const { return m_tab_ids[index]; };
+
+    /// Return the index of the tab with a given ID (or throw an exception)
+    int tab_index(int id) const;
+
+    /// Inserts a new tab at the specified position and returns its ID.
+    int insert_tab(int index, const std::string &caption);
+
+    /// Appends a new tab and returns its ID.
+    int append_tab(const std::string &caption);
+
+    /// Removes a tab with the specified ID
+    virtual void remove_tab(int id);
+
+    /// Return the ID of the currently active tab
+    int selected_id() const { return m_tab_ids.empty() ? -1 : tab_id(m_active_tab); }
+    /// Set the ID of the currently active tab
+    void set_selected_id(int id) { m_active_tab = tab_index(id); update_visibility(); }
+
+    /// Return the index of the currently active tab
+    int selected_index() const { return m_active_tab; }
+    /// Set the index of the currently active tab
+    void set_selected_index(int index) { m_active_tab = index; update_visibility(); }
+
+    /// Return the caption of the tab with the given ID
+    const std::string& tab_caption(int id) const { return m_tab_captions[tab_index(id)]; };
+    /// Change the caption of the tab with the given ID
+    void set_tab_caption(int id, const std::string &caption) { m_tab_captions[tab_index(id)] = caption; };
+
+    /// Return whether tabs provide a close button
+    bool tabs_closeable() const { return m_tabs_closeable; }
+    void set_tabs_closeable(bool value) { m_tabs_closeable = value; }
+
+    /// Return whether tabs can be dragged to different positions
+    bool tabs_draggable() const { return m_tabs_draggable; }
+    void set_tabs_draggable(bool value) { m_tabs_draggable = value; }
+
+    /// Callback that is used to notify a listener about tab changes (will be called with the tab ID)
+    std::function<void(int)> callback() const { return m_callback; }
+    /// Set a callback that is used to notify a listener about tab changes (will be called with the tab ID)
+    void set_callback(const std::function<void(int)> &callback) { m_callback = callback; }
+
+    /// Callback that is used to notify a listener about tab close events (will be called with the tab ID)
+    std::function<void(int)> close_callback() const { return m_close_callback; }
+    /// Set a callback that is used to notify a listener about tab close events (will be called with the tab ID)
+    void set_close_callback(const std::function<void(int)> &close_callback) { m_close_callback = close_callback; }
+
+    /// Callback that is used to notify a listener about popup events (will be called with the tab ID)
+    std::function<Popup *(int, Screen*)> popup_callback() const { return m_popup_callback; }
+    /// Set a callback that is used to notify a listener about popup events (will be called with the tab ID)
+    void set_popup_callback(const std::function<Popup *(int, Screen*)> &popup_callback) { m_popup_callback = popup_callback; }
+
+    // Widget implementation
+    virtual void perform_layout(NVGcontext* ctx) override;
+    virtual Vector2i preferred_size(NVGcontext* ctx) const override;
+    virtual void draw(NVGcontext* ctx) override;
+    virtual bool mouse_button_event(const Vector2i &p, int button, bool down,
+                                    int modifiers) override;
+    virtual bool mouse_enter_event(const Vector2i &p, bool enter) override;
+    virtual bool mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button,
+                                    int modifiers) override;
+
+protected:
+    std::pair<int, bool> tab_at_position(const Vector2i &p,
+                                         bool test_vertical = true) const;
+    virtual void update_visibility();
+
+protected:
+    std::string m_font;
+    std::vector<std::string> m_tab_captions;
+    std::vector<int> m_tab_ids;
+    std::vector<int> m_tab_offsets;
+    int m_close_width = 0;
+    int m_active_tab = 0;
+    int m_tab_drag_index = -1;
+    int m_tab_drag_min   = -1, m_tab_drag_max = -1;
+    int m_tab_drag_start = -1, m_tab_drag_end = -1;
+    int m_close_index = -1, m_close_index_pushed = -1;
+    bool m_tabs_draggable = false;
+    bool m_tabs_closeable = false;
+    Popup *m_popup = nullptr;
+    int m_tab_counter = 0;
+    int m_padding = 3;
+    std::function<void(int)> m_callback;
+    std::function<void(int)> m_close_callback;
+    std::function<Popup*(int, Screen*)> m_popup_callback;
+};
 
 /**
  * \class TabWidget tabwidget.h nanogui/tabwidget.h
@@ -46,145 +149,41 @@ NAMESPACE_BEGIN(nanogui)
  *
  *    .. code-block:: cpp
  *
- *       // `this` might be say a nanogui::Screen instance
+ *       // `this` might e.g. be a nanogui::Screen instance
  *       Window *window = new Window(this, "Window Title");
  *       TabWidget *tab_widget = window->add<TabWidget>();
  *       // Create a tab first
- *       auto *layer = tab_widget->createTab("Tab Name");
+ *       Widget *tab = new Widget(tab_widget);
+ *       int tab_id = tab_widget->append_tab("Tab Name", tab);
  *       // Add children to the created tabs
- *       layer->setLayout(new GroupLayout());
- *       new Label(layer, "Some Label");
+ *       tab->set_layout(new GroupLayout());
+ *       new Label(tab, "Some Label");
  *
  *    A slightly more involved example of creating a TabWidget can also be found
- *    in :ref:`nanogui_example_1` (search for ``tabWidget`` in the file).
+ *    in :ref:`nanogui_example_1` (search for ``tab_widget`` in the file).
  *
  * \endrst
  */
-class NANOGUI_EXPORT TabWidget : public Widget {
+class NANOGUI_EXPORT TabWidget : public TabWidgetBase {
 public:
-    TabWidget(Widget *parent);
+    /// Construct a new tab widget
+    TabWidget(Widget *parent, const std::string &font = "sans-bold");
 
-    /**
-     * \brief Forcibly prevent mis-use of the class by throwing an exception.
-     *        Children are not to be added directly to the TabWidget, see
-     *        the class level documentation (\ref TabWidget) for an example.
-     *
-     * \throws std::runtime_error
-     *     An exception is always thrown, as children are not allowed to be
-     *     added directly to this Widget.
-     */
-    virtual void add_child(int index, Widget *widget) override;
+    /// Inserts a new tab at the specified position and returns its ID.
+    int insert_tab(int index, const std::string &caption, Widget *widget);
 
-    void set_active_tab(int tab_index);
-    int active_tab() const;
-    int tab_count() const;
+    /// Appends a new tab and returns its ID.
+    int append_tab(const std::string &caption, Widget *widget);
 
-    /**
-     * Sets the callable objects which is invoked when a tab is changed.
-     * The argument provided to the callback is the index of the new active tab.
-     */
-    void set_callback(const std::function<void(int)> &callback) { m_callback = callback; };
-    const std::function<void(int)> &callback() const { return m_callback; }
-
-    /// Creates a new tab with the specified name and returns a pointer to the layer.
-    Widget* create_tab(const std::string &label);
-    Widget* create_tab(int index, const std::string &label);
-
-    /// Inserts a tab at the end of the tabs collection and associates it with the provided widget.
-    void add_tab(const std::string &label, Widget *tab);
-
-    /// Inserts a tab into the tabs collection at the specified index and associates it with the provided widget.
-    void add_tab(int index, const std::string &label, Widget *tab);
-
-    /**
-     * Removes the tab with the specified label and returns the index of the label.
-     * Returns whether the removal was successful.
-     */
-    bool remove_tab(const std::string &label);
-
-    /// Removes the tab with the specified index.
-    void remove_tab(int index);
-
-    /// Retrieves the label of the tab at a specific index.
-    const std::string &tab_label_at(int index) const;
-
-    /**
-     * Retrieves the index of a specific tab using its tab label.
-     * Returns -1 if there is no such tab.
-     */
-    int tab_label_index(const std::string &label);
-
-    /**
-     * Retrieves the index of a specific tab using a widget pointer.
-     * Returns -1 if there is no such tab.
-     */
-    int tab_index(Widget* tab);
-
-    /**
-     * This function can be invoked to ensure that the tab with the provided
-     * index the is visible, i.e to track the given tab. Forwards to the tab
-     * header widget. This function should be used whenever the client wishes
-     * to make the tab header follow a newly added tab, as the content of the
-     * new tab is made visible but the tab header does not track it by default.
-     */
-    void ensure_tab_visible(int index);
-
-    /**
-     * \brief Returns a ``const`` pointer to the Widget associated with the
-     *        specified label.
-     *
-     * \param label
-     *     The label used to create the tab.
-     *
-     * \return
-     *     The Widget associated with this label, or ``nullptr`` if not found.
-     */
-    const Widget *tab(const std::string &label) const;
-
-    /**
-     * \brief Returns a pointer to the Widget associated with the specified label.
-     *
-     * \param label
-     *     The label used to create the tab.
-     *
-     * \return
-     *     The Widget associated with this label, or ``nullptr`` if not found.
-     */
-    Widget *tab(const std::string &label);
-
-    /**
-     * \brief Returns a ``const`` pointer to the Widget associated with the
-     *        specified index.
-     *
-     * \param index
-     *     The current index of the desired Widget.
-     *
-     * \return
-     *     The Widget at the specified index, or ``nullptr`` if ``index`` is not
-     *     a valid index.
-     */
-    const Widget *tab(int index) const;
-
-    /**
-     * \brief Returns a pointer to the Widget associated with the specified index.
-     *
-     * \param index
-     *     The current index of the desired Widget.
-     *
-     * \return
-     *     The Widget at the specified index, or ``nullptr`` if ``index`` is not
-     *     a valid index.
-     */
-    Widget *tab(int index);
+    /// Removes a tab with the specified ID
+    virtual void remove_tab(int id) override;
 
     virtual void perform_layout(NVGcontext* ctx) override;
     virtual Vector2i preferred_size(NVGcontext* ctx) const override;
-    virtual void draw(NVGcontext* ctx) override;
-
-private:
-    TabHeader* m_header;
-    StackedWidget* m_content;
-    std::function<void(int)> m_callback;
+protected:
+    virtual void update_visibility() override;
+protected:
+    std::unordered_map<int, Widget *> m_widgets;
 };
 
 NAMESPACE_END(nanogui)

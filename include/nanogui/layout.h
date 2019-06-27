@@ -357,7 +357,7 @@ protected:
  * \rst
  * .. code-block:: cpp
  *
- *    using AdvancedGridLayout::Anchor;
+ *    using Anchor = AdvancedGridLayout::Anchor;
  *    Label *label = new Label(window, "A label");
  *    // Add a centered label at grid position (1, 5), which spans two horizontal cells
  *    layout->set_anchor(label, Anchor(1, 5, 2, 1, Alignment::Middle, Alignment::Middle));

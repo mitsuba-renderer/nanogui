@@ -357,15 +357,17 @@ public:
 
         TabWidget* tab_widget = window->add<TabWidget>();
 
-        Widget* layer = tab_widget->create_tab("Color Wheel");
+        Widget* layer = new Widget(tab_widget);
         layer->set_layout(new GroupLayout());
+        tab_widget->append_tab("Color Wheel", layer);
 
         // Use overloaded variadic add to fill the tab widget with Different tabs.
         layer->add<Label>("Color wheel widget", "sans-bold");
         layer->add<ColorWheel>();
 
-        layer = tab_widget->create_tab("Function Graph");
+        layer = new Widget(tab_widget);
         layer->set_layout(new GroupLayout());
+        tab_widget->append_tab("Function Graph", layer);
 
         layer->add<Label>("Function graph widget", "sans-bold");
 
@@ -380,21 +382,23 @@ public:
                               0.5f * std::cos(i / 23.f) + 1);
 
         // Dummy tab used to represent the last tab button.
-        tab_widget->create_tab("+");
+        int plus_id = tab_widget->append_tab("+", new Widget(tab_widget));
 
         // A simple counter.
         int counter = 1;
-        tab_widget->set_callback([tab_widget, this, counter] (int index) mutable {
-            if (index == (tab_widget->tab_count()-1)) {
+        tab_widget->set_callback([tab_widget, this, counter, plus_id] (int id) mutable {
+            if (id == plus_id) {
                 // When the "+" tab has been clicked, simply add a new tab.
                 std::string tab_name = "Dynamic " + std::to_string(counter);
-                Widget* layer_dyn = tab_widget->create_tab(index, tab_name);
+                Widget* layer_dyn = new Widget(tab_widget);
+                int new_id = tab_widget->insert_tab(tab_widget->tab_count() - 1,
+                                                    tab_name, layer_dyn);
                 layer_dyn->set_layout(new GroupLayout());
                 layer_dyn->add<Label>("Function graph widget", "sans-bold");
                 Graph *graph_dyn = layer_dyn->add<Graph>("Dynamic function");
 
                 graph_dyn->set_header("E = 2.35e-3");
-                graph_dyn->set_footer("Iteration " + std::to_string(index*counter));
+                graph_dyn->set_footer("Iteration " + std::to_string(new_id*counter));
                 std::vector<float> &func_dyn = graph_dyn->values();
                 func_dyn.resize(100);
                 for (int i = 0; i < 100; ++i)
@@ -402,15 +406,12 @@ public:
                         std::abs((0.5f * std::sin(i / 10.f + counter) +
                                   0.5f * std::cos(i / 23.f + 1 + counter)));
                 ++counter;
-                // We must invoke perform layout from the screen instance to keep everything in order.
-                // This is essential when creating tabs dynamically.
-                perform_layout();
-                // Ensure that the newly added header is visible on screen
-                tab_widget->ensure_tab_visible(index);
+                tab_widget->set_selected_id(new_id);
 
+                // We must invoke the layout manager after adding tabs dynamically
+                perform_layout();
             }
         });
-        tab_widget->set_active_tab(0);
 
         // A button to go back to the first tab and scroll the window.
         panel = window->add<Widget>();
@@ -427,8 +428,7 @@ public:
         b->set_callback([tab_widget, ib] {
             int value = ib->value();
             if (value >= 0 && value < tab_widget->tab_count()) {
-                tab_widget->set_active_tab(value);
-                tab_widget->ensure_tab_visible(value);
+                tab_widget->set_selected_index(value);
             }
         });
 
