@@ -56,7 +56,9 @@ bool Button::mouse_button_event(const Vector2i &p, int button, bool down, int mo
        button causes the parent window to be destructed */
     ref<Button> self = this;
 
-    if (button == GLFW_MOUSE_BUTTON_1 && m_enabled) {
+    if (m_enabled == 1 &&
+        ((button == GLFW_MOUSE_BUTTON_1 && !(m_flags & MenuButton)) ||
+         (button == GLFW_MOUSE_BUTTON_2 &&  (m_flags & MenuButton)))) {
         bool pushed_backup = m_pushed;
         if (down) {
             if (m_flags & RadioButton) {
@@ -88,12 +90,13 @@ bool Button::mouse_button_event(const Vector2i &p, int button, bool down, int mo
                             b->m_change_callback(false);
                     }
                 }
+                dynamic_cast<nanogui::PopupButton*>(this)->popup()->request_focus();
             }
             if (m_flags & ToggleButton)
                 m_pushed = !m_pushed;
             else
                 m_pushed = true;
-        } else if (m_pushed) {
+        } else if (m_pushed || (m_flags & MenuButton)) {
             if (contains(p) && m_callback)
                 m_callback();
             if (m_flags & NormalButton)
@@ -113,7 +116,7 @@ void Button::draw(NVGcontext *ctx) {
     NVGcolor grad_top = m_theme->m_button_gradient_top_unfocused;
     NVGcolor grad_bot = m_theme->m_button_gradient_bot_unfocused;
 
-    if (m_pushed) {
+    if (m_pushed || (m_mouse_focus && (m_flags & MenuButton))) {
         grad_top = m_theme->m_button_gradient_top_pushed;
         grad_bot = m_theme->m_button_gradient_bot_pushed;
     } else if (m_mouse_focus && m_enabled) {

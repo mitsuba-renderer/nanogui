@@ -43,7 +43,8 @@ void register_button(py::module &m) {
         .value("NormalButton", Button::Flags::NormalButton)
         .value("RadioButton", Button::Flags::RadioButton)
         .value("ToggleButton", Button::Flags::ToggleButton)
-        .value("PopupButton", Button::Flags::PopupButton);
+        .value("PopupButton", Button::Flags::PopupButton)
+        .value("MenuButton", Button::Flags::MenuButton);
 
     py::class_<ToolButton, Button, ref<ToolButton>, PyToolButton>(m, "ToolButton", D(ToolButton))
         .def(py::init<Widget *,int, const std::string &>(),

@@ -393,13 +393,15 @@ Parameter ``icon``:
 
 static const char *__doc_nanogui_Button_Flags = R"doc(Flags to specify the button behavior (can be combined with binary OR))doc";
 
-static const char *__doc_nanogui_Button_Flags_NormalButton = R"doc(A normal Button.)doc";
+static const char *__doc_nanogui_Button_Flags_MenuButton = R"doc(A menu button.)doc";
 
-static const char *__doc_nanogui_Button_Flags_PopupButton = R"doc(A popup Button.)doc";
+static const char *__doc_nanogui_Button_Flags_NormalButton = R"doc(A normal button.)doc";
 
-static const char *__doc_nanogui_Button_Flags_RadioButton = R"doc(A radio Button.)doc";
+static const char *__doc_nanogui_Button_Flags_PopupButton = R"doc(A popup button.)doc";
 
-static const char *__doc_nanogui_Button_Flags_ToggleButton = R"doc(A toggle Button.)doc";
+static const char *__doc_nanogui_Button_Flags_RadioButton = R"doc(A radio button.)doc";
+
+static const char *__doc_nanogui_Button_Flags_ToggleButton = R"doc(A toggle button.)doc";
 
 static const char *__doc_nanogui_Button_IconPosition = R"doc(The available icon positions.)doc";
 
@@ -413,13 +415,13 @@ static const char *__doc_nanogui_Button_IconPosition_RightCentered = R"doc(Butto
 
 static const char *__doc_nanogui_Button_background_color = R"doc(Returns the background color of this Button.)doc";
 
-static const char *__doc_nanogui_Button_button_group = R"doc(Set the button group (for radio buttons))doc";
+static const char *__doc_nanogui_Button_button_group = R"doc(Return the button group (for radio buttons))doc";
 
-static const char *__doc_nanogui_Button_callback = R"doc(Set the push callback (for any type of button))doc";
+static const char *__doc_nanogui_Button_callback = R"doc(Return the push callback (for any type of button))doc";
 
 static const char *__doc_nanogui_Button_caption = R"doc(Returns the caption of this Button.)doc";
 
-static const char *__doc_nanogui_Button_change_callback = R"doc(Set the change callback (for toggle buttons))doc";
+static const char *__doc_nanogui_Button_change_callback = R"doc(Return the change callback (for toggle buttons))doc";
 
 static const char *__doc_nanogui_Button_draw = R"doc(Responsible for drawing the Button.)doc";
 

@@ -26,10 +26,11 @@ class NANOGUI_EXPORT Button : public Widget {
 public:
     /// Flags to specify the button behavior (can be combined with binary OR)
     enum Flags {
-        NormalButton = (1 << 0), ///< A normal Button.
-        RadioButton  = (1 << 1), ///< A radio Button.
-        ToggleButton = (1 << 2), ///< A toggle Button.
-        PopupButton  = (1 << 3)  ///< A popup Button.
+        NormalButton = (1 << 0), ///< A normal button.
+        RadioButton  = (1 << 1), ///< A radio button.
+        ToggleButton = (1 << 2), ///< A toggle button.
+        PopupButton  = (1 << 3), ///< A popup button.
+        MenuButton   = (1 << 4)  ///< A menu button.
     };
 
     /// The available icon positions.
@@ -90,20 +91,20 @@ public:
     /// Sets whether or not this Button is currently pushed.
     void set_pushed(bool pushed) { m_pushed = pushed; }
 
-    /// Set the push callback (for any type of button)
+    /// Return the push callback (for any type of button)
     std::function<void()> callback() const { return m_callback; }
     /// Set the push callback (for any type of button).
     void set_callback(const std::function<void()> &callback) { m_callback = callback; }
 
-    /// Set the change callback (for toggle buttons)
+    /// Return the change callback (for toggle buttons)
     std::function<void(bool)> change_callback() const { return m_change_callback; }
     /// Set the change callback (for toggle buttons).
     void set_change_callback(const std::function<void(bool)> &callback) { m_change_callback = callback; }
 
+    /// Return the button group (for radio buttons)
+    const std::vector<Button *> &button_group() const { return m_button_group; }
     /// Set the button group (for radio buttons)
     void set_button_group(const std::vector<Button *> &button_group) { m_button_group = button_group; }
-    /// Set the button group (for radio buttons)
-    const std::vector<Button *> &button_group() const { return m_button_group; }
 
     /// The preferred size of this Button.
     virtual Vector2i preferred_size(NVGcontext *ctx) const override;
