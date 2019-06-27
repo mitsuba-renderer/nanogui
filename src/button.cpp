@@ -10,6 +10,7 @@
 */
 
 #include <nanogui/button.h>
+#include <nanogui/popupbutton.h>
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
 
