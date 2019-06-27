@@ -188,10 +188,10 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
         GLFWmonitor *monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode *mode = glfwGetVideoMode(monitor);
         m_glfw_window = glfwCreateWindow(mode->width, mode->height,
-                                       caption.c_str(), monitor, nullptr);
+                                         caption.c_str(), monitor, nullptr);
     } else {
         m_glfw_window = glfwCreateWindow(size.x(), size.y(),
-                                       caption.c_str(), nullptr, nullptr);
+                                         caption.c_str(), nullptr, nullptr);
     }
 
     if (!m_glfw_window) {
@@ -206,6 +206,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     }
 
     glfwMakeContextCurrent(m_glfw_window);
+    glfwSetInputMode(m_glfw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 #if defined(NANOGUI_GLAD)
     if (!glad_initialized) {
@@ -493,10 +494,9 @@ void Screen::draw_all() {
             m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
 #endif
 
+        glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
         glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-        glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
 
         draw_contents();
         draw_widgets();
@@ -527,7 +527,8 @@ void Screen::draw_widgets() {
                            Vector2i(widget->width() / 2, widget->height() + 10);
 
             nvgTextBounds(m_nvg_context, pos.x(), pos.y(),
-                            widget->tooltip().c_str(), nullptr, bounds);
+                          widget->tooltip().c_str(), nullptr, bounds);
+
             int h = (bounds[2] - bounds[0]) / 2;
             if (h > tooltip_width / 2) {
                 nvgTextAlign(m_nvg_context, NVG_ALIGN_CENTER | NVG_ALIGN_TOP);
@@ -536,6 +537,16 @@ void Screen::draw_widgets() {
 
                 h = (bounds[2] - bounds[0]) / 2;
             }
+            int shift = 0;
+
+            if (pos.x() - h - 8 < 0) {
+                /* Keep tooltips on screen */
+                shift = pos.x() - h - 8;
+                pos.x() -= shift;
+                bounds[0] -= shift;
+                bounds[2] -= shift;
+            }
+
             nvgGlobalAlpha(m_nvg_context,
                            std::min(1.0, 2 * (elapsed - 0.5f)) * 0.8);
 
@@ -545,7 +556,7 @@ void Screen::draw_widgets() {
                            (int) (bounds[2] - bounds[0]) + 8,
                            (int) (bounds[3] - bounds[1]) + 8, 3);
 
-            int px = (int) ((bounds[2] + bounds[0]) / 2) - h;
+            int px = (int) ((bounds[2] + bounds[0]) / 2) - h + shift;
             nvgMoveTo(m_nvg_context, px, bounds[1] - 10);
             nvgLineTo(m_nvg_context, px + 7, bounds[1] + 1);
             nvgLineTo(m_nvg_context, px - 7, bounds[1] + 1);
