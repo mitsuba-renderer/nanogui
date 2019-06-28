@@ -7,3 +7,6 @@
 [submodule "ext/enoki"]
     path = ext/enoki
     url = https://github.com/mitsuba-renderer/enoki
+[submodule "ext/nanovg_metal"]
+	path = ext/nanovg_metal
+	url = https://github.com/ollix/MetalNanoVG

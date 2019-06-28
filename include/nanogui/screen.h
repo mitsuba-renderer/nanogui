@@ -192,8 +192,11 @@ public:
     void draw_widgets();
 
 protected:
-    GLFWwindow *m_glfw_window;
-    NVGcontext *m_nvg_context;
+    GLFWwindow *m_glfw_window = nullptr;
+    NVGcontext *m_nvg_context = nullptr;
+#if defined(NANOGUI_USE_METAL)
+    void *m_metal_layer = nullptr;
+#endif
     GLFWcursor *m_cursors[(int) Cursor::CursorCount];
     Cursor m_cursor;
     std::vector<Widget *> m_focus_path;

@@ -328,6 +328,7 @@ void ImageView::draw(NVGcontext* ctx) {
     Vector2f position_in_screen(absolute_position());
     Vector2f position_after_offset = position_in_screen + m_offset;
     Vector2f image_position = position_after_offset / screen_size;
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     glEnable(GL_SCISSOR_TEST);
     float r = screen->pixel_ratio();
     glScissor(position_in_screen.x() * r,
@@ -341,6 +342,7 @@ void ImageView::draw(NVGcontext* ctx) {
     m_shader.set_uniform("position", image_position);
     m_shader.draw_indexed(GL_TRIANGLES, 0, 2);
     glDisable(GL_SCISSOR_TEST);
+#endif
 
     if (helpers_visible())
         draw_helpers(ctx);

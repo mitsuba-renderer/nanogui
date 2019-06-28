@@ -38,6 +38,9 @@ set(NANOGUI_BUILD_GLFW_DEFAULT   ON)
 if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
   set(NANOGUI_USE_OPENGL_DEFAULT OFF)
   set(NANOGUI_USE_GLES2_DEFAULT ON)
+elseif (APPLE)
+  set(NANOGUI_USE_OPENGL_DEFAULT OFF)
+  set(NANOGUI_USE_METAL_DEFAULT ON)
 endif()
 
 if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
@@ -65,6 +68,7 @@ option(NANOGUI_BUILD_GLFW     "Build GLFW" ${NANOGUI_BUILD_GLFW_DEFAULT})
 option(NANOGUI_INSTALL        "Install NanoGUI on `make install`?" ON)
 option(NANOGUI_USE_OPENGL     "Use OpenGL backend?" ${NANOGUI_USE_OPENGL_DEFAULT})
 option(NANOGUI_USE_GLES2      "Use GLES2 backend?" ${NANOGUI_USE_GLES2_DEFAULT})
+option(NANOGUI_USE_METAL      "Use Metal backend?" ${NANOGUI_USE_METAL_DEFAULT})
 
 set(NANOGUI_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling the Python plugin")
 
@@ -133,15 +137,37 @@ endif()
 
 if (NANOGUI_USE_OPENGL)
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_OPENGL)
+  list(APPEND LIBNANOGUI_EXTRA_SOURCE
+    include/nanogui/glutil.h src/glutil.cpp
+  )
   message(STATUS "NanoGUI: using OpenGL backend.")
 endif()
 
 if (NANOGUI_USE_GLES2)
-  if (NANOGUI_USE_OPENGL)
-    message(FATAL_ERROR "OpenGL and GLES 2 can't be enabled at the same time. Please choose one.")
+  if (NANOGUI_USE_OPENGL OR NANOGUI_USE_METAL)
+    message(FATAL_ERROR "Please choose *one* of the OpenGL, GLES 2, or Metal backends.")
   endif()
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_GLES2)
+  list(APPEND LIBNANOGUI_EXTRA_SOURCE
+    include/nanogui/glutil.h src/glutil.cpp
+  )
   message(STATUS "NanoGUI: using GLES 2 backend.")
+endif()
+
+if (NANOGUI_USE_METAL)
+  if (NANOGUI_USE_OPENGL OR NANOGUI_USE_GLES2)
+    message(FATAL_ERROR "Please choose *one* of the OpenGL, GLES 2, or Metal backends.")
+  endif()
+
+  list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_METAL)
+
+  list(APPEND LIBNANOGUI_EXTRA_SOURCE
+   "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg_metal/src/nanovg_mtl.m"
+   "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg_metal/src/nanovg_mtl.h"
+  )
+
+  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg_metal/src")
+  message(STATUS "NanoGUI: using Metal backend.")
 endif()
 
 # Shared library mode: add dllimport/dllexport flags to all symbols
@@ -285,7 +311,7 @@ endif()
 if (NANOGUI_USE_GLAD)
   # Build and include GLAD on Windows
   list(APPEND LIBNANOGUI_EXTRA_SOURCE
-     "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/src/glad.c"
+   "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/src/glad.c"
 	 "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/glad/glad.h"
 	 "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/KHR/khrplatform.h")
   if (MSVC)
@@ -319,13 +345,19 @@ elseif (WIN32)
   list(APPEND NANOGUI_EXTRA_LIBS opengl32)
 elseif (APPLE)
   find_library(cocoa_library Cocoa)
-  find_library(opengl_library OpenGL)
   find_library(corevideo_library CoreVideo)
   find_library(iokit_library IOKit)
-  list(APPEND NANOGUI_EXTRA_LIBS ${cocoa_library} ${opengl_library} ${corevideo_library} ${iokit_library})
+  if (NANOGUI_USE_OPENGL)
+    find_library(opengl_library OpenGL)
+    # Disable OpenGL deprecation warnings
+    add_definitions(-DGL_SILENCE_DEPRECATION)
+  else()
+    find_library(metal_library Metal)
+    find_library(quartzcore_library QuartzCore)
+  endif()
+  list(APPEND NANOGUI_EXTRA_LIBS ${cocoa_library} ${opengl_library} ${corevideo_library}
+       ${iokit_library} ${metal_library} ${quartzcore_library})
   list(APPEND LIBNANOGUI_EXTRA_SOURCE src/darwin.mm)
-  # Disable OpenGL deprecation warnings
-  add_definitions(-DGL_SILENCE_DEPRECATION)
 elseif (CMAKE_SYSTEM MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "BSD")
   list(APPEND NANOGUI_EXTRA_LIBS Xxf86vm Xrandr Xinerama Xcursor Xi X11 pthread)
   if (NANOGUI_USE_OPENGL)
@@ -402,7 +434,6 @@ add_library(nanogui-obj OBJECT
   ${LIBNANOGUI_EXTRA_SOURCE}
   # Fonts etc.
   nanogui_resources.cpp
-  include/nanogui/glutil.h src/glutil.cpp
   include/nanogui/common.h src/common.cpp
   include/nanogui/widget.h src/widget.cpp
   include/nanogui/theme.h src/theme.cpp

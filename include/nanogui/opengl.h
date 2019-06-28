@@ -31,8 +31,9 @@
 #    endif
 #  elif defined(NANOGUI_USE_GLES2)
 #    define GLFW_INCLUDE_ES2
+#  elif defined(NANOGUI_USE_METAL)
 #  else
-#    error You must select a backend (OpenGL/GLES2)
+#    error You must select a backend (OpenGL/GLES2/Metal)
 #  endif
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 

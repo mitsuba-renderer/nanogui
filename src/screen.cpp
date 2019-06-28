@@ -41,13 +41,20 @@
 #endif
 
 /* Allow enforcing the GL2 implementation of NanoVG */
-#if defined(NANOGUI_USE_OPENGL)
-#  define NANOVG_GL3_IMPLEMENTATION
-#else
-#  define NANOVG_GLES2_IMPLEMENTATION
-#endif
 
-#include <nanovg_gl.h>
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#  if defined(NANOGUI_USE_OPENGL)
+#    define NANOVG_GL3_IMPLEMENTATION
+#  elif defined(NANOGUI_USE_GLES2)
+#    define NANOVG_GLES2_IMPLEMENTATION
+#  endif
+#  include <nanovg_gl.h>
+#elif defined(NANOGUI_USE_METAL)
+#  define GLFW_EXPOSE_NATIVE_COCOA 1
+#  include <GLFW/glfw3native.h>
+#  include <nanovg_mtl.h>
+#  include "darwin.h"
+#endif
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -167,11 +174,15 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl_minor);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#else
+#elif defined(NANOGUI_USE_GLES2)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#elif defined(NANOGUI_USE_METAL)
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#else
+#  error Did not select a graphics API!
 #endif
 
     glfwWindowHint(GLFW_SAMPLES, n_samples);
@@ -195,17 +206,23 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     }
 
     if (!m_glfw_window) {
+        (void) gl_major; (void) gl_minor;
 #if defined(NANOGUI_USE_OPENGL)
         throw std::runtime_error("Could not create an OpenGL " +
                                  std::to_string(gl_major) + "." +
                                  std::to_string(gl_minor) + " context!");
-#else
-        (void) gl_major; (void) gl_minor;
-        throw std::runtime_error("Could not create an GLES 2 context!");
+#elif defined(NANOGUI_USE_GLES2)
+        throw std::runtime_error("Could not create a GLES 2 context!");
+#elif defined(NANOGUI_USE_METAL)
+        throw std::runtime_error(
+            "Could not create a GLFW window for rendering using Metal!");
 #endif
     }
 
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     glfwMakeContextCurrent(m_glfw_window);
+#endif
+
     glfwSetInputMode(m_glfw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 #if defined(NANOGUI_GLAD)
@@ -218,17 +235,23 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 #endif
 
     glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
+
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
-    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glClearColor(m_background[0], m_background[1],
+                 m_background[2], m_background[3]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+            GL_STENCIL_BUFFER_BIT);
+
     glfwSwapInterval(0);
     glfwSwapBuffers(m_glfw_window);
+#endif
 
 #if defined(__APPLE__)
     /* Poll for events once before starting a potentially
        lengthy loading process. This is needed to be
        classified as "interactive" by other software such
-       as i_term2 */
+       as iTerm2 */
 
     glfwPollEvents();
 #endif
@@ -388,7 +411,12 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 #else
     n_stencil_bits = 8;
 #endif
+
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     glGetIntegerv(GL_SAMPLES, &n_samples);
+#else
+    n_samples = 1;
+#endif
 
     int flags = 0;
     if (n_stencil_bits >= 8)
@@ -401,8 +429,11 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 
 #if defined(NANOGUI_USE_OPENGL)
     m_nvg_context = nvgCreateGL3(flags);
-#else
+#elif defined(NANOGUI_USE_GLES2)
     m_nvg_context = nvgCreateGLES2(flags);
+#elif defined(NANOGUI_USE_METAL)
+    m_metal_layer = metal_init(glfwGetCocoaWindow(window));
+    m_nvg_context = nvgCreateMTL(m_metal_layer, flags | NVG_TRIPLE_BUFFER);
 #endif
 
     if (m_nvg_context == nullptr)
@@ -432,13 +463,21 @@ Screen::~Screen() {
         if (m_cursors[i])
             glfwDestroyCursor(m_cursors[i]);
     }
+
     if (m_nvg_context) {
 #if defined(NANOGUI_USE_OPENGL)
         nvgDeleteGL3(m_nvg_context);
-#else
+#elif defined(NANOGUI_USE_GLES2)
         nvgDeleteGLES2(m_nvg_context);
+#elif defined(NANOGUI_USE_METAL)
+        nvgDeleteMTL(m_nvg_context);
 #endif
     }
+
+#if defined(NANOGUI_USE_METAL)
+    metal_release(m_metal_layer);
+#endif
+
     if (m_glfw_window && m_shutdown_glfw)
         glfwDestroyWindow(m_glfw_window);
 }
@@ -475,15 +514,17 @@ void Screen::draw_all() {
     if (m_redraw) {
         m_redraw = false;
 
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
         glfwMakeContextCurrent(m_glfw_window);
+#endif
 
-        #if !defined(EMSCRIPTEN)
-            glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
-            glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
-        #else
-            emscripten_get_canvas_element_size("#canvas", &m_size[0], &m_size[1]);
-            m_fbsize = m_size;
-        #endif
+#if !defined(EMSCRIPTEN)
+        glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
+        glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
+#else
+        emscripten_get_canvas_element_size("#canvas", &m_size[0], &m_size[1]);
+        m_fbsize = m_size;
+#endif
 
 #if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
         m_fbsize = m_size;
@@ -494,14 +535,21 @@ void Screen::draw_all() {
             m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
 #endif
 
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
         glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
         glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+#elif defined(NANOGUI_USE_METAL)
+        metal_set_size(m_metal_layer, m_fbsize);
+        mnvgClearWithColor(m_nvg_context, m_background);
+#endif
 
         draw_contents();
         draw_widgets();
 
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
         glfwSwapBuffers(m_glfw_window);
+#endif
     }
 }
 

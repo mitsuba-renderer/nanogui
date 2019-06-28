@@ -16,10 +16,11 @@ NanoGUI
 
 .. begin_brief_description
 
-NanoGUI is a minimalistic cross-platform widget library for OpenGL 3.x or higher. It
-supports automatic layout generation, stateful C++11 lambdas callbacks, a variety of
-useful widget types and Retina-capable rendering on Apple devices thanks to NanoVG_ by
-Mikko Mononen. Python bindings of all functionality are provided using pybind11_.
+NanoGUI is a minimalistic cross-platform widget library for OpenGL 3+, GLES2,
+and Metal. It supports automatic layout generation, stateful C++11 lambdas
+callbacks, a variety of useful widget types and Retina-capable rendering on
+Apple devices thanks to NanoVG_ by Mikko Mononen. Python bindings of all
+functionality are provided using pybind11_.
 
 **Note**: This repository contains an Enoki_-compatible port of the original
 NanoGUI_.
@@ -31,7 +32,7 @@ choice of vector library:
    names that feels more natural in a mixed C++ & Python environment.
    (specifically, ``underscore_case`` rather than ``camelCase``).
 
-2. both OpenGL and GLES 2 are supported. The latter e.g. allows NanoGUI to run
+2. OpenGL 3+, Metal, and GLES 2 are supported. The latter e.g. allows NanoGUI to run
    on ARM devices including the Raspberry Pi.
 
 3. the event loop is much more conservative by default and only issues redraw
