@@ -66,8 +66,9 @@ void *metal_init(void *nswin_) {
     CAMetalLayer* layer = [CAMetalLayer layer];
     if (!layer)
         throw std::runtime_error("init_metal(): unable to create layer.");
+    bool wide_gamut = [nswin canRepresentDisplayGamut: NSDisplayGamutP3];
     layer.device = device;
-    layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+    layer.pixelFormat = wide_gamut ? MTLPixelFormatBGR10A2Unorm : MTLPixelFormatBGRA8Unorm;
     layer.displaySyncEnabled = false;
     nswin.contentView.layer = layer;
     nswin.contentView.wantsLayer = YES;
