@@ -2215,6 +2215,8 @@ static const char *__doc_nanogui_TabWidgetBase_m_close_width = R"doc()doc";
 
 static const char *__doc_nanogui_TabWidgetBase_m_font = R"doc()doc";
 
+static const char *__doc_nanogui_TabWidgetBase_m_padding = R"doc()doc";
+
 static const char *__doc_nanogui_TabWidgetBase_m_popup = R"doc()doc";
 
 static const char *__doc_nanogui_TabWidgetBase_m_popup_callback = R"doc()doc";
@@ -2247,6 +2249,8 @@ static const char *__doc_nanogui_TabWidgetBase_mouse_enter_event = R"doc()doc";
 
 static const char *__doc_nanogui_TabWidgetBase_mouse_motion_event = R"doc()doc";
 
+static const char *__doc_nanogui_TabWidgetBase_padding = R"doc(Return the padding between the tab widget boundary and child widgets)doc";
+
 static const char *__doc_nanogui_TabWidgetBase_perform_layout = R"doc()doc";
 
 static const char *__doc_nanogui_TabWidgetBase_popup_callback =
@@ -2268,6 +2272,8 @@ R"doc(Set a callback that is used to notify a listener about tab changes
 static const char *__doc_nanogui_TabWidgetBase_set_close_callback =
 R"doc(Set a callback that is used to notify a listener about tab close
 events (will be called with the tab ID))doc";
+
+static const char *__doc_nanogui_TabWidgetBase_set_padding = R"doc()doc";
 
 static const char *__doc_nanogui_TabWidgetBase_set_popup_callback =
 R"doc(Set a callback that is used to notify a listener about popup events
@@ -2297,17 +2303,29 @@ static const char *__doc_nanogui_TabWidgetBase_tabs_closeable = R"doc(Return whe
 
 static const char *__doc_nanogui_TabWidgetBase_tabs_draggable = R"doc(Return whether tabs can be dragged to different positions)doc";
 
+static const char *__doc_nanogui_TabWidgetBase_update_visibility = R"doc()doc";
+
 static const char *__doc_nanogui_TabWidget_TabWidget = R"doc(Construct a new tab widget)doc";
 
 static const char *__doc_nanogui_TabWidget_append_tab = R"doc(Appends a new tab and returns its ID.)doc";
 
 static const char *__doc_nanogui_TabWidget_insert_tab = R"doc(Inserts a new tab at the specified position and returns its ID.)doc";
 
+static const char *__doc_nanogui_TabWidget_m_remove_children = R"doc()doc";
+
 static const char *__doc_nanogui_TabWidget_m_widgets = R"doc()doc";
+
+static const char *__doc_nanogui_TabWidget_perform_layout = R"doc()doc";
 
 static const char *__doc_nanogui_TabWidget_preferred_size = R"doc()doc";
 
+static const char *__doc_nanogui_TabWidget_remove_children = R"doc(Remove child widgets when the associated tab is closed/removed?)doc";
+
 static const char *__doc_nanogui_TabWidget_remove_tab = R"doc(Removes a tab with the specified ID)doc";
+
+static const char *__doc_nanogui_TabWidget_set_remove_children = R"doc(Remove child widgets when the associated tab is closed/removed?)doc";
+
+static const char *__doc_nanogui_TabWidget_update_visibility = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox =
 R"doc(Fancy text box with builtin regular expression-based validation.

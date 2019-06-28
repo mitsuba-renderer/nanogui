@@ -135,11 +135,19 @@ if (NANOGUI_BUILD_PYTHON)
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_PYTHON)
 endif()
 
-if (NANOGUI_USE_OPENGL)
-  list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_OPENGL)
+if (NANOGUI_USE_OPENGL OR NANOGUI_USE_GLES2)
   list(APPEND LIBNANOGUI_EXTRA_SOURCE
     include/nanogui/glutil.h src/glutil.cpp
+    include/nanogui/glcanvas.h src/glcanvas.cpp
   )
+
+  list(APPEND LIBNANOGUI_PYTHON_EXTRA_SOURCE
+    python/glcanvas.cpp
+  )
+endif()
+
+if (NANOGUI_USE_OPENGL)
+  list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_OPENGL)
   message(STATUS "NanoGUI: using OpenGL backend.")
 endif()
 
@@ -148,9 +156,6 @@ if (NANOGUI_USE_GLES2)
     message(FATAL_ERROR "Please choose *one* of the OpenGL, GLES 2, or Metal backends.")
   endif()
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_GLES2)
-  list(APPEND LIBNANOGUI_EXTRA_SOURCE
-    include/nanogui/glutil.h src/glutil.cpp
-  )
   message(STATUS "NanoGUI: using GLES 2 backend.")
 endif()
 
@@ -312,8 +317,8 @@ if (NANOGUI_USE_GLAD)
   # Build and include GLAD on Windows
   list(APPEND LIBNANOGUI_EXTRA_SOURCE
    "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/src/glad.c"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/glad/glad.h"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/KHR/khrplatform.h")
+   "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/glad/glad.h"
+   "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include/KHR/khrplatform.h")
   if (MSVC)
     set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/src/glad.c"
       PROPERTIES COMPILE_FLAGS "/wd4055 ")
@@ -457,7 +462,6 @@ add_library(nanogui-obj OBJECT
   include/nanogui/colorpicker.h src/colorpicker.cpp
   include/nanogui/graph.h src/graph.cpp
   include/nanogui/tabwidget.h src/tabwidget.cpp
-  include/nanogui/glcanvas.h src/glcanvas.cpp
   include/nanogui/formhelper.h
   include/nanogui/toolbutton.h
   include/nanogui/opengl.h
@@ -592,7 +596,6 @@ if (NANOGUI_BUILD_PYTHON)
     python/tabs.cpp
     python/textbox.cpp
     python/theme.cpp
-    python/glcanvas.cpp
     python/formhelper.cpp
     python/misc.cpp
     python/glutil.cpp

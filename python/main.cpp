@@ -115,12 +115,16 @@ static void sigint_handler(int sig) {
 PYBIND11_MODULE(nanogui, m) {
     m.attr("__doc__") = "NanoGUI plugin";
 
+    m.attr("opengl") = false;
+    m.attr("gles2") = false;
+    m.attr("metal") = false;
+
 #if defined(NANOGUI_USE_OPENGL)
     m.attr("opengl") = true;
-    m.attr("gles2") = false;
-#else
-    m.attr("opengl") = false;
+#elif defined(NANOGUI_USE_GLES2)
     m.attr("gles2") = true;
+#elif defined(NANOGUI_USE_METAL)
+    m.attr("metal") = true;
 #endif
 
     py::class_<MainloopHandle>(m, "MainloopHandle")
@@ -253,7 +257,9 @@ PYBIND11_MODULE(nanogui, m) {
     register_tabs(m);
     register_textbox(m);
     register_theme(m);
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     register_glcanvas(m);
+#endif
     register_formhelper(m);
     register_misc(m);
     register_glutil(m);

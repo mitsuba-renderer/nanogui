@@ -72,6 +72,10 @@ public:
     bool tabs_draggable() const { return m_tabs_draggable; }
     void set_tabs_draggable(bool value) { m_tabs_draggable = value; }
 
+    /// Return the padding between the tab widget boundary and child widgets
+    int padding() const { return m_padding; }
+    void set_padding(int value) { m_padding = value; }
+
     /// Callback that is used to notify a listener about tab changes (will be called with the tab ID)
     std::function<void(int)> callback() const { return m_callback; }
     /// Set a callback that is used to notify a listener about tab changes (will be called with the tab ID)
@@ -178,12 +182,19 @@ public:
     /// Removes a tab with the specified ID
     virtual void remove_tab(int id) override;
 
+    /// Remove child widgets when the associated tab is closed/removed?
+    bool remove_children() const { return m_remove_children; }
+
+    /// Remove child widgets when the associated tab is closed/removed?
+    void set_remove_children(bool value) { m_remove_children = value; }
+
     virtual void perform_layout(NVGcontext* ctx) override;
     virtual Vector2i preferred_size(NVGcontext* ctx) const override;
 protected:
     virtual void update_visibility() override;
 protected:
     std::unordered_map<int, Widget *> m_widgets;
+    bool m_remove_children = true;
 };
 
 NAMESPACE_END(nanogui)

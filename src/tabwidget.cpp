@@ -206,15 +206,6 @@ void TabWidgetBase::draw(NVGcontext* ctx) {
         nvgStroke(ctx);
         nvgRestore(ctx);
     }
-
-    //int margin = 8;
-    //nvgBeginPath(ctx);
-    //nvgRect(ctx, m_pos.x() + margin, m_pos.y() + tab_height + margin, m_size.x() - margin*2,
-                 //m_size.y() - tab_height - margin*2);
-    //nvgFillColor(ctx, Color(0, 255));
-    //nvgFill(ctx);
-    //nvgStrokeColor(ctx, m_theme->m_border_dark);
-    //nvgStroke(ctx);
 }
 
 std::pair<int, bool> TabWidgetBase::tab_at_position(const Vector2i &p, bool test_vertical) const {
@@ -415,8 +406,10 @@ int TabWidget::append_tab(const std::string &caption, Widget *widget) {
 
 void TabWidget::remove_tab(int id) {
     TabWidgetBase::remove_tab(id);
-    remove_child(m_widgets[id]);
+    Widget *widget = m_widgets[id];
     m_widgets.erase(id);
+    if (m_remove_children)
+        remove_child(widget);
 }
 
 NAMESPACE_END(nanogui)

@@ -97,6 +97,7 @@ ImageView::ImageView(Widget* parent, GLuint image_id)
     : Widget(parent), m_image_id(image_id), m_scale(1.0f), m_offset(0),
     m_fixed_scale(false), m_fixed_offset(false), m_pixel_info_callback(nullptr) {
     update_image_parameters();
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     m_shader.init("ImageViewShader", default_image_view_vertex_shader,
                  default_image_view_fragment_shader);
 
@@ -116,10 +117,13 @@ ImageView::ImageView(Widget* parent, GLuint image_id)
     m_shader.bind();
     m_shader.upload_indices(indices, 3, 2);
     m_shader.upload_attrib("vertex", vertices, 2, 4);
+#endif
 }
 
 ImageView::~ImageView() {
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     m_shader.free();
+#endif
 }
 
 void ImageView::bind_image(GLuint image_id) {

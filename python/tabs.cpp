@@ -24,6 +24,8 @@ void register_tabs(py::module &m) {
         .def("set_tabs_draggable", &TabWidgetBase::set_tabs_draggable, D(TabWidgetBase, set_tabs_draggable))
         .def("tabs_closeable", &TabWidgetBase::tabs_closeable, D(TabWidgetBase, tabs_closeable))
         .def("set_tabs_closeable", &TabWidgetBase::set_tabs_closeable, D(TabWidgetBase, set_tabs_closeable))
+        .def("padding", &TabWidgetBase::padding, D(TabWidgetBase, padding))
+        .def("set_padding", &TabWidgetBase::set_padding, D(TabWidgetBase, set_padding))
         .def("set_callback", &TabWidgetBase::set_callback, D(TabWidgetBase, set_callback))
         .def("callback", &TabWidgetBase::callback, D(TabWidgetBase, callback))
         .def("close_callback", &TabWidgetBase::close_callback, D(TabWidgetBase, close_callback))
@@ -34,7 +36,9 @@ void register_tabs(py::module &m) {
     py::class_<TabWidget, TabWidgetBase, ref<TabWidget>, PyTabWidget>(m, "TabWidget", D(TabWidget))
         .def(py::init<Widget *>(), D(TabWidget, TabWidget))
         .def("insert_tab", &TabWidget::insert_tab, D(TabWidget, insert_tab), "index"_a, "caption"_a, "widget"_a)
-        .def("append_tab", &TabWidget::append_tab, D(TabWidget, append_tab), "caption"_a, "widget"_a);
+        .def("append_tab", &TabWidget::append_tab, D(TabWidget, append_tab), "caption"_a, "widget"_a)
+        .def("remove_children", &TabWidget::remove_children, D(TabWidget, remove_children))
+        .def("set_remove_children", &TabWidget::set_remove_children, D(TabWidget, set_remove_children), "id"_a);
 }
 
 #endif
