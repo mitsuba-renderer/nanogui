@@ -1,7 +1,7 @@
 /*
     src/example3.cpp -- C++ version of an example application that shows
     how to use nanogui in an application with an already created and managed
-    glfw context.
+    GLFW context.
 
     NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
@@ -31,7 +31,6 @@
 #endif
 
 #include <GLFW/glfw3.h>
-
 #include <nanogui/nanogui.h>
 #include <iostream>
 
@@ -54,9 +53,7 @@ Color colval(0.5f, 0.5f, 0.7f, 1.f);
 Screen *screen = nullptr;
 
 int main(int /* argc */, char ** /* argv */) {
-
     glfwInit();
-
     glfwSetTime(0);
 
 #if defined(NANOGUI_USE_OPENGL)
@@ -66,9 +63,14 @@ int main(int /* argc */, char ** /* argv */) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#else
+#elif defined(NANOGUI_USE_GLES2)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+#elif defined(NANOGUI_USE_METAL)
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+    metal_init();
 #endif
 
     glfwWindowHint(GLFW_SAMPLES, 0);
@@ -81,7 +83,7 @@ int main(int /* argc */, char ** /* argv */) {
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
     // Create a GLFWwindow object
-    GLFWwindow* window = glfwCreateWindow(800, 800, "example3", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(500, 700, "example3", nullptr, nullptr);
     if (window == nullptr) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -95,18 +97,17 @@ int main(int /* argc */, char ** /* argv */) {
     glGetError(); // pull and ignore unhandled errors like GL_INVALID_ENUM
 #endif
 
-    glClearColor(0.2f, 0.25f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
     // Create a nanogui screen and pass the glfw pointer to initialize
     screen = new Screen();
     screen->initialize(window, true);
 
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
     glfwSwapInterval(0);
     glfwSwapBuffers(window);
+#endif
 
     // Create nanogui gui
     bool enabled = true;
@@ -126,11 +127,14 @@ int main(int /* argc */, char ** /* argv */) {
     gui->add_variable("Color", colval);
 
     gui->add_group("Other widgets");
-    gui->add_button("A button", []() { std::cout << "Button pressed." << std::endl; })->set_tooltip("Testing a much longer tooltip, that will wrap around to new lines multiple times.");;
+    gui->add_button("A button", []() { std::cout << "Button pressed." << std::endl; })
+       ->set_tooltip("Testing a much longer tooltip, that will wrap around to new lines multiple times.");;
 
     screen->set_visible(true);
     screen->perform_layout();
     nanogui_window->center();
+    screen->clear();
+    screen->draw_all();
 
     glfwSetCursorPosCallback(window,
             [](GLFWwindow *, double x, double y) {
@@ -179,10 +183,8 @@ int main(int /* argc */, char ** /* argv */) {
         // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
 
-        glClearColor(0.2f, 0.25f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
         // Draw nanogui
+        screen->clear(); // glClear
         screen->draw_contents();
         screen->draw_widgets();
 
@@ -191,6 +193,10 @@ int main(int /* argc */, char ** /* argv */) {
 
     // Terminate GLFW, clearing any resources allocated by GLFW.
     glfwTerminate();
+
+#if defined(NANOGUI_USE_METAL)
+    metal_shutdown();
+#endif
 
     return 0;
 }

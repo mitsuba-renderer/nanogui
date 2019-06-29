@@ -1241,17 +1241,9 @@ static const char *__doc_nanogui_GLShader_m_fragment_shader =
 R"doc(The fragment shader handle of this GLShader (as returned by
 ``glCreateShader``).)doc";
 
-static const char *__doc_nanogui_GLShader_m_geometry_shader =
-R"doc(The geometry shader handle (if requested) of this GLShader (as
-returned by ``glCreateShader``).)doc";
-
 static const char *__doc_nanogui_GLShader_m_name = R"doc(The registered name of this GLShader.)doc";
 
 static const char *__doc_nanogui_GLShader_m_program_shader = R"doc(The OpenGL program handle (as returned by ``glCreateProgram``).)doc";
-
-static const char *__doc_nanogui_GLShader_m_vertex_array_object =
-R"doc(The vertex array associated with this GLShader (as returned by
-``glGenVertexArrays``).)doc";
 
 static const char *__doc_nanogui_GLShader_m_vertex_shader =
 R"doc(The vertex shader handle of this GLShader (as returned by
@@ -1995,6 +1987,10 @@ static const char *__doc_nanogui_Screen_center_window = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_char_callback_event = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_clear =
+R"doc(Clear the screen with the background color (glClearColor, glClear,
+etc.))doc";
+
 static const char *__doc_nanogui_Screen_cursor_pos_callback_event = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_dispose_window = R"doc()doc";
@@ -2022,6 +2018,8 @@ static const char *__doc_nanogui_Screen_keyboard_event = R"doc(Default keyboard 
 static const char *__doc_nanogui_Screen_m_background = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_caption = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_color_bits = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_cursor = R"doc()doc";
 
@@ -3140,6 +3138,18 @@ Remark:
     returned handle causes application to wait for the termination of
     the main loop and then swap the two thread environments back into
     their initial configuration.)doc";
+
+static const char *__doc_nanogui_metal_device = R"doc(Return the currently active MTLDevice)doc";
+
+static const char *__doc_nanogui_metal_init = R"doc(Initialize the Metal backend)doc";
+
+static const char *__doc_nanogui_metal_shutdown = R"doc(Shut down the Metal backend)doc";
+
+static const char *__doc_nanogui_metal_window_init = R"doc(Associate a metal layer with a NSWindow created by GLEW)doc";
+
+static const char *__doc_nanogui_metal_window_layer = R"doc(Return the CAMetalLayer associated with a given NSWindow)doc";
+
+static const char *__doc_nanogui_metal_window_set_size = R"doc(Set size of the drawable underlying an NSWindow)doc";
 
 static const char *__doc_nanogui_nanogui_get_image = R"doc(Helper function used by nvg_image_icon)doc";
 

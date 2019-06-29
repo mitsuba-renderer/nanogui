@@ -107,6 +107,9 @@ public:
     /// Send an event that will cause the screen to be redrawn at the next event loop iteration
     void redraw();
 
+    /// Clear the screen with the background color (glClearColor, glClear, etc.)
+    virtual void clear();
+
     /// Draw the Screen contents
     virtual void draw_all();
 
@@ -194,9 +197,6 @@ public:
 protected:
     GLFWwindow *m_glfw_window = nullptr;
     NVGcontext *m_nvg_context = nullptr;
-#if defined(NANOGUI_USE_METAL)
-    void *m_metal_layer = nullptr;
-#endif
     GLFWcursor *m_cursors[(int) Cursor::CursorCount];
     Cursor m_cursor;
     std::vector<Widget *> m_focus_path;
@@ -213,6 +213,7 @@ protected:
     bool m_shutdown_glfw;
     bool m_fullscreen;
     bool m_redraw;
+    int m_color_bits;
     std::function<void(Vector2i)> m_resize_callback;
 };
 

@@ -4,7 +4,6 @@
 #if defined(NANOGUI_USE_METAL)
 #  import <Metal/Metal.h>
 #  import <QuartzCore/CAMetalLayer.h>
-#  include "darwin.h"
 #endif
 
 NAMESPACE_BEGIN(nanogui)
@@ -58,31 +57,50 @@ void disable_saved_application_state_osx() {
 
 #if defined(NANOGUI_USE_METAL)
 
-void *metal_init(void *nswin_) {
-    NSWindow *nswin = (__bridge NSWindow *) nswin_;
+static void *s_metal_device = nullptr;
+
+void metal_init() {
+    if (s_metal_device)
+        throw std::runtime_error("init_metal(): already initialized!");
     id<MTLDevice> device = MTLCreateSystemDefaultDevice();
     if (!device)
         throw std::runtime_error("init_metal(): unable to create system default device.");
-    CAMetalLayer* layer = [CAMetalLayer layer];
+    s_metal_device = (__bridge_retained void *) device;
+}
+
+void metal_shutdown() {
+    (void) (__bridge_transfer id<MTLDevice>) s_metal_device;
+}
+
+void* metal_device() { return s_metal_device; }
+
+void metal_window_init(void *nswin_, bool request_wide_gamut) {
+    CAMetalLayer *layer = [CAMetalLayer layer];
     if (!layer)
         throw std::runtime_error("init_metal(): unable to create layer.");
-    bool wide_gamut = [nswin canRepresentDisplayGamut: NSDisplayGamutP3];
-    layer.device = device;
-    layer.pixelFormat = wide_gamut ? MTLPixelFormatBGR10A2Unorm : MTLPixelFormatBGRA8Unorm;
-    layer.displaySyncEnabled = false;
+    NSWindow *nswin = (__bridge NSWindow *) nswin_;
     nswin.contentView.layer = layer;
     nswin.contentView.wantsLayer = YES;
-    return (__bridge_retained void *) layer;
+    nswin.contentView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
+    bool wide_gamut_available = [nswin canRepresentDisplayGamut: NSDisplayGamutP3];
+    layer.device = (__bridge id<MTLDevice>) s_metal_device;
+    layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    layer.contentsScale = nswin.backingScaleFactor;
+    layer.pixelFormat = (request_wide_gamut && wide_gamut_available)
+        ? MTLPixelFormatRGBA16Float : MTLPixelFormatBGRA8Unorm;
+    layer.displaySyncEnabled = NO;
+    layer.allowsNextDrawableTimeout = NO;
 }
 
-void metal_release(void *layer_) {
-    CAMetalLayer *layer = (__bridge_transfer CAMetalLayer *) layer_;
-    (void) layer;
-}
-
-void metal_set_size(void *layer_, const Vector2i &size) {
-    CAMetalLayer *layer = (__bridge CAMetalLayer *) layer_;
+void metal_window_set_size(void *nswin_, const Vector2i &size) {
+    NSWindow *nswin = (__bridge NSWindow *) nswin_;
+    CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
     layer.drawableSize = CGSizeMake(size.x(), size.y());
+}
+
+void* metal_window_layer(void *nswin_) {
+    NSWindow *nswin = (__bridge NSWindow *) nswin_;
+    return (__bridge void *) (nswin.contentView.layer);
 }
 
 #endif

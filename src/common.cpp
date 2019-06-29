@@ -17,6 +17,7 @@
 #endif
 
 #include <nanogui/opengl.h>
+#include <nanogui/metal.h>
 #include <map>
 #include <thread>
 #include <chrono>
@@ -60,6 +61,10 @@ void init() {
 
     if (!glfwInit())
         throw std::runtime_error("Could not initialize GLFW!");
+
+#if defined(NANOGUI_USE_METAL)
+    metal_init();
+#endif
 
     glfwSetTime(0);
 }
@@ -185,6 +190,10 @@ bool active() {
 
 void shutdown() {
     glfwTerminate();
+
+#if defined(NANOGUI_USE_METAL)
+    metal_shutdown();
+#endif
 }
 
 #if defined(__clang__)

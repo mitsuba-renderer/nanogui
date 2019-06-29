@@ -105,6 +105,7 @@ void register_widget(py::module &m) {
         .def("set_size", &Screen::set_size, D(Screen, set_size))
         .def("perform_layout", (void(Screen::*)(void)) &Screen::perform_layout, D(Screen, perform_layout))
         .def("redraw", &Screen::redraw, D(Screen, redraw))
+        .def("clear", &Screen::clear, D(Screen, clear))
         .def("draw_all", &Screen::draw_all, D(Screen, draw_all))
         .def("draw_contents", &Screen::draw_contents, D(Screen, draw_contents))
         .def("resize_event", &Screen::resize_event, "size"_a, D(Screen, resize_event))

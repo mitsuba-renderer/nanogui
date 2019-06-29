@@ -231,10 +231,9 @@ std::pair<int, bool> TabWidgetBase::tab_at_position(const Vector2i &p, bool test
 
 bool TabWidgetBase::mouse_button_event(const Vector2i &p, int button, bool down,
                                        int modifiers) {
-    if (Widget::mouse_button_event(p, button, down, modifiers))
-        return true;
     int index; bool close;
     std::tie(index, close) = tab_at_position(p);
+    bool handled = false;
 
     Screen *screen = this->screen();
     if (m_popup) {
@@ -245,68 +244,73 @@ bool TabWidgetBase::mouse_button_event(const Vector2i &p, int button, bool down,
         screen->update_focus(this);
         screen->remove_child(m_popup);
         m_popup = nullptr;
+        handled = true;
     }
 
     bool drag_in_progress = m_tab_drag_index != -1 && m_tab_drag_start != m_tab_drag_end;
-    if (button == GLFW_MOUSE_BUTTON_2) {
-        if (down && index != -1 && !drag_in_progress && m_popup_callback) {
-            m_popup = m_popup_callback(tab_id(index), screen);
-            m_popup->set_position(p + Vector2i(8, -6));
-            m_popup->set_anchor_offset(8);
-            m_popup->set_anchor_size(8);
-            if (m_popup->layout() == nullptr)
-                m_popup->set_layout(new GroupLayout(5, 3));
-            for (Widget *w : m_popup->children()) {
-                Button *b = dynamic_cast<Button *>(w);
-                if (!b)
-                    continue;
-                b->set_icon_position(Button::IconPosition::Right);
-                b->set_flags(Button::MenuButton);
-            }
-            NVGcontext *ctx = screen->nvg_context();
-            m_popup->set_size(m_popup->preferred_size(ctx) + Vector2i(40, 0));
-            m_popup->perform_layout(ctx);
+    if (m_popup_callback && button == GLFW_MOUSE_BUTTON_2 && down && index != -1 &&
+        !drag_in_progress) {
+        m_popup = m_popup_callback(tab_id(index), screen);
+        m_popup->set_position(p + Vector2i(8, -6));
+        m_popup->set_anchor_offset(8);
+        m_popup->set_anchor_size(8);
+        if (m_popup->layout() == nullptr)
+            m_popup->set_layout(new GroupLayout(5, 3));
+        for (Widget *w : m_popup->children()) {
+            Button *b = dynamic_cast<Button *>(w);
+            if (!b)
+                continue;
+            b->set_icon_position(Button::IconPosition::Right);
+            b->set_flags(Button::MenuButton);
         }
-        return true;
+        NVGcontext *ctx = screen->nvg_context();
+        m_popup->set_size(m_popup->preferred_size(ctx) + Vector2i(40, 0));
+        m_popup->perform_layout(ctx);
+        handled = true;
     }
 
-    if (button != GLFW_MOUSE_BUTTON_1 || m_popup != nullptr)
-        return false;
-
-    if (index >= 0) {
-        if (close && m_tab_drag_index == -1) {
-            if (down) {
-                m_close_index_pushed = index;
-            } else if (m_close_index == m_close_index_pushed) {
-                remove_tab(tab_id(index));
-                mouse_motion_event(p, Vector2i(0), 0, 0);
-            }
-        } else {
-            if (down) {
-                bool tab_changed = m_active_tab != index;
-                m_active_tab = index;
-                m_tab_drag_index = m_tabs_draggable ? index : -1;
-                m_tab_drag_start = m_tab_drag_end = p.x();
-                m_tab_drag_min = m_tab_offsets[index];
-                m_tab_drag_max = m_tab_offsets[index + 1];
-                m_close_index_pushed = -1;
-                if (tab_changed && m_callback) {
-                    m_callback(selected_id());
-                    update_visibility();
+    if (button == GLFW_MOUSE_BUTTON_1 && m_popup == nullptr) {
+        if (index >= 0) {
+            if (close && m_tab_drag_index == -1) {
+                if (down) {
+                    m_close_index_pushed = index;
+                } else if (m_close_index == m_close_index_pushed) {
+                    remove_tab(tab_id(index));
+                    mouse_motion_event(p, Vector2i(0), 0, 0);
                 }
-            } else if (m_tab_drag_index != -1) {
-                m_tab_drag_index = -1;
-                mouse_motion_event(p, Vector2i(0), 0, 0);
+            } else {
+                if (down) {
+                    bool tab_changed = m_active_tab != index;
+                    m_active_tab = index;
+                    m_tab_drag_index = m_tabs_draggable ? index : -1;
+                    m_tab_drag_start = m_tab_drag_end = p.x();
+                    m_tab_drag_min = m_tab_offsets[index];
+                    m_tab_drag_max = m_tab_offsets[index + 1];
+                    m_close_index_pushed = -1;
+                    if (tab_changed && m_callback) {
+                        m_callback(selected_id());
+                        update_visibility();
+                    }
+                } else if (m_tab_drag_index != -1) {
+                    m_tab_drag_index = -1;
+                    mouse_motion_event(p, Vector2i(0), 0, 0);
+                }
             }
+            handled = true;
         }
+
+        if (!down) {
+            handled = m_close_index_pushed != -1 || m_tab_drag_index != -1;
+            m_close_index_pushed = -1;
+            m_tab_drag_index = -1;
+        }
+
+        handled = true;
     }
 
-    if (!down) {
-        m_close_index_pushed = -1;
-        m_tab_drag_index = -1;
-    }
+    handled |= Widget::mouse_button_event(p, button, down, modifiers);
 
-    return true;
+    return handled;
 }
 
 bool TabWidgetBase::mouse_enter_event(const Vector2i &/* p */, bool /* enter */) {

@@ -16,6 +16,7 @@
 #include <nanogui/opengl.h>
 #include <nanogui/window.h>
 #include <nanogui/popup.h>
+#include <nanogui/metal.h>
 #include <map>
 #include <iostream>
 
@@ -53,7 +54,6 @@
 #  define GLFW_EXPOSE_NATIVE_COCOA 1
 #  include <GLFW/glfw3native.h>
 #  include <nanovg_mtl.h>
-#  include "darwin.h"
 #endif
 
 NAMESPACE_BEGIN(nanogui)
@@ -185,6 +185,9 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 #  error Did not select a graphics API!
 #endif
 
+    if (color_bits == 10) // R10G10B10A2 packed format
+        depth_bits = 2;
+
     glfwWindowHint(GLFW_SAMPLES, n_samples);
     glfwWindowHint(GLFW_RED_BITS, color_bits);
     glfwWindowHint(GLFW_GREEN_BITS, color_bits);
@@ -194,6 +197,8 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_DEPTH_BITS, depth_bits);
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
+
+    m_color_bits = color_bits;
 
     if (fullscreen) {
         GLFWmonitor *monitor = glfwGetPrimaryMonitor();
@@ -409,11 +414,12 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
         GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits);
 #else
-    n_stencil_bits = 8;
+    n_stencil_bits = 0;
 #endif
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     glGetIntegerv(GL_SAMPLES, &n_samples);
+    glGetIntegerv(GL_RED_BITS, &m_color_bits);
 #else
     n_samples = 1;
 #endif
@@ -432,11 +438,14 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 #elif defined(NANOGUI_USE_GLES2)
     m_nvg_context = nvgCreateGLES2(flags);
 #elif defined(NANOGUI_USE_METAL)
-    m_metal_layer = metal_init(glfwGetCocoaWindow(window));
-    m_nvg_context = nvgCreateMTL(m_metal_layer, flags | NVG_TRIPLE_BUFFER);
+    void *nswin = glfwGetCocoaWindow(window);
+    metal_window_init(nswin, m_color_bits > 8);
+    metal_window_set_size(nswin, m_fbsize);
+    m_nvg_context = nvgCreateMTL(metal_window_layer(nswin),
+                                 flags | NVG_TRIPLE_BUFFER);
 #endif
 
-    if (m_nvg_context == nullptr)
+    if (!m_nvg_context)
         throw std::runtime_error("Could not initialize NanoVG!");
 
     m_visible = glfwGetWindowAttrib(window, GLFW_VISIBLE) != 0;
@@ -474,10 +483,6 @@ Screen::~Screen() {
 #endif
     }
 
-#if defined(NANOGUI_USE_METAL)
-    metal_release(m_metal_layer);
-#endif
-
     if (m_glfw_window && m_shutdown_glfw)
         glfwDestroyWindow(m_glfw_window);
 }
@@ -510,6 +515,17 @@ void Screen::set_size(const Vector2i &size) {
 #endif
 }
 
+void Screen::clear() {
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+    glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
+    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+#elif defined(NANOGUI_USE_METAL)
+    metal_window_set_size(glfwGetCocoaWindow(m_glfw_window), m_fbsize);
+    mnvgClearWithColor(m_nvg_context, m_background);
+#endif
+}
+
 void Screen::draw_all() {
     if (m_redraw) {
         m_redraw = false;
@@ -535,15 +551,7 @@ void Screen::draw_all() {
             m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
 #endif
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
-        glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
-        glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-#elif defined(NANOGUI_USE_METAL)
-        metal_set_size(m_metal_layer, m_fbsize);
-        mnvgClearWithColor(m_nvg_context, m_background);
-#endif
-
+        clear();
         draw_contents();
         draw_widgets();
 
@@ -640,11 +648,11 @@ bool Screen::keyboard_character_event(unsigned int codepoint) {
 }
 
 bool Screen::resize_event(const Vector2i& size) {
-    if (m_resize_callback) {
+    if (m_resize_callback)
         m_resize_callback(size);
-        return true;
-    }
-    return false;
+    m_redraw = true;
+    draw_all();
+    return true;
 }
 
 void Screen::redraw() {
