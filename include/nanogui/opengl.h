@@ -95,4 +95,8 @@ inline bool nvg_is_image_icon(int value) { return value < 1024; }
  */
 inline bool nvg_is_font_icon(int value) { return value >= 1024; }
 
+
+/// Check for OpenGL errors and warn if one is found (returns 'true' in that case')
+extern NANOGUI_EXPORT bool nanogui_check_glerror(const char *cmd);
+
 NAMESPACE_END(nanogui)

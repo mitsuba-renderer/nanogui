@@ -10,42 +10,44 @@ from distutils.version import LooseVersion
 from distutils.command.install_headers import install_headers
 
 headers = [
-    'include/nanogui/button.h',
-    'include/nanogui/checkbox.h',
-    'include/nanogui/colorpicker.h',
-    'include/nanogui/colorwheel.h',
-    'include/nanogui/combobox.h',
-    'include/nanogui/common.h',
-    'include/nanogui/compat.h',
-    'include/nanogui/entypo.h',
-    'include/nanogui/formhelper.h',
     'include/nanogui/glcanvas.h',
-    'include/nanogui/glutil.h',
-    'include/nanogui/graph.h',
-    'include/nanogui/imagepanel.h',
-    'include/nanogui/imageview.h',
-    'include/nanogui/label.h',
-    'include/nanogui/layout.h',
-    'include/nanogui/messagedialog.h',
-    'include/nanogui/nanogui.h',
-    'include/nanogui/object.h',
-    'include/nanogui/opengl.h',
-    'include/nanogui/popupbutton.h',
-    'include/nanogui/popup.h',
-    'include/nanogui/progressbar.h',
-    'include/nanogui/python.h',
-    'include/nanogui/screen.h',
-    'include/nanogui/slider.h',
-    'include/nanogui/stackedwidget.h',
-    'include/nanogui/tabheader.h',
-    'include/nanogui/tabwidget.h',
-    'include/nanogui/textbox.h',
+    'include/nanogui/colorpicker.h',
+    'include/nanogui/renderpass.h',
     'include/nanogui/theme.h',
-    'include/nanogui/toolbutton.h',
-    'include/nanogui/vscrollpanel.h',
+    'include/nanogui/colorwheel.h',
+    'include/nanogui/progressbar.h',
+    'include/nanogui/textbox.h',
+    'include/nanogui/imagepanel.h',
+    'include/nanogui/label.h',
+    'include/nanogui/shader.h',
+    'include/nanogui/popup.h',
+    'include/nanogui/opengl.h',
+    'include/nanogui/glutil.h',
     'include/nanogui/widget.h',
-    'include/nanogui/window.h'
+    'include/nanogui/nanogui.h',
+    'include/nanogui/combobox.h',
+    'include/nanogui/popupbutton.h',
+    'include/nanogui/toolbutton.h',
+    'include/nanogui/window.h',
+    'include/nanogui/imageview.h',
+    'include/nanogui/graph.h',
+    'include/nanogui/checkbox.h',
+    'include/nanogui/layout.h',
+    'include/nanogui/slider.h',
+    'include/nanogui/common.h',
+    'include/nanogui/button.h',
+    'include/nanogui/entypo.h',
+    'include/nanogui/object.h',
+    'include/nanogui/texture.h',
+    'include/nanogui/metal.h',
+    'include/nanogui/screen.h',
+    'include/nanogui/python.h',
+    'include/nanogui/messagedialog.h',
+    'include/nanogui/vscrollpanel.h',
+    'include/nanogui/formhelper.h',
+    'include/nanogui/tabwidget.h'
 ]
+
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -73,7 +75,7 @@ class CMakeBuild(build_ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DPYTHON_EXECUTABLE=' + sys.executable,
                       '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DNANOGUI_BUILD_EXAMPLES=NO' ]
+                      '-DNANOGUI_BUILD_EXAMPLES=NO']
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -113,7 +115,7 @@ setup(
     version='0.0.1',
     author='Wenzel Jakob',
     author_email='wenzel.jakob@epfl.ch',
-    description='A minimalistic GUI library for OpenGL/GLES 2',
+    description='A minimalistic GUI library for OpenGL, GLES 2, and Metal',
     long_description='',
     ext_modules=[CMakeExtension('nanogui')],
     headers=headers,

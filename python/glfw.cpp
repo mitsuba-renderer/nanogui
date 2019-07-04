@@ -2,8 +2,8 @@
 
 #include "python.h"
 
-void register_constants_glfw(py::module &m) {
-    /* GLFW constants */
+void register_glfw(py::module &m) {
+    /* GLFW constants + functions */
     {
         #define C(name) g.attr(#name) = py::int_(GLFW_##name);
         py::module g = m.def_submodule("glfw");
@@ -39,6 +39,8 @@ void register_constants_glfw(py::module &m) {
         C(MOUSE_BUTTON_LEFT); C(MOUSE_BUTTON_RIGHT); C(MOUSE_BUTTON_MIDDLE);
         C(RELEASE); C(PRESS); C(REPEAT);
         #undef C
+
+        g.def("getTime", &glfwGetTime);
     }
 }
 

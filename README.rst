@@ -35,7 +35,8 @@ choice of vector library:
 
 2. OpenGL 3+, GLES 2, and Metal are supported. GLES2 allows NanoGUI to run on
    ARM devices including the Raspberry Pi and in browsers via WebGL. the
-   Metal backend supports modern Macs, iPhones, etc.
+   Metal backend supports modern Macs, iPhones, etc. NanoGUI includes generic
+   wrappers around shaders and textures that work for all of these frameworks.
 
 3. The event loop is much more conservative by default and only issues redraw
    calls when explicitly requested by an event callback.

@@ -30,24 +30,12 @@ else()
 endif()
 
 set(NANOGUI_BUILD_SHARED_DEFAULT OFF)
-set(NANOGUI_USE_OPENGL_DEFAULT   ON)
-set(NANOGUI_USE_GLES2_DEFAULT    OFF)
 set(NANOGUI_USE_PYTHON_DEFAULT   ON)
 set(NANOGUI_BUILD_GLFW_DEFAULT   ON)
-
-if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
-  set(NANOGUI_USE_OPENGL_DEFAULT OFF)
-  set(NANOGUI_USE_GLES2_DEFAULT ON)
-elseif (APPLE)
-  set(NANOGUI_USE_OPENGL_DEFAULT OFF)
-  set(NANOGUI_USE_METAL_DEFAULT ON)
-endif()
 
 if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
   set(CMAKE_CXX_COMPILER_ID "Emscripten")
   set(NANOGUI_BUILD_SHARED_DEFAULT OFF)
-  set(NANOGUI_USE_OPENGL_DEFAULT   OFF)
-  set(NANOGUI_USE_GLES2_DEFAULT    ON)
   set(NANOGUI_USE_PYTHON_DEFAULT   OFF)
   set(NANOGUI_USE_GLAD_DEFAULT     OFF)
   set(NANOGUI_BUILD_GLFW_DEFAULT   OFF)
@@ -66,9 +54,22 @@ option(NANOGUI_BUILD_PYTHON   "Build a Python plugin for NanoGUI?" ${NANOGUI_USE
 option(NANOGUI_USE_GLAD       "Use Glad OpenGL loader library?" ${NANOGUI_USE_GLAD_DEFAULT})
 option(NANOGUI_BUILD_GLFW     "Build GLFW" ${NANOGUI_BUILD_GLFW_DEFAULT})
 option(NANOGUI_INSTALL        "Install NanoGUI on `make install`?" ON)
-option(NANOGUI_USE_OPENGL     "Use OpenGL backend?" ${NANOGUI_USE_OPENGL_DEFAULT})
-option(NANOGUI_USE_GLES2      "Use GLES2 backend?" ${NANOGUI_USE_GLES2_DEFAULT})
-option(NANOGUI_USE_METAL      "Use Metal backend?" ${NANOGUI_USE_METAL_DEFAULT})
+
+if (NOT NANOGUI_BACKEND)
+  if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv7" OR
+      CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64" OR
+      CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
+    set(NANOGUI_BACKEND_DEFAULT "GLES 2")
+  elseif (APPLE)
+    set(NANOGUI_BACKEND_DEFAULT "Metal")
+  else()
+    set(NANOGUI_BACKEND_DEFAULT "OpenGL")
+  endif()
+
+  set(NANOGUI_BACKEND ${NANOGUI_BACKEND_DEFAULT} CACHE STRING "Choose the backend used for rendering (OpenGL/GLES 2/Metal)" FORCE)
+endif()
+
+set_property(CACHE NANOGUI_BACKEND PROPERTY STRINGS "OpenGL" "GLES 2" "Metal")
 
 set(NANOGUI_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling the Python plugin")
 
@@ -135,10 +136,13 @@ if (NANOGUI_BUILD_PYTHON)
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_PYTHON)
 endif()
 
-if (NANOGUI_USE_OPENGL OR NANOGUI_USE_GLES2)
+if (NANOGUI_BACKEND MATCHES "(OpenGL|GLES 2)")
   list(APPEND LIBNANOGUI_EXTRA_SOURCE
     include/nanogui/glutil.h src/glutil.cpp
     include/nanogui/glcanvas.h src/glcanvas.cpp
+    src/texture_gl.cpp src/shader_gl.cpp
+    src/renderpass_gl.cpp src/opengl.cpp
+    src/opengl_check.h
   )
 
   list(APPEND LIBNANOGUI_PYTHON_EXTRA_SOURCE
@@ -146,32 +150,24 @@ if (NANOGUI_USE_OPENGL OR NANOGUI_USE_GLES2)
   )
 endif()
 
-if (NANOGUI_USE_OPENGL)
+if (NANOGUI_BACKEND STREQUAL "OpenGL")
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_OPENGL)
   message(STATUS "NanoGUI: using OpenGL backend.")
 endif()
 
-if (NANOGUI_USE_GLES2)
-  if (NANOGUI_USE_OPENGL OR NANOGUI_USE_METAL)
-    message(FATAL_ERROR "Please choose *one* of the OpenGL, GLES 2, or Metal backends.")
-  endif()
+if (NANOGUI_BACKEND STREQUAL "GLES 2")
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_GLES2)
   message(STATUS "NanoGUI: using GLES 2 backend.")
 endif()
 
-if (NANOGUI_USE_METAL)
-  if (NANOGUI_USE_OPENGL OR NANOGUI_USE_GLES2)
-    message(FATAL_ERROR "Please choose *one* of the OpenGL, GLES 2, or Metal backends.")
-  endif()
-
+if (NANOGUI_BACKEND STREQUAL "Metal")
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_METAL)
-
   list(APPEND LIBNANOGUI_EXTRA_SOURCE
-   "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg_metal/src/nanovg_mtl.m"
-   "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg_metal/src/nanovg_mtl.h"
+    ext/nanovg_metal/src/nanovg_mtl.m ext/nanovg_metal/src/nanovg_mtl.h
+    src/texture_metal.mm src/shader_metal.mm src/renderpass_metal.mm
   )
 
-  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg_metal/src")
+  include_directories(ext/nanovg_metal/src)
   message(STATUS "NanoGUI: using Metal backend.")
 endif()
 
@@ -311,6 +307,12 @@ if (NANOGUI_BUILD_GLFW)
   # (because we merge `glfw_objects` into NanoGUI).  Skipping is required for
   # XCode, but preferable for all build systems (reduces build artifacts).
   set_target_properties(glfw PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+
+  mark_as_advanced(
+    GLFW_BUILD_DOCS GLFW_BUILD_EXAMPLES GLFW_BUILD_INSTALL GLFW_BUILD_TESTS
+    GLFW_DOCUMENT_INTERNALS GLFW_INSTALL GLFW_USE_CHDIR GLFW_USE_MENUBAR
+    GLFW_USE_OSMESA GLFW_VULKAN_STATIC GLFW_USE_RETINA GLFW_USE_MIR
+  )
 endif()
 
 if (NANOGUI_USE_GLAD)
@@ -350,22 +352,28 @@ elseif (WIN32)
   list(APPEND NANOGUI_EXTRA_LIBS opengl32)
 elseif (APPLE)
   find_library(cocoa_library Cocoa)
-  find_library(corevideo_library CoreVideo)
   find_library(iokit_library IOKit)
-  if (NANOGUI_USE_OPENGL)
+  list(APPEND NANOGUI_EXTRA_LIBS ${cocoa_library} ${iokit_library})
+  mark_as_advanced(cocoa_library iokit_library)
+
+  if (NANOGUI_BACKEND STREQUAL "OpenGL")
+    find_library(corevideo_library CoreVideo)
     find_library(opengl_library OpenGL)
+
     # Disable OpenGL deprecation warnings
     add_definitions(-DGL_SILENCE_DEPRECATION)
+    list(APPEND NANOGUI_EXTRA_LIBS ${opengl_library} ${corevideo_library})
+    mark_as_advanced(opengl_library corevideo_library)
   else()
     find_library(metal_library Metal)
     find_library(quartzcore_library QuartzCore)
+    list(APPEND NANOGUI_EXTRA_LIBS ${metal_library} ${quartzcore_library})
+    mark_as_advanced(metal_library quartzcore_library)
   endif()
-  list(APPEND NANOGUI_EXTRA_LIBS ${cocoa_library} ${opengl_library} ${corevideo_library}
-       ${iokit_library} ${metal_library} ${quartzcore_library})
   list(APPEND LIBNANOGUI_EXTRA_SOURCE src/darwin.mm)
 elseif (CMAKE_SYSTEM MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "BSD")
   list(APPEND NANOGUI_EXTRA_LIBS Xxf86vm Xrandr Xinerama Xcursor Xi X11 pthread)
-  if (NANOGUI_USE_OPENGL)
+  if (NANOGUI_BACKEND STREQUAL "OpenGL")
     list(APPEND NANOGUI_EXTRA_LIBS GL)
   else()
     list(APPEND NANOGUI_EXTRA_LIBS GLESv2)
@@ -456,12 +464,14 @@ add_library(nanogui-obj OBJECT
   include/nanogui/messagedialog.h src/messagedialog.cpp
   include/nanogui/textbox.h src/textbox.cpp
   include/nanogui/imagepanel.h src/imagepanel.cpp
-  include/nanogui/imageview.h src/imageview.cpp
   include/nanogui/vscrollpanel.h src/vscrollpanel.cpp
   include/nanogui/colorwheel.h src/colorwheel.cpp
   include/nanogui/colorpicker.h src/colorpicker.cpp
   include/nanogui/graph.h src/graph.cpp
   include/nanogui/tabwidget.h src/tabwidget.cpp
+  include/nanogui/texture.h src/texture.cpp
+  include/nanogui/shader.h src/shader.cpp
+  include/nanogui/renderpass.h
   include/nanogui/formhelper.h
   include/nanogui/toolbutton.h
   include/nanogui/opengl.h
@@ -537,16 +547,16 @@ endif()
 
 # Build example application if desired
 if (NANOGUI_BUILD_EXAMPLES)
-  add_executable(example1      src/example1.cpp)
+  #add_executable(example1      src/example1.cpp)
   add_executable(example2      src/example2.cpp)
-  add_executable(example3      src/example3.cpp)
-  add_executable(example4      src/example4.cpp)
-  add_executable(example_icons src/example_icons.cpp)
-  target_link_libraries(example1      nanogui ${NANOGUI_EXTRA_LIBS})
+  #add_executable(example3      src/example3.cpp)
+  #add_executable(example4      src/example4.cpp)
+  #add_executable(example_icons src/example_icons.cpp)
+  #target_link_libraries(example1      nanogui ${NANOGUI_EXTRA_LIBS})
   target_link_libraries(example2      nanogui ${NANOGUI_EXTRA_LIBS})
-  target_link_libraries(example3      nanogui ${NANOGUI_EXTRA_LIBS})
-  target_link_libraries(example4      nanogui ${NANOGUI_EXTRA_LIBS})
-  target_link_libraries(example_icons nanogui ${NANOGUI_EXTRA_LIBS})
+  #target_link_libraries(example3      nanogui ${NANOGUI_EXTRA_LIBS})
+  #target_link_libraries(example4      nanogui ${NANOGUI_EXTRA_LIBS})
+  #target_link_libraries(example_icons nanogui ${NANOGUI_EXTRA_LIBS})
 
   # Copy icons for example application
   file(COPY resources/icons DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -586,8 +596,8 @@ if (NANOGUI_BUILD_PYTHON)
 
   add_library(nanogui-python-obj OBJECT
     python/main.cpp
-    python/constants_glfw.cpp
-    python/constants_entypo.cpp
+    python/glfw.cpp
+    python/entypo.cpp
     python/color.cpp
     python/widget.cpp
     python/layout.cpp
@@ -600,6 +610,7 @@ if (NANOGUI_BUILD_PYTHON)
     python/misc.cpp
     python/glutil.cpp
     python/nanovg.cpp
+    python/render.cpp
     python/python.h python/py_doc.h
     ${LIBNANOGUI_PYTHON_EXTRA_SOURCE})
 

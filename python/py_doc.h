@@ -1241,9 +1241,17 @@ static const char *__doc_nanogui_GLShader_m_fragment_shader =
 R"doc(The fragment shader handle of this GLShader (as returned by
 ``glCreateShader``).)doc";
 
+static const char *__doc_nanogui_GLShader_m_geometry_shader =
+R"doc(The geometry shader handle (if requested) of this GLShader (as
+returned by ``glCreateShader``).)doc";
+
 static const char *__doc_nanogui_GLShader_m_name = R"doc(The registered name of this GLShader.)doc";
 
 static const char *__doc_nanogui_GLShader_m_program_shader = R"doc(The OpenGL program handle (as returned by ``glCreateProgram``).)doc";
+
+static const char *__doc_nanogui_GLShader_m_vertex_array_object =
+R"doc(The vertex array associated with this GLShader (as returned by
+``glGenVertexArrays``).)doc";
 
 static const char *__doc_nanogui_GLShader_m_vertex_shader =
 R"doc(The vertex shader handle of this GLShader (as returned by
@@ -1511,156 +1519,6 @@ static const char *__doc_nanogui_ImagePanel_set_callback = R"doc()doc";
 
 static const char *__doc_nanogui_ImagePanel_set_images = R"doc()doc";
 
-static const char *__doc_nanogui_ImageView = R"doc(Widget used to display images.)doc";
-
-static const char *__doc_nanogui_ImageView_ImageView = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_bind_image = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_center = R"doc(Centers the image without affecting the scaling factor.)doc";
-
-static const char *__doc_nanogui_ImageView_clamped_image_coordinate_at =
-R"doc(Calculates the image coordinates of the given pixel position on the
-widget. If the position provided corresponds to a coordinate outside
-the range of the image, the coordinates are clamped to edges of the
-image.)doc";
-
-static const char *__doc_nanogui_ImageView_draw = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_draw_helpers = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_draw_image_border = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_draw_pixel_grid = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_draw_pixel_info = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_draw_widget_border = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_fit = R"doc(Centers and scales the image so that it fits inside the widgets.)doc";
-
-static const char *__doc_nanogui_ImageView_fixed_offset = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_fixed_scale = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_font_scale_factor = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_grid_threshold = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_grid_visible = R"doc(Function indicating whether the grid is currently visible.)doc";
-
-static const char *__doc_nanogui_ImageView_helpers_visible = R"doc(Function indicating whether any of the overlays are visible.)doc";
-
-static const char *__doc_nanogui_ImageView_image_coordinate_at =
-R"doc(Calculates the image coordinates of the given pixel position on the
-widget.)doc";
-
-static const char *__doc_nanogui_ImageView_image_shader = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_image_size = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_image_size_f = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_keyboard_character_event = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_keyboard_event = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_fixed_offset = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_fixed_scale = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_font_scale_factor = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_grid_threshold = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_image_id = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_image_size = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_offset = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_pixel_info_callback = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_pixel_info_threshold = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_scale = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_shader = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_m_zoom_sensitivity = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_mouse_drag_event = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_move_offset = R"doc(Moves the offset by the specified amount. Does bound checking.)doc";
-
-static const char *__doc_nanogui_ImageView_offset = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_perform_layout = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_pixel_info_callback = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_pixel_info_threshold = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_pixel_info_visible =
-R"doc(Function indicating whether the pixel information is currently
-visible.)doc";
-
-static const char *__doc_nanogui_ImageView_position_f = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_position_for_coordinate =
-R"doc(Calculates the position inside the widget for the given image
-coordinate.)doc";
-
-static const char *__doc_nanogui_ImageView_preferred_size = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_scale = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_scaled_image_size = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_scaled_image_size_f = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_scroll_event = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_set_fixed_offset = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_set_fixed_scale = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_set_font_scale_factor = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_set_grid_threshold = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_set_image_coordinate_at =
-R"doc(Modifies the internal state of the image viewer widget so that the
-pixel at the provided position on the widget has the specified image
-coordinate. Also clamps the values of offset to the sides of the
-widget.)doc";
-
-static const char *__doc_nanogui_ImageView_set_offset = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_set_pixel_info_callback = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_set_pixel_info_threshold = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_set_scale = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_set_scale_centered = R"doc(Set the scale while keeping the image centered)doc";
-
-static const char *__doc_nanogui_ImageView_set_zoom_sensitivity = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_size_f = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_update_image_parameters = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_write_pixel_info = R"doc()doc";
-
-static const char *__doc_nanogui_ImageView_zoom =
-R"doc(Changes the scale factor by the provided amount modified by the zoom
-sensitivity member variable. The scaling occurs such that the image
-coordinate under the focused position remains in the same position
-before and after the scaling.)doc";
-
-static const char *__doc_nanogui_ImageView_zoom_sensitivity = R"doc()doc";
-
 static const char *__doc_nanogui_IntBox =
 R"doc(A specialization of TextBox for representing integral values.
 
@@ -1913,6 +1771,124 @@ static const char *__doc_nanogui_ProgressBar_set_value = R"doc()doc";
 
 static const char *__doc_nanogui_ProgressBar_value = R"doc()doc";
 
+static const char *__doc_nanogui_RenderPass = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_CullMode = R"doc(Culling mode)doc";
+
+static const char *__doc_nanogui_RenderPass_CullMode_Back = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_CullMode_Disabled = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_CullMode_Front = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_DepthTest = R"doc(Depth test)doc";
+
+static const char *__doc_nanogui_RenderPass_DepthTest_Always = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_DepthTest_Equal = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_DepthTest_Greater = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_DepthTest_GreaterEqual = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_DepthTest_Less = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_DepthTest_LessEqual = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_DepthTest_Never = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_DepthTest_NotEqual = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_RenderPass =
+R"doc(Create a new render pass for rendering to a specific set of targets
+
+Parameter ``color_target``:
+    One or more target objects to which color information will be
+    rendered. Must either be a Screen or a Texture instance.
+
+Parameter ``depth_target``:
+    Target object to which depth information will be rendered. Must
+    either be ``NULL`` or a Texture instance.
+
+Parameter ``stencil_target``:
+    Target object to which stencil information will be rendered. Must
+    either be ``NULL`` or a Texture instance. Can be identical to
+    'depth_target' in case the texture has the pixel format
+    Texture::PixelFormat::DepthStencil.
+
+Parameter ``clear``:
+    Should enter() begin by clearing all buffers?
+
+Parameter ``clear_color``:
+    Clear color for each color target (defaults to black if none are
+    specified)
+
+Parameter ``clear_depth``:
+    Clear value for the depth target (if applicable)
+
+Parameter ``clear_stencil``:
+    Clear value for the stencil target (if applicable))doc";
+
+static const char *__doc_nanogui_RenderPass_begin =
+R"doc(Begin the render pass
+
+The specified drawing state (e.g. depth tests, culling mode, blending
+mode) are automatically set up at this point. Later changes between
+begin() and end() are possible but cause additional OpenGL/GLES/Metal
+API calls.
+
+The Python bindings also include extra ``__enter__`` and ``__exit__``
+aliases so that the render pass can be activated via Pythons 'with'
+statement.)doc";
+
+static const char *__doc_nanogui_RenderPass_cull_mode = R"doc(Return the culling mode associated with the render pass)doc";
+
+static const char *__doc_nanogui_RenderPass_depth_test = R"doc(Return the depth test and depth write mask of this render pass)doc";
+
+static const char *__doc_nanogui_RenderPass_end = R"doc(Finish the render pass)doc";
+
+static const char *__doc_nanogui_RenderPass_framebuffer_handle = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_active = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_clear = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_clear_color = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_clear_depth = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_clear_stencil = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_cull_mode = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_depth_test = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_depth_write = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_framebuffer_handle = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_framebuffer_size = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_targets = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_viewport_offset = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_viewport_size = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_resize = R"doc(Resize all texture targets attached to the render pass)doc";
+
+static const char *__doc_nanogui_RenderPass_set_cull_mode = R"doc(Specify the culling mode associated with the render pass)doc";
+
+static const char *__doc_nanogui_RenderPass_set_depth_test = R"doc(Specify the depth test and depth write mask of this render pass)doc";
+
+static const char *__doc_nanogui_RenderPass_set_viewport = R"doc(Set the pixel offset and size of the viewport region)doc";
+
+static const char *__doc_nanogui_RenderPass_targets =
+R"doc(Return the set of all render targets (including depth + stencil)
+associated with this render pass)doc";
+
+static const char *__doc_nanogui_RenderPass_viewport = R"doc(Return the pixel offset and size of the viewport region)doc";
+
 static const char *__doc_nanogui_Screen =
 R"doc(Represents a display surface (i.e. a full-screen or windowed GLFW
 window) and forms the root element of a hierarchy of nanogui widgets.)doc";
@@ -1952,7 +1928,7 @@ Parameter ``n_samples``:
     Number of MSAA samples (set to 0 to disable)
 
 Parameter ``gl_major``:
-    The requested OpenGL Major version number. Default is 3, if
+    The requested OpenGL Major version number. The default is 3, if
     changed the value must correspond to a forward compatible core
     profile (for portability reasons). For example, set this to 4 and
     gl_minor to 1 for a forward compatible core OpenGL 4.1 profile.
@@ -1960,7 +1936,7 @@ Parameter ``gl_major``:
     therefore no GUI) being created.
 
 Parameter ``gl_minor``:
-    The requested OpenGL Minor version number. Default is 2, if
+    The requested OpenGL Minor version number. The default is 2, if
     changed the value must correspond to a forward compatible core
     profile (for portability reasons). For example, set this to 1 and
     gl_major to 4 for a forward compatible core OpenGL 4.1 profile.
@@ -1997,13 +1973,19 @@ static const char *__doc_nanogui_Screen_dispose_window = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_draw_all = R"doc(Draw the Screen contents)doc";
 
-static const char *__doc_nanogui_Screen_draw_contents = R"doc(Draw the window contents --- put your OpenGL draw calls here)doc";
+static const char *__doc_nanogui_Screen_draw_contents =
+R"doc(Calls clear() and draws the window contents --- put your rendering
+code here.)doc";
 
 static const char *__doc_nanogui_Screen_draw_widgets = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_drop_callback_event = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_drop_event = R"doc(Handle a file drop event)doc";
+
+static const char *__doc_nanogui_Screen_framebuffer_size =
+R"doc(Return the framebuffer size (potentially larger than size() on high-
+DPI screens))doc";
 
 static const char *__doc_nanogui_Screen_glfw_window = R"doc(Return a pointer to the underlying GLFW window data structure)doc";
 
@@ -2100,6 +2082,140 @@ static const char *__doc_nanogui_Screen_shutdown_glfw = R"doc()doc";
 static const char *__doc_nanogui_Screen_tooltip_fade_in_progress = R"doc(Is a tooltip currently fading in?)doc";
 
 static const char *__doc_nanogui_Screen_update_focus = R"doc()doc";
+
+static const char *__doc_nanogui_Shader = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType_FragmentBuffer = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType_FragmentSampler = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType_FragmentTexture = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType_IndexBuffer = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType_UniformBuffer = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType_Unknown = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType_VertexBuffer = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType_VertexSampler = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BufferType_VertexTexture = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_buffer = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_dim = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_dirty = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_dtype = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_index = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_ndim = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_size = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_to_string = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_type = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_PrimitiveType = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_PrimitiveType_Line = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_PrimitiveType_LineStrip = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_PrimitiveType_Point = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_PrimitiveType_Triangle = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_PrimitiveType_TriangleStrip = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Shader =
+R"doc(Initialize the shader using the specified source strings.
+
+Parameter ``render_pass``:
+    RenderPass object encoding targets to which color, depth, and
+    stencil information will be rendered.
+
+Parameter ``name``:
+    A name identifying this shader
+
+Parameter ``vertex_shader``:
+    The source of the vertex shader as a string.
+
+Parameter ``fragment_shader``:
+    The source of the fragment shader as a string.)doc";
+
+static const char *__doc_nanogui_Shader_begin =
+R"doc(Begin drawing using this shader
+
+Note that any updates to 'uniform' and 'varying' shader parameters
+*must* occur prior to this method call.
+
+The Python bindings also include extra ``__enter__`` and ``__exit__``
+aliases so that the shader can be activated via Pythons 'with'
+statement.)doc";
+
+static const char *__doc_nanogui_Shader_draw_array =
+R"doc(Render geometry arrays, either directly or using an index array.
+
+Parameter ``primitive_type``:
+    What type of geometry should be rendered?
+
+Parameter ``offset``:
+    First index to render. Must be a multiple of 2 or 3 for lines and
+    triangles, respectively (unless specified using strips).
+
+Parameter ``offset``:
+    Number of indices to render. Must be a multiple of 2 or 3 for
+    lines and triangles, respectively (unless specified using strips).
+
+Parameter ``indexed``:
+    Render indexed geometry? In this case, an ``uint32_t`` valued
+    buffer with name ``indices`` must have been uploaded using set().)doc";
+
+static const char *__doc_nanogui_Shader_end = R"doc(End drawing using this shader)doc";
+
+static const char *__doc_nanogui_Shader_m_buffers = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_m_name = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_m_render_pass = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_m_shader_handle = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_m_vertex_array_handle = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_name = R"doc(Return the name of this shader)doc";
+
+static const char *__doc_nanogui_Shader_render_pass = R"doc(Return the render pass associated with this shader)doc";
+
+static const char *__doc_nanogui_Shader_set_buffer =
+R"doc(Upload a buffer (e.g. vertex positions) that will be associated with a
+named shader parameter.
+
+Note that this function should be used both for 'varying' and
+'uniform' data---the implementation takes care of routing the data to
+the right endpoint. Matrices should be specified in column-major
+order.
+
+The buffer will be replaced if it is already present.)doc";
+
+static const char *__doc_nanogui_Shader_set_texture =
+R"doc(Associate a texture with a named shader parameter
+
+The association will be replaced if it is already present.)doc";
+
+static const char *__doc_nanogui_Shader_shader_handle = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_vertex_array_handle = R"doc()doc";
 
 static const char *__doc_nanogui_Slider = R"doc(Fractional slider widget with mouse control.)doc";
 
@@ -2475,6 +2591,114 @@ static const char *__doc_nanogui_TextBox_units_image = R"doc()doc";
 static const char *__doc_nanogui_TextBox_update_cursor = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_value = R"doc()doc";
+
+static const char *__doc_nanogui_Texture = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_ComponentFormat = R"doc(Number format of pixel components)doc";
+
+static const char *__doc_nanogui_Texture_ComponentFormat_Float16 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_ComponentFormat_Float32 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_ComponentFormat_Int16 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_ComponentFormat_Int32 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_ComponentFormat_Int8 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_ComponentFormat_UInt16 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_ComponentFormat_UInt32 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_ComponentFormat_UInt8 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_InterpolationMode = R"doc(Texture interpolation mode)doc";
+
+static const char *__doc_nanogui_Texture_InterpolationMode_Bilinear = R"doc(Bilinear ineterpolation)doc";
+
+static const char *__doc_nanogui_Texture_InterpolationMode_Nearest = R"doc(Nearest neighbor interpolation)doc";
+
+static const char *__doc_nanogui_Texture_InterpolationMode_Trilinear = R"doc(Trilinear interpolation (using MIP mapping))doc";
+
+static const char *__doc_nanogui_Texture_PixelFormat = R"doc(Overall format of the texture (e.g. luminance-only or RGBA))doc";
+
+static const char *__doc_nanogui_Texture_PixelFormat_Depth = R"doc(Depth map)doc";
+
+static const char *__doc_nanogui_Texture_PixelFormat_DepthStencil = R"doc(Combined depth + stencil map)doc";
+
+static const char *__doc_nanogui_Texture_PixelFormat_R = R"doc(Single-channel bitmap)doc";
+
+static const char *__doc_nanogui_Texture_PixelFormat_RA = R"doc(Two-channel bitmap)doc";
+
+static const char *__doc_nanogui_Texture_PixelFormat_RGB = R"doc(RGB bitmap)doc";
+
+static const char *__doc_nanogui_Texture_PixelFormat_RGBA = R"doc(RGB bitmap + alpha channel)doc";
+
+static const char *__doc_nanogui_Texture_Texture =
+R"doc(Allocate memory for a texture with the given configuration
+
+\note Certain combinations of pixel and component formats may not be
+natively supported by the hardware. In this case, init() chooses a
+similar supported configuration that can subsequently be queried using
+pixel_format() and component_format(). Some caution must be exercised
+in this case, since upload() will need to provide the data in a
+different storage format.)doc";
+
+static const char *__doc_nanogui_Texture_TextureFlags = R"doc(How will the texture be used? (Must specify at least one))doc";
+
+static const char *__doc_nanogui_Texture_TextureFlags_RenderTarget = R"doc(Target framebuffer for rendering)doc";
+
+static const char *__doc_nanogui_Texture_TextureFlags_ShaderRead = R"doc(Texture to be read in shaders)doc";
+
+static const char *__doc_nanogui_Texture_WrapMode = R"doc(How should out-of-bounds texture evaluations be handled?)doc";
+
+static const char *__doc_nanogui_Texture_WrapMode_ClampToEdge = R"doc(Clamp evaluations to the edge of the texture)doc";
+
+static const char *__doc_nanogui_Texture_WrapMode_MirrorRepeat = R"doc(Repeat, but flip the texture after crossing the boundary)doc";
+
+static const char *__doc_nanogui_Texture_WrapMode_Repeat = R"doc(Repeat the texture)doc";
+
+static const char *__doc_nanogui_Texture_bytes_per_pixel = R"doc(Return the number of bytes consumed per pixel of this texture)doc";
+
+static const char *__doc_nanogui_Texture_channels = R"doc(Return the number of channels of this texture)doc";
+
+static const char *__doc_nanogui_Texture_component_format = R"doc(Return the component format)doc";
+
+static const char *__doc_nanogui_Texture_download = R"doc(Download packed pixel data from the GPU to the CPU)doc";
+
+static const char *__doc_nanogui_Texture_flags = R"doc(Return a combination of flags (from Texture::TextureFlags))doc";
+
+static const char *__doc_nanogui_Texture_interpolation_mode = R"doc(Return the interpolation mode)doc";
+
+static const char *__doc_nanogui_Texture_m_component_format = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_m_flags = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_m_interpolation_mode = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_m_pixel_format = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_m_renderbuffer_handle = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_m_size = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_m_texture_handle = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_m_wrap_mode = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_pixel_format = R"doc(Return the pixel format)doc";
+
+static const char *__doc_nanogui_Texture_renderbuffer_handle = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_resize = R"doc(Resize the texture (discards the current contents))doc";
+
+static const char *__doc_nanogui_Texture_size = R"doc(Return the size of this texture)doc";
+
+static const char *__doc_nanogui_Texture_texture_handle = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_upload = R"doc(Upload packed pixel data from the CPU to the GPU)doc";
+
+static const char *__doc_nanogui_Texture_wrap_mode = R"doc(Return the wrap mode)doc";
 
 static const char *__doc_nanogui_Theme = R"doc(Storage class for basic theme-related properties.)doc";
 
@@ -3056,6 +3280,10 @@ static const char *__doc_nanogui_detail_FormWidget_value = R"doc(Returns the val
 
 static const char *__doc_nanogui_detail_FormWidget_value_2 = R"doc(Returns the value of nanogui::ColorPicker::color.)doc";
 
+static const char *__doc_nanogui_enoki_type_name = R"doc(Return the name (e.g. "uint8") associated with a specific Enoki type)doc";
+
+static const char *__doc_nanogui_enoki_type_size = R"doc(Return the size in bytes associated with a specific Enoki type)doc";
+
 static const char *__doc_nanogui_file_dialog =
 R"doc(Open a native file open/save dialog.
 
@@ -3139,17 +3367,9 @@ Remark:
     the main loop and then swap the two thread environments back into
     their initial configuration.)doc";
 
-static const char *__doc_nanogui_metal_device = R"doc(Return the currently active MTLDevice)doc";
-
-static const char *__doc_nanogui_metal_init = R"doc(Initialize the Metal backend)doc";
-
-static const char *__doc_nanogui_metal_shutdown = R"doc(Shut down the Metal backend)doc";
-
-static const char *__doc_nanogui_metal_window_init = R"doc(Associate a metal layer with a NSWindow created by GLEW)doc";
-
-static const char *__doc_nanogui_metal_window_layer = R"doc(Return the CAMetalLayer associated with a given NSWindow)doc";
-
-static const char *__doc_nanogui_metal_window_set_size = R"doc(Set size of the drawable underlying an NSWindow)doc";
+static const char *__doc_nanogui_nanogui_check_glerror =
+R"doc(Check for OpenGL errors and warn if one is found (returns 'true' in
+that case'))doc";
 
 static const char *__doc_nanogui_nanogui_get_image = R"doc(Helper function used by nvg_image_icon)doc";
 

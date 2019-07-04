@@ -134,12 +134,15 @@ enum class Cursor {
 };
 
 /* Import some common Enoki types */
-using Vector2f = enoki::Array<float, 2>;
-using Vector3f = enoki::Array<float, 3>;
-using Vector4f = enoki::Array<float, 4>;
-using Vector2i = enoki::Array<int32_t, 2>;
-using Vector3i = enoki::Array<int32_t, 3>;
-using Vector4i = enoki::Array<int32_t, 4>;
+using Vector2f     = enoki::Array<float, 2>;
+using Vector3f     = enoki::Array<float, 3>;
+using Vector4f     = enoki::Array<float, 4>;
+using Vector2i     = enoki::Array<int32_t, 2>;
+using Vector3i     = enoki::Array<int32_t, 3>;
+using Vector4i     = enoki::Array<int32_t, 4>;
+using Matrix4f     = enoki::Matrix<float, 4>;
+using Quaternion4f = enoki::Quaternion<float>;
+
 
 /**
  * \class Color common.h nanogui/common.h
@@ -222,7 +225,7 @@ public:
      * The three dimensional integer vector being copied, will be divided by ``255.0``.
      */
     Color(const Vector3i &color)
-        : Color(Vector3f(color) / 255.f) { }
+        : Color(Vector3f(color) / 255.f, 1.f) { }
 
     /**
      * Copies (x, y, z, w) from the input vector, casting to floats and dividing
@@ -347,12 +350,15 @@ class Object;
 class Popup;
 class PopupButton;
 class ProgressBar;
+class RenderPass;
+class Shader;
 class Screen;
 class Serializer;
 class Slider;
 class TabWidgetBase;
 class TabWidget;
 class TextBox;
+class Texture;
 class GLCanvas;
 class Theme;
 class ToolButton;
@@ -414,7 +420,7 @@ extern NANOGUI_EXPORT void shutdown();
  *     wait for the termination of the main loop and then swap the two thread
  *     environments back into their initial configuration.
  */
-extern NANOGUI_EXPORT void mainloop(int refresh = 50);
+extern NANOGUI_EXPORT void mainloop(float refresh = -1.f);
 
 /// Request the application main loop to terminate (e.g. if you detached mainloop).
 extern NANOGUI_EXPORT void leave();

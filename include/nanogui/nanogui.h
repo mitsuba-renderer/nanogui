@@ -31,10 +31,12 @@
 #include <nanogui/textbox.h>
 #include <nanogui/slider.h>
 #include <nanogui/imagepanel.h>
-#include <nanogui/imageview.h>
 #include <nanogui/vscrollpanel.h>
 #include <nanogui/colorwheel.h>
 #include <nanogui/graph.h>
 #include <nanogui/formhelper.h>
 #include <nanogui/tabwidget.h>
+#include <nanogui/texture.h>
+#include <nanogui/shader.h>
+#include <nanogui/renderpass.h>
 #include <nanogui/glcanvas.h>

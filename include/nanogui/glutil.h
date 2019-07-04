@@ -660,5 +660,4 @@ protected:
     float m_speed_factor;
 };
 
-
 NAMESPACE_END(nanogui)

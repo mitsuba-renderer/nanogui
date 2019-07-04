@@ -8,8 +8,9 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-std::vector<std::string> file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
-                                     bool save, bool multiple) {
+std::vector<std::string>
+file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
+            bool save, bool multiple) {
     if (save && multiple)
         throw std::invalid_argument("file_dialog(): 'save' and 'multiple' must not both be true.");
 
@@ -58,21 +59,31 @@ void disable_saved_application_state_osx() {
 #if defined(NANOGUI_USE_METAL)
 
 static void *s_metal_device = nullptr;
+static void *s_metal_command_queue = nullptr;
 
 void metal_init() {
-    if (s_metal_device)
+    if (s_metal_device || s_metal_command_queue)
         throw std::runtime_error("init_metal(): already initialized!");
+
     id<MTLDevice> device = MTLCreateSystemDefaultDevice();
     if (!device)
         throw std::runtime_error("init_metal(): unable to create system default device.");
+
+    id<MTLCommandQueue> command_queue = [device newCommandQueue];
+    if (!command_queue)
+        throw std::runtime_error("init_metal(): unable to create command queue.");
+
     s_metal_device = (__bridge_retained void *) device;
+    s_metal_command_queue = (__bridge_retained void *) command_queue;
 }
 
 void metal_shutdown() {
-    (void) (__bridge_transfer id<MTLDevice>) s_metal_device;
+    (void) (__bridge_transfer id<MTLDevice>) s_metal_command_queue;
+    (void) (__bridge_transfer id<MTLCommandQueue>) s_metal_device;
 }
 
 void* metal_device() { return s_metal_device; }
+void* metal_command_queue() { return s_metal_command_queue; }
 
 void metal_window_init(void *nswin_, bool request_wide_gamut) {
     CAMetalLayer *layer = [CAMetalLayer layer];
@@ -92,6 +103,12 @@ void metal_window_init(void *nswin_, bool request_wide_gamut) {
     layer.allowsNextDrawableTimeout = NO;
 }
 
+void* metal_layer(void *nswin_) {
+    NSWindow *nswin = (__bridge NSWindow *) nswin_;
+    CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
+    return (__bridge void *) layer;
+}
+
 void metal_window_set_size(void *nswin_, const Vector2i &size) {
     NSWindow *nswin = (__bridge NSWindow *) nswin_;
     CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
@@ -100,7 +117,18 @@ void metal_window_set_size(void *nswin_, const Vector2i &size) {
 
 void* metal_window_layer(void *nswin_) {
     NSWindow *nswin = (__bridge NSWindow *) nswin_;
-    return (__bridge void *) (nswin.contentView.layer);
+    return (__bridge void *) nswin.contentView.layer;
+}
+
+void* metal_window_next_drawable(void *nswin_) {
+    NSWindow *nswin = (__bridge NSWindow *) nswin_;
+    CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
+    id<MTLDrawable> drawable = layer.nextDrawable;
+    return (__bridge_retained void *) drawable;
+}
+
+void metal_release_drawable(void *drawable) {
+    (void) (__bridge_transfer id<CAMetalDrawable>) drawable;
 }
 
 #endif

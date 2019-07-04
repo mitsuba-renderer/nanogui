@@ -50,10 +50,14 @@
 #    define NANOVG_GLES2_IMPLEMENTATION
 #  endif
 #  include <nanovg_gl.h>
+#  include "opengl_check.h"
 #elif defined(NANOGUI_USE_METAL)
+#  include <nanovg_mtl.h>
+#endif
+
+#if defined(__APPLE__)
 #  define GLFW_EXPOSE_NATIVE_COCOA 1
 #  include <GLFW/glfw3native.h>
-#  include <nanovg_mtl.h>
 #endif
 
 NAMESPACE_BEGIN(nanogui)
@@ -154,6 +158,7 @@ Screen::Screen()
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
       m_shutdown_glfw(false), m_fullscreen(false), m_redraw(false) {
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
+    m_color_bits = 8;
 }
 
 Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
@@ -242,11 +247,11 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
-    glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
-    glClearColor(m_background[0], m_background[1],
-                 m_background[2], m_background[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-            GL_STENCIL_BUFFER_BIT);
+    CHK(glViewport(0, 0, m_fbsize[0], m_fbsize[1]));
+    CHK(glClearColor(m_background[0], m_background[1],
+                     m_background[2], m_background[3]));
+    CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+                GL_STENCIL_BUFFER_BIT));
 
     glfwSwapInterval(0);
     glfwSwapBuffers(m_glfw_window);
@@ -411,17 +416,19 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     /* Detect framebuffer properties and set up compatible NanoVG context */
     GLint n_stencil_bits = 0, n_samples = 0;
 #if defined(NANOGUI_USE_OPENGL)
-    glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
-        GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits);
+    CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
+        GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits));
 #else
     n_stencil_bits = 0;
 #endif
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
-    glGetIntegerv(GL_SAMPLES, &n_samples);
-    glGetIntegerv(GL_RED_BITS, &m_color_bits);
+    CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
+        GL_FRONT_LEFT, GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE, &m_color_bits));
+    CHK(glGetIntegerv(GL_SAMPLES, &n_samples));
 #else
     n_samples = 1;
+    // m_color_bits default is initialized in the constructor
 #endif
 
     int flags = 0;
@@ -441,7 +448,8 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     void *nswin = glfwGetCocoaWindow(window);
     metal_window_init(nswin, m_color_bits > 8);
     metal_window_set_size(nswin, m_fbsize);
-    m_nvg_context = nvgCreateMTL(metal_window_layer(nswin),
+    m_nvg_context = nvgCreateMTL(metal_layer(),
+                                 metal_command_queue(),
                                  flags | NVG_TRIPLE_BUFFER);
 #endif
 
@@ -517,11 +525,10 @@ void Screen::set_size(const Vector2i &size) {
 
 void Screen::clear() {
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
-    glViewport(0, 0, m_fbsize[0], m_fbsize[1]);
-    glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    CHK(glViewport(0, 0, m_fbsize[0], m_fbsize[1]));
+    CHK(glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]));
+    CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 #elif defined(NANOGUI_USE_METAL)
-    metal_window_set_size(glfwGetCocoaWindow(m_glfw_window), m_fbsize);
     mnvgClearWithColor(m_nvg_context, m_background);
 #endif
 }
@@ -532,6 +539,11 @@ void Screen::draw_all() {
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
         glfwMakeContextCurrent(m_glfw_window);
+#elif defined(NANOGUI_USE_METAL)
+        void *nswin = glfwGetCocoaWindow(m_glfw_window);
+        metal_window_set_size(nswin, m_fbsize);
+        m_metal_drawable = metal_window_next_drawable(nswin);
+        mnvgSetDrawable(m_nvg_context, m_metal_drawable);
 #endif
 
 #if !defined(EMSCRIPTEN)
@@ -551,14 +563,21 @@ void Screen::draw_all() {
             m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
 #endif
 
-        clear();
         draw_contents();
         draw_widgets();
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
         glfwSwapBuffers(m_glfw_window);
+#elif defined(NANOGUI_USE_METAL)
+        metal_release_drawable(m_metal_drawable);
+        m_metal_drawable = nullptr;
+        mnvgSetDrawable(m_nvg_context, nullptr);
 #endif
     }
+}
+
+void Screen::draw_contents() {
+    clear();
 }
 
 void Screen::draw_widgets() {
@@ -890,5 +909,11 @@ bool Screen::tooltip_fade_in_progress() const {
     const Widget *widget = find_widget(m_mouse_pos);
     return widget && !widget->tooltip().empty();
 }
+
+#if defined(NANOGUI_USE_METAL)
+void *Screen::metal_layer() const {
+    return metal_window_layer(glfwGetCocoaWindow(m_glfw_window));
+}
+#endif
 
 NAMESPACE_END(nanogui)

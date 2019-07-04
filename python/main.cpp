@@ -37,8 +37,8 @@ namespace {
 }
 #endif
 
-extern void register_constants_glfw(py::module &m);
-extern void register_constants_entypo(py::module &m);
+extern void register_glfw(py::module &m);
+extern void register_entypo(py::module &m);
 extern void register_eigen(py::module &m);
 extern void register_widget(py::module &m);
 extern void register_layout(py::module &m);
@@ -52,6 +52,7 @@ extern void register_formhelper(py::module &m);
 extern void register_misc(py::module &m);
 extern void register_glutil(py::module &m);
 extern void register_nanovg(py::module &m);
+extern void register_render(py::module &m);
 
 class MainloopHandle;
 static MainloopHandle *handle = nullptr;
@@ -60,7 +61,7 @@ class MainloopHandle {
 public:
     bool active = false;
     bool detached = false;
-    int refresh = 0;
+    float refresh = 0;
     std::thread thread;
 
     #if defined(__APPLE__) || defined(__linux__)
@@ -115,16 +116,12 @@ static void sigint_handler(int sig) {
 PYBIND11_MODULE(nanogui, m) {
     m.attr("__doc__") = "NanoGUI plugin";
 
-    m.attr("opengl") = false;
-    m.attr("gles2") = false;
-    m.attr("metal") = false;
-
 #if defined(NANOGUI_USE_OPENGL)
-    m.attr("opengl") = true;
+    m.attr("api") = "opengl";
 #elif defined(NANOGUI_USE_GLES2)
-    m.attr("gles2") = true;
+    m.attr("api") = "gles2";
 #elif defined(NANOGUI_USE_METAL)
-    m.attr("metal") = true;
+    m.attr("api") = "metal";
 #endif
 
     py::class_<MainloopHandle>(m, "MainloopHandle")
@@ -132,7 +129,7 @@ PYBIND11_MODULE(nanogui, m) {
 
     m.def("init", &nanogui::init, D(init));
     m.def("shutdown", &nanogui::shutdown, D(shutdown));
-    m.def("mainloop", [](int refresh, py::object detach) -> MainloopHandle* {
+    m.def("mainloop", [](float refresh, py::object detach) -> MainloopHandle* {
         if (!detach.is(py::none())) {
             if (handle)
                 throw std::runtime_error("Main loop is already running!");
@@ -216,7 +213,7 @@ PYBIND11_MODULE(nanogui, m) {
 
             return nullptr;
         }
-    }, "refresh"_a = 50, "detach"_a = py::none(),
+    }, "refresh"_a = -1, "detach"_a = py::none(),
        D(mainloop), py::keep_alive<0, 2>());
 
     m.def("leave", &nanogui::leave, D(leave));
@@ -247,8 +244,8 @@ PYBIND11_MODULE(nanogui, m) {
         .value("Horizontal", Orientation::Horizontal)
         .value("Vertical", Orientation::Vertical);
 
-    register_constants_glfw(m);
-    register_constants_entypo(m);
+    register_glfw(m);
+    register_entypo(m);
     register_eigen(m);
     register_widget(m);
     register_layout(m);
@@ -264,6 +261,7 @@ PYBIND11_MODULE(nanogui, m) {
     register_misc(m);
     register_glutil(m);
     register_nanovg(m);
+    register_render(m);
 }
 
 #endif

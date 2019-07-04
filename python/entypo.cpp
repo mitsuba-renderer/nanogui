@@ -8,7 +8,7 @@
  * was generated, so the scripts that generated it needs to update as well.
  */
 
-void register_constants_entypo(py::module &m) {
+void register_entypo(py::module &m) {
     /* Entypo constants */
     {
         #define C(name) g.attr("ICON_" #name) = py::int_(ENTYPO_ICON_##name);

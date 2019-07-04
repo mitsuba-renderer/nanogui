@@ -72,11 +72,11 @@ void init() {
 static bool mainloop_active = false;
 
 #if defined(EMSCRIPTEN)
-static size_t emscripten_last = 0;
-static size_t emscripten_refresh = 0;
+static double emscripten_last = 0;
+static float emscripten_refresh = 0;
 #endif
 
-void mainloop(int refresh) {
+void mainloop(float refresh) {
     if (mainloop_active)
         throw std::runtime_error("Main loop is already running!");
 
@@ -84,9 +84,9 @@ void mainloop(int refresh) {
         int num_screens = 0;
 
         #if defined(EMSCRIPTEN)
-            size_t emscripten_now = (size_t) (glfwGetTime() * 1000);
+            double emscripten_now = glfwGetTime();
             bool emscripten_redraw = false;
-            if (emscripten_now - emscripten_last > emscripten_refresh) {
+            if (float((emscripten_now - emscripten_last) * 1000) > emscripten_refresh) {
                 emscripten_redraw = true;
                 emscripten_last = emscripten_now;
             }
@@ -131,16 +131,16 @@ void mainloop(int refresh) {
     mainloop_active = true;
 
     std::thread refresh_thread;
-    std::chrono::milliseconds quantum;
+    std::chrono::microseconds quantum;
     size_t quantum_count = 1;
     if (refresh >= 0) {
-        quantum = std::chrono::milliseconds(refresh);
-        while (quantum.count() > 50) {
+        quantum = std::chrono::microseconds(ssize_t(refresh * 1'000));
+        while (quantum.count() > 50'000) {
             quantum /= 2;
             quantum_count *= 2;
         }
     } else {
-        quantum = std::chrono::milliseconds(50);
+        quantum = std::chrono::microseconds(50'000);
         quantum_count = std::numeric_limits<size_t>::max();
     }
 

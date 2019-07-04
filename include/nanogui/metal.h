@@ -20,22 +20,34 @@
 NAMESPACE_BEGIN(nanogui)
 
 /// Initialize the Metal backend
-void metal_init();
+extern NANOGUI_EXPORT void metal_init();
 
 /// Shut down the Metal backend
-void metal_shutdown();
+extern NANOGUI_EXPORT void metal_shutdown();
 
-/// Return the currently active MTLDevice
-void *metal_device();
+/// Return a pointer to the underlying Metal device (id<MTLDevice>)
+extern NANOGUI_EXPORT void *metal_device();
+
+/// Return a pointer to the underlying Metal command queue (id<MTLCommandQueue>)
+extern NANOGUI_EXPORT void *metal_command_queue();
+
+/// Return a pointer to the underlying Metal command queue (CAMetalLayer *)
+extern NANOGUI_EXPORT void *metal_layer(void *nswin);
 
 /// Associate a metal layer with a NSWindow created by GLEW
-void metal_window_init(void *nswin, bool request_wide_gamut);
+extern NANOGUI_EXPORT void metal_window_init(void *nswin, bool request_wide_gamut);
 
 /// Set size of the drawable underlying an NSWindow
-void metal_window_set_size(void *nswin, const Vector2i &size);
+extern NANOGUI_EXPORT void metal_window_set_size(void *nswin, const Vector2i &size);
 
 /// Return the CAMetalLayer associated with a given NSWindow
-void *metal_window_layer(void *nswin);
+extern NANOGUI_EXPORT void *metal_window_layer(void *nswin);
+
+/// Acquire the next id<MTLDrawable> from the Metal layer
+extern NANOGUI_EXPORT void* metal_window_next_drawable(void *nswin_);
+
+/// Release a drawable back to the pool
+extern NANOGUI_EXPORT void metal_release_drawable(void *drawable);
 
 NAMESPACE_END(nanogui)
 #endif

@@ -1,0 +1,174 @@
+/*
+    NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
+    The widget drawing code is based on the NanoVG demo application
+    by Mikko Mononen.
+
+    All rights reserved. Use of this source code is governed by a
+    BSD-style license that can be found in the LICENSE.txt file.
+*/
+
+/**
+ * \file nanogui/texture.h
+ *
+ * \brief Defines abstractions for textures that work with OpenGL,
+ * OpenGL ES, and Metal.
+ */
+
+#pragma once
+
+#include <nanogui/object.h>
+
+NAMESPACE_BEGIN(nanogui)
+
+class NANOGUI_EXPORT Texture : public Object {
+public:
+    /// Overall format of the texture (e.g. luminance-only or RGBA)
+    enum class PixelFormat : uint8_t {
+        /// Single-channel bitmap
+        R,
+
+        /// Two-channel bitmap
+        RA,
+
+        /// RGB bitmap
+        RGB,
+
+        /// RGB bitmap + alpha channel
+        RGBA,
+
+        /// Depth map
+        Depth,
+
+        /// Combined depth + stencil map
+        DepthStencil
+    };
+
+    /// Number format of pixel components
+    enum class ComponentFormat : uint8_t {
+        // Signed and unsigned integer formats
+        UInt8   = (uint8_t) enoki::EnokiType::UInt8,
+        Int8    = (uint8_t) enoki::EnokiType::Int8,
+        UInt16  = (uint8_t) enoki::EnokiType::UInt16,
+        Int16   = (uint8_t) enoki::EnokiType::Int16,
+        UInt32  = (uint8_t) enoki::EnokiType::UInt32,
+        Int32   = (uint8_t) enoki::EnokiType::Int32,
+
+        // Floating point formats
+        Float16 = (uint8_t) enoki::EnokiType::Float16,
+        Float32 = (uint8_t) enoki::EnokiType::Float32
+    };
+
+    /// Texture interpolation mode
+    enum class InterpolationMode : uint8_t {
+        /// Nearest neighbor interpolation
+        Nearest,
+
+        /// Bilinear ineterpolation
+        Bilinear,
+
+        /// Trilinear interpolation (using MIP mapping)
+        Trilinear
+    };
+
+    /// How should out-of-bounds texture evaluations be handled?
+    enum class WrapMode : uint8_t {
+        /// Clamp evaluations to the edge of the texture
+        ClampToEdge,
+
+        /// Repeat the texture
+        Repeat,
+
+        /// Repeat, but flip the texture after crossing the boundary
+        MirrorRepeat,
+    };
+
+    /// How will the texture be used? (Must specify at least one)
+    enum TextureFlags {
+        /// Texture to be read in shaders
+        ShaderRead = 0x01,
+
+        /// Target framebuffer for rendering
+        RenderTarget = 0x02
+    };
+
+    /**
+     * \brief Allocate memory for a texture with the given configuration
+     *
+     * \note
+     *   Certain combinations of pixel and component formats may not be
+     *   natively supported by the hardware. In this case, \ref init() chooses
+     *   a similar supported configuration that can subsequently be queried
+     *   using \ref pixel_format() and \ref component_format().
+     *   Some caution must be exercised in this case, since \ref upload() will
+     *   need to provide the data in a different storage format.
+     */
+    Texture(PixelFormat pixel_format,
+            ComponentFormat component_format,
+            const Vector2i &size,
+            InterpolationMode interpolation_mode = InterpolationMode::Bilinear,
+            WrapMode wrap_mode = WrapMode::Repeat,
+            uint8_t flags = (uint8_t) TextureFlags::ShaderRead);
+
+    /// Return the pixel format
+    PixelFormat pixel_format() const { return m_pixel_format; }
+
+    /// Return the component format
+    ComponentFormat component_format() const { return m_component_format; }
+
+    /// Return the interpolation mode
+    InterpolationMode interpolation_mode() const { return m_interpolation_mode; }
+
+    /// Return the wrap mode
+    WrapMode wrap_mode() const { return m_wrap_mode; }
+
+    /// Return a combination of flags (from \ref Texture::TextureFlags)
+    uint8_t flags() const { return m_flags; }
+
+    /// Return the size of this texture
+    const Vector2i &size() const { return m_size; }
+
+    /// Return the number of bytes consumed per pixel of this texture
+    size_t bytes_per_pixel() const;
+
+    /// Return the number of channels of this texture
+    size_t channels() const;
+
+    /// Upload packed pixel data from the CPU to the GPU
+    void upload(const uint8_t *data);
+
+    /// Download packed pixel data from the GPU to the CPU
+    void download(uint8_t *data);
+
+    /// Resize the texture (discards the current contents)
+    void resize(const Vector2i &size);
+
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+    uint32_t texture_handle() const { return m_texture_handle; }
+    uint32_t renderbuffer_handle() const { return m_renderbuffer_handle; }
+#elif defined(NANOGUI_USE_METAL)
+    void *texture_handle() const { return m_texture_handle; }
+    void *sampler_state_handle() const { return m_sampler_state_handle; }
+#endif
+
+protected:
+    /// Release all resources
+    virtual ~Texture();
+
+protected:
+    PixelFormat m_pixel_format;
+    ComponentFormat m_component_format;
+    InterpolationMode m_interpolation_mode;
+    WrapMode m_wrap_mode;
+    uint8_t m_flags;
+    Vector2i m_size;
+
+    #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+        uint32_t m_texture_handle;
+        uint32_t m_renderbuffer_handle;
+    #elif defined(NANOGUI_USE_METAL)
+        void *m_texture_handle;
+        void *m_sampler_state_handle;
+    #endif
+};
+
+NAMESPACE_END(nanogui)

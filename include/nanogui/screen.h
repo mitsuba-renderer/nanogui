@@ -62,7 +62,7 @@ public:
      *     Number of MSAA samples (set to 0 to disable)
      *
      * \param gl_major
-     *     The requested OpenGL Major version number.  Default is 3, if changed
+     *     The requested OpenGL Major version number.  The default is 3, if changed
      *     the value must correspond to a forward compatible core profile (for
      *     portability reasons).  For example, set this to 4 and \ref gl_minor to 1
      *     for a forward compatible core OpenGL 4.1 profile.  Requesting an
@@ -70,7 +70,7 @@ public:
      *     being created.
      *
      * \param gl_minor
-     *     The requested OpenGL Minor version number.  Default is 2, if changed
+     *     The requested OpenGL Minor version number.  The default is 2, if changed
      *     the value must correspond to a forward compatible core profile (for
      *     portability reasons).  For example, set this to 1 and \ref gl_major to 4
      *     for a forward compatible core OpenGL 4.1 profile.  Requesting an
@@ -80,8 +80,8 @@ public:
     Screen(const Vector2i &size, const std::string &caption,
            bool resizable = true, bool fullscreen = false, int color_bits = 8,
            int alpha_bits = 8, int depth_bits = 24, int stencil_bits = 8,
-           int n_samples = 0,
-           unsigned int gl_major = 3, unsigned int gl_minor = 2);
+           int n_samples = 0, unsigned int gl_major = 3,
+           unsigned int gl_minor = 2);
 
     /// Release all resources
     virtual ~Screen();
@@ -104,6 +104,9 @@ public:
     /// Set window size
     void set_size(const Vector2i& size);
 
+    /// Return the framebuffer size (potentially larger than size() on high-DPI screens)
+    const Vector2i &framebuffer_size() const { return m_fbsize; }
+
     /// Send an event that will cause the screen to be redrawn at the next event loop iteration
     void redraw();
 
@@ -113,14 +116,16 @@ public:
     /// Draw the Screen contents
     virtual void draw_all();
 
-    /// Draw the window contents --- put your OpenGL draw calls here
-    virtual void draw_contents() { /* To be overridden */ }
+    /// Calls clear() and draws the window contents --- put your rendering code here.
+    virtual void draw_contents();
 
     /// Return the ratio between pixel and device coordinates (e.g. >= 2 on Mac Retina displays)
     float pixel_ratio() const { return m_pixel_ratio; }
 
     /// Handle a file drop event
-    virtual bool drop_event(const std::vector<std::string> & /* filenames */) { return false; /* To be overridden */ }
+    virtual bool drop_event(const std::vector<std::string> & /* filenames */) {
+        return false; /* To be overridden */
+    }
 
     /// Default keyboard event handler
     virtual bool keyboard_event(int key, int scancode, int action, int modifiers);
@@ -133,16 +138,26 @@ public:
 
     /// Set the resize callback
     std::function<void(Vector2i)> resize_callback() const { return m_resize_callback; }
-    void set_resize_callback(const std::function<void(Vector2i)> &callback) { m_resize_callback = callback; }
+    void set_resize_callback(const std::function<void(Vector2i)> &callback) {
+        m_resize_callback = callback;
+    }
 
     /// Return the last observed mouse position value
     Vector2i mouse_pos() const { return m_mouse_pos; }
 
     /// Return a pointer to the underlying GLFW window data structure
-    GLFWwindow *glfw_window() { return m_glfw_window; }
+    GLFWwindow *glfw_window() const { return m_glfw_window; }
 
     /// Return a pointer to the underlying NanoVG draw context
-    NVGcontext *nvg_context() { return m_nvg_context; }
+    NVGcontext *nvg_context() const { return m_nvg_context; }
+
+#if defined(NANOGUI_USE_METAL)
+    /// Return the associated CAMetalLayer object
+    void *metal_layer() const;
+
+    /// Return the currently active Metal drawable (or NULL)
+    void *metal_drawable() const { return m_metal_drawable; }
+#endif
 
     /// Shut down GLFW when the window is closed?
     void set_shutdown_glfw(bool v) { m_shutdown_glfw = v; }
@@ -215,6 +230,9 @@ protected:
     bool m_redraw;
     int m_color_bits;
     std::function<void(Vector2i)> m_resize_callback;
+#if defined(NANOGUI_USE_METAL)
+    void *m_metal_drawable;
+#endif
 };
 
 NAMESPACE_END(nanogui)

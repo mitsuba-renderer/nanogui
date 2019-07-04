@@ -7,7 +7,9 @@ DECLARE_SCREEN(Screen);
 DECLARE_WIDGET(Window);
 
 void register_widget(py::module &m) {
-    py::class_<Widget, ref<Widget>, PyWidget>(m, "Widget", D(Widget))
+    py::class_<Object, ref<Object>>(m, "Object", D(Object));
+
+    py::class_<Widget, Object, ref<Widget>, PyWidget>(m, "Widget", D(Widget))
         .def(py::init<Widget *>(), D(Widget, Widget))
         .def("parent", (Widget *(Widget::*)(void)) &Widget::parent, D(Widget, parent))
         .def("set_parent", &Widget::set_parent, D(Widget, set_parent))
@@ -93,7 +95,8 @@ void register_widget(py::module &m) {
         .def("center", &Window::center, D(Window, center));
 
     py::class_<Screen, Widget, ref<Screen>, PyScreen>(m, "Screen", D(Screen))
-        .def(py::init<const Vector2i &, const std::string &, bool, bool, int, int, int, int, int, unsigned int, unsigned int>(),
+        .def(py::init<const Vector2i &, const std::string &, bool, bool, int, int,
+                      int, int, int, unsigned int, unsigned int>(),
             "size"_a, "caption"_a, "resizable"_a = true, "fullscreen"_a = false,
             "color_bits"_a = 8, "alpha_bits"_a = 8, "depth_bits"_a = 24, "stencil_bits"_a = 8,
             "n_samples"_a = 0, "gl_major"_a = 3, "gl_minor"_a = 2, D(Screen, Screen))
@@ -103,6 +106,7 @@ void register_widget(py::module &m) {
         .def("set_background", &Screen::set_background, D(Screen, set_background))
         .def("set_visible", &Screen::set_visible, D(Screen, set_visible))
         .def("set_size", &Screen::set_size, D(Screen, set_size))
+        .def("framebuffer_size", &Screen::framebuffer_size, D(Screen, framebuffer_size))
         .def("perform_layout", (void(Screen::*)(void)) &Screen::perform_layout, D(Screen, perform_layout))
         .def("redraw", &Screen::redraw, D(Screen, redraw))
         .def("clear", &Screen::clear, D(Screen, clear))
@@ -117,6 +121,11 @@ void register_widget(py::module &m) {
         .def("glfw_window", &Screen::glfw_window, D(Screen, glfw_window),
                 py::return_value_policy::reference)
         .def("nvg_context", &Screen::nvg_context, D(Screen, nvg_context),
-                py::return_value_policy::reference);
+                py::return_value_policy::reference)
+#if defined(NANOGUI_USE_METAL)
+        .def("metal_layer", &Screen::metal_layer)
+        .def("metal_drawable", &Screen::metal_drawable)
+#endif
+        ;
 }
 #endif
