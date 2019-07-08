@@ -156,18 +156,18 @@ static EM_BOOL nanogui_emscripten_resize_callback(int eventType, const Emscripte
 Screen::Screen()
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
-      m_shutdown_glfw(false), m_fullscreen(false), m_redraw(false) {
+      m_shutdown_glfw(false), m_fullscreen(false), m_depth_buffer(false),
+      m_stencil_buffer(false), m_float_buffer(false), m_redraw(false) {
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
-    m_color_bits = 8;
 }
 
 Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
-               bool fullscreen, int color_bits, int alpha_bits, int depth_bits,
-               int stencil_bits, int n_samples,
-               unsigned int gl_major, unsigned int gl_minor)
+               bool fullscreen, bool depth_buffer, bool stencil_buffer,
+               bool float_buffer, unsigned int gl_major, unsigned int gl_minor)
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f), m_caption(caption),
-      m_shutdown_glfw(false), m_fullscreen(fullscreen), m_redraw(false) {
+      m_shutdown_glfw(false), m_fullscreen(fullscreen), m_depth_buffer(depth_buffer),
+      m_stencil_buffer(stencil_buffer), m_float_buffer(float_buffer), m_redraw(false) {
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
 
 #if defined(NANOGUI_USE_OPENGL)
@@ -190,20 +190,30 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 #  error Did not select a graphics API!
 #endif
 
-    if (color_bits == 10) // R10G10B10A2 packed format
-        depth_bits = 2;
+    int color_bits = 8, depth_bits = 0, stencil_bits = 0;
 
-    glfwWindowHint(GLFW_SAMPLES, n_samples);
+    if (stencil_buffer && !depth_buffer)
+        throw std::runtime_error(
+            "Screen::Screen(): stencil_buffer = True requires depth_buffer = True");
+    if (depth_buffer)
+        depth_bits = 32;
+    if (stencil_buffer) {
+        depth_bits = 24;
+        stencil_bits = 8;
+    }
+    if (float_buffer)
+        color_bits = 16;
+
     glfwWindowHint(GLFW_RED_BITS, color_bits);
     glfwWindowHint(GLFW_GREEN_BITS, color_bits);
     glfwWindowHint(GLFW_BLUE_BITS, color_bits);
-    glfwWindowHint(GLFW_ALPHA_BITS, alpha_bits);
+    glfwWindowHint(GLFW_ALPHA_BITS, color_bits);
     glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits);
     glfwWindowHint(GLFW_DEPTH_BITS, depth_bits);
+    glfwWindowHint(GLFW_FLOATBUFFER, float_buffer ? GL_TRUE : GL_FALSE);
+
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
-
-    m_color_bits = color_bits;
 
     if (fullscreen) {
         GLFWmonitor *monitor = glfwGetPrimaryMonitor();
@@ -370,6 +380,20 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
         }
     );
     initialize(m_glfw_window, true);
+
+#if defined(NANOGUI_USE_METAL)
+    if (depth_buffer) {
+        m_depth_stencil_texture = new Texture(
+            stencil_buffer ? Texture::PixelFormat::DepthStencil : Texture::PixelFormat::Depth,
+            Texture::ComponentFormat::Float32,
+            framebuffer_size(),
+            Texture::InterpolationMode::Bilinear,
+            Texture::WrapMode::ClampToEdge,
+            1,
+            Texture::TextureFlags::RenderTarget
+        );
+    }
+#endif
 }
 
 void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
@@ -414,7 +438,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 #endif
 
     /* Detect framebuffer properties and set up compatible NanoVG context */
-    GLint n_stencil_bits = 0, n_samples = 0;
+    GLint n_stencil_bits = 0;
 #if defined(NANOGUI_USE_OPENGL)
     CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
         GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits));
@@ -422,20 +446,9 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     n_stencil_bits = 0;
 #endif
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
-    CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
-        GL_FRONT_LEFT, GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE, &m_color_bits));
-    CHK(glGetIntegerv(GL_SAMPLES, &n_samples));
-#else
-    n_samples = 1;
-    // m_color_bits default is initialized in the constructor
-#endif
-
-    int flags = 0;
+    int flags = NVG_ANTIALIAS;
     if (n_stencil_bits >= 8)
        flags |= NVG_STENCIL_STROKES;
-    if (n_samples <= 1)
-       flags |= NVG_ANTIALIAS;
 #if !defined(NDEBUG)
     flags |= NVG_DEBUG;
 #endif
@@ -446,7 +459,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     m_nvg_context = nvgCreateGLES2(flags);
 #elif defined(NANOGUI_USE_METAL)
     void *nswin = glfwGetCocoaWindow(window);
-    metal_window_init(nswin, m_color_bits > 8);
+    metal_window_init(nswin, m_float_buffer);
     metal_window_set_size(nswin, m_fbsize);
     m_nvg_context = nvgCreateMTL(metal_layer(),
                                  metal_command_queue(),
@@ -834,6 +847,11 @@ void Screen::resize_callback_event(int, int) {
 
     m_last_interaction = glfwGetTime();
 
+#if defined(NANOGUI_USE_METAL)
+    if (m_depth_stencil_texture)
+        m_depth_stencil_texture->resize(fb_size);
+#endif
+
     try {
         resize_event(m_size);
     } catch (const std::exception &e) {
@@ -908,6 +926,21 @@ bool Screen::tooltip_fade_in_progress() const {
     /* Temporarily increase the frame rate to fade in the tooltip */
     const Widget *widget = find_widget(m_mouse_pos);
     return widget && !widget->tooltip().empty();
+}
+
+Texture::PixelFormat Screen::pixel_format() const {
+#if defined(NANOGUI_USE_METAL)
+    if (!m_float_buffer)
+        return Texture::PixelFormat::BGRA;
+#endif
+    return Texture::PixelFormat::RGBA;
+}
+
+Texture::ComponentFormat Screen::component_format() const {
+    if (m_float_buffer)
+        return Texture::ComponentFormat::Float16;
+    else
+        return Texture::ComponentFormat::UInt8;
 }
 
 #if defined(NANOGUI_USE_METAL)

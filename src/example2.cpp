@@ -42,9 +42,10 @@ int main(int /* argc */, char ** /* argv */) {
             // NanoGUI presents many options for you to utilize at your discretion.
             // See include/nanogui/screen.h for what all of these represent.
             screen = new Screen(Vector2i(500, 700), "NanoGUI test [GL 4.1]",
-                                /*resizable*/true, /*fullscreen*/false, /*color_bits*/8,
-                                /*alpha_bits*/8, /*depth_bits*/24, /*stencil_bits*/8,
-                                /*n_samples*/0, /*gl_major*/4, /*gl_minor*/1);
+                                /* resizable */ true, /* fullscreen */ false,
+                                /* depth_buffer */ false, /* stencil_buffer */ false,
+                                /* float_buffer */ false, /* gl_major */ 4,
+                                /* gl_minor */ 1);
         } else {
             screen = new Screen(Vector2i(500, 700), "NanoGUI test");
         }

@@ -15,8 +15,11 @@
 #pragma once
 
 #include <nanogui/widget.h>
+#include <nanogui/texture.h>
 
 NAMESPACE_BEGIN(nanogui)
+
+class Texture;
 
 /**
  * \class Screen screen.h nanogui/screen.h
@@ -44,44 +47,44 @@ public:
      * \param fullscreen
      *     Specifies whether to create a windowed or full-screen view
      *
-     * \param color_bits
-     *     Number of bits per pixel dedicated to the R/G/B color components
+     * \param stencil_buffer
+     *     Should an 8-bit stencil buffer be allocated? NanoVG requires this to
+     *     rasterize non-convex polygons. (NanoGUI does not render such
+     *     polygons, but your application might.)
      *
-     * \param alpha_bits
-     *     Number of bits per pixel dedicated to the alpha channel
-     *
-     * \param depth_bits
-     *     Number of bits per pixel dedicated to the Z-buffer
-     *
-     * \param stencil_bits
-     *     Number of bits per pixel dedicated to the stencil buffer (recommended
-     *     to set this to 8. NanoVG can draw higher-quality strokes using a
-     *     stencil buffer)
-     *
-     * \param n_samples
-     *     Number of MSAA samples (set to 0 to disable)
+     * \param float_buffer
+     *     Should NanoGUI try to allocate a floating point framebuffer? This
+     *     is useful for HDR and wide-gamut displays.
      *
      * \param gl_major
-     *     The requested OpenGL Major version number.  The default is 3, if changed
-     *     the value must correspond to a forward compatible core profile (for
-     *     portability reasons).  For example, set this to 4 and \ref gl_minor to 1
-     *     for a forward compatible core OpenGL 4.1 profile.  Requesting an
-     *     invalid profile will result in no context (and therefore no GUI)
-     *     being created.
+     *     The requested OpenGL Major version number.  The default is 3, if
+     *     changed the value must correspond to a forward compatible core
+     *     profile (for portability reasons).  For example, set this to 4 and
+     *     \ref gl_minor to 1 for a forward compatible core OpenGL 4.1 profile.
+     *     Requesting an invalid profile will result in no context (and
+     *     therefore no GUI) being created. This attribute is ignored when
+     *     targeting OpenGL ES 2 or Metal.
      *
      * \param gl_minor
-     *     The requested OpenGL Minor version number.  The default is 2, if changed
-     *     the value must correspond to a forward compatible core profile (for
-     *     portability reasons).  For example, set this to 1 and \ref gl_major to 4
-     *     for a forward compatible core OpenGL 4.1 profile.  Requesting an
-     *     invalid profile will result in no context (and therefore no GUI)
-     *     being created.
+     *     The requested OpenGL Minor version number.  The default is 2, if
+     *     changed the value must correspond to a forward compatible core
+     *     profile (for portability reasons).  For example, set this to 1 and
+     *     \ref gl_major to 4 for a forward compatible core OpenGL 4.1 profile.
+     *     Requesting an invalid profile will result in no context (and
+     *     therefore no GUI) being created. This attribute is ignored when
+     *     targeting OpenGL ES 2 or Metal.
      */
-    Screen(const Vector2i &size, const std::string &caption,
-           bool resizable = true, bool fullscreen = false, int color_bits = 8,
-           int alpha_bits = 8, int depth_bits = 24, int stencil_bits = 8,
-           int n_samples = 0, unsigned int gl_major = 3,
-           unsigned int gl_minor = 2);
+    Screen(
+        const Vector2i &size = Vector2i(1024, 768),
+        const std::string &caption = "Unnamed",
+        bool resizable = true,
+        bool fullscreen = false,
+        bool depth_buffer = false,
+        bool stencil_buffer = false,
+        bool float_buffer = false,
+        unsigned int gl_major = 3,
+        unsigned int gl_minor = 2
+    );
 
     /// Release all resources
     virtual ~Screen();
@@ -151,12 +154,30 @@ public:
     /// Return a pointer to the underlying NanoVG draw context
     NVGcontext *nvg_context() const { return m_nvg_context; }
 
+    /// Return the component format underlying the screen
+    Texture::ComponentFormat component_format() const;
+
+    /// Return the pixel format underlying the screen
+    Texture::PixelFormat pixel_format() const;
+
+    /// Does the framebuffer have a depth buffer
+    bool has_depth_buffer() const { return m_depth_buffer; }
+
+    /// Does the framebuffer have a stencil buffer
+    bool has_stencil_buffer() const { return m_stencil_buffer; }
+
+    /// Does the framebuffer use a floating point representation
+    bool has_float_buffer() const { return m_float_buffer; }
+
 #if defined(NANOGUI_USE_METAL)
     /// Return the associated CAMetalLayer object
     void *metal_layer() const;
 
     /// Return the currently active Metal drawable (or NULL)
     void *metal_drawable() const { return m_metal_drawable; }
+
+    /// Return the associated depth/stencil texture
+    Texture *depth_stencil_texture() { return m_depth_stencil_texture; }
 #endif
 
     /// Shut down GLFW when the window is closed?
@@ -227,11 +248,14 @@ protected:
     std::string m_caption;
     bool m_shutdown_glfw;
     bool m_fullscreen;
+    bool m_depth_buffer;
+    bool m_stencil_buffer;
+    bool m_float_buffer;
     bool m_redraw;
-    int m_color_bits;
     std::function<void(Vector2i)> m_resize_callback;
 #if defined(NANOGUI_USE_METAL)
     void *m_metal_drawable;
+    ref<Texture> m_depth_stencil_texture;
 #endif
 };
 

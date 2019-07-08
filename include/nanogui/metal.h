@@ -35,7 +35,7 @@ extern NANOGUI_EXPORT void *metal_command_queue();
 extern NANOGUI_EXPORT void *metal_layer(void *nswin);
 
 /// Associate a metal layer with a NSWindow created by GLEW
-extern NANOGUI_EXPORT void metal_window_init(void *nswin, bool request_wide_gamut);
+extern NANOGUI_EXPORT void metal_window_init(void *nswin, bool float_buffer);
 
 /// Set size of the drawable underlying an NSWindow
 extern NANOGUI_EXPORT void metal_window_set_size(void *nswin, const Vector2i &size);

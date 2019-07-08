@@ -9,11 +9,13 @@ Texture::Texture(PixelFormat pixel_format,
                  const Vector2i &size,
                  InterpolationMode interpolation_mode,
                  WrapMode wrap_mode,
+                 uint8_t samples,
                  uint8_t flags)
     : m_pixel_format(pixel_format),
       m_component_format(component_format),
       m_interpolation_mode(interpolation_mode),
       m_wrap_mode(wrap_mode),
+      m_samples(samples),
       m_flags(flags),
       m_size(size),
       m_texture_handle(nullptr),
@@ -71,20 +73,40 @@ Texture::~Texture() {
 void Texture::upload(const uint8_t *data) {
     id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
 
-    [texture replaceRegion: MTLRegionMake2D(0, 0, (NSUInteger) m_size.x(), (NSUInteger) m_size.y())
-             mipmapLevel: 0
-             withBytes: data
-             bytesPerRow: (NSUInteger) (bytes_per_pixel() * m_size.x())];
+    MTLTextureDescriptor *texture_desc =
+        [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: texture.pixelFormat
+                                                           width: (NSUInteger) m_size.x()
+                                                          height: (NSUInteger) m_size.y()
+                                                       mipmapped: NO];
 
-    if (m_interpolation_mode == InterpolationMode::Trilinear) {
-        id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) metal_command_queue();
-        id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
-        id<MTLBlitCommandEncoder> command_encoder = [command_buffer blitCommandEncoder];
+    id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
+    id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) metal_command_queue();
+    id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
+    id<MTLBlitCommandEncoder> command_encoder = [command_buffer blitCommandEncoder];
+    id<MTLTexture> temp_texture = [device newTextureWithDescriptor:texture_desc];
+
+    [temp_texture replaceRegion: MTLRegionMake2D(0, 0, (NSUInteger) m_size.x(), (NSUInteger) m_size.y())
+                  mipmapLevel: 0
+                  withBytes: data
+                  bytesPerRow: (NSUInteger) (bytes_per_pixel() * m_size.x())];
+
+    [command_encoder
+                 copyFromTexture: temp_texture
+                     sourceSlice: 0
+                     sourceLevel: 0
+                    sourceOrigin: MTLOriginMake(0, 0, 0)
+                      sourceSize: MTLSizeMake((NSUInteger) m_size.x(), (NSUInteger) m_size.y(), 1)
+                       toTexture: texture
+                destinationSlice: 0
+                destinationLevel: 0
+               destinationOrigin: MTLOriginMake(0, 0, 0)];
+
+    if (m_interpolation_mode == InterpolationMode::Trilinear)
         [command_encoder generateMipmapsForTexture: texture];
-        [command_encoder endEncoding];
-        [command_buffer commit];
-        [command_buffer waitUntilCompleted];
-    }
+
+    [command_encoder endEncoding];
+    [command_buffer commit];
+    [command_buffer waitUntilCompleted];
 }
 
 void Texture::download(uint8_t *data) {
@@ -134,6 +156,12 @@ void Texture::resize(const Vector2i &size) {
 
     if (m_pixel_format == PixelFormat::RGB)
         m_pixel_format = PixelFormat::RGBA;
+    else if (m_pixel_format == PixelFormat::BGR)
+        m_pixel_format = PixelFormat::BGRA;
+
+    if (m_pixel_format == PixelFormat::BGRA &&
+        m_component_format != ComponentFormat::UInt8)
+        m_pixel_format = PixelFormat::RGBA;
 
     MTLPixelFormat pixel_format_mtl;
     switch (m_pixel_format) {
@@ -161,6 +189,13 @@ void Texture::resize(const Vector2i &size) {
             }
             break;
 
+        case PixelFormat::BGRA:
+            switch (m_component_format) {
+                case ComponentFormat::UInt8:   pixel_format_mtl = MTLPixelFormatBGRA8Unorm;  break;
+                default: throw std::runtime_error("Texture::Texture(): invalid component format!");
+            }
+            break;
+
         case PixelFormat::RGBA:
             switch (m_component_format) {
                 case ComponentFormat::UInt8:   pixel_format_mtl = MTLPixelFormatRGBA8Unorm;  break;
@@ -175,30 +210,35 @@ void Texture::resize(const Vector2i &size) {
 
         case PixelFormat::Depth:
             switch (m_component_format) {
-                case ComponentFormat::UInt8:
                 case ComponentFormat::Int8:
+                case ComponentFormat::UInt8:
                 case ComponentFormat::Int16:
+                case ComponentFormat::UInt16:
                     m_component_format = ComponentFormat::UInt16;
                     pixel_format_mtl = MTLPixelFormatDepth16Unorm;
                     break;
 
+                case ComponentFormat::Int32:
+                case ComponentFormat::UInt32:
                 case ComponentFormat::Float16:
+                case ComponentFormat::Float32:
                     m_component_format = ComponentFormat::Float32;
                     pixel_format_mtl = MTLPixelFormatDepth32Float;
                     break;
 
-                case ComponentFormat::UInt16:  pixel_format_mtl = MTLPixelFormatDepth16Unorm; break;
-                case ComponentFormat::Float32: pixel_format_mtl = MTLPixelFormatDepth32Float; break;
                 default: throw std::runtime_error("Texture::Texture(): invalid component format!");
             }
             break;
 
         case PixelFormat::DepthStencil:
             switch (m_component_format) {
-                case ComponentFormat::UInt8:
                 case ComponentFormat::Int8:
+                case ComponentFormat::UInt8:
                 case ComponentFormat::Int16:
-                    m_component_format = ComponentFormat::UInt16;
+                case ComponentFormat::UInt16:
+                case ComponentFormat::Int32:
+                case ComponentFormat::UInt32:
+                    m_component_format = ComponentFormat::UInt32;
                     pixel_format_mtl = MTLPixelFormatDepth24Unorm_Stencil8;
                     break;
 
@@ -225,6 +265,11 @@ void Texture::resize(const Vector2i &size) {
                                                        mipmapped: mipmap];
     texture_desc.storageMode = MTLStorageModePrivate;
     texture_desc.usage = 0;
+
+    if (m_samples > 1) {
+        texture_desc.textureType = MTLTextureType2DMultisample;
+        texture_desc.sampleCount = m_samples;
+    }
 
     if (m_flags & (uint8_t) TextureFlags::ShaderRead)
         texture_desc.usage |= MTLTextureUsageShaderRead;

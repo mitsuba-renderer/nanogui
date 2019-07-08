@@ -13,14 +13,15 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
                        bool clear,
                        std::vector<Color> clear_color,
                        float clear_depth,
-                       uint8_t clear_stencil)
+                       uint8_t clear_stencil,
+                       Object *blit_target)
     : m_targets(color_targets.size() + 2), m_clear(clear),
       m_clear_color(clear_color), m_clear_depth(clear_depth),
       m_clear_stencil(clear_stencil), m_viewport_offset(0),
       m_viewport_size(0), m_depth_test(DepthTest::Less),
       m_depth_write(true), m_cull_mode(CullMode::Back),
-      m_active(false), m_command_buffer(nullptr),
-      m_command_encoder(nullptr) {
+      m_blit_target(blit_target), m_active(false),
+      m_command_buffer(nullptr), m_command_encoder(nullptr) {
 
     m_targets[0] = depth_target;
     m_targets[1] = stencil_target;
@@ -37,9 +38,24 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         m_depth_test = DepthTest::Always;
     }
 
+    MTLRenderPassDescriptor *pass_descriptor =
+        [MTLRenderPassDescriptor renderPassDescriptor];
+
     for (size_t i = 0; i < m_targets.size(); ++i) {
-        const Texture *texture = dynamic_cast<const Texture *>(m_targets[i].get());
-        const Screen *screen   = dynamic_cast<const Screen *>(m_targets[i].get());
+        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
+        Screen *screen   = dynamic_cast<Screen *>(m_targets[i].get());
+
+        MTLRenderPassAttachmentDescriptor *att;
+        if (i == 0)
+            att = pass_descriptor.depthAttachment;
+        else if (i == 1)
+            att = pass_descriptor.stencilAttachment;
+        else
+            att = pass_descriptor.colorAttachments[i-2];
+
+        att.loadAction = clear ? MTLLoadActionClear : MTLLoadActionLoad;
+        att.storeAction = MTLStoreActionStore;
+
         if (texture) {
             if (!(texture->flags() & Texture::TextureFlags::RenderTarget))
                 throw std::runtime_error("RenderPass::RenderPass(): target texture "
@@ -47,44 +63,23 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
             m_viewport_size = max(m_viewport_size, texture->size());
         } else if (screen) {
             m_viewport_size = max(m_viewport_size, screen->framebuffer_size());
+        } else if (m_targets[i].get()) {
+            throw std::runtime_error("RenderPas::RenderPass(): invalid attachment type!");
         }
-    }
 
-    MTLRenderPassDescriptor *pass_descriptor =
-        [MTLRenderPassDescriptor renderPassDescriptor];
-
-    for (size_t i = 0; i < color_targets.size(); ++i) {
-        MTLRenderPassColorAttachmentDescriptor *att =
-            pass_descriptor.colorAttachments[i];
-        if (clear_color.empty())
-            att.clearColor = MTLClearColorMake(0.f, 0.f, 0.f, 1.f);
-        else
-            att.clearColor = MTLClearColorMake(clear_color[i].r(), clear_color[i].g(),
-                                               clear_color[i].b(), clear_color[i].w());
-        att.loadAction = clear ? MTLLoadActionClear : MTLLoadActionLoad;
-        att.storeAction = MTLStoreActionStore;
-    }
-
-    if (dynamic_cast<Texture *>(depth_target)) {
-        MTLRenderPassDepthAttachmentDescriptor *att =
-            pass_descriptor.depthAttachment;
-        att.clearDepth = clear_depth;
-        att.loadAction = clear ? MTLLoadActionClear : MTLLoadActionLoad;
-        att.storeAction = MTLStoreActionStore;
-    } else if (depth_target) {
-        throw std::runtime_error("RenderPass::RenderPass(): invalid depth target type! "
-                                 "(must refer to NULL or a Texture instance!)");
-    }
-
-    if (dynamic_cast<Texture *>(stencil_target)) {
-        MTLRenderPassStencilAttachmentDescriptor *att =
-            pass_descriptor.stencilAttachment;
-        att.clearStencil = clear_stencil;
-        att.loadAction = clear ? MTLLoadActionClear : MTLLoadActionLoad;
-        att.storeAction = MTLStoreActionStore;
-    } else if (stencil_target) {
-        throw std::runtime_error("RenderPass::RenderPass(): invalid stencil target type! "
-                                 "(must refer to NULL or a Texture instance!)");
+        if (i == 0) {
+            ((MTLRenderPassDepthAttachmentDescriptor *) att).clearDepth = clear_depth;
+        } else if (i == 1) {
+            ((MTLRenderPassStencilAttachmentDescriptor *) att).clearStencil = clear_stencil;
+        } else {
+            MTLRenderPassColorAttachmentDescriptor *att2 =
+                (MTLRenderPassColorAttachmentDescriptor *) att;
+            if (clear_color.empty())
+                att2.clearColor = MTLClearColorMake(0.f, 0.f, 0.f, 1.f);
+            else
+                att2.clearColor = MTLClearColorMake(clear_color[i].r(), clear_color[i].g(),
+                                                    clear_color[i].b(), clear_color[i].w());
+        }
     }
 
     m_pass_descriptor = (__bridge_retained void *) pass_descriptor;
@@ -97,7 +92,7 @@ RenderPass::~RenderPass() {
 void RenderPass::begin() {
 #if !defined(NDEBUG)
     if (m_active)
-        throw std::runtime_error("RenderPass::end(): render pass is already active!");
+        throw std::runtime_error("RenderPass::begin(): render pass is already active!");
 #endif
     id<MTLCommandQueue> command_queue =
         (__bridge id<MTLCommandQueue>) metal_command_queue();
@@ -108,22 +103,67 @@ void RenderPass::begin() {
         (__bridge MTLRenderPassDescriptor *) m_pass_descriptor;
 
     for (size_t i = 0; i < m_targets.size(); ++i) {
-        const Texture *texture = dynamic_cast<const Texture *>(m_targets[i].get());
-        const Screen *screen = dynamic_cast<const Screen *>(m_targets[i].get());
+        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
+        Screen *screen = dynamic_cast<Screen *>(m_targets[i].get());
         id<MTLTexture> texture_handle = nil;
+
         if (texture) {
             texture_handle = (__bridge id<MTLTexture>) texture->texture_handle();
         } else if (screen) {
-            id<CAMetalDrawable> drawable =
-                (__bridge id<CAMetalDrawable>) screen->metal_drawable();
-            texture_handle = drawable.texture;
+            if (i < 2) {
+                Texture *screen_tex = screen->depth_stencil_texture();
+                if (screen_tex && (i == 0 ||
+                                  (i == 1 && (screen_tex->pixel_format() ==
+                                              Texture::PixelFormat::DepthStencil)))) {
+                    texture_handle = (__bridge id<MTLTexture>) screen_tex->texture_handle();
+                }
+            } else {
+                id<CAMetalDrawable> drawable =
+                    (__bridge id<CAMetalDrawable>) screen->metal_drawable();
+                texture_handle = drawable.texture;
+            }
         }
+
+        MTLRenderPassAttachmentDescriptor *att;
         if (i == 0)
-            pass_descriptor.depthAttachment.texture = texture_handle;
+            att = pass_descriptor.depthAttachment;
         else if (i == 1)
-            pass_descriptor.stencilAttachment.texture = texture_handle;
+            att = pass_descriptor.stencilAttachment;
         else
-            pass_descriptor.colorAttachments[i-2].texture = texture_handle;
+            att = pass_descriptor.colorAttachments[i-2];
+
+        att.texture = texture_handle;
+
+        RenderPass *blit_rp = dynamic_cast<RenderPass *>(m_blit_target.get());
+        if (blit_rp && i < blit_rp->targets().size()) {
+            const Texture *resolve_texture =
+                dynamic_cast<Texture *>(blit_rp->targets()[i].get());
+
+            id<MTLTexture> resolve_texture_handle =
+                (__bridge id<MTLTexture>) resolve_texture->texture_handle();
+
+            if (resolve_texture_handle.pixelFormat != texture_handle.pixelFormat)
+                throw std::runtime_error("RenderPass::begin(): 'blit_target' pixel format mismatch!");
+            else if (resolve_texture_handle.width  != texture_handle.width ||
+                     resolve_texture_handle.height != texture_handle.height)
+                throw std::runtime_error("RenderPass::begin(): 'blit_target' size mismatch!");
+            att.storeAction = MTLStoreActionStoreAndMultisampleResolve;
+            att.resolveTexture = resolve_texture_handle;
+        }
+    }
+
+    Screen *blit_screen = dynamic_cast<Screen *>(m_blit_target.get());
+    if (blit_screen) {
+        id<CAMetalDrawable> drawable =
+            (__bridge id<CAMetalDrawable>) blit_screen->metal_drawable();
+        if (drawable.texture.pixelFormat != pass_descriptor.colorAttachments[0].texture.pixelFormat)
+            throw std::runtime_error("RenderPass::begin(): 'blit_target' pixel format mismatch!");
+        else if (drawable.texture.width  != pass_descriptor.colorAttachments[0].texture.width ||
+                 drawable.texture.height != pass_descriptor.colorAttachments[0].texture.height)
+            throw std::runtime_error("RenderPass::begin(): 'blit_target' pixel format mismatch!");
+        pass_descriptor.colorAttachments[0].storeAction =
+            MTLStoreActionStoreAndMultisampleResolve;
+        pass_descriptor.colorAttachments[0].resolveTexture = drawable.texture;
     }
 
     id<MTLRenderCommandEncoder> command_encoder =

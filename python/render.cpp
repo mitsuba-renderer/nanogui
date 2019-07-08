@@ -118,6 +118,8 @@ void register_render(py::module &m) {
         .value("RA", PixelFormat::RA, D(Texture, PixelFormat, RA))
         .value("RGB", PixelFormat::RGB, D(Texture, PixelFormat, RGB))
         .value("RGBA", PixelFormat::RGBA, D(Texture, PixelFormat, RGBA))
+        .value("BGR", PixelFormat::BGR, D(Texture, PixelFormat, BGR))
+        .value("BGRA", PixelFormat::BGRA, D(Texture, PixelFormat, BGRA))
         .value("Depth", PixelFormat::Depth, D(Texture, PixelFormat, Depth))
         .value("DepthStencil", PixelFormat::DepthStencil, D(Texture, PixelFormat, DepthStencil));
 
@@ -147,14 +149,16 @@ void register_render(py::module &m) {
 
     texture
         .def(py::init<PixelFormat, ComponentFormat,
-             const Vector2i &, InterpolationMode, WrapMode, uint8_t>(),
+             const Vector2i &, InterpolationMode, WrapMode, uint8_t, uint8_t>(),
              D(Texture, Texture), "pixel_format"_a, "component_format"_a,
              "size"_a, "interpolation_mode"_a = InterpolationMode::Bilinear,
-             "wrap_mode"_a = WrapMode::Repeat, "flags"_a = (uint8_t) TextureFlags::ShaderRead)
+             "wrap_mode"_a = WrapMode::Repeat, "samples"_a = 1,
+             "flags"_a = (uint8_t) TextureFlags::ShaderRead)
         .def("pixel_format", &Texture::pixel_format, D(Texture, pixel_format))
         .def("component_format", &Texture::component_format, D(Texture, component_format))
         .def("interpolation_mode", &Texture::interpolation_mode, D(Texture, interpolation_mode))
         .def("wrap_mode", &Texture::wrap_mode, D(Texture, wrap_mode))
+        .def("samples", &Texture::samples, D(Texture, samples))
         .def("flags", &Texture::flags, D(Texture, flags))
         .def("size", &Texture::size, D(Texture, size))
         .def("bytes_per_pixel", &Texture::bytes_per_pixel, D(Texture, bytes_per_pixel))
@@ -204,15 +208,16 @@ void register_render(py::module &m) {
 
     auto renderpass = py::class_<RenderPass, Object, ref<RenderPass>>(m, "RenderPass", D(RenderPass))
         .def(py::init<std::vector<Object *>, Object *, Object *,
-                      bool, std::vector<Color>, float, uint8_t>(),
+                      bool, std::vector<Color>, float, uint8_t, Object *>(),
              D(RenderPass, RenderPass),
-             "color_target"_a,
+             "color_targets"_a,
              "depth_target"_a = nullptr,
              "stencil_target"_a = nullptr,
              "clear"_a = true,
              "clear_color"_a = py::list(),
              "clear_depth"_a = 1.f,
-             "clear_stencil"_a = 0)
+             "clear_stencil"_a = 0,
+             "blit_target"_a = nullptr)
         .def("set_viewport", &RenderPass::set_viewport, D(RenderPass, set_viewport), "offset"_a, "size"_a)
         .def("viewport", &RenderPass::viewport, D(RenderPass, viewport))
         .def("set_depth_test", &RenderPass::set_depth_test, D(RenderPass, set_depth_test), "depth_test"_a, "depth_write"_a)

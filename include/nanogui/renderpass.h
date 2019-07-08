@@ -46,7 +46,7 @@ public:
      * \brief Create a new render pass for rendering to a specific
      * set of targets
      *
-     * \param color_target
+     * \param color_targets
      *     One or more target objects to which color information will be
      *     rendered. Must either be a \ref Screen or a \ref Texture instance.
      *
@@ -72,6 +72,14 @@ public:
      *
      * \param clear_stencil
      *     Clear value for the stencil target (if applicable)
+     *
+     * \param blit_target
+     *     When rendering finishes, the render pass can (optionally) blit the
+     *     framebuffer to another target (which can either be another \ref
+     *     RenderPass instance or a \ref Screen instance). This is mainly
+     *     useful for multisample antialiasing (MSAA) rendering where set of
+     *     multi-sample framebuffers must be converted into ordinary
+     *     framebuffers for display.
      */
     RenderPass(std::vector<Object *> color_targets,
                Object *depth_target = nullptr,
@@ -79,7 +87,8 @@ public:
                bool clear = true,
                std::vector<Color> clear_color = {},
                float clear_depth = 1.f,
-               uint8_t clear_stencil = 0);
+               uint8_t clear_stencil = 0,
+               Object *blit_target = nullptr);
 
     /**
      * \brief Begin the render pass
@@ -148,6 +157,7 @@ protected:
     DepthTest m_depth_test;
     bool m_depth_write;
     CullMode m_cull_mode;
+    ref<Object> m_blit_target;
     bool m_active;
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     uint32_t m_framebuffer_handle;

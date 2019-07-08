@@ -12,13 +12,15 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
                        bool clear,
                        std::vector<Color> clear_color,
                        float clear_depth,
-                       uint8_t clear_stencil)
+                       uint8_t clear_stencil,
+                       Object *blit_target)
     : m_targets(color_targets.size() + 2), m_clear(clear),
       m_clear_color(clear_color), m_clear_depth(clear_depth),
       m_clear_stencil(clear_stencil), m_viewport_offset(0),
       m_viewport_size(0), m_depth_test(DepthTest::Less),
       m_depth_write(true), m_cull_mode(CullMode::Back),
-      m_active(false), m_framebuffer_handle(0) {
+      m_blit_target(blit_target), m_active(false),
+      m_framebuffer_handle(0) {
 
     m_targets[0] = depth_target;
     m_targets[1] = stencil_target;
@@ -59,11 +61,12 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
                 draw_buffers.push_back(GL_BACK_LEFT);
             has_screen = true;
         } else if (texture) {
-            if (texture->flags() & Texture::TextureFlags::ShaderRead)
+            if (texture->flags() & Texture::TextureFlags::ShaderRead) {
                 CHK(glFramebufferTexture(GL_FRAMEBUFFER, attachment_id, texture->texture_handle(), 0));
-            else
+            } else {
                 CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment_id, GL_RENDERBUFFER,
                                               texture->renderbuffer_handle()));
+            }
             if (i >= 2)
                 draw_buffers.push_back(attachment_id);
             m_viewport_size = max(m_viewport_size, texture->size());
@@ -129,7 +132,7 @@ RenderPass::~RenderPass() {
 void RenderPass::begin() {
 #if !defined(NDEBUG)
     if (m_active)
-        throw std::runtime_error("RenderPass::end(): render pass is already active!");
+        throw std::runtime_error("RenderPass::begin(): render pass is already active!");
 #endif
     m_active = true;
 
@@ -176,6 +179,44 @@ void RenderPass::end() {
     if (!m_active)
         throw std::runtime_error("RenderPass::end(): render pass is not active!");
 #endif
+
+    if (m_blit_target) {
+        Screen *screen   = dynamic_cast<Screen *>(m_blit_target.get());
+        RenderPass *rp = dynamic_cast<RenderPass *>(m_blit_target.get());
+
+        GLuint target_id;
+        GLenum what = 0;
+
+        if (screen) {
+            target_id = 0;
+            what = GL_COLOR_BUFFER_BIT;
+            if (screen->has_depth_buffer())
+                what |= GL_STENCIL_BUFFER_BIT;
+            if (screen->has_stencil_buffer())
+                what |= GL_STENCIL_BUFFER_BIT;
+        } else if (rp) {
+            target_id = rp->framebuffer_handle();
+            if (rp->targets().size() > 0 && rp->targets()[0])
+                what |= GL_DEPTH_BUFFER_BIT;
+            if (rp->targets().size() > 1 && rp->targets()[1])
+                what |= GL_STENCIL_BUFFER_BIT;
+            if (rp->targets().size() > 2 && rp->targets()[2])
+                what |= GL_COLOR_BUFFER_BIT;
+        } else {
+            throw std::runtime_error(
+                "RenderPass::end(): 'blit_target' must either be a RenderPass or a Screen instance.");
+        }
+
+        CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_handle));
+        CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target_id));
+
+        if (target_id == 0)
+            CHK(glDrawBuffer(GL_BACK));
+
+        CHK(glBlitFramebuffer(0, 0, (GLsizei) m_framebuffer_size.x(), (GLsizei) m_framebuffer_size.y(),
+                              0, 0, (GLsizei) m_framebuffer_size.x(), (GLsizei) m_framebuffer_size.y(),
+                              what, GL_NEAREST));
+    }
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     m_active = false;
 }

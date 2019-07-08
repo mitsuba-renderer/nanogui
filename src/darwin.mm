@@ -85,7 +85,7 @@ void metal_shutdown() {
 void* metal_device() { return s_metal_device; }
 void* metal_command_queue() { return s_metal_command_queue; }
 
-void metal_window_init(void *nswin_, bool request_wide_gamut) {
+void metal_window_init(void *nswin_, bool float_buffer) {
     CAMetalLayer *layer = [CAMetalLayer layer];
     if (!layer)
         throw std::runtime_error("init_metal(): unable to create layer.");
@@ -93,12 +93,10 @@ void metal_window_init(void *nswin_, bool request_wide_gamut) {
     nswin.contentView.layer = layer;
     nswin.contentView.wantsLayer = YES;
     nswin.contentView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
-    bool wide_gamut_available = [nswin canRepresentDisplayGamut: NSDisplayGamutP3];
     layer.device = (__bridge id<MTLDevice>) s_metal_device;
     layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     layer.contentsScale = nswin.backingScaleFactor;
-    layer.pixelFormat = (request_wide_gamut && wide_gamut_available)
-        ? MTLPixelFormatRGBA16Float : MTLPixelFormatBGRA8Unorm;
+    layer.pixelFormat = float_buffer ? MTLPixelFormatRGBA16Float : MTLPixelFormatBGRA8Unorm;
     layer.displaySyncEnabled = NO;
     layer.allowsNextDrawableTimeout = NO;
 }

@@ -11,7 +11,11 @@ import numpy as np
 
 class MyScreen(Screen):
     def __init__(self):
-        Screen.__init__(self, [512, 512], "Unnamed")
+        Screen.__init__(self,
+            size=[512, 512],
+            caption="Unnamed",
+            depth_buffer=True
+        )
 
         if nanogui.api == 'opengl':
             vertex_program = '''
@@ -69,19 +73,9 @@ class MyScreen(Screen):
                 }
             '''
 
-        depth_target = self
-
-        if nanogui.api == 'metal':
-            depth_target = Texture(
-                pixel_format=Texture.PixelFormat.Depth,
-                component_format=Texture.ComponentFormat.Float32,
-                size=self.framebuffer_size(),
-                flags=Texture.TextureFlags.RenderTarget
-            )
-
         self.render_pass = RenderPass(
-            [self],
-            depth_target
+            color_targets=[self],
+            depth_target=self
         )
 
         self.shader = Shader(

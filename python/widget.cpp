@@ -95,11 +95,11 @@ void register_widget(py::module &m) {
         .def("center", &Window::center, D(Window, center));
 
     py::class_<Screen, Widget, ref<Screen>, PyScreen>(m, "Screen", D(Screen))
-        .def(py::init<const Vector2i &, const std::string &, bool, bool, int, int,
-                      int, int, int, unsigned int, unsigned int>(),
+        .def(py::init<const Vector2i &, const std::string &, bool, bool, bool,
+                      bool, bool, unsigned int, unsigned int>(),
             "size"_a, "caption"_a, "resizable"_a = true, "fullscreen"_a = false,
-            "color_bits"_a = 8, "alpha_bits"_a = 8, "depth_bits"_a = 24, "stencil_bits"_a = 8,
-            "n_samples"_a = 0, "gl_major"_a = 3, "gl_minor"_a = 2, D(Screen, Screen))
+            "depth_buffer"_a = false, "stencil_buffer"_a = false,
+            "float_buffer"_a = false, "gl_major"_a = 3, "gl_minor"_a = 2, D(Screen, Screen))
         .def("caption", &Screen::caption, D(Screen, caption))
         .def("set_caption", &Screen::set_caption, D(Screen, set_caption))
         .def("background", &Screen::background, D(Screen, background))
@@ -118,13 +118,19 @@ void register_widget(py::module &m) {
         .def("drop_event", &Screen::drop_event, D(Screen, drop_event))
         .def("mouse_pos", &Screen::mouse_pos, D(Screen, mouse_pos))
         .def("pixel_ratio", &Screen::pixel_ratio, D(Screen, pixel_ratio))
+        .def("has_depth_buffer", &Screen::has_depth_buffer, D(Screen, has_depth_buffer))
+        .def("has_stencil_buffer", &Screen::has_stencil_buffer, D(Screen, has_stencil_buffer))
+        .def("has_float_buffer", &Screen::has_float_buffer, D(Screen, has_float_buffer))
         .def("glfw_window", &Screen::glfw_window, D(Screen, glfw_window),
                 py::return_value_policy::reference)
         .def("nvg_context", &Screen::nvg_context, D(Screen, nvg_context),
                 py::return_value_policy::reference)
+        .def("pixel_format", &Screen::pixel_format, D(Screen, pixel_format))
+        .def("component_format", &Screen::component_format, D(Screen, component_format))
 #if defined(NANOGUI_USE_METAL)
         .def("metal_layer", &Screen::metal_layer)
         .def("metal_drawable", &Screen::metal_drawable)
+        .def("depth_stencil_texture", &Screen::depth_stencil_texture)
 #endif
         ;
 }

@@ -1,4 +1,4 @@
-# OpenGL/Metal rendering test: render a textured spinning cube
+# OpenGL/Metal rendering test: render a spinning cube with MSAA
 
 import sys
 sys.path.append('python')
@@ -6,8 +6,6 @@ import nanogui
 from nanogui import Shader, Texture, RenderPass, Screen
 from nanogui import glfw
 import numpy as np
-from PIL import Image
-import os
 
 
 class MyScreen(Screen):
@@ -21,24 +19,23 @@ class MyScreen(Screen):
             vertex_program = '''
                 #version 330
                 in vec3 position;
-                in vec2 uv;
-                out vec2 uv_frag;
+                in vec4 color;
+                out vec4 color_frag;
                 uniform mat4 mvp;
 
                 void main() {
                     gl_Position = mvp * vec4(position, 1.0);
-                    uv_frag = uv;
+                    color_frag = color;
                 }
             '''
 
             fragment_program = '''
                 #version 330
-                in vec2 uv_frag;
+                in vec4 color_frag;
                 out vec4 fragColor;
-                uniform sampler2D albedo_texture;
 
                 void main() {
-                    fragColor = texture(albedo_texture, uv_frag);
+                    fragColor = color_frag;
                 }
             '''
         elif nanogui.api == 'metal':
@@ -47,16 +44,16 @@ class MyScreen(Screen):
 
                 struct VertexOut {
                     float4 position [[position]];
-                    float2 uv;
+                    float4 color;
                 };
 
                 vertex VertexOut vertex_main(const device packed_float3 *position,
-                                             const device float2 *uv,
+                                             const device float4 *color,
                                              constant float4x4 &mvp,
                                              uint id [[vertex_id]]) {
                     VertexOut vert;
                     vert.position = mvp * float4(position[id], 1.f);
-                    vert.uv = uv[id];
+                    vert.color = color[id];
                     return vert;
                 }
             '''
@@ -66,29 +63,34 @@ class MyScreen(Screen):
 
                 struct VertexOut {
                     float4 position [[position]];
-                    float2 uv;
+                    float4 color;
                 };
 
-                fragment float4 fragment_main(VertexOut vert [[stage_in]],
-                             texture2d<float, access::sample> albedo_texture,
-                             sampler albedo_sampler) {
-                    return albedo_texture.sample(albedo_sampler, vert.uv);
+                fragment float4 fragment_main(VertexOut vert [[stage_in]]) {
+                    return vert.color;
                 }
             '''
 
-        base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)))
-        image_fname = os.path.join(base_dir, "resources/icons/icon1.png")
-        image = np.array(Image.open(image_fname))
-
-        self.albedo_texture = Texture(
-            pixel_format=Texture.PixelFormat.RGBA,
-            component_format=Texture.ComponentFormat.UInt8,
-            size=image.shape[:2]
+        self.color_target = Texture(
+            pixel_format=self.pixel_format(),
+            component_format=self.component_format(),
+            size=self.framebuffer_size(),
+            flags=Texture.TextureFlags.RenderTarget,
+            samples=8
         )
-        self.albedo_texture.upload(image)
+
+        self.depth_target = Texture(
+            pixel_format=Texture.PixelFormat.Depth,
+            component_format=Texture.ComponentFormat.Float32,
+            size=self.framebuffer_size(),
+            flags=Texture.TextureFlags.RenderTarget,
+            samples=8
+        )
 
         self.render_pass = RenderPass(
-            color_targets=[self]
+            color_targets=[self.color_target],
+            depth_target=self.depth_target,
+            blit_target=self
         )
 
         self.shader = Shader(
@@ -99,26 +101,34 @@ class MyScreen(Screen):
         )
 
         p = np.array([
-            [-1, -1, 0], [1, -1, 0],
-            [1, 1, 0], [-1, 1, 0]],
+            [-1, 1, 1], [-1, -1, 1],
+            [1, -1, 1], [1, 1, 1],
+            [-1, 1, -1], [-1, -1, -1],
+            [1, -1, -1], [1, 1, -1]],
             dtype=np.float32
         )
 
-        uv = np.array([
-            [1, 1], [0, 1],
-            [0, 0], [1, 0]],
+        color = np.array([
+            [0, 1, 1, 1], [0, 0, 1, 1],
+            [1, 0, 1, 1], [1, 1, 1, 1],
+            [0, 1, 0, 1], [0, 0, 0, 1],
+            [1, 0, 0, 1], [1, 1, 0, 1]],
             dtype=np.float32
         )
 
         indices = np.array([
-            0, 2, 1, 3, 2, 0],
+            3, 2, 6, 6, 7, 3,
+            4, 5, 1, 1, 0, 4,
+            4, 0, 3, 3, 7, 4,
+            1, 5, 6, 6, 2, 1,
+            0, 1, 2, 2, 3, 0,
+            7, 6, 5, 5, 4, 7],
             dtype=np.uint32
         )
 
         self.shader.set_buffer("position", p)
-        self.shader.set_buffer("uv", uv)
+        self.shader.set_buffer("color", color)
         self.shader.set_buffer("indices", indices)
-        self.shader.set_texture("albedo_texture", self.albedo_texture)
 
     def draw_contents(self):
         with self.render_pass:
@@ -130,7 +140,7 @@ class MyScreen(Screen):
 
             model = nanogui.rotate(
                 [0, 1, 0],
-                glfw.getTime() * 0.01
+                glfw.getTime()
             )
 
             fbsize = self.framebuffer_size()
@@ -145,7 +155,7 @@ class MyScreen(Screen):
             self.shader.set_buffer("mvp", np.float32(mvp.T))
             with self.shader:
                 self.shader.draw_array(Shader.PrimitiveType.Triangle,
-                                       0, 6, indexed=True)
+                                       0, 36, indexed=True)
 
     def keyboard_event(self, key, scancode, action, modifiers):
         if super(MyScreen, self).keyboard_event(key, scancode,

@@ -36,6 +36,12 @@ public:
         /// RGB bitmap + alpha channel
         RGBA,
 
+        /// BGR bitmap
+        BGR,
+
+        /// BGR bitmap + alpha channel
+        BGRA,
+
         /// Depth map
         Depth,
 
@@ -107,6 +113,7 @@ public:
             const Vector2i &size,
             InterpolationMode interpolation_mode = InterpolationMode::Bilinear,
             WrapMode wrap_mode = WrapMode::Repeat,
+            uint8_t samples = 1,
             uint8_t flags = (uint8_t) TextureFlags::ShaderRead);
 
     /// Return the pixel format
@@ -120,6 +127,9 @@ public:
 
     /// Return the wrap mode
     WrapMode wrap_mode() const { return m_wrap_mode; }
+
+    /// Return the number of samples (MSAA)
+    uint8_t samples() const { return m_samples; }
 
     /// Return a combination of flags (from \ref Texture::TextureFlags)
     uint8_t flags() const { return m_flags; }
@@ -159,6 +169,7 @@ protected:
     ComponentFormat m_component_format;
     InterpolationMode m_interpolation_mode;
     WrapMode m_wrap_mode;
+    uint8_t m_samples;
     uint8_t m_flags;
     Vector2i m_size;
 

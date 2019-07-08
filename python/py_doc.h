@@ -1802,7 +1802,7 @@ static const char *__doc_nanogui_RenderPass_DepthTest_NotEqual = R"doc()doc";
 static const char *__doc_nanogui_RenderPass_RenderPass =
 R"doc(Create a new render pass for rendering to a specific set of targets
 
-Parameter ``color_target``:
+Parameter ``color_targets``:
     One or more target objects to which color information will be
     rendered. Must either be a Screen or a Texture instance.
 
@@ -1827,7 +1827,15 @@ Parameter ``clear_depth``:
     Clear value for the depth target (if applicable)
 
 Parameter ``clear_stencil``:
-    Clear value for the stencil target (if applicable))doc";
+    Clear value for the stencil target (if applicable)
+
+Parameter ``blit_target``:
+    When rendering finishes, the render pass can (optionally) blit the
+    framebuffer to another target (which can either be another
+    RenderPass instance or a Screen instance). This is mainly useful
+    for multisample antialiasing (MSAA) rendering where set of multi-
+    sample framebuffers must be converted into ordinary framebuffers
+    for display.)doc";
 
 static const char *__doc_nanogui_RenderPass_begin =
 R"doc(Begin the render pass
@@ -1850,6 +1858,8 @@ static const char *__doc_nanogui_RenderPass_end = R"doc(Finish the render pass)d
 static const char *__doc_nanogui_RenderPass_framebuffer_handle = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_active = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_blit_target = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_clear = R"doc()doc";
 
@@ -1910,22 +1920,14 @@ Parameter ``resizable``:
 Parameter ``fullscreen``:
     Specifies whether to create a windowed or full-screen view
 
-Parameter ``color_bits``:
-    Number of bits per pixel dedicated to the R/G/B color components
+Parameter ``stencil_buffer``:
+    Should an 8-bit stencil buffer be allocated? NanoVG requires this
+    to rasterize non-convex polygons. (NanoGUI does not render such
+    polygons, but your application might.)
 
-Parameter ``alpha_bits``:
-    Number of bits per pixel dedicated to the alpha channel
-
-Parameter ``depth_bits``:
-    Number of bits per pixel dedicated to the Z-buffer
-
-Parameter ``stencil_bits``:
-    Number of bits per pixel dedicated to the stencil buffer
-    (recommended to set this to 8. NanoVG can draw higher-quality
-    strokes using a stencil buffer)
-
-Parameter ``n_samples``:
-    Number of MSAA samples (set to 0 to disable)
+Parameter ``float_buffer``:
+    Should NanoGUI try to allocate a floating point framebuffer? This
+    is useful for HDR and wide-gamut displays.
 
 Parameter ``gl_major``:
     The requested OpenGL Major version number. The default is 3, if
@@ -1933,7 +1935,8 @@ Parameter ``gl_major``:
     profile (for portability reasons). For example, set this to 4 and
     gl_minor to 1 for a forward compatible core OpenGL 4.1 profile.
     Requesting an invalid profile will result in no context (and
-    therefore no GUI) being created.
+    therefore no GUI) being created. This attribute is ignored when
+    targeting OpenGL ES 2 or Metal.
 
 Parameter ``gl_minor``:
     The requested OpenGL Minor version number. The default is 2, if
@@ -1941,7 +1944,8 @@ Parameter ``gl_minor``:
     profile (for portability reasons). For example, set this to 1 and
     gl_major to 4 for a forward compatible core OpenGL 4.1 profile.
     Requesting an invalid profile will result in no context (and
-    therefore no GUI) being created.)doc";
+    therefore no GUI) being created. This attribute is ignored when
+    targeting OpenGL ES 2 or Metal.)doc";
 
 static const char *__doc_nanogui_Screen_Screen_2 =
 R"doc(Default constructor
@@ -1967,6 +1971,8 @@ static const char *__doc_nanogui_Screen_clear =
 R"doc(Clear the screen with the background color (glClearColor, glClear,
 etc.))doc";
 
+static const char *__doc_nanogui_Screen_component_format = R"doc(Return the component format underlying the screen)doc";
+
 static const char *__doc_nanogui_Screen_cursor_pos_callback_event = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_dispose_window = R"doc()doc";
@@ -1989,6 +1995,12 @@ DPI screens))doc";
 
 static const char *__doc_nanogui_Screen_glfw_window = R"doc(Return a pointer to the underlying GLFW window data structure)doc";
 
+static const char *__doc_nanogui_Screen_has_depth_buffer = R"doc(Does the framebuffer have a depth buffer)doc";
+
+static const char *__doc_nanogui_Screen_has_float_buffer = R"doc(Does the framebuffer use a floating point representation)doc";
+
+static const char *__doc_nanogui_Screen_has_stencil_buffer = R"doc(Does the framebuffer have a stencil buffer)doc";
+
 static const char *__doc_nanogui_Screen_initialize = R"doc(Initialize the Screen)doc";
 
 static const char *__doc_nanogui_Screen_key_callback_event = R"doc()doc";
@@ -2001,17 +2013,19 @@ static const char *__doc_nanogui_Screen_m_background = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_caption = R"doc()doc";
 
-static const char *__doc_nanogui_Screen_m_color_bits = R"doc()doc";
-
 static const char *__doc_nanogui_Screen_m_cursor = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_cursors = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_depth_buffer = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_drag_active = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_drag_widget = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_fbsize = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_float_buffer = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_focus_path = R"doc()doc";
 
@@ -2039,6 +2053,8 @@ static const char *__doc_nanogui_Screen_m_resize_callback = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_shutdown_glfw = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_m_stencil_buffer = R"doc()doc";
+
 static const char *__doc_nanogui_Screen_mouse_button_callback_event = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_mouse_pos = R"doc(Return the last observed mouse position value)doc";
@@ -2048,6 +2064,8 @@ static const char *__doc_nanogui_Screen_move_window_to_front = R"doc()doc";
 static const char *__doc_nanogui_Screen_nvg_context = R"doc(Return a pointer to the underlying NanoVG draw context)doc";
 
 static const char *__doc_nanogui_Screen_perform_layout = R"doc(Compute the layout of all widgets)doc";
+
+static const char *__doc_nanogui_Screen_pixel_format = R"doc(Return the pixel format underlying the screen)doc";
 
 static const char *__doc_nanogui_Screen_pixel_ratio =
 R"doc(Return the ratio between pixel and device coordinates (e.g. >= 2 on
@@ -2622,6 +2640,10 @@ static const char *__doc_nanogui_Texture_InterpolationMode_Trilinear = R"doc(Tri
 
 static const char *__doc_nanogui_Texture_PixelFormat = R"doc(Overall format of the texture (e.g. luminance-only or RGBA))doc";
 
+static const char *__doc_nanogui_Texture_PixelFormat_BGR = R"doc(BGR bitmap)doc";
+
+static const char *__doc_nanogui_Texture_PixelFormat_BGRA = R"doc(BGR bitmap + alpha channel)doc";
+
 static const char *__doc_nanogui_Texture_PixelFormat_Depth = R"doc(Depth map)doc";
 
 static const char *__doc_nanogui_Texture_PixelFormat_DepthStencil = R"doc(Combined depth + stencil map)doc";
@@ -2680,6 +2702,8 @@ static const char *__doc_nanogui_Texture_m_pixel_format = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_renderbuffer_handle = R"doc()doc";
 
+static const char *__doc_nanogui_Texture_m_samples = R"doc()doc";
+
 static const char *__doc_nanogui_Texture_m_size = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_texture_handle = R"doc()doc";
@@ -2691,6 +2715,8 @@ static const char *__doc_nanogui_Texture_pixel_format = R"doc(Return the pixel f
 static const char *__doc_nanogui_Texture_renderbuffer_handle = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_resize = R"doc(Resize the texture (discards the current contents))doc";
+
+static const char *__doc_nanogui_Texture_samples = R"doc(Return the number of samples (MSAA))doc";
 
 static const char *__doc_nanogui_Texture_size = R"doc(Return the size of this texture)doc";
 

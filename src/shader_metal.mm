@@ -70,22 +70,34 @@ Shader::Shader(RenderPass *render_pass,
     pipeline_desc.fragmentFunction = fragment_func;
 
     std::vector<ref<Object>> &targets = render_pass->targets();
+    int sample_count = 1;
 
     for (size_t i = 0; i < targets.size(); ++i) {
         Texture *texture = dynamic_cast<Texture *>(targets[i].get());
         Screen *screen = dynamic_cast<Screen *>(targets[i].get());
 
         MTLPixelFormat pixel_format;
-        if (targets[i].get() == nullptr)
+        if (targets[i].get() == nullptr) {
             continue;
-        else if (screen)
-            pixel_format = ((__bridge CAMetalLayer *) screen->metal_layer()).pixelFormat;
-        else if (texture)
+        } else if (screen) {
+            if (i == 0 || i == 1) {
+                Texture *depth_stencil_texture = screen->depth_stencil_texture();
+                if (!depth_stencil_texture ||
+                    (i == 1 && depth_stencil_texture->pixel_format() !=
+                                   Texture::PixelFormat::DepthStencil))
+                    throw std::runtime_error("Shader::Shader(): Screen not configured for depth/stencil rendering");
+                pixel_format = ((__bridge id<MTLTexture>) depth_stencil_texture->texture_handle()).pixelFormat;
+            } else {
+                pixel_format = ((__bridge CAMetalLayer *) screen->metal_layer()).pixelFormat;
+            }
+        } else if (texture) {
             pixel_format = ((__bridge id<MTLTexture>) texture->texture_handle()).pixelFormat;
-        else
+            sample_count = std::max((int) texture->samples(), sample_count);
+        } else {
             throw std::runtime_error(
                 "Shader::Shader(): invalid target type! (either a Screen or "
                 "Texture instance must be specified!)");
+        }
 
         if (i == 0)
             pipeline_desc.depthAttachmentPixelFormat = pixel_format;
@@ -94,6 +106,7 @@ Shader::Shader(RenderPass *render_pass,
         else
             pipeline_desc.colorAttachments[i-2].pixelFormat = pixel_format;
     }
+    pipeline_desc.sampleCount = sample_count;
 
     NSError *error = nil;
     MTLRenderPipelineReflection *reflection = nil;
