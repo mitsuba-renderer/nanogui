@@ -65,27 +65,21 @@ Texture::Texture(PixelFormat pixel_format,
 
     (void) pixel_format_gl; (void) component_format_gl;
 
-    GLenum tex_mode = samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-
     if (flags & (uint8_t) TextureFlags::ShaderRead) {
         CHK(glGenTextures(1, &m_texture_handle));
-        CHK(glBindTexture(tex_mode, m_texture_handle));
-        CHK(glTexParameteri(tex_mode, GL_TEXTURE_MAG_FILTER, mag_filter));
-        CHK(glTexParameteri(tex_mode, GL_TEXTURE_MIN_FILTER, min_filter));
-        CHK(glTexParameteri(tex_mode, GL_TEXTURE_WRAP_S, wrap_mode_gl));
-        CHK(glTexParameteri(tex_mode, GL_TEXTURE_WRAP_T, wrap_mode_gl));
+        CHK(glBindTexture(GL_TEXTURE_2D, m_texture_handle));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode_gl));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode_gl));
 
         if (flags & (uint8_t) TextureFlags::RenderTarget)
             upload(nullptr);
     } else if (flags & (uint8_t) TextureFlags::RenderTarget) {
         CHK(glGenRenderbuffers(1, &m_renderbuffer_handle));
         CHK(glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer_handle));
-        if (samples == 1)
-            CHK(glRenderbufferStorage(GL_RENDERBUFFER, internal_format_gl,
-                                      (GLsizei) m_size.x(), (GLsizei) m_size.y()));
-        else
-            CHK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internal_format_gl,
-                                                 (GLsizei) m_size.x(), (GLsizei) m_size.y()));
+        CHK(glRenderbufferStorage(GL_RENDERBUFFER, internal_format_gl,
+                              (GLsizei) m_size.x(), (GLsizei) m_size.y()));
     } else {
         throw std::runtime_error(
             "Texture::Texture(): flags must either specify ShaderRead, RenderTarget, or both!");
@@ -94,15 +88,10 @@ Texture::Texture(PixelFormat pixel_format,
 
 Texture::~Texture() {
     CHK(glDeleteTextures(1, &m_texture_handle));
-    CHK(glDeleteRenderbuffers(1, &m_texture_handle));
+    CHK(glDeleteRenderbuffers(1, &m_renderbuffer_handle));
 }
 
 void Texture::upload(const uint8_t *data) {
-    if (m_texture_handle == 0)
-        throw std::runtime_error("Texture::upload(): no texture handle!");
-    else if (m_samples > 1 && data != nullptr)
-        throw std::runtime_error("Texture::upload(): only implemented for samples=1!");
-
     GLenum pixel_format_gl,
            component_format_gl,
            internal_format_gl;
@@ -113,25 +102,25 @@ void Texture::upload(const uint8_t *data) {
                           component_format_gl,
                           internal_format_gl);
 
-    GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-    CHK(glBindTexture(tex_mode, m_texture_handle));
+    if (m_texture_handle != 0) {
+        CHK(glBindTexture(GL_TEXTURE_2D, m_texture_handle));
+        CHK(glTexImage2D(GL_TEXTURE_2D, 0, internal_format_gl,
+                     (GLsizei) m_size.x(), (GLsizei) m_size.y(),
+                     0, pixel_format_gl, component_format_gl,
+                     data));
 
-    if (m_samples == 1)
-        CHK(glTexImage2D(GL_TEXTURE_2D, 0, internal_format_gl, (GLsizei) m_size.x(),
-                         (GLsizei) m_size.y(), 0, pixel_format_gl, component_format_gl, data));
-    else
-        CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_samples, internal_format_gl,
-                                    (GLsizei) m_size.x(), (GLsizei) m_size.y(), false));
-
-    if (data != nullptr && m_interpolation_mode == InterpolationMode::Trilinear)
-        CHK(glGenerateMipmap(GL_TEXTURE_2D));
+        if (m_interpolation_mode == InterpolationMode::Trilinear)
+            CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    } else {
+        CHK(glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer_handle));
+        CHK(glRenderbufferStorage(GL_RENDERBUFFER, internal_format_gl,
+                              (GLsizei) m_size.x(), (GLsizei) m_size.y()));
+    }
 }
 
 void Texture::download(uint8_t *data) {
     if (m_texture_handle == 0)
-        throw std::runtime_error("Texture::download(): no texture handle!");
-    else if (m_samples > 1)
-        throw std::runtime_error("Texture::download(): only implemented for samples=1!");
+        throw std::runtime_error("Texture::upload(): no texture handle!");
 
     GLenum pixel_format_gl,
            component_format_gl,
@@ -163,6 +152,8 @@ void Texture::download(uint8_t *data) {
 }
 
 void Texture::resize(const Vector2i &size) {
+    if (m_size == size)
+        return;
     m_size = size;
     upload(nullptr);
 }
@@ -176,10 +167,6 @@ static void gl_map_texture_format(Texture::PixelFormat &pixel_format,
     using ComponentFormat = Texture::ComponentFormat;
 
     pixel_format_gl = component_format_gl = internal_format_gl = 0;
-    if (pixel_format == PixelFormat::BGR)
-        pixel_format = PixelFormat::RGB;
-    else if (pixel_format == PixelFormat::BGRA)
-        pixel_format = PixelFormat::RGBA;
 
     switch (pixel_format) {
         case PixelFormat::R:
@@ -323,5 +310,6 @@ static void gl_map_texture_format(Texture::PixelFormat &pixel_format,
         throw std::runtime_error("gl_map_texture_format(): component format unsupported "
                                  "for the given pixel format!");
 }
+
 
 NAMESPACE_END(nanogui)

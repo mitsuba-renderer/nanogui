@@ -88,7 +88,7 @@ Shader::Shader(RenderPass *render_pass,
                 "Shader::Shader(): argument name 'indices' is reserved!");
 
         Buffer &buf = m_buffers[name];
-        buf.dim = { 1, 1, 1 };
+        buf.shape = { 1, 1, 1 };
         buf.ndim = 1;
         buf.index = index;
         buf.type = type;
@@ -101,17 +101,17 @@ Shader::Shader(RenderPass *render_pass,
 
             case GL_FLOAT_VEC2:
                 buf.dtype = EnokiType::Float32;
-                buf.dim[0] = 2;
+                buf.shape[0] = 2;
                 break;
 
             case GL_FLOAT_VEC3:
                 buf.dtype = EnokiType::Float32;
-                buf.dim[0] = 3;
+                buf.shape[0] = 3;
                 break;
 
             case GL_FLOAT_VEC4:
                 buf.dtype = EnokiType::Float32;
-                buf.dim[0] = 4;
+                buf.shape[0] = 4;
                 break;
 
             case GL_INT:
@@ -121,17 +121,17 @@ Shader::Shader(RenderPass *render_pass,
 
             case GL_INT_VEC2:
                 buf.dtype = EnokiType::Int32;
-                buf.dim[0] = 2;
+                buf.shape[0] = 2;
                 break;
 
             case GL_INT_VEC3:
                 buf.dtype = EnokiType::Int32;
-                buf.dim[0] = 3;
+                buf.shape[0] = 3;
                 break;
 
             case GL_INT_VEC4:
                 buf.dtype = EnokiType::Int32;
-                buf.dim[0] = 4;
+                buf.shape[0] = 4;
                 break;
 
             case GL_UNSIGNED_INT:
@@ -141,17 +141,17 @@ Shader::Shader(RenderPass *render_pass,
 
             case GL_UNSIGNED_INT_VEC2:
                 buf.dtype = EnokiType::UInt32;
-                buf.dim[0] = 2;
+                buf.shape[0] = 2;
                 break;
 
             case GL_UNSIGNED_INT_VEC3:
                 buf.dtype = EnokiType::UInt32;
-                buf.dim[0] = 3;
+                buf.shape[0] = 3;
                 break;
 
             case GL_UNSIGNED_INT_VEC4:
                 buf.dtype = EnokiType::UInt32;
-                buf.dim[0] = 4;
+                buf.shape[0] = 4;
                 break;
 
             case GL_BOOL:
@@ -161,34 +161,34 @@ Shader::Shader(RenderPass *render_pass,
 
             case GL_BOOL_VEC2:
                 buf.dtype = EnokiType::Bool;
-                buf.dim[0] = 2;
+                buf.shape[0] = 2;
                 break;
 
             case GL_BOOL_VEC3:
                 buf.dtype = EnokiType::Bool;
-                buf.dim[0] = 3;
+                buf.shape[0] = 3;
                 break;
 
             case GL_BOOL_VEC4:
                 buf.dtype = EnokiType::Bool;
-                buf.dim[0] = 4;
+                buf.shape[0] = 4;
                 break;
 
             case GL_FLOAT_MAT2:
                 buf.dtype = EnokiType::Float32;
-                buf.dim[0] = buf.dim[1] = 2;
+                buf.shape[0] = buf.shape[1] = 2;
                 buf.ndim = 2;
                 break;
 
             case GL_FLOAT_MAT3:
                 buf.dtype = EnokiType::Float32;
-                buf.dim[0] = buf.dim[1] = 3;
+                buf.shape[0] = buf.shape[1] = 3;
                 buf.ndim = 2;
                 break;
 
             case GL_FLOAT_MAT4:
                 buf.dtype = EnokiType::Float32;
-                buf.dim[0] = buf.dim[1] = 4;
+                buf.shape[0] = buf.shape[1] = 4;
                 buf.ndim = 2;
                 break;
 
@@ -205,9 +205,9 @@ Shader::Shader(RenderPass *render_pass,
 
         if (type == VertexBuffer) {
             for (int i = (int) buf.ndim - 1; i >= 0; --i) {
-                buf.dim[i + 1] = buf.dim[i];
+                buf.shape[i + 1] = buf.shape[i];
             }
-            buf.dim[0] = 0;
+            buf.shape[0] = 0;
             buf.ndim++;
         }
     };
@@ -235,7 +235,7 @@ Shader::Shader(RenderPass *render_pass,
     Buffer &buf = m_buffers["indices"];
     buf.index = -1;
     buf.ndim = 1;
-    buf.dim = { 0, 1, 1 };
+    buf.shape = { 0, 1, 1 };
     buf.type = IndexBuffer;
     buf.dtype = EnokiType::UInt32;
 
@@ -254,7 +254,7 @@ Shader::~Shader() {
 void Shader::set_buffer(const std::string &name,
                         EnokiType dtype,
                         size_t ndim,
-                        std::array<size_t, 3> dim,
+                        std::array<size_t, 3> shape,
                         const void *data) {
     auto it = m_buffers.find(name);
     if (it == m_buffers.end())
@@ -265,24 +265,24 @@ void Shader::set_buffer(const std::string &name,
 
     bool mismatch = ndim != buf.ndim || dtype != buf.dtype;
     if (buf.type == UniformBuffer) {
-        mismatch |= dim != buf.dim;
+        mismatch |= shape != buf.shape;
     } else if (buf.type == VertexBuffer || buf.type == IndexBuffer) {
         for (int i = 1; i < 3; ++i)
-            mismatch |= dim[i] != buf.dim[i];
+            mismatch |= shape[i] != buf.shape[i];
     }
 
     if (mismatch) {
         Buffer arg;
         arg.type = buf.type;
         arg.ndim = ndim;
-        arg.dim = dim;
+        arg.shape = shape;
         arg.dtype = dtype;
         throw std::runtime_error("Buffer::set_buffer(\"" + name +
                                  "\"): shape/dtype mismatch: expected " + buf.to_string() +
                                  ", got " + arg.to_string());
     }
 
-    size_t size = enoki_type_size(dtype) * dim[0] * dim[1] * dim[2];
+    size_t size = enoki_type_size(dtype) * shape[0] * shape[1] * shape[2];
 
     if (buf.type == UniformBuffer) {
         if (buf.buffer && buf.size != size) {
@@ -308,7 +308,7 @@ void Shader::set_buffer(const std::string &name,
 
     buf.dtype = dtype;
     buf.ndim  = ndim;
-    buf.dim   = dim;
+    buf.shape   = shape;
     buf.size  = size;
     buf.dirty = true;
 }
@@ -381,10 +381,10 @@ void Shader::begin() {
 
                 if (buf.ndim != 2)
                     throw std::runtime_error("\"" + m_name + "\": vertex attribute \"" + key +
-                                             "\" has an invalid dimension (expected ndim=2, got " +
+                                             "\" has an invalid shapeension (expected ndim=2, got " +
                                              std::to_string(buf.ndim) + ")");
 
-                CHK(glVertexAttribPointer(buf.index, (GLint) buf.dim[1],
+                CHK(glVertexAttribPointer(buf.index, (GLint) buf.shape[1],
                                           gl_type, GL_FALSE, 0, nullptr));
                 break;
 
@@ -400,22 +400,22 @@ void Shader::begin() {
             case UniformBuffer:
                 if (buf.ndim > 2)
                     throw std::runtime_error("\"" + m_name + "\": uniform attribute \"" + key +
-                                             "\" has an invalid dimension (expected ndim=0/1/2, got " +
+                                             "\" has an invalid shapeension (expected ndim=0/1/2, got " +
                                              std::to_string(buf.ndim) + ")");
                 switch (buf.dtype) {
                     case EnokiType::Float32:
                         if (buf.ndim < 2) {
                             const float *v = (const float *) buf.buffer;
-                            switch (buf.dim[0]) {
+                            switch (buf.shape[0]) {
                                 case 1: CHK(glUniform1f(buf.index, v[0])); break;
                                 case 2: CHK(glUniform2f(buf.index, v[0], v[1])); break;
                                 case 3: CHK(glUniform3f(buf.index, v[0], v[1], v[2])); break;
                                 case 4: CHK(glUniform4f(buf.index, v[0], v[1], v[2], v[3])); break;
                                 default: uniform_error = true; break;
                             }
-                        } else if (buf.ndim == 2 && buf.dim[0] == buf.dim[1]) {
+                        } else if (buf.ndim == 2 && buf.shape[0] == buf.shape[1]) {
                             const float *v = (const float *) buf.buffer;
-                            switch (buf.dim[0]) {
+                            switch (buf.shape[0]) {
                                 case 2: CHK(glUniformMatrix2fv(buf.index, 1, GL_FALSE, v)); break;
                                 case 3: CHK(glUniformMatrix3fv(buf.index, 1, GL_FALSE, v)); break;
                                 case 4: CHK(glUniformMatrix4fv(buf.index, 1, GL_FALSE, v)); break;
@@ -429,7 +429,7 @@ void Shader::begin() {
                     case EnokiType::Int32: {
                             const int32_t *v = (const int32_t *) buf.buffer;
                             if (buf.ndim < 2) {
-                                switch (buf.dim[0]) {
+                                switch (buf.shape[0]) {
                                     case 1: CHK(glUniform1i(buf.index, v[0])); break;
                                     case 2: CHK(glUniform2i(buf.index, v[0], v[1])); break;
                                     case 3: CHK(glUniform3i(buf.index, v[0], v[1], v[2])); break;
@@ -445,7 +445,7 @@ void Shader::begin() {
                     case EnokiType::UInt32: {
                             const uint32_t *v = (const uint32_t *) buf.buffer;
                             if (buf.ndim < 2) {
-                                switch (buf.dim[0]) {
+                                switch (buf.shape[0]) {
                                     case 1: CHK(glUniform1ui(buf.index, v[0])); break;
                                     case 2: CHK(glUniform2ui(buf.index, v[0], v[1])); break;
                                     case 3: CHK(glUniform3ui(buf.index, v[0], v[1], v[2])); break;
@@ -461,7 +461,7 @@ void Shader::begin() {
                     case EnokiType::Bool: {
                             const uint8_t *v = (const uint8_t *) buf.buffer;
                             if (buf.ndim < 2) {
-                                switch (buf.dim[0]) {
+                                switch (buf.shape[0]) {
                                     case 1: CHK(glUniform1i(buf.index, v[0])); break;
                                     case 2: CHK(glUniform2i(buf.index, v[0], v[1])); break;
                                     case 3: CHK(glUniform3i(buf.index, v[0], v[1], v[2])); break;

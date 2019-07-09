@@ -43,7 +43,7 @@ int main(int /* argc */, char ** /* argv */) {
             // See include/nanogui/screen.h for what all of these represent.
             screen = new Screen(Vector2i(500, 700), "NanoGUI test [GL 4.1]",
                                 /* resizable */ true, /* fullscreen */ false,
-                                /* depth_buffer */ false, /* stencil_buffer */ false,
+                                /* depth_buffer */ true, /* stencil_buffer */ true,
                                 /* float_buffer */ false, /* gl_major */ 4,
                                 /* gl_minor */ 1);
         } else {

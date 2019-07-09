@@ -479,6 +479,66 @@ static const char *__doc_nanogui_Button_set_text_color = R"doc(Sets the text col
 
 static const char *__doc_nanogui_Button_text_color = R"doc(Returns the text color of the caption of this Button.)doc";
 
+static const char *__doc_nanogui_Canvas =
+R"doc(Canvas widget for rendering OpenGL/GLES2/Metal content
+
+Canvas widget that can be used to display arbitrary OpenGL content.
+This is useful to display and manipulate 3D objects as part of an
+interactive application. The implementation uses scissoring to ensure
+that rendered objects don't spill into neighboring widgets.
+
+```
+**Usage**
+ Override :func:`nanogui::GLCanvas::draw_contents` in subclasses to provide
+ custom drawing code.  See :ref:`nanogui_example_4`.
+
+```)doc";
+
+static const char *__doc_nanogui_Canvas_Canvas =
+R"doc(Creates a new Canvas widget
+
+Parameter ``parent``:
+    The parent widget
+
+Parameter ``samples``:
+    The number of pixel samples (MSAA)
+
+Parameter ``has_depth``:
+    Should the widget allocate a depth buffer for the underlying
+    render pass?
+
+Parameter ``has_stencil``:
+    Should the widget allocate a stencil buffer for the underlying
+    render pass?)doc";
+
+static const char *__doc_nanogui_Canvas_background_color = R"doc(Return whether the widget border is drawn)doc";
+
+static const char *__doc_nanogui_Canvas_border_color = R"doc(Return whether the widget border is drawn)doc";
+
+static const char *__doc_nanogui_Canvas_draw = R"doc(Draw the widget)doc";
+
+static const char *__doc_nanogui_Canvas_draw_border = R"doc(Return whether the widget border will be drawn)doc";
+
+static const char *__doc_nanogui_Canvas_draw_contents = R"doc(Draw the widget contents. Override this method.)doc";
+
+static const char *__doc_nanogui_Canvas_m_border_color = R"doc()doc";
+
+static const char *__doc_nanogui_Canvas_m_color_texture = R"doc()doc";
+
+static const char *__doc_nanogui_Canvas_m_depth_stencil_texture = R"doc()doc";
+
+static const char *__doc_nanogui_Canvas_m_draw_border = R"doc()doc";
+
+static const char *__doc_nanogui_Canvas_m_render_pass = R"doc()doc";
+
+static const char *__doc_nanogui_Canvas_render_pass = R"doc(Return the render pass associated with the canvas object)doc";
+
+static const char *__doc_nanogui_Canvas_set_background_color = R"doc(Specify the widget background color)doc";
+
+static const char *__doc_nanogui_Canvas_set_border_color = R"doc(Specify the widget border color)doc";
+
+static const char *__doc_nanogui_Canvas_set_draw_border = R"doc(Specify whether to draw the widget border)doc";
+
 static const char *__doc_nanogui_CheckBox =
 R"doc(Two-state check box widget.
 
@@ -1019,46 +1079,6 @@ static const char *__doc_nanogui_FormHelper_widget_font_size = R"doc(The size of
 
 static const char *__doc_nanogui_FormHelper_window = R"doc(Access the currently active Window instance)doc";
 
-static const char *__doc_nanogui_GLCanvas =
-R"doc(Canvas widget for rendering OpenGL content. This widget was
-contributed by Jan Winkler.
-
-Canvas widget that can be used to display arbitrary OpenGL content.
-This is useful to display and manipulate 3D objects as part of an
-interactive application. The implementation uses scissoring to ensure
-that rendered objects don't spill into neighboring widgets.
-
-```
-**Usage**
- Override :func:`nanogui::GLCanvas::draw_gl` in subclasses to provide
- custom drawing code.  See :ref:`nanogui_example_4`.
-
-```)doc";
-
-static const char *__doc_nanogui_GLCanvas_GLCanvas =
-R"doc(Creates a GLCanvas attached to the specified parent.
-
-Parameter ``parent``:
-    The Widget to attach this GLCanvas to.)doc";
-
-static const char *__doc_nanogui_GLCanvas_background_color = R"doc(Return the background color)doc";
-
-static const char *__doc_nanogui_GLCanvas_draw = R"doc(Draw the canvas.)doc";
-
-static const char *__doc_nanogui_GLCanvas_draw_border = R"doc(Return whether the widget border gets drawn or not)doc";
-
-static const char *__doc_nanogui_GLCanvas_draw_gl = R"doc(Draw the GL scene. Override this method to draw the actual GL content.)doc";
-
-static const char *__doc_nanogui_GLCanvas_draw_widget_border = R"doc(Internal helper function for drawing the widget border)doc";
-
-static const char *__doc_nanogui_GLCanvas_m_background_color = R"doc(The background color (what is used with ``glClearColor``).)doc";
-
-static const char *__doc_nanogui_GLCanvas_m_draw_border = R"doc(Whether to draw the widget border or not.)doc";
-
-static const char *__doc_nanogui_GLCanvas_set_background_color = R"doc(Set the background color)doc";
-
-static const char *__doc_nanogui_GLCanvas_set_draw_border = R"doc(Set whether to draw the widget border or not)doc";
-
 static const char *__doc_nanogui_GLFramebuffer = R"doc(Helper class for creating framebuffer objects.)doc";
 
 static const char *__doc_nanogui_GLFramebuffer_GLFramebuffer = R"doc(Default constructor: unusable until you call the ``init()`` method)doc";
@@ -1241,17 +1261,9 @@ static const char *__doc_nanogui_GLShader_m_fragment_shader =
 R"doc(The fragment shader handle of this GLShader (as returned by
 ``glCreateShader``).)doc";
 
-static const char *__doc_nanogui_GLShader_m_geometry_shader =
-R"doc(The geometry shader handle (if requested) of this GLShader (as
-returned by ``glCreateShader``).)doc";
-
 static const char *__doc_nanogui_GLShader_m_name = R"doc(The registered name of this GLShader.)doc";
 
 static const char *__doc_nanogui_GLShader_m_program_shader = R"doc(The OpenGL program handle (as returned by ``glCreateProgram``).)doc";
-
-static const char *__doc_nanogui_GLShader_m_vertex_array_object =
-R"doc(The vertex array associated with this GLShader (as returned by
-``glGenVertexArrays``).)doc";
 
 static const char *__doc_nanogui_GLShader_m_vertex_shader =
 R"doc(The vertex shader handle of this GLShader (as returned by
@@ -1816,26 +1828,16 @@ Parameter ``stencil_target``:
     'depth_target' in case the texture has the pixel format
     Texture::PixelFormat::DepthStencil.
 
-Parameter ``clear``:
-    Should enter() begin by clearing all buffers?
-
-Parameter ``clear_color``:
-    Clear color for each color target (defaults to black if none are
-    specified)
-
-Parameter ``clear_depth``:
-    Clear value for the depth target (if applicable)
-
-Parameter ``clear_stencil``:
-    Clear value for the stencil target (if applicable)
-
 Parameter ``blit_target``:
     When rendering finishes, the render pass can (optionally) blit the
     framebuffer to another target (which can either be another
     RenderPass instance or a Screen instance). This is mainly useful
     for multisample antialiasing (MSAA) rendering where set of multi-
     sample framebuffers must be converted into ordinary framebuffers
-    for display.)doc";
+    for display.
+
+Parameter ``clear``:
+    Should enter() begin by clearing all buffers?)doc";
 
 static const char *__doc_nanogui_RenderPass_begin =
 R"doc(Begin the render pass
@@ -1849,13 +1851,25 @@ The Python bindings also include extra ``__enter__`` and ``__exit__``
 aliases so that the render pass can be activated via Pythons 'with'
 statement.)doc";
 
+static const char *__doc_nanogui_RenderPass_blit_to =
+R"doc(Blit the framebuffer to another target (which can either be another
+RenderPass instance or a Screen instance).)doc";
+
+static const char *__doc_nanogui_RenderPass_clear_color = R"doc(Return the clear color for a given color attachment)doc";
+
+static const char *__doc_nanogui_RenderPass_clear_depth = R"doc(Return the clear depth for the depth attachment)doc";
+
+static const char *__doc_nanogui_RenderPass_clear_stencil = R"doc(Return the clear stencil for the stencil attachment)doc";
+
+static const char *__doc_nanogui_RenderPass_command_buffer = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_command_encoder = R"doc()doc";
+
 static const char *__doc_nanogui_RenderPass_cull_mode = R"doc(Return the culling mode associated with the render pass)doc";
 
 static const char *__doc_nanogui_RenderPass_depth_test = R"doc(Return the depth test and depth write mask of this render pass)doc";
 
 static const char *__doc_nanogui_RenderPass_end = R"doc(Finish the render pass)doc";
-
-static const char *__doc_nanogui_RenderPass_framebuffer_handle = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_active = R"doc()doc";
 
@@ -1869,15 +1883,17 @@ static const char *__doc_nanogui_RenderPass_m_clear_depth = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_clear_stencil = R"doc()doc";
 
+static const char *__doc_nanogui_RenderPass_m_command_buffer = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_command_encoder = R"doc()doc";
+
 static const char *__doc_nanogui_RenderPass_m_cull_mode = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_depth_test = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_depth_write = R"doc()doc";
 
-static const char *__doc_nanogui_RenderPass_m_framebuffer_handle = R"doc()doc";
-
-static const char *__doc_nanogui_RenderPass_m_framebuffer_size = R"doc()doc";
+static const char *__doc_nanogui_RenderPass_m_pass_descriptor = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_targets = R"doc()doc";
 
@@ -1886,6 +1902,12 @@ static const char *__doc_nanogui_RenderPass_m_viewport_offset = R"doc()doc";
 static const char *__doc_nanogui_RenderPass_m_viewport_size = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_resize = R"doc(Resize all texture targets attached to the render pass)doc";
+
+static const char *__doc_nanogui_RenderPass_set_clear_color = R"doc(Set the clear color for a given color attachment)doc";
+
+static const char *__doc_nanogui_RenderPass_set_clear_depth = R"doc(Set the clear depth for the depth attachment)doc";
+
+static const char *__doc_nanogui_RenderPass_set_clear_stencil = R"doc(Set the clear stencil for the stencil attachment)doc";
 
 static const char *__doc_nanogui_RenderPass_set_cull_mode = R"doc(Specify the culling mode associated with the render pass)doc";
 
@@ -1975,6 +1997,8 @@ static const char *__doc_nanogui_Screen_component_format = R"doc(Return the comp
 
 static const char *__doc_nanogui_Screen_cursor_pos_callback_event = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_depth_stencil_texture = R"doc(Return the associated depth/stencil texture)doc";
+
 static const char *__doc_nanogui_Screen_dispose_window = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_draw_all = R"doc(Draw the Screen contents)doc";
@@ -2019,6 +2043,8 @@ static const char *__doc_nanogui_Screen_m_cursors = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_depth_buffer = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_m_depth_stencil_texture = R"doc()doc";
+
 static const char *__doc_nanogui_Screen_m_drag_active = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_drag_widget = R"doc()doc";
@@ -2034,6 +2060,8 @@ static const char *__doc_nanogui_Screen_m_fullscreen = R"doc()doc";
 static const char *__doc_nanogui_Screen_m_glfw_window = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_last_interaction = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_metal_texture = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_modifiers = R"doc()doc";
 
@@ -2055,6 +2083,10 @@ static const char *__doc_nanogui_Screen_m_shutdown_glfw = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_stencil_buffer = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_metal_layer = R"doc(Return the associated CAMetalLayer object)doc";
+
+static const char *__doc_nanogui_Screen_metal_texture = R"doc(Return the texure of the currently active Metal drawable (or NULL))doc";
+
 static const char *__doc_nanogui_Screen_mouse_button_callback_event = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_mouse_pos = R"doc(Return the last observed mouse position value)doc";
@@ -2062,6 +2094,8 @@ static const char *__doc_nanogui_Screen_mouse_pos = R"doc(Return the last observ
 static const char *__doc_nanogui_Screen_move_window_to_front = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_nvg_context = R"doc(Return a pointer to the underlying NanoVG draw context)doc";
+
+static const char *__doc_nanogui_Screen_nvg_flush = R"doc(Flush all queued up NanoVG rendering commands)doc";
 
 static const char *__doc_nanogui_Screen_perform_layout = R"doc(Compute the layout of all widgets)doc";
 
@@ -2127,8 +2161,6 @@ static const char *__doc_nanogui_Shader_BufferType_VertexTexture = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_Buffer_buffer = R"doc()doc";
 
-static const char *__doc_nanogui_Shader_Buffer_dim = R"doc()doc";
-
 static const char *__doc_nanogui_Shader_Buffer_dirty = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_Buffer_dtype = R"doc()doc";
@@ -2136,6 +2168,8 @@ static const char *__doc_nanogui_Shader_Buffer_dtype = R"doc()doc";
 static const char *__doc_nanogui_Shader_Buffer_index = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_Buffer_ndim = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_Buffer_shape = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_Buffer_size = R"doc()doc";
 
@@ -2205,13 +2239,13 @@ static const char *__doc_nanogui_Shader_m_buffers = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_m_name = R"doc()doc";
 
+static const char *__doc_nanogui_Shader_m_pipeline_state = R"doc()doc";
+
 static const char *__doc_nanogui_Shader_m_render_pass = R"doc()doc";
 
-static const char *__doc_nanogui_Shader_m_shader_handle = R"doc()doc";
-
-static const char *__doc_nanogui_Shader_m_vertex_array_handle = R"doc()doc";
-
 static const char *__doc_nanogui_Shader_name = R"doc(Return the name of this shader)doc";
+
+static const char *__doc_nanogui_Shader_pipeline_state = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_render_pass = R"doc(Return the render pass associated with this shader)doc";
 
@@ -2231,9 +2265,9 @@ R"doc(Associate a texture with a named shader parameter
 
 The association will be replaced if it is already present.)doc";
 
-static const char *__doc_nanogui_Shader_shader_handle = R"doc()doc";
-
-static const char *__doc_nanogui_Shader_vertex_array_handle = R"doc()doc";
+static const char *__doc_nanogui_Shader_set_uniform =
+R"doc(Upload a uniform variable (e.g. a vector or matrix) that will be
+associated with a named shader parameter.)doc";
 
 static const char *__doc_nanogui_Slider = R"doc(Fractional slider widget with mouse control.)doc";
 
@@ -2700,7 +2734,7 @@ static const char *__doc_nanogui_Texture_m_interpolation_mode = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_pixel_format = R"doc()doc";
 
-static const char *__doc_nanogui_Texture_m_renderbuffer_handle = R"doc()doc";
+static const char *__doc_nanogui_Texture_m_sampler_state_handle = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_samples = R"doc()doc";
 
@@ -2712,9 +2746,9 @@ static const char *__doc_nanogui_Texture_m_wrap_mode = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_pixel_format = R"doc(Return the pixel format)doc";
 
-static const char *__doc_nanogui_Texture_renderbuffer_handle = R"doc()doc";
-
 static const char *__doc_nanogui_Texture_resize = R"doc(Resize the texture (discards the current contents))doc";
+
+static const char *__doc_nanogui_Texture_sampler_state_handle = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_samples = R"doc(Return the number of samples (MSAA))doc";
 
@@ -3392,6 +3426,32 @@ Remark:
     returned handle causes application to wait for the termination of
     the main loop and then swap the two thread environments back into
     their initial configuration.)doc";
+
+static const char *__doc_nanogui_metal_command_queue =
+R"doc(Return a pointer to the underlying Metal command queue
+(id<MTLCommandQueue>))doc";
+
+static const char *__doc_nanogui_metal_device = R"doc(Return a pointer to the underlying Metal device (id<MTLDevice>))doc";
+
+static const char *__doc_nanogui_metal_drawable_texture = R"doc(Return the id<MTLTexture> associated with an id<MTLDrawable>)doc";
+
+static const char *__doc_nanogui_metal_init = R"doc(Initialize the Metal backend)doc";
+
+static const char *__doc_nanogui_metal_layer =
+R"doc(Return a pointer to the underlying Metal command queue (CAMetalLayer
+*))doc";
+
+static const char *__doc_nanogui_metal_present_and_release_drawable = R"doc(Release a drawable back to the pool)doc";
+
+static const char *__doc_nanogui_metal_shutdown = R"doc(Shut down the Metal backend)doc";
+
+static const char *__doc_nanogui_metal_window_init = R"doc(Associate a metal layer with a NSWindow created by GLEW)doc";
+
+static const char *__doc_nanogui_metal_window_layer = R"doc(Return the CAMetalLayer associated with a given NSWindow)doc";
+
+static const char *__doc_nanogui_metal_window_next_drawable = R"doc(Acquire the next id<MTLDrawable> from the Metal layer)doc";
+
+static const char *__doc_nanogui_metal_window_set_size = R"doc(Set size of the drawable underlying an NSWindow)doc";
 
 static const char *__doc_nanogui_nanogui_check_glerror =
 R"doc(Check for OpenGL errors and warn if one is found (returns 'true' in

@@ -72,8 +72,42 @@ public:
     void set_buffer(const std::string &name,
                     enoki::EnokiType type,
                     size_t ndim,
-                    std::array<size_t, 3> dim,
+                    std::array<size_t, 3> shape,
                     const void *data);
+
+    /**
+     * \brief Upload a uniform variable (e.g. a vector or matrix) that will be
+     * associated with a named shader parameter.
+     */
+    template <typename Array> void set_uniform(const std::string &name,
+                                               const Array &value) {
+        std::array<size_t, 3> shape = { 1, 1, 1 };
+        size_t ndim;
+        const void *data;
+
+        if constexpr (enoki::array_depth_v<Array> == 0) {
+            data = &value;
+            ndim = 0;
+        } else if constexpr (enoki::array_depth_v<Array> == 1) {
+            data = value.data();
+            shape[0] = value.size();
+            ndim = 1;
+        } else if constexpr (enoki::array_depth_v<Array> == 2) {
+            data = value.data();
+            shape[0] = value.size();
+            shape[1] = value[0].size();
+            ndim = 2;
+        } else if constexpr (enoki::array_depth_v<Array> == 3) {
+            data = value.data();
+            shape[0] = value.size();
+            shape[1] = value[0].size();
+            shape[2] = value[0][0].size();
+            ndim = 3;
+        } else {
+            throw std::runtime_error("Shader::set_uniform(): invalid input array dimension!");
+        }
+        set_buffer(name, enoki::enoki_type_v<enoki::scalar_t<Array>>, ndim, shape, data);
+    }
 
     /**
      * \brief Associate a texture with a named shader parameter
@@ -150,7 +184,7 @@ protected:
         enoki::EnokiType dtype = enoki::EnokiType::Invalid;
         int index = 0;
         size_t ndim = 0;
-        std::array<size_t, 3> dim { 0, 0, 0 };
+        std::array<size_t, 3> shape { 0, 0, 0 };
         size_t size = 0;
         bool dirty = false;
 

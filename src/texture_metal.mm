@@ -17,7 +17,7 @@ Texture::Texture(PixelFormat pixel_format,
       m_wrap_mode(wrap_mode),
       m_samples(samples),
       m_flags(flags),
-      m_size(size),
+      m_size(0),
       m_texture_handle(nullptr),
       m_sampler_state_handle(nullptr) {
 
@@ -143,11 +143,13 @@ void Texture::download(uint8_t *data) {
 }
 
 void Texture::resize(const Vector2i &size) {
+    if (m_size == size)
+        return;
+    m_size = size;
     if (m_texture_handle) {
         (void) (__bridge_transfer id<MTLTexture>) m_texture_handle;
         m_texture_handle = nullptr;
     }
-    m_size = size;
 
     if (m_component_format == ComponentFormat::UInt32)
         m_component_format = ComponentFormat::UInt16;

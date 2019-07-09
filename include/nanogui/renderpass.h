@@ -60,19 +60,6 @@ public:
      *     Can be identical to 'depth_target' in case the texture has
      *     the pixel format \ref Texture::PixelFormat::DepthStencil.
      *
-     * \param clear
-     *     Should \ref enter() begin by clearing all buffers?
-     *
-     * \param clear_color
-     *     Clear color for each color target (defaults to black
-     *     if none are specified)
-     *
-     * \param clear_depth
-     *     Clear value for the depth target (if applicable)
-     *
-     * \param clear_stencil
-     *     Clear value for the stencil target (if applicable)
-     *
      * \param blit_target
      *     When rendering finishes, the render pass can (optionally) blit the
      *     framebuffer to another target (which can either be another \ref
@@ -80,15 +67,15 @@ public:
      *     useful for multisample antialiasing (MSAA) rendering where set of
      *     multi-sample framebuffers must be converted into ordinary
      *     framebuffers for display.
+     *
+     * \param clear
+     *     Should \ref enter() begin by clearing all buffers?
      */
     RenderPass(std::vector<Object *> color_targets,
                Object *depth_target = nullptr,
                Object *stencil_target = nullptr,
-               bool clear = true,
-               std::vector<Color> clear_color = {},
-               float clear_depth = 1.f,
-               uint8_t clear_stencil = 0,
-               Object *blit_target = nullptr);
+               Object *blit_target = nullptr,
+               bool clear = true);
 
     /**
      * \brief Begin the render pass
@@ -106,6 +93,24 @@ public:
 
     /// Finish the render pass
     void end();
+
+    /// Return the clear color for a given color attachment
+    const Color &clear_color(size_t index) const { return m_clear_color.at(index); }
+
+    /// Set the clear color for a given color attachment
+    void set_clear_color(size_t index, const Color &color);
+
+    /// Return the clear depth for the depth attachment
+    float clear_depth() const { return m_clear_depth; }
+
+    /// Set the clear depth for the depth attachment
+    void set_clear_depth(float depth);
+
+    /// Return the clear stencil for the stencil attachment
+    uint8_t clear_stencil() const { return m_clear_depth; }
+
+    /// Set the clear stencil for the stencil attachment
+    void set_clear_stencil(uint8_t stencil);
 
     /// Specify the depth test and depth write mask of this render pass
     void set_depth_test(DepthTest depth_test, bool depth_write);
@@ -135,6 +140,17 @@ public:
 
     /// Resize all texture targets attached to the render pass
     void resize(const Vector2i &size);
+
+    /**
+     * Blit the framebuffer to another target (which can either be another \ref
+     * RenderPass instance or a \ref Screen instance).
+     */
+    void blit_to(
+        const Vector2i &src_offset,
+        const Vector2i &src_size,
+        Object *dst,
+        const Vector2i &dst_offset
+    );
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     uint32_t framebuffer_handle() const { return m_framebuffer_handle; }

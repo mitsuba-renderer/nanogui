@@ -167,7 +167,6 @@ class MyScreen(Screen):
         return False
 
     def resize_event(self, size):
-        self.render_pass.set_viewport([0, 0], self.framebuffer_size())
         self.render_pass.resize(self.framebuffer_size())
         super(MyScreen, self).resize_event(size)
         return True

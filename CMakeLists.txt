@@ -139,14 +139,9 @@ endif()
 if (NANOGUI_BACKEND MATCHES "(OpenGL|GLES 2)")
   list(APPEND LIBNANOGUI_EXTRA_SOURCE
     include/nanogui/glutil.h src/glutil.cpp
-    include/nanogui/glcanvas.h src/glcanvas.cpp
     src/texture_gl.cpp src/shader_gl.cpp
     src/renderpass_gl.cpp src/opengl.cpp
     src/opengl_check.h
-  )
-
-  list(APPEND LIBNANOGUI_PYTHON_EXTRA_SOURCE
-    python/glcanvas.cpp
   )
 endif()
 
@@ -469,6 +464,7 @@ add_library(nanogui-obj OBJECT
   include/nanogui/colorpicker.h src/colorpicker.cpp
   include/nanogui/graph.h src/graph.cpp
   include/nanogui/tabwidget.h src/tabwidget.cpp
+  include/nanogui/canvas.h src/canvas.cpp
   include/nanogui/texture.h src/texture.cpp
   include/nanogui/shader.h src/shader.cpp
   include/nanogui/renderpass.h
@@ -549,14 +545,14 @@ endif()
 if (NANOGUI_BUILD_EXAMPLES)
   #add_executable(example1      src/example1.cpp)
   add_executable(example2      src/example2.cpp)
-  #add_executable(example3      src/example3.cpp)
-  #add_executable(example4      src/example4.cpp)
-  #add_executable(example_icons src/example_icons.cpp)
+  add_executable(example3      src/example3.cpp)
+  add_executable(example4      src/example4.cpp)
+  add_executable(example_icons src/example_icons.cpp)
   #target_link_libraries(example1      nanogui ${NANOGUI_EXTRA_LIBS})
   target_link_libraries(example2      nanogui ${NANOGUI_EXTRA_LIBS})
-  #target_link_libraries(example3      nanogui ${NANOGUI_EXTRA_LIBS})
-  #target_link_libraries(example4      nanogui ${NANOGUI_EXTRA_LIBS})
-  #target_link_libraries(example_icons nanogui ${NANOGUI_EXTRA_LIBS})
+  target_link_libraries(example3      nanogui ${NANOGUI_EXTRA_LIBS})
+  target_link_libraries(example4      nanogui ${NANOGUI_EXTRA_LIBS})
+  target_link_libraries(example_icons nanogui ${NANOGUI_EXTRA_LIBS})
 
   # Copy icons for example application
   file(COPY resources/icons DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -608,6 +604,7 @@ if (NANOGUI_BUILD_PYTHON)
     python/theme.cpp
     python/formhelper.cpp
     python/misc.cpp
+    python/canvas.cpp
     python/glutil.cpp
     python/nanovg.cpp
     python/render.cpp

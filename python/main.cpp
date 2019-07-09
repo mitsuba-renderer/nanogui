@@ -47,7 +47,7 @@ extern void register_button(py::module &m);
 extern void register_tabs(py::module &m);
 extern void register_textbox(py::module &m);
 extern void register_theme(py::module &m);
-extern void register_glcanvas(py::module &m);
+extern void register_canvas(py::module &m);
 extern void register_formhelper(py::module &m);
 extern void register_misc(py::module &m);
 extern void register_glutil(py::module &m);
@@ -254,9 +254,7 @@ PYBIND11_MODULE(nanogui, m) {
     register_tabs(m);
     register_textbox(m);
     register_theme(m);
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
-    register_glcanvas(m);
-#endif
+    register_canvas(m);
     register_formhelper(m);
     register_misc(m);
     register_glutil(m);

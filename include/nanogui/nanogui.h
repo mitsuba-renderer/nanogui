@@ -39,4 +39,4 @@
 #include <nanogui/texture.h>
 #include <nanogui/shader.h>
 #include <nanogui/renderpass.h>
-#include <nanogui/glcanvas.h>
+#include <nanogui/canvas.h>

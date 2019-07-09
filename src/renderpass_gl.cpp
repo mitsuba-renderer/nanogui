@@ -9,27 +9,22 @@ NAMESPACE_BEGIN(nanogui)
 RenderPass::RenderPass(std::vector<Object *> color_targets,
                        Object *depth_target,
                        Object *stencil_target,
-                       bool clear,
-                       std::vector<Color> clear_color,
-                       float clear_depth,
-                       uint8_t clear_stencil,
-                       Object *blit_target)
+                       Object *blit_target,
+                       bool clear)
     : m_targets(color_targets.size() + 2), m_clear(clear),
-      m_clear_color(clear_color), m_clear_depth(clear_depth),
-      m_clear_stencil(clear_stencil), m_viewport_offset(0),
-      m_viewport_size(0), m_depth_test(DepthTest::Less),
-      m_depth_write(true), m_cull_mode(CullMode::Back),
-      m_blit_target(blit_target), m_active(false),
+      m_clear_color(color_targets.size()), m_viewport_offset(0),
+      m_viewport_size(0), m_depth_test(DepthTest::Less), m_depth_write(true),
+      m_cull_mode(CullMode::Back), m_blit_target(blit_target), m_active(false),
       m_framebuffer_handle(0) {
 
     m_targets[0] = depth_target;
     m_targets[1] = stencil_target;
-    for (size_t i = 0; i < color_targets.size(); ++i)
+    for (size_t i = 0; i < color_targets.size(); ++i) {
         m_targets[i + 2] = color_targets[i];
-
-    if (!clear_color.empty() && clear_color.size() != color_targets.size())
-        throw std::runtime_error("RenderPass::RenderPass(): 'clear_color' must either "
-                                 "be empty or match 'color_targets' in size.");
+        m_clear_color[i] = Color(0, 0, 0, 0);
+    }
+    m_clear_stencil = 0;
+    m_clear_depth = 1.f;
 
     if (!m_targets[0].get()) {
         m_depth_write = false;
@@ -161,13 +156,8 @@ void RenderPass::begin() {
             }
         }
 
-        if (i >= 2) {
-            float zero[4] = { 0.0f, 0.0f, 0.0f, 1.0f },
-                 *ptr = zero;
-            if (!m_clear_color.empty())
-                ptr = m_clear_color[i].data();
-            CHK(glClearBufferfv(GL_COLOR, i - 2, ptr));
-        }
+        if (i >= 2)
+            CHK(glClearBufferfv(GL_COLOR, i - 2, m_clear_color[i - 2].data()));
     }
 
     set_depth_test(m_depth_test, m_depth_write);
@@ -180,44 +170,10 @@ void RenderPass::end() {
         throw std::runtime_error("RenderPass::end(): render pass is not active!");
 #endif
 
-    if (m_blit_target) {
-        Screen *screen   = dynamic_cast<Screen *>(m_blit_target.get());
-        RenderPass *rp = dynamic_cast<RenderPass *>(m_blit_target.get());
-
-        GLuint target_id;
-        GLenum what = 0;
-
-        if (screen) {
-            target_id = 0;
-            what = GL_COLOR_BUFFER_BIT;
-            if (screen->has_depth_buffer())
-                what |= GL_STENCIL_BUFFER_BIT;
-            if (screen->has_stencil_buffer())
-                what |= GL_STENCIL_BUFFER_BIT;
-        } else if (rp) {
-            target_id = rp->framebuffer_handle();
-            if (rp->targets().size() > 0 && rp->targets()[0])
-                what |= GL_DEPTH_BUFFER_BIT;
-            if (rp->targets().size() > 1 && rp->targets()[1])
-                what |= GL_STENCIL_BUFFER_BIT;
-            if (rp->targets().size() > 2 && rp->targets()[2])
-                what |= GL_COLOR_BUFFER_BIT;
-        } else {
-            throw std::runtime_error(
-                "RenderPass::end(): 'blit_target' must either be a RenderPass or a Screen instance.");
-        }
-
-        CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_handle));
-        CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target_id));
-
-        if (target_id == 0)
-            CHK(glDrawBuffer(GL_BACK));
-
-        CHK(glBlitFramebuffer(0, 0, (GLsizei) m_framebuffer_size.x(), (GLsizei) m_framebuffer_size.y(),
-                              0, 0, (GLsizei) m_framebuffer_size.x(), (GLsizei) m_framebuffer_size.y(),
-                              what, GL_NEAREST));
-    }
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    if (m_blit_target)
+        blit_to(Vector2i(0, 0), m_framebuffer_size, m_blit_target, Vector2i(0, 0));
+
     m_active = false;
 }
 
@@ -227,6 +183,20 @@ void RenderPass::resize(const Vector2i &size) {
         if (texture)
             texture->resize(size);
     }
+    m_viewport_offset = Vector2i(0, 0);
+    m_viewport_size = size;
+}
+
+void RenderPass::set_clear_color(size_t index, const Color &color) {
+    m_clear_color.at(index) = color;
+}
+
+void RenderPass::set_clear_depth(float depth) {
+    m_clear_depth = depth;
+}
+
+void RenderPass::set_clear_stencil(uint8_t stencil) {
+    m_clear_stencil = stencil;
 }
 
 void RenderPass::set_viewport(const Vector2i &offset, const Vector2i &size) {
@@ -283,6 +253,55 @@ void RenderPass::set_cull_mode(CullMode cull_mode) {
                 throw std::runtime_error("Shader::set_cull_mode(): invalid cull mode!");
         }
     }
+}
+
+void RenderPass::blit_to(const Vector2i &src_offset,
+                         const Vector2i &src_size,
+                         Object *dst,
+                         const Vector2i &dst_offset) {
+
+    Screen *screen = dynamic_cast<Screen *>(dst);
+    RenderPass *rp = dynamic_cast<RenderPass *>(dst);
+
+    GLuint target_id;
+    GLenum what = 0;
+
+    if (screen) {
+        target_id = 0;
+        what = GL_COLOR_BUFFER_BIT;
+        if (screen->has_depth_buffer())
+            what |= GL_STENCIL_BUFFER_BIT;
+        if (screen->has_stencil_buffer())
+            what |= GL_STENCIL_BUFFER_BIT;
+    } else if (rp) {
+        target_id = rp->framebuffer_handle();
+        if (rp->targets().size() > 0 && rp->targets()[0])
+            what |= GL_DEPTH_BUFFER_BIT;
+        if (rp->targets().size() > 1 && rp->targets()[1])
+            what |= GL_STENCIL_BUFFER_BIT;
+        if (rp->targets().size() > 2 && rp->targets()[2])
+            what |= GL_COLOR_BUFFER_BIT;
+    } else {
+        throw std::runtime_error(
+            "RenderPass::end(): 'dst' must either be a RenderPass or a Screen instance.");
+    }
+
+    CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_handle));
+    CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target_id));
+
+    if (target_id == 0)
+        CHK(glDrawBuffer(GL_BACK));
+
+    Vector2i src_end = src_offset + src_size,
+             dst_end = dst_offset + src_size;
+
+    CHK(glBlitFramebuffer((GLsizei) src_offset.x(), (GLsizei) src_offset.y(),
+                          (GLsizei) src_end.x(), (GLsizei) src_end.y(),
+                          (GLsizei) dst_offset.x(), (GLsizei) dst_offset.y(),
+                          (GLsizei) dst_end.x(), (GLsizei) dst_end.y(),
+                          what, GL_NEAREST));
+
+    CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
 NAMESPACE_END(nanogui)

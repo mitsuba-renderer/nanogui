@@ -207,17 +207,15 @@ void register_render(py::module &m) {
         .value("TriangleStrip", PrimitiveType::TriangleStrip, D(Shader, PrimitiveType, TriangleStrip));
 
     auto renderpass = py::class_<RenderPass, Object, ref<RenderPass>>(m, "RenderPass", D(RenderPass))
-        .def(py::init<std::vector<Object *>, Object *, Object *,
-                      bool, std::vector<Color>, float, uint8_t, Object *>(),
-             D(RenderPass, RenderPass),
-             "color_targets"_a,
-             "depth_target"_a = nullptr,
-             "stencil_target"_a = nullptr,
-             "clear"_a = true,
-             "clear_color"_a = py::list(),
-             "clear_depth"_a = 1.f,
-             "clear_stencil"_a = 0,
-             "blit_target"_a = nullptr)
+        .def(py::init<std::vector<Object *>, Object *, Object *, Object *, bool>(),
+             D(RenderPass, RenderPass), "color_targets"_a, "depth_target"_a = nullptr,
+             "stencil_target"_a = nullptr, "blit_target"_a = nullptr, "clear"_a = true)
+        .def("set_clear_color", &RenderPass::set_clear_color, D(RenderPass, set_clear_color))
+        .def("clear_color", &RenderPass::clear_color, D(RenderPass, clear_color))
+        .def("set_clear_depth", &RenderPass::set_clear_depth, D(RenderPass, set_clear_depth))
+        .def("clear_depth", &RenderPass::clear_depth, D(RenderPass, clear_depth))
+        .def("set_clear_stencil", &RenderPass::set_clear_stencil, D(RenderPass, set_clear_stencil))
+        .def("clear_stencil", &RenderPass::clear_stencil, D(RenderPass, clear_stencil))
         .def("set_viewport", &RenderPass::set_viewport, D(RenderPass, set_viewport), "offset"_a, "size"_a)
         .def("viewport", &RenderPass::viewport, D(RenderPass, viewport))
         .def("set_depth_test", &RenderPass::set_depth_test, D(RenderPass, set_depth_test), "depth_test"_a, "depth_write"_a)
@@ -227,6 +225,8 @@ void register_render(py::module &m) {
         .def("begin", &RenderPass::begin, D(RenderPass, begin))
         .def("end", &RenderPass::end, D(RenderPass, end))
         .def("resize", &RenderPass::resize, D(RenderPass, resize))
+        .def("blit_to", &RenderPass::blit_to, D(RenderPass, blit_to),
+             "src_offset"_a, "src_size"_a, "dst"_a, "dst_offset"_a)
         .def("__enter__", &RenderPass::begin)
         .def("__exit__", [](RenderPass &rp, py::handle, py::handle, py::handle) { rp.end(); })
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)

@@ -75,12 +75,12 @@ public:
      *     targeting OpenGL ES 2 or Metal.
      */
     Screen(
-        const Vector2i &size = Vector2i(1024, 768),
+        const Vector2i &size,
         const std::string &caption = "Unnamed",
         bool resizable = true,
         bool fullscreen = false,
-        bool depth_buffer = false,
-        bool stencil_buffer = false,
+        bool depth_buffer = true,
+        bool stencil_buffer = true,
         bool float_buffer = false,
         unsigned int gl_major = 3,
         unsigned int gl_minor = 2
@@ -173,12 +173,15 @@ public:
     /// Return the associated CAMetalLayer object
     void *metal_layer() const;
 
-    /// Return the currently active Metal drawable (or NULL)
-    void *metal_drawable() const { return m_metal_drawable; }
+    /// Return the texure of the currently active Metal drawable (or NULL)
+    void *metal_texture() const { return m_metal_texture; }
 
     /// Return the associated depth/stencil texture
     Texture *depth_stencil_texture() { return m_depth_stencil_texture; }
 #endif
+
+    /// Flush all queued up NanoVG rendering commands
+    void nvg_flush();
 
     /// Shut down GLFW when the window is closed?
     void set_shutdown_glfw(bool v) { m_shutdown_glfw = v; }
@@ -254,7 +257,7 @@ protected:
     bool m_redraw;
     std::function<void(Vector2i)> m_resize_callback;
 #if defined(NANOGUI_USE_METAL)
-    void *m_metal_drawable;
+    void *m_metal_texture = nullptr;
     ref<Texture> m_depth_stencil_texture;
 #endif
 };

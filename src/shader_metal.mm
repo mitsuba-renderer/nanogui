@@ -203,7 +203,7 @@ Shader::~Shader() {
 void Shader::set_buffer(const std::string &name,
                         EnokiType dtype,
                         size_t ndim,
-                        std::array<size_t, 3> dim,
+                        std::array<size_t, 3> shape,
                         const void *data) {
     auto it = m_buffers.find(name);
     if (it == m_buffers.end())
@@ -216,7 +216,7 @@ void Shader::set_buffer(const std::string &name,
         throw std::runtime_error(
             "Shader::set_buffer(): argument named \"" + name + "\" is not a buffer!");
 
-    size_t size = enoki_type_size(dtype) * dim[0] * dim[1] * dim[2];
+    size_t size = enoki_type_size(dtype) * shape[0] * shape[1] * shape[2];
     if (buf.buffer && buf.size != size) {
         if (buf.size <= NANOGUI_BUFFER_THRESHOLD)
             delete[] (uint8_t *) buf.buffer;
@@ -268,7 +268,7 @@ void Shader::set_buffer(const std::string &name,
 
     buf.dtype = dtype;
     buf.ndim  = ndim;
-    buf.dim   = dim;
+    buf.shape   = shape;
     buf.size  = size;
 }
 

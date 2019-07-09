@@ -16,6 +16,8 @@
 #include <nanogui/opengl.h>
 #include <nanogui/screen.h>
 
+//#define NANOGUI_SHOW_WIDGET_BOUNDS
+
 NAMESPACE_BEGIN(nanogui)
 
 Widget::Widget(Widget *parent)

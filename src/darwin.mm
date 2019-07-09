@@ -99,6 +99,7 @@ void metal_window_init(void *nswin_, bool float_buffer) {
     layer.pixelFormat = float_buffer ? MTLPixelFormatRGBA16Float : MTLPixelFormatBGRA8Unorm;
     layer.displaySyncEnabled = NO;
     layer.allowsNextDrawableTimeout = NO;
+    layer.framebufferOnly = NO;
 }
 
 void* metal_layer(void *nswin_) {
@@ -125,8 +126,14 @@ void* metal_window_next_drawable(void *nswin_) {
     return (__bridge_retained void *) drawable;
 }
 
-void metal_release_drawable(void *drawable) {
-    (void) (__bridge_transfer id<CAMetalDrawable>) drawable;
+void *metal_drawable_texture(void *drawable_) {
+    id<CAMetalDrawable> drawable = (__bridge id<CAMetalDrawable>) drawable_;
+    return (__bridge void *) drawable.texture;
+}
+
+void metal_present_and_release_drawable(void *drawable_) {
+    id<CAMetalDrawable> drawable = (__bridge_transfer id<CAMetalDrawable>) drawable_;
+    [drawable present];
 }
 
 #endif

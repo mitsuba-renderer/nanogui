@@ -65,7 +65,7 @@ std::string Shader::Buffer::to_string() const {
     result += enoki_type_name(dtype);
     result += ", shape=[";
     for (size_t i = 0; i < ndim; ++i) {
-        result += std::to_string(dim[i]);
+        result += std::to_string(shape[i]);
         if (i + 1 < ndim)
             result += ", ";
     }

@@ -10,28 +10,22 @@ NAMESPACE_BEGIN(nanogui)
 RenderPass::RenderPass(std::vector<Object *> color_targets,
                        Object *depth_target,
                        Object *stencil_target,
-                       bool clear,
-                       std::vector<Color> clear_color,
-                       float clear_depth,
-                       uint8_t clear_stencil,
-                       Object *blit_target)
+                       Object *blit_target,
+                       bool clear)
     : m_targets(color_targets.size() + 2), m_clear(clear),
-      m_clear_color(clear_color), m_clear_depth(clear_depth),
-      m_clear_stencil(clear_stencil), m_viewport_offset(0),
-      m_viewport_size(0), m_depth_test(DepthTest::Less),
-      m_depth_write(true), m_cull_mode(CullMode::Back),
-      m_blit_target(blit_target), m_active(false),
+      m_clear_color(color_targets.size()), m_viewport_offset(0),
+      m_viewport_size(0), m_depth_test(DepthTest::Less), m_depth_write(true),
+      m_cull_mode(CullMode::Back), m_blit_target(blit_target), m_active(false),
       m_command_buffer(nullptr), m_command_encoder(nullptr) {
 
     m_targets[0] = depth_target;
     m_targets[1] = stencil_target;
-    for (size_t i = 0; i < color_targets.size(); ++i)
+    for (size_t i = 0; i < color_targets.size(); ++i) {
         m_targets[i + 2] = color_targets[i];
-
-    if (!clear_color.empty() && clear_color.size() != color_targets.size())
-        throw std::runtime_error(
-            "RenderPass::RenderPass(): 'clear_color' must either be empty or "
-            "match 'color_targets' in size.");
+        m_clear_color[i] = Color(0.f, 0.f, 0.f, 1.f);
+    }
+    m_clear_stencil = 0;
+    m_clear_depth = 1.f;
 
     if (!m_targets[0].get()) {
         m_depth_write = false;
@@ -66,23 +60,14 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         } else if (m_targets[i].get()) {
             throw std::runtime_error("RenderPas::RenderPass(): invalid attachment type!");
         }
-
-        if (i == 0) {
-            ((MTLRenderPassDepthAttachmentDescriptor *) att).clearDepth = clear_depth;
-        } else if (i == 1) {
-            ((MTLRenderPassStencilAttachmentDescriptor *) att).clearStencil = clear_stencil;
-        } else {
-            MTLRenderPassColorAttachmentDescriptor *att2 =
-                (MTLRenderPassColorAttachmentDescriptor *) att;
-            if (clear_color.empty())
-                att2.clearColor = MTLClearColorMake(0.f, 0.f, 0.f, 1.f);
-            else
-                att2.clearColor = MTLClearColorMake(clear_color[i].r(), clear_color[i].g(),
-                                                    clear_color[i].b(), clear_color[i].w());
-        }
     }
 
     m_pass_descriptor = (__bridge_retained void *) pass_descriptor;
+
+    for (size_t i = 0; i < color_targets.size(); ++i)
+        set_clear_color(i, m_clear_color[i]);
+    set_clear_depth(m_clear_depth);
+    set_clear_stencil(m_clear_stencil);
 }
 
 RenderPass::~RenderPass() {
@@ -118,9 +103,7 @@ void RenderPass::begin() {
                     texture_handle = (__bridge id<MTLTexture>) screen_tex->texture_handle();
                 }
             } else {
-                id<CAMetalDrawable> drawable =
-                    (__bridge id<CAMetalDrawable>) screen->metal_drawable();
-                texture_handle = drawable.texture;
+                texture_handle = (__bridge id<MTLTexture>) screen->metal_texture();
             }
         }
 
@@ -138,6 +121,8 @@ void RenderPass::begin() {
         if (blit_rp && i < blit_rp->targets().size()) {
             const Texture *resolve_texture =
                 dynamic_cast<Texture *>(blit_rp->targets()[i].get());
+            if (resolve_texture == nullptr)
+                continue;
 
             id<MTLTexture> resolve_texture_handle =
                 (__bridge id<MTLTexture>) resolve_texture->texture_handle();
@@ -147,23 +132,21 @@ void RenderPass::begin() {
             else if (resolve_texture_handle.width  != texture_handle.width ||
                      resolve_texture_handle.height != texture_handle.height)
                 throw std::runtime_error("RenderPass::begin(): 'blit_target' size mismatch!");
-            att.storeAction = MTLStoreActionStoreAndMultisampleResolve;
+            att.storeAction = MTLStoreActionMultisampleResolve;
             att.resolveTexture = resolve_texture_handle;
         }
     }
 
     Screen *blit_screen = dynamic_cast<Screen *>(m_blit_target.get());
     if (blit_screen) {
-        id<CAMetalDrawable> drawable =
-            (__bridge id<CAMetalDrawable>) blit_screen->metal_drawable();
-        if (drawable.texture.pixelFormat != pass_descriptor.colorAttachments[0].texture.pixelFormat)
+        id<MTLTexture> texture = (__bridge id<MTLTexture>) blit_screen->metal_texture();
+        if (texture.pixelFormat != pass_descriptor.colorAttachments[0].texture.pixelFormat)
             throw std::runtime_error("RenderPass::begin(): 'blit_target' pixel format mismatch!");
-        else if (drawable.texture.width  != pass_descriptor.colorAttachments[0].texture.width ||
-                 drawable.texture.height != pass_descriptor.colorAttachments[0].texture.height)
+        else if (texture.width  != pass_descriptor.colorAttachments[0].texture.width ||
+                 texture.height != pass_descriptor.colorAttachments[0].texture.height)
             throw std::runtime_error("RenderPass::begin(): 'blit_target' pixel format mismatch!");
-        pass_descriptor.colorAttachments[0].storeAction =
-            MTLStoreActionStoreAndMultisampleResolve;
-        pass_descriptor.colorAttachments[0].resolveTexture = drawable.texture;
+        pass_descriptor.colorAttachments[0].storeAction = MTLStoreActionMultisampleResolve;
+        pass_descriptor.colorAttachments[0].resolveTexture = texture;
     }
 
     id<MTLRenderCommandEncoder> command_encoder =
@@ -202,6 +185,34 @@ void RenderPass::resize(const Vector2i &size) {
         if (texture)
             texture->resize(size);
     }
+    m_viewport_offset = Vector2i(0, 0);
+    m_viewport_size = size;
+}
+
+void RenderPass::set_clear_color(size_t index, const Color &color) {
+    m_clear_color.at(index) = color;
+
+    MTLRenderPassDescriptor *pass_descriptor =
+        (__bridge MTLRenderPassDescriptor *) m_pass_descriptor;
+
+    pass_descriptor.colorAttachments[index].clearColor =
+        MTLClearColorMake(color.r(), color.g(), color.b(), color.w());
+}
+
+void RenderPass::set_clear_depth(float depth) {
+    m_clear_depth = depth;
+
+    MTLRenderPassDescriptor *pass_descriptor =
+        (__bridge MTLRenderPassDescriptor *) m_pass_descriptor;
+    pass_descriptor.depthAttachment.clearDepth = depth;
+}
+
+void RenderPass::set_clear_stencil(uint8_t stencil) {
+    m_clear_stencil = stencil;
+
+    MTLRenderPassDescriptor *pass_descriptor =
+        (__bridge MTLRenderPassDescriptor *) m_pass_descriptor;
+    pass_descriptor.stencilAttachment.clearStencil = stencil;
 }
 
 void RenderPass::set_viewport(const Vector2i &offset, const Vector2i &size) {
@@ -268,6 +279,73 @@ void RenderPass::set_cull_mode(CullMode cull_mode) {
             (__bridge id<MTLRenderCommandEncoder>) m_command_encoder;
         [command_encoder setCullMode: cull_mode_mtl];
     }
+}
+
+void RenderPass::blit_to(const Vector2i &src_offset,
+                         const Vector2i &src_size,
+                         Object *dst,
+                         const Vector2i &dst_offset) {
+
+    Screen *screen = dynamic_cast<Screen *>(dst);
+    RenderPass *rp = dynamic_cast<RenderPass *>(dst);
+    std::vector<void *> dst_textures;
+    dst_textures.reserve(3);
+
+    if (screen) {
+        Texture *depth_stencil_texture = screen->depth_stencil_texture();
+        if (depth_stencil_texture)
+            dst_textures.push_back(depth_stencil_texture->texture_handle());
+        else
+            dst_textures.push_back(nullptr);
+        dst_textures.push_back(nullptr);
+        dst_textures.push_back(screen->metal_texture());
+    } else if (rp) {
+        std::vector<ref<Object>>& targets = rp->targets();
+        for (size_t i = 0; i < targets.size(); ++i) {
+            Texture *texture = dynamic_cast<Texture *>(targets[i].get());
+            if (texture)
+                dst_textures.push_back(texture->texture_handle());
+            else
+                dst_textures.push_back(nullptr);
+        }
+    } else {
+        throw std::runtime_error(
+            "RenderPass::blit_to(): 'dst' must either be a RenderPass or a Screen instance.");
+    }
+
+    id<MTLCommandQueue> command_queue =
+        (__bridge id<MTLCommandQueue>) metal_command_queue();
+    id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
+    id<MTLBlitCommandEncoder> command_encoder =
+        [command_buffer blitCommandEncoder];
+
+    for (size_t i = 0; i < std::min(dst_textures.size(), m_targets.size()); ++i) {
+        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
+        id<MTLTexture> src_texture =
+            (__bridge id<MTLTexture>) (texture ? texture->texture_handle()
+                                               : nullptr);
+        id<MTLTexture> dst_texture = (__bridge id<MTLTexture>) dst_textures[i];
+
+        if (src_texture == nil || dst_texture == nil || i == 1)
+            continue;
+
+        [command_encoder
+              copyFromTexture: src_texture
+                  sourceSlice: 0
+                  sourceLevel: 0
+                 sourceOrigin: MTLOriginMake((NSUInteger) src_offset.x(),
+                                             (NSUInteger) src_offset.y(), 0)
+                   sourceSize: MTLSizeMake((NSUInteger) src_size.x(),
+                                           (NSUInteger) src_size.y(), 1)
+                    toTexture: dst_texture
+             destinationSlice: 0
+             destinationLevel: 0
+            destinationOrigin: MTLOriginMake((NSUInteger) dst_offset.x(),
+                                             (NSUInteger) dst_offset.y(), 0)];
+    }
+
+    [command_encoder endEncoding];
+    [command_buffer commit];
 }
 
 NAMESPACE_END(nanogui)

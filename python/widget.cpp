@@ -97,8 +97,8 @@ void register_widget(py::module &m) {
     py::class_<Screen, Widget, ref<Screen>, PyScreen>(m, "Screen", D(Screen))
         .def(py::init<const Vector2i &, const std::string &, bool, bool, bool,
                       bool, bool, unsigned int, unsigned int>(),
-            "size"_a, "caption"_a, "resizable"_a = true, "fullscreen"_a = false,
-            "depth_buffer"_a = false, "stencil_buffer"_a = false,
+            "size"_a, "caption"_a = "Unnamed", "resizable"_a = true, "fullscreen"_a = false,
+            "depth_buffer"_a = true, "stencil_buffer"_a = true,
             "float_buffer"_a = false, "gl_major"_a = 3, "gl_minor"_a = 2, D(Screen, Screen))
         .def("caption", &Screen::caption, D(Screen, caption))
         .def("set_caption", &Screen::set_caption, D(Screen, set_caption))
@@ -127,9 +127,10 @@ void register_widget(py::module &m) {
                 py::return_value_policy::reference)
         .def("pixel_format", &Screen::pixel_format, D(Screen, pixel_format))
         .def("component_format", &Screen::component_format, D(Screen, component_format))
+        .def("nvg_flush", &Screen::nvg_flush, D(Screen, nvg_flush))
 #if defined(NANOGUI_USE_METAL)
         .def("metal_layer", &Screen::metal_layer)
-        .def("metal_drawable", &Screen::metal_drawable)
+        .def("metal_texture", &Screen::metal_texture)
         .def("depth_stencil_texture", &Screen::depth_stencil_texture)
 #endif
         ;

@@ -15,7 +15,11 @@
 #include <nanogui/layout.h>
 #include <nanogui/window.h>
 #include <nanogui/button.h>
-#include <nanogui/glcanvas.h>
+#include <nanogui/canvas.h>
+#include <nanogui/shader.h>
+#include <nanogui/renderpass.h>
+#include <enoki/transform.h>
+#include <GLFW/glfw3.h>
 
 #if defined(_WIN32)
 #  if defined(APIENTRY)
@@ -26,133 +30,166 @@
 
 using nanogui::Vector3f;
 using nanogui::Vector2i;
+using nanogui::Shader;
+using nanogui::Canvas;
+using nanogui::ref;
+using enoki::EnokiType;
 
-class MyGLCanvas : public nanogui::GLCanvas {
+class MyCanvas : public Canvas {
 public:
-    MyGLCanvas(Widget *parent) : nanogui::GLCanvas(parent), m_rotation(Vector3f(0.25f, 0.5f, 0.33f)) {
+    MyCanvas(Widget *parent) : Canvas(parent), m_rotation(0.f) {
         using namespace nanogui;
 
-        m_shader.init(
+        m_shader = new Shader(
+            render_pass(),
+
             /* An identifying name */
             "a_simple_shader",
 
 #if defined(NANOGUI_USE_OPENGL)
             /* Vertex shader */
-            "#version 330\n"
-            "uniform mat4 model_view_proj;\n"
-            "in vec3 position;\n"
-            "in vec3 color;\n"
-            "out vec4 frag_color;\n"
-            "void main() {\n"
-            "    frag_color = vec4(color, 1.0);\n"
-            "    gl_Position = model_view_proj * vec4(position, 1.0);\n"
-            "}",
+            R"(#version 330
+            uniform mat4 mvp;
+            in vec3 position;
+            in vec3 color;
+            out vec4 frag_color;
+            void main() {
+                frag_color = vec4(color, 1.0);
+                gl_Position = mvp * vec4(position, 1.0);
+            })",
 
             /* Fragment shader */
-            "#version 330\n"
-            "out vec4 color;\n"
-            "in vec4 frag_color;\n"
-            "void main() {\n"
-            "    color = frag_color;\n"
-            "}"
-#else // GLES2
+            R"(#version 330
+            out vec4 color;
+            in vec4 frag_color;
+            void main() {
+                color = frag_color;
+            })"
+#elif defined(NANOGUI_USE_GLES2)
             /* Vertex shader */
-            "precision highp float;\n"
-            "uniform mat4 model_view_proj;\n"
-            "attribute vec3 position;\n"
-            "attribute vec3 color;\n"
-            "varying vec4 frag_color;\n"
-            "void main() {\n"
-            "    frag_color = vec4(color, 1.0);\n"
-            "    gl_Position = model_view_proj * vec4(position, 1.0);\n"
-            "}",
+            R"(precision highp float;
+            uniform mat4 mvp;
+            attribute vec3 position;
+            attribute vec3 color;
+            varying vec4 frag_color;
+            void main() {
+                frag_color = vec4(color, 1.0);
+                gl_Position = mvp * vec4(position, 1.0);
+            })",
 
             /* Fragment shader */
-            "precision highp float;\n"
-            "varying vec4 frag_color;\n"
-            "void main() {\n"
-            "    gl_FragColor = frag_color;\n"
-            "}"
+            R"(precision highp float;
+            varying vec4 frag_color;
+            void main() {
+                gl_FragColor = frag_color;
+            })"
+#elif defined(NANOGUI_USE_METAL)
+            /* Vertex shader */
+            R"(using namespace metal;
+
+            struct VertexOut {
+                float4 position [[position]];
+                float4 color;
+            };
+
+            vertex VertexOut vertex_main(const device packed_float3 *position,
+                                         const device packed_float3 *color,
+                                         constant float4x4 &mvp,
+                                         uint id [[vertex_id]]) {
+                VertexOut vert;
+                vert.position = mvp * float4(position[id], 1.f);
+                vert.color = float4(color[id], 1.f);
+                return vert;
+            })",
+
+            /* Fragment shader */
+            R"(using namespace metal;
+
+            struct VertexOut {
+                float4 position [[position]];
+                float4 color;
+            };
+
+            fragment float4 fragment_main(VertexOut vert [[stage_in]]) {
+                return vert.color;
+            })"
 #endif
         );
 
         uint32_t indices[3*12] = {
-            0, 1, 3,
-            3, 2, 1,
-            3, 2, 6,
-            6, 7, 3,
-            7, 6, 5,
-            5, 4, 7,
-            4, 5, 1,
-            1, 0, 4,
-            4, 0, 3,
-            3, 7, 4,
-            5, 6, 2,
-            2, 1, 5
+            3, 2, 6, 6, 7, 3,
+            4, 5, 1, 1, 0, 4,
+            4, 0, 3, 3, 7, 4,
+            1, 5, 6, 6, 2, 1,
+            0, 1, 2, 2, 3, 0,
+            7, 6, 5, 5, 4, 7
         };
 
         float positions[3*8] = {
-            -1.f,  1.f,  1.f,
-            -1.f,  1.f, -1.f,
-             1.f,  1.f, -1.f,
-             1.f,  1.f,  1.f,
-            -1.f, -1.f,  1.f,
-            -1.f, -1.f, -1.f,
-             1.f, -1.f, -1.f,
-             1.f, -1.f,  1.f
+            -1.f, 1.f, 1.f, -1.f, -1.f, 1.f,
+            1.f, -1.f, 1.f, 1.f, 1.f, 1.f,
+            -1.f, 1.f, -1.f, -1.f, -1.f, -1.f,
+            1.f, -1.f, -1.f, 1.f, 1.f, -1.f
         };
 
         float colors[3*8] = {
-            1.f, 0.f, 0.f,
-            0.f, 1.f, 0.f,
-            1.f, 1.f, 0.f,
-            0.f, 0.f, 1.f,
-            1.f, 0.f, 1.f,
-            0.f, 1.f, 1.f,
-            .5f, .5f, .5f,
-            1.f, 0.f, .5f
+            0, 1, 1, 0, 0, 1,
+            1, 0, 1, 1, 1, 1,
+            0, 1, 0, 0, 0, 0,
+            1, 0, 0, 1, 1, 0
         };
 
-        m_shader.bind();
-        m_shader.upload_indices(indices, 3, 12);
-        m_shader.upload_attrib("position", positions, 3, 8);
-        m_shader.upload_attrib("color", colors, 3, 8);
+        m_shader->set_buffer("indices", EnokiType::UInt32, 1, {3*12, 1, 1}, indices);
+        m_shader->set_buffer("position", EnokiType::Float32, 2, {8, 3, 1}, positions);
+        m_shader->set_buffer("color", EnokiType::Float32, 2, {8, 3, 1}, colors);
+        render_pass()->set_depth_test(RenderPass::DepthTest::Always, false);
     }
 
-    ~MyGLCanvas() {
-        m_shader.free();
+    void set_rotation(float rotation) {
+        m_rotation = rotation;
     }
 
-    void set_rotation(Vector3f v_rotation) {
-        m_rotation = v_rotation;
-    }
-
-    virtual void draw_gl() override {
+    virtual void draw_contents() override {
         using namespace nanogui;
-
-        m_shader.bind();
 
         using Matrix4f = enoki::Matrix<float, 4>;
 
-        float f_time = (float)glfwGetTime();
-        Matrix4f mvp = enoki::identity<Matrix4f>();
+        Matrix4f view = enoki::look_at<Matrix4f>(
+            Vector3f(0, -2, -10),
+            Vector3f(0, 0, 0),
+            Vector3f(0, 1, 0)
+        );
 
-        mvp =
-            enoki::rotate<Matrix4f>(Vector3f(1, 0, 0), m_rotation[0] * f_time) *
-            enoki::rotate<Matrix4f>(Vector3f(0, 1, 0), m_rotation[1] * f_time) *
-            enoki::rotate<Matrix4f>(Vector3f(0, 0, 1), m_rotation[2] * f_time);
+        Matrix4f model = enoki::rotate<Matrix4f>(
+            Vector3f(0, 1, 0),
+            (float) glfwGetTime()
+        );
 
-        m_shader.set_uniform("model_view_proj", enoki::scale<Matrix4f>(Vector3f(.5f)) * mvp);
+        model *= enoki::rotate<Matrix4f>(
+            Vector3f(1, 0, 0),
+            m_rotation
+        );
 
-        glEnable(GL_DEPTH_TEST);
+        Matrix4f proj = enoki::perspective<Matrix4f>(
+            float(25 * M_PI / 180),
+            0.1f,
+            20.f,
+            m_size.x() / (float) m_size.y()
+        );
+
+        Matrix4f mvp = proj * view * model;
+
+        m_shader->set_uniform("mvp", mvp);
+
         /* Draw 12 triangles starting at index 0 */
-        m_shader.draw_indexed(GL_TRIANGLES, 0, 12);
-        glDisable(GL_DEPTH_TEST);
+        m_shader->begin();
+        m_shader->draw_array(Shader::PrimitiveType::Triangle, 0, 12*3, true);
+        m_shader->end();
     }
 
 private:
-    nanogui::GLShader m_shader;
-    Vector3f m_rotation;
+    ref<Shader> m_shader;
+    float m_rotation;
 };
 
 class ExampleApplication : public nanogui::Screen {
@@ -164,9 +201,9 @@ public:
         window->set_position(Vector2i(15, 15));
         window->set_layout(new GroupLayout());
 
-        m_canvas = new MyGLCanvas(window);
+        m_canvas = new MyCanvas(window);
         m_canvas->set_background_color({100, 100, 100, 255});
-        m_canvas->set_size({400, 400});
+        m_canvas->set_fixed_size({400, 400});
 
         Widget *tools = new Widget(window);
         tools->set_layout(new BoxLayout(Orientation::Horizontal,
@@ -180,9 +217,7 @@ public:
 
         Button *b1 = new Button(tools, "Random Rotation");
         b1->set_callback([this]() {
-            m_canvas->set_rotation(Vector3f(float(rand() % 100) / 100.f,
-                                            float(rand() % 100) / 100.f,
-                                            float(rand() % 100) / 100.f));
+            m_canvas->set_rotation((float) M_PI * rand() / (float) RAND_MAX);
         });
 
         perform_layout();
@@ -203,7 +238,7 @@ public:
         Screen::draw(ctx);
     }
 private:
-    MyGLCanvas *m_canvas;
+    MyCanvas *m_canvas;
 };
 
 int main(int /* argc */, char ** /* argv */) {
@@ -214,7 +249,7 @@ int main(int /* argc */, char ** /* argv */) {
             nanogui::ref<ExampleApplication> app = new ExampleApplication();
             app->draw_all();
             app->set_visible(true);
-            nanogui::mainloop(50);
+            nanogui::mainloop(1 / 60.f * 1000);
         }
 
         nanogui::shutdown();

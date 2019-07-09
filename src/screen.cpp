@@ -159,6 +159,15 @@ Screen::Screen()
       m_shutdown_glfw(false), m_fullscreen(false), m_depth_buffer(false),
       m_stencil_buffer(false), m_float_buffer(false), m_redraw(false) {
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
+#if defined(NANOGUI_USE_OPENGL)
+    GLint n_stencil_bits = 0, n_depth_bits = 0;
+    CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
+        GL_DEPTH, GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &n_depth_bits));
+    CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
+        GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits));
+    m_depth_buffer = n_depth_bits > 0;
+    m_stencil_buffer = n_stencil_bits > 0;
+#endif
 }
 
 Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
@@ -186,6 +195,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #elif defined(NANOGUI_USE_METAL)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    m_stencil_buffer = stencil_buffer = false;
 #else
 #  error Did not select a graphics API!
 #endif
@@ -384,7 +394,8 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 #if defined(NANOGUI_USE_METAL)
     if (depth_buffer) {
         m_depth_stencil_texture = new Texture(
-            stencil_buffer ? Texture::PixelFormat::DepthStencil : Texture::PixelFormat::Depth,
+            stencil_buffer ? Texture::PixelFormat::DepthStencil
+                           : Texture::PixelFormat::Depth,
             Texture::ComponentFormat::Float32,
             framebuffer_size(),
             Texture::InterpolationMode::Bilinear,
@@ -437,17 +448,8 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     }
 #endif
 
-    /* Detect framebuffer properties and set up compatible NanoVG context */
-    GLint n_stencil_bits = 0;
-#if defined(NANOGUI_USE_OPENGL)
-    CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
-        GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits));
-#else
-    n_stencil_bits = 0;
-#endif
-
     int flags = NVG_ANTIALIAS;
-    if (n_stencil_bits >= 8)
+    if (m_stencil_buffer)
        flags |= NVG_STENCIL_STROKES;
 #if !defined(NDEBUG)
     flags |= NVG_DEBUG;
@@ -555,8 +557,9 @@ void Screen::draw_all() {
 #elif defined(NANOGUI_USE_METAL)
         void *nswin = glfwGetCocoaWindow(m_glfw_window);
         metal_window_set_size(nswin, m_fbsize);
-        m_metal_drawable = metal_window_next_drawable(nswin);
-        mnvgSetDrawable(m_nvg_context, m_metal_drawable);
+        void *drawable = metal_window_next_drawable(nswin);
+        m_metal_texture = metal_drawable_texture(drawable);
+        mnvgSetColorTexture(m_nvg_context, m_metal_texture);
 #endif
 
 #if !defined(EMSCRIPTEN)
@@ -582,15 +585,20 @@ void Screen::draw_all() {
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
         glfwSwapBuffers(m_glfw_window);
 #elif defined(NANOGUI_USE_METAL)
-        metal_release_drawable(m_metal_drawable);
-        m_metal_drawable = nullptr;
-        mnvgSetDrawable(m_nvg_context, nullptr);
+        mnvgSetColorTexture(m_nvg_context, nullptr);
+        metal_present_and_release_drawable(drawable);
+        m_metal_texture = nullptr;
 #endif
     }
 }
 
 void Screen::draw_contents() {
     clear();
+}
+
+void Screen::nvg_flush() {
+    nvgEndFrame(m_nvg_context);
+    nvgBeginFrame(m_nvg_context, m_size[0], m_size[1], m_pixel_ratio);
 }
 
 void Screen::draw_widgets() {

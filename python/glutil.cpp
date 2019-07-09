@@ -7,26 +7,9 @@ void register_glutil(py::module &m) {
 #if 0
     py::class_<GLShader>(m, "GLShader", D(GLShader))
         .def(py::init<>())
-        .def("init", &GLShader::init, "name"_a,
-             "vertex_str"_a, "fragment_str"_a,
-             "geometry_str"_a = "", D(GLShader, init))
-        .def("init_from_files", &GLShader::init_from_files, "name"_a,
-             "vertex_fname"_a, "fragment_fname"_a,
-             "geometry_fname"_a = "", D(GLShader, init_from_files))
         .def("name", &GLShader::name, D(GLShader, name))
         .def("define", &GLShader::define, "key"_a, "value"_a,
              D(GLShader, define))
-        .def("bind", &GLShader::bind, D(GLShader, bind))
-        .def("free", &GLShader::free, D(GLShader, free))
-        .def("attrib", &GLShader::attrib, "name"_a,
-             "warn"_a = true, D(GLShader, attrib))
-        .def("uniform", &GLShader::uniform, "name"_a,
-             "warn"_a = true, D(GLShader, uniform))
-        .def("upload_attrib", &upload_attrib_py, "name"_a,
-             "M"_a, "version"_a = -1)
-        .def("upload_indices", [](GLShader &sh, py::array M, int version) {
-                upload_attrib_py(sh, "indices", M, version);
-             }, "M"_a, "version"_a = -1)
         .def("invalidate_attribs", &GLShader::invalidate_attribs,
              D(GLShader, invalidate_attribs))
         .def("free_attrib", &GLShader::free_attrib,
@@ -40,14 +23,6 @@ void register_glutil(py::module &m) {
         .def("share_attrib", &GLShader::share_attrib,
              D(GLShader, share_attrib), "other_shader"_a,
              "name"_a, "as"_a = "")
-        .def("draw_array", &GLShader::draw_array,
-             D(GLShader, draw_array), "type"_a,
-             "offset"_a, "count"_a)
-        .def("draw_indexed", &GLShader::draw_indexed,
-             D(GLShader, draw_indexed), "type"_a,
-             "offset"_a, "count"_a)
-        .def("set_uniform", &set_uniform_py, "name"_a,
-             "value"_a, "warn"_a = true)
         .def("attrib_buffer", &GLShader::attrib_buffer, D(GLShader, attrib_buffer));
 
     py::class_<GLShader::Buffer>(m, "Buffer", D(GLShader, Buffer))
