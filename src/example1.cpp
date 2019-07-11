@@ -12,7 +12,6 @@
 */
 
 #include <nanogui/opengl.h>
-#include <nanogui/glutil.h>
 #include <nanogui/screen.h>
 #include <nanogui/window.h>
 #include <nanogui/layout.h>
@@ -28,130 +27,23 @@
 #include <nanogui/textbox.h>
 #include <nanogui/slider.h>
 #include <nanogui/imagepanel.h>
-#include <nanogui/imageview.h>
+//#include <nanogui/imageview.h>
 #include <nanogui/vscrollpanel.h>
 #include <nanogui/colorwheel.h>
 #include <nanogui/colorpicker.h>
 #include <nanogui/graph.h>
 #include <nanogui/tabwidget.h>
+#include <nanogui/texture.h>
+#include <nanogui/shader.h>
+#include <nanogui/renderpass.h>
+#include <enoki/transform.h>
 #include <iostream>
-#include <string>
 
-// Includes for the GLTexture class.
-#include <cstdint>
-#include <memory>
-#include <utility>
+using namespace nanogui;
 
-#if defined(__GNUG__)
-/// Uh oh, stb-image needs some refactoring..
-#  pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#  pragma GCC diagnostic ignored "-Wshift-negative-value"
-#  pragma GCC diagnostic ignored "-Wunused-function"
-#  if !defined(__clang__)
-#    pragma GCC diagnostic ignored "-Wmisleading-indentation"
-#    pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#  endif
-#endif
-#if defined(_WIN32)
-#  pragma warning(push)
-#  pragma warning(disable: 4457 4456 4005 4312)
-#endif
-
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_STATIC 1
-#include <stb_image.h>
-
-#if defined(_WIN32)
-#  pragma warning(pop)
-#endif
-#if defined(_WIN32)
-#  if defined(APIENTRY)
-#    undef APIENTRY
-#  endif
-#  include <windows.h>
-#endif
-
-class GLTexture {
+class ExampleApplication : public Screen {
 public:
-    using handle_type = std::unique_ptr<uint8_t[], void(*)(void*)>;
-    GLTexture() = default;
-    GLTexture(const std::string& texture_name)
-        : m_texture_name(texture_name), m_texture_id(0) {}
-
-    GLTexture(const std::string& texture_name, GLint texture_id)
-        : m_texture_name(texture_name), m_texture_id(texture_id) {}
-
-    GLTexture(const GLTexture& other) = delete;
-    GLTexture(GLTexture&& other) noexcept
-        : m_texture_name(std::move(other.m_texture_name)),
-        m_texture_id(other.m_texture_id) {
-        other.m_texture_id = 0;
-    }
-    GLTexture& operator=(const GLTexture& other) = delete;
-    GLTexture& operator=(GLTexture&& other) noexcept {
-        m_texture_name = std::move(other.m_texture_name);
-        std::swap(m_texture_id, other.m_texture_id);
-        return *this;
-    }
-    ~GLTexture() noexcept {
-        if (m_texture_id)
-            glDeleteTextures(1, &m_texture_id);
-    }
-
-    GLuint texture() const { return m_texture_id; }
-    const std::string& texture_name() const { return m_texture_name; }
-
-    /**
-    *  Load a file in memory and create an OpenGL texture.
-    *  Returns a handle type (an std::unique_ptr) to the loaded pixels.
-    */
-    handle_type load(const std::string& file_name) {
-        if (m_texture_id) {
-            glDeleteTextures(1, &m_texture_id);
-            m_texture_id = 0;
-        }
-        int force_channels = 0;
-        int w, h, n;
-        handle_type texture_data(stbi_load(file_name.c_str(), &w, &h, &n, force_channels), stbi_image_free);
-        if (!texture_data)
-            throw std::invalid_argument("Could not load texture data from file " + file_name);
-        glGenTextures(1, &m_texture_id);
-        glBindTexture(GL_TEXTURE_2D, m_texture_id);
-        GLint internal_format;
-        GLint format;
-        switch (n) {
-#if defined(NANOGUI_USE_OPENGL)
-            case 1: internal_format = GL_R8; format = GL_RED; break;
-            case 2: internal_format = GL_RG8; format = GL_RG; break;
-            case 3: internal_format = GL_RGB8; format = GL_RGB; break;
-            case 4: internal_format = GL_RGBA8; format = GL_RGBA; break;
-            default: internal_format = 0; format = 0; break;
-#else
-            case 1: internal_format = GL_LUMINANCE; format = GL_LUMINANCE; break;
-            case 2: internal_format = GL_LUMINANCE_ALPHA; format = GL_LUMINANCE_ALPHA; break;
-            case 3: internal_format = GL_RGB; format = GL_RGB; break;
-            case 4: internal_format = GL_RGBA; format = GL_RGBA; break;
-            default: internal_format = 0; format = 0; break;
-#endif
-        }
-        glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, GL_UNSIGNED_BYTE, texture_data.get());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        return texture_data;
-    }
-
-private:
-    std::string m_texture_name;
-    GLuint m_texture_id;
-};
-
-class ExampleApplication : public nanogui::Screen {
-public:
-    ExampleApplication() : nanogui::Screen(nanogui::Vector2i(1024, 768), "NanoGUI Test") {
-        using namespace nanogui;
-
+    ExampleApplication() : Screen(Vector2i(1024, 768), "NanoGUI Test") {
         Window *window = new Window(this, "Button demo");
         window->set_position(Vector2i(15, 15));
         window->set_layout(new GroupLayout());
@@ -264,40 +156,37 @@ public:
         image_window->set_layout(new GroupLayout());
 
         // Load all of the images by creating a GLTexture object and saving the pixel data.
-        for (auto& icon : icons) {
-            GLTexture texture(icon.second);
-            auto data = texture.load(icon.second + ".png");
-            m_images_data.emplace_back(std::move(texture), std::move(data));
-        }
+        for (auto& icon : icons)
+            m_images.push_back(new Texture(icon.second + ".png"));
 
         // Set the first texture
-        auto image_view = new ImageView(image_window,
-                m_images_data.empty() ? 0 : m_images_data[0].first.texture());
+        //auto image_view = new ImageView(image_window,
+                //m_images_data.empty() ? 0 : m_images_data[0].first.texture());
         m_current_image = 0;
         // Change the active textures.
-        img_panel->set_callback([this, image_view](int i) {
-            image_view->bind_image(m_images_data[i].first.texture());
-            m_current_image = i;
-            std::cout << "Selected item " << i << '\n';
-        });
-        image_view->set_grid_threshold(20);
-        image_view->set_pixel_info_threshold(20);
-        image_view->set_pixel_info_callback(
-            [this, image_view](const Vector2i& index) -> std::pair<std::string, Color> {
-            auto& image_data = m_images_data[m_current_image].second;
-            auto& texture_size = image_view->image_size();
-            std::string string_data;
-            uint16_t channel_sum = 0;
-            for (int i = 0; i != 4; ++i) {
-                auto& channel_data = image_data[4*index.y()*texture_size.x() + 4*index.x() + i];
-                channel_sum += channel_data;
-                string_data += (std::to_string(static_cast<int>(channel_data)) + "\n");
-            }
-            float intensity = static_cast<float>(255 - (channel_sum / 4)) / 255.0f;
-            float color_scale = intensity > 0.5f ? (intensity + 1) / 2 : intensity / 2;
-            Color text_color = Color(color_scale, 1.0f);
-            return { string_data, text_color };
-        });
+        //img_panel->set_callback([this, image_view](int i) {
+            //image_view->bind_image(m_images_data[i].first.texture());
+            //m_current_image = i;
+            //std::cout << "Selected item " << i << '\n';
+        //});
+        //image_view->set_grid_threshold(20);
+        //image_view->set_pixel_info_threshold(20);
+        //image_view->set_pixel_info_callback(
+            //[this, image_view](const Vector2i& index) -> std::pair<std::string, Color> {
+            //auto& image_data = m_images_data[m_current_image].second;
+            //auto& texture_size = image_view->image_size();
+            //std::string string_data;
+            //uint16_t channel_sum = 0;
+            //for (int i = 0; i != 4; ++i) {
+                //auto& channel_data = image_data[4*index.y()*texture_size.x() + 4*index.x() + i];
+                //channel_sum += channel_data;
+                //string_data += (std::to_string(static_cast<int>(channel_data)) + "\n");
+            //}
+            //float intensity = static_cast<float>(255 - (channel_sum / 4)) / 255.0f;
+            //float color_scale = intensity > 0.5f ? (intensity + 1) / 2 : intensity / 2;
+            //Color text_color = Color(color_scale, 1.0f);
+            //return { string_data, text_color };
+        //});
 
         new Label(window, "File dialog", "sans-bold");
         tools = new Widget(window);
@@ -427,9 +316,8 @@ public:
         ib->set_fixed_height(22);
         b->set_callback([tab_widget, ib] {
             int value = ib->value();
-            if (value >= 0 && value < tab_widget->tab_count()) {
+            if (value >= 0 && value < tab_widget->tab_count())
                 tab_widget->set_selected_index(value);
-            }
         });
 
         window = new Window(this, "Grid of small widgets");
@@ -533,48 +421,72 @@ public:
         perform_layout();
 
         /* All NanoGUI widgets are initialized at this point. Now
-           create an OpenGL shader to draw the main window contents.
+           create shaders to draw the main window contents.
 
            NanoGUI comes with a simple wrapper around OpenGL 3, which
            eliminates most of the tedious and error-prone shader and buffer
            object management.
         */
 
-        m_shader.init(
+        m_render_pass = new RenderPass({ this });
+        m_render_pass->set_clear_color(0, Color(0.3f, 0.3f, 0.32f, 1.f));
+
+        m_shader = new Shader(
+            m_render_pass,
+
             /* An identifying name */
             "a_simple_shader",
 
 #if defined(NANOGUI_USE_OPENGL)
-            /* Vertex shader */
-            "#version 330\n"
-            "uniform mat4 model_view_proj;\n"
-            "in vec3 position;\n"
-            "void main() {\n"
-            "    gl_Position = model_view_proj * vec4(position, 1.0);\n"
-            "}",
+            R"(/* Vertex shader */
+            #version 330
+            uniform mat4 mvp;
+            in vec3 position;
+            void main() {
+                gl_Position = mvp * vec4(position, 1.0);
+            })",
 
             /* Fragment shader */
-            "#version 330\n"
-            "out vec4 color;\n"
-            "uniform float intensity;\n"
-            "void main() {\n"
-            "    color = vec4(vec3(intensity), 1.0);\n"
-            "}"
-#else // GLES2
-            /* Vertex shader */
-            "precision highp float;\n"
-            "uniform mat4 model_view_proj;\n"
-            "attribute vec3 position;\n"
-            "void main() {\n"
-            "    gl_Position = model_view_proj * vec4(position, 1.0);\n"
-            "}",
+            R"(#version 330
+            out vec4 color;
+            uniform float intensity;
+            void main() {
+                color = vec4(vec3(intensity), 1.0);
+            })"
+#elif defined(NANOGUI_USE_GLES2)
+            R"(/* Vertex shader */
+            precision highp float;
+            uniform mat4 mvp;
+            attribute vec3 position;
+            void main() {
+                gl_Position = mvp * vec4(position, 1.0);
+            })",
 
             /* Fragment shader */
-            "precision highp float;\n"
-            "uniform float intensity;\n"
-            "void main() {\n"
-            "    gl_FragColor = vec4(vec3(intensity), 1.0);\n"
-            "}"
+            R"(precision highp float;
+            uniform float intensity;
+            void main() {
+                gl_FragColor = vec4(vec3(intensity), 1.0);
+            })"
+#elif defined(NANOGUI_USE_METAL)
+            R"(using namespace metal;
+            struct VertexOut {
+                float4 position [[position]];
+            };
+
+            vertex VertexOut vertex_main(const device packed_float3 *position,
+                                         constant float4x4 &mvp,
+                                         uint id [[vertex_id]]) {
+                VertexOut vert;
+                vert.position = mvp * float4(position[id], 1.f);
+                return vert;
+            })",
+
+            /* Fragment shader */
+            R"(using namespace metal;
+            fragment float4 fragment_main(const constant float &intensity) {
+                return float4(intensity);
+            })"
 #endif
         );
 
@@ -590,14 +502,9 @@ public:
             -1.f, 1.f, 0.f
         };
 
-        m_shader.bind();
-        m_shader.upload_indices(indices, 3, 2);
-        m_shader.upload_attrib("position", positions, 3, 4);
-        m_shader.set_uniform("intensity", 0.5f);
-    }
-
-    ~ExampleApplication() {
-        m_shader.free();
+        m_shader->set_buffer("indices", enoki::EnokiType::UInt32, 1, {3*2, 1, 1}, indices);
+        m_shader->set_buffer("position", enoki::EnokiType::Float32, 2, {4, 3, 1}, positions);
+        m_shader->set_uniform("intensity", 0.5f);
     }
 
     virtual bool keyboard_event(int key, int scancode, int action, int modifiers) {
@@ -619,26 +526,27 @@ public:
     }
 
     virtual void draw_contents() {
-        using namespace nanogui;
+        Matrix4f mvp = enoki::scale<Matrix4f>(Vector3f(
+                           (float) m_size.y() / (float) m_size.x() * 0.25f, 0.25f, 0.25f)) *
+                       enoki::rotate<Matrix4f>(Vector3f(0, 0, 1), (float) glfwGetTime());
 
-        /* Draw the window contents using OpenGL */
-        m_shader.bind();
+        m_shader->set_uniform("mvp", mvp);
 
-        Matrix4f mvp =
-            enoki::scale<Matrix4f>(Vector3f((float) m_size.y() / (float) m_size.x() * 0.25f, 0.25f, 0.25f)) *
-            enoki::rotate<Matrix4f>(Vector3f(0, 0, 1), (float) glfwGetTime());
+        m_render_pass->resize(framebuffer_size());
+        m_render_pass->begin();
 
-        m_shader.set_uniform("model_view_proj", mvp);
+        m_shader->begin();
+        m_shader->draw_array(Shader::PrimitiveType::Triangle, 0, 6, true);
+        m_shader->end();
 
-        /* Draw 2 triangles starting at index 0 */
-        m_shader.draw_indexed(GL_TRIANGLES, 0, 2);
+        m_render_pass->end();
     }
 private:
-    nanogui::ProgressBar *m_progress;
-    nanogui::GLShader m_shader;
+    ProgressBar *m_progress;
+    ref<Shader> m_shader;
+    ref<RenderPass> m_render_pass;
 
-    using images_data_type = std::vector<std::pair<GLTexture, GLTexture::handle_type>>;
-    images_data_type m_images_data;
+    std::vector<ref<Texture>> m_images;
     int m_current_image;
 };
 
@@ -647,10 +555,10 @@ int main(int /* argc */, char ** /* argv */) {
         nanogui::init();
 
         /* scoped variables */ {
-            nanogui::ref<ExampleApplication> app = new ExampleApplication();
+            ref<ExampleApplication> app = new ExampleApplication();
             app->draw_all();
             app->set_visible(true);
-            nanogui::mainloop();
+            nanogui::mainloop(1 / 60.f * 1000);
         }
 
         nanogui::shutdown();

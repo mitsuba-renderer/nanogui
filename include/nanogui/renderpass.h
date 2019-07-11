@@ -178,6 +178,7 @@ protected:
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
     uint32_t m_framebuffer_handle;
     Vector2i m_framebuffer_size;
+    int m_viewport_backup[4];
 #elif defined(NANOGUI_USE_METAL)
     void *m_command_buffer;
     void *m_command_encoder;

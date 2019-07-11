@@ -154,6 +154,10 @@ void register_render(py::module &m) {
              "size"_a, "interpolation_mode"_a = InterpolationMode::Bilinear,
              "wrap_mode"_a = WrapMode::Repeat, "samples"_a = 1,
              "flags"_a = (uint8_t) TextureFlags::ShaderRead)
+        .def(py::init<const std::string &, InterpolationMode, WrapMode>(),
+             D(Texture, Texture, 2), "filename"_a,
+             "interpolation_mode"_a = InterpolationMode::Bilinear,
+             "wrap_mode"_a = WrapMode::Repeat)
         .def("pixel_format", &Texture::pixel_format, D(Texture, pixel_format))
         .def("component_format", &Texture::component_format, D(Texture, component_format))
         .def("interpolation_mode", &Texture::interpolation_mode, D(Texture, interpolation_mode))

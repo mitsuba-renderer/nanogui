@@ -1,6 +1,52 @@
 #include <nanogui/texture.h>
+#include <stb_image.h>
 
 NAMESPACE_BEGIN(nanogui)
+
+Texture::Texture(PixelFormat pixel_format,
+                 ComponentFormat component_format,
+                 const Vector2i &size,
+                 InterpolationMode interpolation_mode,
+                 WrapMode wrap_mode,
+                 uint8_t samples,
+                 uint8_t flags)
+    : m_pixel_format(pixel_format),
+      m_component_format(component_format),
+      m_interpolation_mode(interpolation_mode),
+      m_wrap_mode(wrap_mode),
+      m_samples(samples),
+      m_flags(flags),
+      m_size(size) {
+
+    init();
+}
+
+Texture::Texture(const std::string &filename,
+                 InterpolationMode interpolation_mode,
+                 WrapMode wrap_mode)
+    : m_component_format(ComponentFormat::UInt8),
+      m_interpolation_mode(interpolation_mode),
+      m_wrap_mode(wrap_mode),
+      m_samples(1),
+      m_flags(TextureFlags::ShaderRead) {
+    int n = 0;
+    using Holder = std::unique_ptr<uint8_t[], void(*)(void*)>;
+    Holder texture_data(stbi_load(filename.c_str(), &m_size.x(), &m_size.y(), &n, 0),
+                        stbi_image_free);
+    if (!texture_data)
+        throw std::runtime_error("Could not load texture data from file \"" + filename + "\".");
+
+    switch (n) {
+        case 1: m_pixel_format = PixelFormat::R;    break;
+        case 2: m_pixel_format = PixelFormat::RA;   break;
+        case 3: m_pixel_format = PixelFormat::RGB;  break;
+        case 4: m_pixel_format = PixelFormat::RGBA; break;
+        default:
+            throw std::runtime_error("Texture::Texture(): unsupported channel count!");
+    }
+    init();
+    upload((const uint8_t *) texture_data.get());
+}
 
 size_t Texture::bytes_per_pixel() const {
     size_t result = 0;

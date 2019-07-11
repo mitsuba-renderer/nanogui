@@ -4,23 +4,9 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-Texture::Texture(PixelFormat pixel_format,
-                 ComponentFormat component_format,
-                 const Vector2i &size,
-                 InterpolationMode interpolation_mode,
-                 WrapMode wrap_mode,
-                 uint8_t samples,
-                 uint8_t flags)
-    : m_pixel_format(pixel_format),
-      m_component_format(component_format),
-      m_interpolation_mode(interpolation_mode),
-      m_wrap_mode(wrap_mode),
-      m_samples(samples),
-      m_flags(flags),
-      m_size(0),
-      m_texture_handle(nullptr),
-      m_sampler_state_handle(nullptr) {
-
+void Texture::init() {
+    Vector2i size = m_size;
+    m_size = 0;
     resize(size);
 
     MTLSamplerMinMagFilter interpolation_mode_mtl;

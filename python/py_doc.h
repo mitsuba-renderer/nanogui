@@ -523,13 +523,11 @@ static const char *__doc_nanogui_Canvas_draw_contents = R"doc(Draw the widget co
 
 static const char *__doc_nanogui_Canvas_m_border_color = R"doc()doc";
 
-static const char *__doc_nanogui_Canvas_m_color_texture = R"doc()doc";
-
-static const char *__doc_nanogui_Canvas_m_depth_stencil_texture = R"doc()doc";
-
 static const char *__doc_nanogui_Canvas_m_draw_border = R"doc()doc";
 
 static const char *__doc_nanogui_Canvas_m_render_pass = R"doc()doc";
+
+static const char *__doc_nanogui_Canvas_m_render_pass_resolved = R"doc()doc";
 
 static const char *__doc_nanogui_Canvas_render_pass = R"doc(Return the render pass associated with the canvas object)doc";
 
@@ -2706,6 +2704,8 @@ static const char *__doc_nanogui_Texture_TextureFlags_RenderTarget = R"doc(Targe
 
 static const char *__doc_nanogui_Texture_TextureFlags_ShaderRead = R"doc(Texture to be read in shaders)doc";
 
+static const char *__doc_nanogui_Texture_Texture_2 = R"doc(Load an image from the given file using stb-image)doc";
+
 static const char *__doc_nanogui_Texture_WrapMode = R"doc(How should out-of-bounds texture evaluations be handled?)doc";
 
 static const char *__doc_nanogui_Texture_WrapMode_ClampToEdge = R"doc(Clamp evaluations to the edge of the texture)doc";
@@ -2723,6 +2723,8 @@ static const char *__doc_nanogui_Texture_component_format = R"doc(Return the com
 static const char *__doc_nanogui_Texture_download = R"doc(Download packed pixel data from the GPU to the CPU)doc";
 
 static const char *__doc_nanogui_Texture_flags = R"doc(Return a combination of flags (from Texture::TextureFlags))doc";
+
+static const char *__doc_nanogui_Texture_init = R"doc(Initialize the texture handle)doc";
 
 static const char *__doc_nanogui_Texture_interpolation_mode = R"doc(Return the interpolation mode)doc";
 

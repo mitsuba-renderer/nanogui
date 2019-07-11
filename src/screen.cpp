@@ -70,7 +70,9 @@ static bool glad_initialized = false;
 
 /* Calculate pixel ratio for hi-dpi devices. */
 static float get_pixel_ratio(GLFWwindow *window) {
-#if defined(_WIN32)
+#if defined(EMSCRIPTEN)
+    return emscripten_get_device_pixel_ratio();
+#elif defined(_WIN32)
     HWND hwnd = glfwGetWin32Window(window);
     HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
     /* The following function only exists on Windows 8.1+, but we don't want to make that a dependency */
@@ -118,8 +120,6 @@ static float get_pixel_ratio(GLFWwindow *window) {
     if (pclose(fp) != 0)
         return 1;
     return ratio >= 1 ? ratio : 1;
-#elif defined(EMSCRIPTEN)
-    return emscripten_get_device_pixel_ratio();
 #else
     Vector2i fb_size, size;
     glfwGetFramebufferSize(window, &fb_size[0], &fb_size[1]);
@@ -220,7 +220,12 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_ALPHA_BITS, color_bits);
     glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits);
     glfwWindowHint(GLFW_DEPTH_BITS, depth_bits);
+
+#if defined(NANOGUI_USE_OPENGL)
     glfwWindowHint(GLFW_FLOATBUFFER, float_buffer ? GL_TRUE : GL_FALSE);
+#else
+    m_float_buffer = float_buffer = false;
+#endif
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
@@ -418,6 +423,8 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 #if defined(EMSCRIPTEN)
     double w, h;
     emscripten_get_element_css_size("#canvas", &w, &h);
+    double ratio = emscripten_get_device_pixel_ratio(),
+           w2 = w * ratio, h2 = h * ratio;
 
     if (w != m_size[0] || h != m_size[1]) {
         /* The canvas element is configured as width/height: auto, expand to
@@ -425,18 +432,17 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
         nanogui_emscripten_resize_callback(0, nullptr, nullptr);
         emscripten_set_resize_callback(nullptr, nullptr, false,
                                        nanogui_emscripten_resize_callback);
-        m_size = Vector2i((int) w,  (int) h);
-    } else {
-        double ratio = emscripten_get_device_pixel_ratio(),
-               w2 = w * ratio, h2 = h * ratio;
-        if (w != w2 || h != h2)  {
-            emscripten_set_canvas_element_size("#canvas", (int) w2, (int) h2);
-            emscripten_set_element_css_size("#canvas", w, h);
-        }
+    } else if (w != w2 || h != h2) {
+        /* Configure for rendering on a high-DPI display */
+        emscripten_set_canvas_element_size("#canvas", (int) w2, (int) h2);
+        emscripten_set_element_css_size("#canvas", w, h);
     }
+    m_fbsize = Vector2i((int) w2, (int) h2);
+    m_size = Vector2i((int) w, (int) h);
 #elif defined(_WIN32) || defined(__linux__)
     if (m_pixel_ratio != 1 && !m_fullscreen)
-        glfwSetWindowSize(window, m_size.x() * m_pixel_ratio, m_size.y() * m_pixel_ratio);
+        glfwSetWindowSize(window, m_size.x() * m_pixel_ratio,
+                                  m_size.y() * m_pixel_ratio);
 #endif
 
 #if defined(NANOGUI_GLAD)
@@ -532,7 +538,8 @@ void Screen::set_size(const Vector2i &size) {
     Widget::set_size(size);
 
 #if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
-    glfwSetWindowSize(m_glfw_window, size.x() * m_pixel_ratio, size.y() * m_pixel_ratio);
+    glfwSetWindowSize(m_glfw_window, size.x() * m_pixel_ratio,
+                                     size.y() * m_pixel_ratio);
 #else
     glfwSetWindowSize(m_glfw_window, size.x(), size.y());
 #endif
@@ -540,7 +547,6 @@ void Screen::set_size(const Vector2i &size) {
 
 void Screen::clear() {
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
-    CHK(glViewport(0, 0, m_fbsize[0], m_fbsize[1]));
     CHK(glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]));
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 #elif defined(NANOGUI_USE_METAL)
@@ -577,6 +583,10 @@ void Screen::draw_all() {
         /* Recompute pixel ratio on OSX */
         if (m_size[0])
             m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
+#endif
+
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+        CHK(glViewport(0, 0, m_fbsize[0], m_fbsize[1]));
 #endif
 
         draw_contents();

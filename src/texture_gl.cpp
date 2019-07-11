@@ -2,6 +2,14 @@
 #include <nanogui/opengl.h>
 #include "opengl_check.h"
 
+#if !defined(GL_HALF_FLOAT)
+#  define GL_HALF_FLOAT 0x140B
+#endif
+
+#if !defined(GL_DEPTH_STENCIL)
+#  define GL_DEPTH_STENCIL 0x84F9
+#endif
+
 NAMESPACE_BEGIN(nanogui)
 
 static void gl_map_texture_format(Texture::PixelFormat &pixel_format,
@@ -10,23 +18,7 @@ static void gl_map_texture_format(Texture::PixelFormat &pixel_format,
                                   GLenum &component_format_gl,
                                   GLenum &internal_format_gl);
 
-Texture::Texture(PixelFormat pixel_format,
-                 ComponentFormat component_format,
-                 const Vector2i &size,
-                 InterpolationMode interpolation_mode,
-                 WrapMode wrap_mode,
-                 uint8_t samples,
-                 uint8_t flags)
-    : m_pixel_format(pixel_format),
-      m_component_format(component_format),
-      m_interpolation_mode(interpolation_mode),
-      m_wrap_mode(wrap_mode),
-      m_samples(samples),
-      m_flags(flags),
-      m_size(size),
-      m_texture_handle(0),
-      m_renderbuffer_handle(0) {
-
+void Texture::init() {
     GLuint min_filter = 0, mag_filter = 0;
     switch (m_interpolation_mode) {
         case InterpolationMode::Nearest:
@@ -65,7 +57,7 @@ Texture::Texture(PixelFormat pixel_format,
 
     (void) pixel_format_gl; (void) component_format_gl;
 
-    if (flags & (uint8_t) TextureFlags::ShaderRead) {
+    if (m_flags & (uint8_t) TextureFlags::ShaderRead) {
         CHK(glGenTextures(1, &m_texture_handle));
         CHK(glBindTexture(GL_TEXTURE_2D, m_texture_handle));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter));
@@ -73,9 +65,9 @@ Texture::Texture(PixelFormat pixel_format,
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode_gl));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode_gl));
 
-        if (flags & (uint8_t) TextureFlags::RenderTarget)
+        if (m_flags & (uint8_t) TextureFlags::RenderTarget)
             upload(nullptr);
-    } else if (flags & (uint8_t) TextureFlags::RenderTarget) {
+    } else if (m_flags & (uint8_t) TextureFlags::RenderTarget) {
         CHK(glGenRenderbuffers(1, &m_renderbuffer_handle));
         CHK(glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer_handle));
         CHK(glRenderbufferStorage(GL_RENDERBUFFER, internal_format_gl,
@@ -119,8 +111,12 @@ void Texture::upload(const uint8_t *data) {
 }
 
 void Texture::download(uint8_t *data) {
+#if defined(NANOGUI_USE_GLES2)
+    (void) data;
+    throw std::runtime_error("Texture::download(): not supported on GLES 2!");
+#else
     if (m_texture_handle == 0)
-        throw std::runtime_error("Texture::upload(): no texture handle!");
+        throw std::runtime_error("Texture::download(): no texture handle!");
 
     GLenum pixel_format_gl,
            component_format_gl,
@@ -149,6 +145,7 @@ void Texture::download(uint8_t *data) {
             memcpy(high, temp.get(), stride);
         }
     }
+#endif
 }
 
 void Texture::resize(const Vector2i &size) {
@@ -168,13 +165,10 @@ static void gl_map_texture_format(Texture::PixelFormat &pixel_format,
 
     pixel_format_gl = component_format_gl = internal_format_gl = 0;
 
+#if defined(NANOGUI_USE_OPENGL)
     switch (pixel_format) {
         case PixelFormat::R:
-            #if defined(NANOGUI_USE_OPENGL)
-                pixel_format_gl = GL_RED;
-            #else
-                pixel_format_gl = GL_LUMINANCE;
-            #endif
+            pixel_format_gl = GL_RED;
 
             switch (component_format) {
                 case ComponentFormat::Int8:    internal_format_gl = GL_R8;        break;
@@ -189,11 +183,7 @@ static void gl_map_texture_format(Texture::PixelFormat &pixel_format,
             break;
 
         case PixelFormat::RA:
-            #if defined(NANOGUI_USE_OPENGL)
-                pixel_format_gl = GL_RG;
-            #else
-                pixel_format_gl = GL_LUMINANCE_ALPHA;
-            #endif
+            pixel_format_gl = GL_RG;
 
             switch (component_format) {
                 case ComponentFormat::Int8:    internal_format_gl = GL_RG8;        break;
@@ -290,6 +280,36 @@ static void gl_map_texture_format(Texture::PixelFormat &pixel_format,
         default:
             break;
     }
+#else
+    switch (pixel_format) {
+        case PixelFormat::R:
+            pixel_format_gl = internal_format_gl = GL_LUMINANCE;
+            break;
+
+        case PixelFormat::RA:
+            pixel_format_gl = internal_format_gl = GL_LUMINANCE_ALPHA;
+            break;
+
+        case PixelFormat::RGB:
+            pixel_format_gl = internal_format_gl = GL_RGB;
+            break;
+
+        case PixelFormat::RGBA:
+            pixel_format_gl = internal_format_gl = GL_RGBA;
+            break;
+
+        case PixelFormat::Depth:
+            pixel_format_gl = internal_format_gl = GL_DEPTH_COMPONENT;
+            break;
+
+        case PixelFormat::DepthStencil:
+            pixel_format_gl = internal_format_gl = GL_DEPTH_STENCIL;
+            break;
+
+        default:
+            break;
+    }
+#endif
 
     switch (component_format) {
         case ComponentFormat::Int8:    component_format_gl = GL_BYTE;           break;

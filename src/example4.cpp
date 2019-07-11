@@ -142,7 +142,6 @@ public:
         m_shader->set_buffer("indices", EnokiType::UInt32, 1, {3*12, 1, 1}, indices);
         m_shader->set_buffer("position", EnokiType::Float32, 2, {8, 3, 1}, positions);
         m_shader->set_buffer("color", EnokiType::Float32, 2, {8, 3, 1}, colors);
-        render_pass()->set_depth_test(RenderPass::DepthTest::Always, false);
     }
 
     void set_rotation(float rotation) {

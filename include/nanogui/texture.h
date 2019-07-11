@@ -116,6 +116,11 @@ public:
             uint8_t samples = 1,
             uint8_t flags = (uint8_t) TextureFlags::ShaderRead);
 
+    /// Load an image from the given file using stb-image
+    Texture(const std::string &filename,
+            InterpolationMode interpolation_mode = InterpolationMode::Bilinear,
+            WrapMode wrap_mode = WrapMode::Repeat);
+
     /// Return the pixel format
     PixelFormat pixel_format() const { return m_pixel_format; }
 
@@ -161,6 +166,9 @@ public:
 #endif
 
 protected:
+    /// Initialize the texture handle
+    void init();
+
     /// Release all resources
     virtual ~Texture();
 
@@ -174,11 +182,11 @@ protected:
     Vector2i m_size;
 
     #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
-        uint32_t m_texture_handle;
-        uint32_t m_renderbuffer_handle;
+        uint32_t m_texture_handle = 0;
+        uint32_t m_renderbuffer_handle = 0;
     #elif defined(NANOGUI_USE_METAL)
-        void *m_texture_handle;
-        void *m_sampler_state_handle;
+        void *m_texture_handle = nullptr;
+        void *m_sampler_state_handle = nullptr;
     #endif
 };
 

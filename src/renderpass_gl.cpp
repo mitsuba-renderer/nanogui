@@ -34,7 +34,9 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
     CHK(glGenFramebuffers(1, &m_framebuffer_handle));
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_handle));
 
+#if defined(NANOGUI_USE_OPENGL)
     std::vector<GLenum> draw_buffers;
+#endif
 
     bool has_texture = false,
          has_screen  = false;
@@ -52,18 +54,23 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
         if (screen) {
             m_viewport_size = max(m_viewport_size, screen->framebuffer_size());
+#if defined(NANOGUI_USE_OPENGL)
             if (i >= 2)
                 draw_buffers.push_back(GL_BACK_LEFT);
+#endif
             has_screen = true;
         } else if (texture) {
             if (texture->flags() & Texture::TextureFlags::ShaderRead) {
-                CHK(glFramebufferTexture(GL_FRAMEBUFFER, attachment_id, texture->texture_handle(), 0));
+                CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_id, GL_TEXTURE_2D,
+                                           texture->texture_handle(), 0));
             } else {
                 CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment_id, GL_RENDERBUFFER,
                                               texture->renderbuffer_handle()));
             }
+#if defined(NANOGUI_USE_OPENGL)
             if (i >= 2)
                 draw_buffers.push_back(attachment_id);
+#endif
             m_viewport_size = max(m_viewport_size, texture->size());
             has_texture = true;
         }
@@ -73,22 +80,33 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         CHK(glDeleteFramebuffers(1, &m_framebuffer_handle));
         m_framebuffer_handle = 0;
     } else {
+#if defined(NANOGUI_USE_OPENGL)
         CHK(glDrawBuffers((GLsizei) draw_buffers.size(), draw_buffers.data()));
+#endif
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
             const char *reason = "unknown";
             switch (status) {
-                case GL_FRAMEBUFFER_UNDEFINED:
-                    reason = "undefined";
-                    break;
-
                 case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
                     reason = "incomplete attachment";
                     break;
 
+                case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+                    reason = "incomplete dimensions";
+                    break;
+
                 case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
                     reason = "incomplete, missing attachment";
+                    break;
+
+                case GL_FRAMEBUFFER_UNSUPPORTED:
+                    reason = "unsupported";
+                    break;
+
+#if defined(NANOGUI_USE_OPENGL)
+                case GL_FRAMEBUFFER_UNDEFINED:
+                    reason = "undefined";
                     break;
 
                 case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
@@ -106,10 +124,7 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
                 case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
                     reason = "incomplete layer targets";
                     break;
-
-                case GL_FRAMEBUFFER_UNSUPPORTED:
-                    reason = "unsupported";
-                    break;
+#endif
             }
             throw std::runtime_error(
                 "RenderPass::RenderPass(): framebuffer is marked as incomplete: " +
@@ -142,11 +157,15 @@ void RenderPass::begin() {
             m_framebuffer_size = max(m_framebuffer_size, texture->size());
     }
 
+    CHK(glGetIntegerv(GL_VIEWPORT, m_viewport_backup));
+
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_handle));
     set_viewport(m_viewport_offset, m_viewport_size);
 
     if (!m_clear)
         return;
+
+#if defined(NANOGUI_USE_OPENGL)
     for (size_t i = 0; i < m_targets.size(); ++i) {
         if (i == 0 && m_targets[0]) {
             if (m_targets[0] == m_targets[1])
@@ -159,6 +178,23 @@ void RenderPass::begin() {
         if (i >= 2)
             CHK(glClearBufferfv(GL_COLOR, i - 2, m_clear_color[i - 2].data()));
     }
+#else
+    GLenum what = 0;
+    if (m_targets[0]) {
+        glClearDepthf(m_clear_depth);
+        what |= GL_DEPTH_BUFFER_BIT;
+    }
+    if (m_targets[1]) {
+        glClearStencil(m_clear_stencil);
+        what |= GL_STENCIL_BUFFER_BIT;
+    }
+    if (m_targets[2]) {
+        glClearColor(m_clear_color[0].r(), m_clear_color[0].g(),
+                     m_clear_color[0].b(), m_clear_color[0].w());
+        what |= GL_COLOR_BUFFER_BIT;
+    }
+    glClear(what);
+#endif
 
     set_depth_test(m_depth_test, m_depth_write);
     set_cull_mode(m_cull_mode);
@@ -173,6 +209,9 @@ void RenderPass::end() {
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     if (m_blit_target)
         blit_to(Vector2i(0, 0), m_framebuffer_size, m_blit_target, Vector2i(0, 0));
+
+    CHK(glViewport(m_viewport_backup[0], m_viewport_backup[1],
+                   m_viewport_backup[2], m_viewport_backup[3]));
 
     m_active = false;
 }
@@ -259,7 +298,10 @@ void RenderPass::blit_to(const Vector2i &src_offset,
                          const Vector2i &src_size,
                          Object *dst,
                          const Vector2i &dst_offset) {
-
+#if defined(NANOGUI_USE_GLES2)
+    (void) src_offset; (void) src_size; (void) dst; (void) src_offset;
+    throw std::runtime_error("RenderPass::blit_to(): not supported on GLES 2!");
+#else
     Screen *screen = dynamic_cast<Screen *>(dst);
     RenderPass *rp = dynamic_cast<RenderPass *>(dst);
 
@@ -283,7 +325,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
             what |= GL_COLOR_BUFFER_BIT;
     } else {
         throw std::runtime_error(
-            "RenderPass::end(): 'dst' must either be a RenderPass or a Screen instance.");
+            "RenderPass::blit_to(): 'dst' must either be a RenderPass or a Screen instance.");
     }
 
     CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_handle));
@@ -302,6 +344,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
                           what, GL_NEAREST));
 
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+#endif
 }
 
 NAMESPACE_END(nanogui)

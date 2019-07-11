@@ -5,6 +5,10 @@
 #include <nanogui/renderpass.h>
 #include "opengl_check.h"
 
+#if !defined(GL_HALF_FLOAT)
+#  define GL_HALF_FLOAT 0x140B
+#endif
+
 NAMESPACE_BEGIN(nanogui)
 
 using enoki::EnokiType;
@@ -134,6 +138,7 @@ Shader::Shader(RenderPass *render_pass,
                 buf.shape[0] = 4;
                 break;
 
+#if defined(NANOGUI_USE_OPENGL)
             case GL_UNSIGNED_INT:
                 buf.dtype = EnokiType::UInt32;
                 buf.ndim = 0;
@@ -153,6 +158,7 @@ Shader::Shader(RenderPass *render_pass,
                 buf.dtype = EnokiType::UInt32;
                 buf.shape[0] = 4;
                 break;
+#endif
 
             case GL_BOOL:
                 buf.dtype = EnokiType::Bool;
@@ -426,6 +432,9 @@ void Shader::begin() {
                         }
                         break;
 
+#if defined(NANOGUI_USE_GLES2)
+                    case EnokiType::UInt32:
+#endif
                     case EnokiType::Int32: {
                             const int32_t *v = (const int32_t *) buf.buffer;
                             if (buf.ndim < 2) {
@@ -442,6 +451,7 @@ void Shader::begin() {
                         }
                         break;
 
+#if defined(NANOGUI_USE_OPENGL)
                     case EnokiType::UInt32: {
                             const uint32_t *v = (const uint32_t *) buf.buffer;
                             if (buf.ndim < 2) {
@@ -457,6 +467,7 @@ void Shader::begin() {
                             }
                         }
                         break;
+#endif
 
                     case EnokiType::Bool: {
                             const uint8_t *v = (const uint8_t *) buf.buffer;
