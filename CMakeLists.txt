@@ -138,7 +138,6 @@ endif()
 
 if (NANOGUI_BACKEND MATCHES "(OpenGL|GLES 2)")
   list(APPEND LIBNANOGUI_EXTRA_SOURCE
-    include/nanogui/glutil.h src/glutil.cpp
     src/texture_gl.cpp src/shader_gl.cpp
     src/renderpass_gl.cpp src/opengl.cpp
     src/opengl_check.h
@@ -471,6 +470,7 @@ add_library(nanogui-obj OBJECT
   include/nanogui/formhelper.h
   include/nanogui/toolbutton.h
   include/nanogui/opengl.h
+  include/nanogui/arcball.h
   include/nanogui/nanogui.h
 )
 
@@ -605,7 +605,6 @@ if (NANOGUI_BUILD_PYTHON)
     python/formhelper.cpp
     python/misc.cpp
     python/canvas.cpp
-    python/glutil.cpp
     python/nanovg.cpp
     python/render.cpp
     python/python.h python/py_doc.h

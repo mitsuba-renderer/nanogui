@@ -164,7 +164,7 @@ public:
             (float) glfwGetTime()
         );
 
-        model *= enoki::rotate<Matrix4f>(
+        Matrix4f model2 = enoki::rotate<Matrix4f>(
             Vector3f(1, 0, 0),
             m_rotation
         );
@@ -176,7 +176,7 @@ public:
             m_size.x() / (float) m_size.y()
         );
 
-        Matrix4f mvp = proj * view * model;
+        Matrix4f mvp = proj * view * model * model2;
 
         m_shader->set_uniform("mvp", mvp);
 

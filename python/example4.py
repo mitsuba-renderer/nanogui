@@ -1,5 +1,5 @@
 # python/example4.py -- Python version of an example application that
-# shows how to use the GLCanvas widget. For a C++ implementation, see
+# shows how to use the Canvas widget. For a C++ implementation, see
 # '../src/example4.cpp'.
 #
 # NanoGUI was developed by Wenzel Jakob <wenzel@inf.ethz.ch>.
@@ -12,157 +12,184 @@
 import nanogui
 import random
 import math
-import time
 import gc
 
-from nanogui import Color, Screen, Window, GroupLayout, BoxLayout, \
-                    ToolButton, Label, Button, Widget, \
-                    PopupButton, CheckBox, MessageDialog, VScrollPanel, \
-                    ImagePanel, ImageView, ComboBox, ProgressBar, Slider, \
-                    TextBox, ColorWheel, Graph, GridLayout, \
-                    Alignment, Orientation, TabWidget, IntBox, GLShader, GLCanvas
+from nanogui import Canvas, Shader, RenderPass, Screen, Window, \
+    GroupLayout, Color, Widget, BoxLayout, Orientation, Alignment, \
+    Button
 
-from nanogui import gl, glfw, entypo
+from nanogui import glfw, entypo
 
-
-class MyGLCanvas(GLCanvas):
+class MyCanvas(Canvas):
     def __init__(self, parent):
-        super(MyGLCanvas, self).__init__(parent)
+        super(MyCanvas, self).__init__(parent)
 
         try:
             import numpy as np
 
-            self.shader = GLShader()
-            if nanogui.opengl:
-                self.shader.init(
-                    # An identifying name
-                    "a_simple_shader",
-
-                    # Vertex shader
-                    """#version 330
-                    uniform mat4 model_view_proj;
+            if nanogui.api == 'opengl':
+                vertex_shader = """
+                    #version 330
+                    uniform mat4 mvp;
                     in vec3 position;
                     in vec3 color;
                     out vec4 frag_color;
                     void main() {
                         frag_color = vec4(color, 1.0);
-                        gl_Position = model_view_proj * vec4(position, 1.0);
-                    }""",
+                        gl_Position = mvp * vec4(position, 1.0);
+                    }
+                    """
 
-                    # Fragment shader
-                    """#version 330
+                fragment_shader = """
+                    #version 330
                     out vec4 color;
                     in vec4 frag_color;
                     void main() {
                         color = frag_color;
-                    }"""
-                )
-            else: # GLES 2
-                self.shader.init(
-                    # An identifying name
-                    "a_simple_shader",
-
-                    # Vertex shader
-                    """precision highp float;
-                    uniform mat4 model_view_proj;
+                    }
+                    """
+            elif nanogui.api == 'gles2':
+                vertex_shader = """
+                    precision highp float;
+                    uniform mat4 mvp;
                     attribute vec3 position;
                     attribute vec3 color;
                     varying vec4 frag_color;
                     void main() {
                         frag_color = vec4(color, 1.0);
-                        gl_Position = model_view_proj * vec4(position, 1.0);
-                    }""",
+                        gl_Position = mvp * vec4(position, 1.0);
+                    }
+                    """
 
-                    # Fragment shader
-                    """precision highp float;
+                fragment_shader = """
+                    precision highp float;
                     varying vec4 frag_color;
                     void main() {
                         gl_FragColor = frag_color;
-                    }"""
-                )
+                    }
+                    """
+            elif nanogui.api == 'metal':
+                vertex_shader = """
+                    using namespace metal;
+                    struct VertexOut {
+                        float4 position [[position]];
+                        float4 color;
+                    };
+
+                    vertex VertexOut vertex_main(const device packed_float3 *position,
+                                                 const device packed_float3 *color,
+                                                 constant float4x4 &mvp,
+                                                 uint id [[vertex_id]]) {
+                        VertexOut vert;
+                        vert.position = mvp * float4(position[id], 1.f);
+                        vert.color = float4(color[id], 1.f);
+                        return vert;
+                    }
+                    """
+
+                fragment_shader = """
+                    using namespace metal;
+
+                    struct VertexOut {
+                        float4 position [[position]];
+                        float4 color;
+                    };
+
+                    fragment float4 fragment_main(VertexOut vert [[stage_in]]) {
+                        return vert.color;
+                    }
+                    """
+            else:
+                raise Exception("Unknown graphics API!")
+
+            self.shader = Shader(
+                self.render_pass(),
+                # An identifying name
+                "a_simple_shader",
+                vertex_shader,
+                fragment_shader
+            )
 
             # Draw a cube
             indices = np.array(
-                [[0, 3, 3, 6, 7, 5, 4, 1, 4, 3, 5, 2],
-                 [1, 2, 2, 7, 6, 4, 5, 0, 0, 7, 6, 1],
-                 [3, 1, 6, 3, 5, 7, 1, 4, 3, 4, 2, 5]],
-                dtype=np.int32)
+                [3, 2, 6, 6, 7, 3,
+                 4, 5, 1, 1, 0, 4,
+                 4, 0, 3, 3, 7, 4,
+                 1, 5, 6, 6, 2, 1,
+                 0, 1, 2, 2, 3, 0,
+                 7, 6, 5, 5, 4, 7],
+                dtype=np.uint32)
 
             positions = np.array(
-                [[-1, -1, 1, 1, -1, -1, 1, 1],
-                 [1, 1, 1, 1, -1, -1, -1, -1],
-                 [1, -1, -1, 1, 1, -1, -1, 1]],
+                [[-1, 1, 1], [-1, -1, 1],
+                 [1, -1, 1], [1, 1, 1],
+                 [-1, 1, -1], [-1, -1, -1],
+                 [1, -1, -1], [1, 1, -1]],
                 dtype=np.float32)
 
             colors = np.array(
-                [[1, 0, 1, 0, 1, 0, 0.5, 1],
-                 [0, 1, 1, 0, 0, 1, 0.5, 0],
-                 [0, 0, 0, 1, 1, 1, 0.5, 0.5]],
+                [[0, 1, 1], [0, 0, 1],
+                 [1, 0, 1], [1, 1, 1],
+                 [0, 1, 0], [0, 0, 0],
+                 [1, 0, 0], [1, 1, 0]],
                 dtype=np.float32)
 
-            self.shader.bind()
-            self.shader.upload_indices(indices)
-            self.shader.upload_attrib("position", positions)
-            self.shader.upload_attrib("color", colors)
+            self.shader.set_buffer("indices", indices)
+            self.shader.set_buffer("position", positions)
+            self.shader.set_buffer("color", colors)
+            self.rotation = 0
         except ImportError:
             self.shader = None
             pass
 
-    def draw_gl(self):
-        if self.shader is not None:
-            import numpy as np
-            self.shader.bind()
+    def draw_contents(self):
+        if self.shader is None:
+            return
+        import numpy as np
 
-            current_time = time.time()
-            angle_x = self.rotation[0] * current_time
-            angle_y = self.rotation[1] * current_time
-            angle_z = self.rotation[2] * current_time
+        view = nanogui.look_at(
+            origin=[0, -2, -10],
+            target=[0, 0, 0],
+            up=[0, 1, 0]
+        )
 
-            mvp_rot_x = np.matrix(
-                [[1, 0, 0, 0],
-                 [0, np.cos(angle_x), -np.sin(angle_x), 0],
-                 [0, np.sin(angle_x), np.cos(angle_x), 0],
-                 [0, 0, 0, 1]],
-                dtype=np.float32)
+        model = nanogui.rotate(
+            [0, 1, 0],
+            glfw.getTime()
+        )
 
-            mvp_rot_y = np.matrix(
-                [[np.cos(angle_y), 0, np.sin(angle_y), 0],
-                 [0, 1, 0, 0],
-                 [-np.sin(angle_y), 0, np.cos(angle_y), 0],
-                 [0, 0, 0, 1]],
-                dtype=np.float32)
+        model2 = nanogui.rotate(
+            [1, 0, 0],
+            self.rotation
+        )
 
-            mvp_rot_z = np.matrix(
-                [[np.cos(angle_z), -np.sin(angle_z), 0, 0],
-                 [np.sin(angle_z), np.cos(angle_z), 0, 0],
-                 [0, 0, 1, 0],
-                 [0, 0, 0, 1]],
-                dtype=np.float32)
+        size = self.size()
+        proj = nanogui.perspective(
+            fov=25 * np.pi / 180,
+            near=0.1,
+            far=20,
+            aspect=size[0] / float(size[1])
+        )
 
-            mvp = mvp_rot_x * mvp_rot_y * mvp_rot_z
+        mvp = proj @ view @ model @ model2
 
-            mvp[0:3, 0:3] *= 0.25
-
-            self.shader.set_uniform("model_view_proj", mvp)
-
-            gl.Enable(gl.DEPTH_TEST)
-            self.shader.draw_indexed(gl.TRIANGLES, 0, 12)
-            gl.Disable(gl.DEPTH_TEST)
+        self.shader.set_buffer("mvp", np.float32(mvp.T))
+        with self.shader:
+            self.shader.draw_array(Shader.PrimitiveType.Triangle,
+                                   0, 36, indexed=True)
 
 
 class TestApp(Screen):
     def __init__(self):
         super(TestApp, self).__init__((800, 600), "NanoGUI Test", False)
 
-        window = Window(self, "GLCanvas Demo")
+        window = Window(self, "Canvas Demo")
         window.set_position((15, 15))
         window.set_layout(GroupLayout())
 
-        self.canvas = MyGLCanvas(window)
+        self.canvas = MyCanvas(window)
         self.canvas.set_background_color(Color(0.5, 0.5, 0.5, 1.0))
         self.canvas.set_size((400, 400))
-
-        self.canvas.rotation = [0.25, 0.5, 0.33]
 
         tools = Widget(window)
         tools.set_layout(BoxLayout(Orientation.Horizontal,
@@ -175,7 +202,7 @@ class TestApp(Screen):
 
         b1 = Button(tools, "Random Rotation")
         def cb1():
-            self.canvas.rotation = [random.random(), random.random(), random.random()]
+            self.canvas.rotation = random.random() * math.pi
         b1.set_callback(cb1)
 
         self.perform_layout()
@@ -194,7 +221,7 @@ if __name__ == "__main__":
     test = TestApp()
     test.draw_all()
     test.set_visible(True)
-    nanogui.mainloop()
+    nanogui.mainloop(1 / 60.0 * 1000)
     del test
     gc.collect()
     nanogui.shutdown()

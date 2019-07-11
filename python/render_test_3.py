@@ -76,7 +76,7 @@ class MyScreen(Screen):
                 }
             '''
 
-        base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)))
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         image_fname = os.path.join(base_dir, "resources/icons/icon1.png")
         image = np.array(Image.open(image_fname))
 

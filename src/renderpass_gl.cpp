@@ -92,10 +92,6 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
                     reason = "incomplete attachment";
                     break;
 
-                case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-                    reason = "incomplete dimensions";
-                    break;
-
                 case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
                     reason = "incomplete, missing attachment";
                     break;
@@ -123,6 +119,10 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
 
                 case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
                     reason = "incomplete layer targets";
+                    break;
+#else
+                case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+                    reason = "incomplete dimensions";
                     break;
 #endif
             }

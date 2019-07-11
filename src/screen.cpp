@@ -221,7 +221,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits);
     glfwWindowHint(GLFW_DEPTH_BITS, depth_bits);
 
-#if defined(NANOGUI_USE_OPENGL)
+#if defined(GLFW_FLOATBUFFER)
     glfwWindowHint(GLFW_FLOATBUFFER, float_buffer ? GL_TRUE : GL_FALSE);
 #else
     m_float_buffer = float_buffer = false;

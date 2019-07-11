@@ -40,3 +40,4 @@
 #include <nanogui/shader.h>
 #include <nanogui/renderpass.h>
 #include <nanogui/canvas.h>
+#include <nanogui/arcball.h>

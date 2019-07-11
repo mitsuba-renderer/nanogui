@@ -18,6 +18,7 @@ void register_canvas(py::module &m) {
         .def(py::init<Widget *, uint8_t, bool, bool>(),
              "parent"_a, "samples"_a = 4, "has_depth"_a = true,
              "has_stencil"_a = false, D(Canvas, Canvas))
+        .def("render_pass", &Canvas::render_pass, D(Canvas, render_pass))
         .def("draw_border", &Canvas::draw_border, D(Canvas, draw_border))
         .def("set_draw_border", &Canvas::set_draw_border, D(Canvas, set_draw_border))
         .def("border_color", &Canvas::border_color, D(Canvas, border_color))

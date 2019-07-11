@@ -50,7 +50,6 @@ extern void register_theme(py::module &m);
 extern void register_canvas(py::module &m);
 extern void register_formhelper(py::module &m);
 extern void register_misc(py::module &m);
-extern void register_glutil(py::module &m);
 extern void register_nanovg(py::module &m);
 extern void register_render(py::module &m);
 
@@ -257,7 +256,6 @@ PYBIND11_MODULE(nanogui, m) {
     register_canvas(m);
     register_formhelper(m);
     register_misc(m);
-    register_glutil(m);
     register_nanovg(m);
     register_render(m);
 }
