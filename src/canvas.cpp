@@ -139,7 +139,7 @@ void Canvas::draw(NVGcontext *ctx) {
 
     Vector2i abspos = absolute_position(), offset = abspos;
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
      offset = Vector2i(abspos.x(), scr->size().y() - abspos.y() - m_size.y());
 #endif
 
@@ -162,7 +162,7 @@ void Canvas::draw(NVGcontext *ctx) {
     rp->blit_to(Vector2i(0, 0), fbsize,
                 scr, offset * pixel_ratio);
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     Vector2i scr_fbsize = scr->framebuffer_size();
     CHK(glDisable(GL_DEPTH_TEST));
     CHK(glDisable(GL_CULL_FACE));

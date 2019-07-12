@@ -453,7 +453,7 @@ public:
             void main() {
                 color = vec4(vec3(intensity), 1.0);
             })"
-#elif defined(NANOGUI_USE_GLES2)
+#elif defined(NANOGUI_USE_GLES)
             R"(/* Vertex shader */
             precision highp float;
             uniform mat4 mvp;

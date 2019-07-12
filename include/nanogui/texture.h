@@ -157,7 +157,7 @@ public:
     /// Resize the texture (discards the current contents)
     void resize(const Vector2i &size);
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     uint32_t texture_handle() const { return m_texture_handle; }
     uint32_t renderbuffer_handle() const { return m_renderbuffer_handle; }
 #elif defined(NANOGUI_USE_METAL)
@@ -181,7 +181,7 @@ protected:
     uint8_t m_flags;
     Vector2i m_size;
 
-    #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+    #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         uint32_t m_texture_handle = 0;
         uint32_t m_renderbuffer_handle = 0;
     #elif defined(NANOGUI_USE_METAL)

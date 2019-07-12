@@ -152,7 +152,7 @@ public:
         const Vector2i &dst_offset
     );
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     uint32_t framebuffer_handle() const { return m_framebuffer_handle; }
 #elif defined(NANOGUI_USE_METAL)
     void *command_encoder() const { return m_command_encoder; }
@@ -175,7 +175,7 @@ protected:
     CullMode m_cull_mode;
     ref<Object> m_blit_target;
     bool m_active;
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     uint32_t m_framebuffer_handle;
     Vector2i m_framebuffer_size;
     int m_viewport_backup[4];

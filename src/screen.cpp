@@ -43,10 +43,10 @@
 
 /* Allow enforcing the GL2 implementation of NanoVG */
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
 #  if defined(NANOGUI_USE_OPENGL)
 #    define NANOVG_GL3_IMPLEMENTATION
-#  elif defined(NANOGUI_USE_GLES2)
+#  elif defined(NANOGUI_USE_GLES)
 #    define NANOVG_GLES2_IMPLEMENTATION
 #  endif
 #  include <nanovg_gl.h>
@@ -188,10 +188,10 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl_minor);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#elif defined(NANOGUI_USE_GLES2)
+#elif defined(NANOGUI_USE_GLES)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, NANOGUI_GLES_VERSION);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #elif defined(NANOGUI_USE_METAL)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -246,7 +246,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
         throw std::runtime_error("Could not create an OpenGL " +
                                  std::to_string(gl_major) + "." +
                                  std::to_string(gl_minor) + " context!");
-#elif defined(NANOGUI_USE_GLES2)
+#elif defined(NANOGUI_USE_GLES)
         throw std::runtime_error("Could not create a GLES 2 context!");
 #elif defined(NANOGUI_USE_METAL)
         throw std::runtime_error(
@@ -254,7 +254,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 #endif
     }
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     glfwMakeContextCurrent(m_glfw_window);
 #endif
 
@@ -271,7 +271,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 
     glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     CHK(glViewport(0, 0, m_fbsize[0], m_fbsize[1]));
     CHK(glClearColor(m_background[0], m_background[1],
                      m_background[2], m_background[3]));
@@ -463,7 +463,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 
 #if defined(NANOGUI_USE_OPENGL)
     m_nvg_context = nvgCreateGL3(flags);
-#elif defined(NANOGUI_USE_GLES2)
+#elif defined(NANOGUI_USE_GLES)
     m_nvg_context = nvgCreateGLES2(flags);
 #elif defined(NANOGUI_USE_METAL)
     void *nswin = glfwGetCocoaWindow(window);
@@ -505,7 +505,7 @@ Screen::~Screen() {
     if (m_nvg_context) {
 #if defined(NANOGUI_USE_OPENGL)
         nvgDeleteGL3(m_nvg_context);
-#elif defined(NANOGUI_USE_GLES2)
+#elif defined(NANOGUI_USE_GLES)
         nvgDeleteGLES2(m_nvg_context);
 #elif defined(NANOGUI_USE_METAL)
         nvgDeleteMTL(m_nvg_context);
@@ -546,7 +546,7 @@ void Screen::set_size(const Vector2i &size) {
 }
 
 void Screen::clear() {
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     CHK(glClearColor(m_background[0], m_background[1], m_background[2], m_background[3]));
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 #elif defined(NANOGUI_USE_METAL)
@@ -558,7 +558,7 @@ void Screen::draw_all() {
     if (m_redraw) {
         m_redraw = false;
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         glfwMakeContextCurrent(m_glfw_window);
 #elif defined(NANOGUI_USE_METAL)
         void *nswin = glfwGetCocoaWindow(m_glfw_window);
@@ -585,14 +585,14 @@ void Screen::draw_all() {
             m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
 #endif
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         CHK(glViewport(0, 0, m_fbsize[0], m_fbsize[1]));
 #endif
 
         draw_contents();
         draw_widgets();
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         glfwSwapBuffers(m_glfw_window);
 #elif defined(NANOGUI_USE_METAL)
         mnvgSetColorTexture(m_nvg_context, nullptr);

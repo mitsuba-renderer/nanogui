@@ -26,7 +26,7 @@
 #      define GL_GLEXT_PROTOTYPES
 #    endif
 #  endif
-#elif defined(NANOGUI_USE_GLES2)
+#elif defined(NANOGUI_USE_GLES)
 #  define GLFW_INCLUDE_ES2
 #endif
 
@@ -63,7 +63,7 @@ int main(int /* argc */, char ** /* argv */) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#elif defined(NANOGUI_USE_GLES2)
+#elif defined(NANOGUI_USE_GLES)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
@@ -101,7 +101,7 @@ int main(int /* argc */, char ** /* argv */) {
     screen = new Screen();
     screen->initialize(window, true);
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);

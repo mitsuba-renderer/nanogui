@@ -16,7 +16,7 @@ bool nanogui_check_glerror(const char *cmd) {
 
     switch (err) {
         case GL_NO_ERROR:
-            printf("OK: %s\n", cmd);
+            // printf("OK: %s\n", cmd);
             return false;
 
         case GL_INVALID_ENUM:

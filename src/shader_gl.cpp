@@ -432,7 +432,7 @@ void Shader::begin() {
                         }
                         break;
 
-#if defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_GLES)
                     case EnokiType::UInt32:
 #endif
                     case EnokiType::Int32: {

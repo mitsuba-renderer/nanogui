@@ -298,7 +298,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
                          const Vector2i &src_size,
                          Object *dst,
                          const Vector2i &dst_offset) {
-#if defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_GLES) && NANOGUI_GLES_VERSION == 2
     (void) src_offset; (void) src_size; (void) dst; (void) src_offset;
     throw std::runtime_error("RenderPass::blit_to(): not supported on GLES 2!");
 #else
@@ -311,28 +311,37 @@ void RenderPass::blit_to(const Vector2i &src_offset,
     if (screen) {
         target_id = 0;
         what = GL_COLOR_BUFFER_BIT;
-        if (screen->has_depth_buffer())
+        if (screen->has_depth_buffer() && m_targets[0])
             what |= GL_STENCIL_BUFFER_BIT;
-        if (screen->has_stencil_buffer())
+        if (screen->has_stencil_buffer() && m_targets[1])
             what |= GL_STENCIL_BUFFER_BIT;
     } else if (rp) {
         target_id = rp->framebuffer_handle();
-        if (rp->targets().size() > 0 && rp->targets()[0])
+        if (rp->targets().size() > 0 && rp->targets()[0] && m_targets[0])
             what |= GL_DEPTH_BUFFER_BIT;
-        if (rp->targets().size() > 1 && rp->targets()[1])
+        if (rp->targets().size() > 1 && rp->targets()[1] && m_targets[1])
             what |= GL_STENCIL_BUFFER_BIT;
-        if (rp->targets().size() > 2 && rp->targets()[2])
+        if (rp->targets().size() > 2 && rp->targets()[2] && m_targets[2])
             what |= GL_COLOR_BUFFER_BIT;
     } else {
         throw std::runtime_error(
             "RenderPass::blit_to(): 'dst' must either be a RenderPass or a Screen instance.");
     }
+    #if defined(NANOGUI_USE_GLES)
+        what = GL_COLOR_BUFFER_BIT;
+    #endif
 
     CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_handle));
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target_id));
 
-    if (target_id == 0)
-        CHK(glDrawBuffer(GL_BACK));
+    if (target_id == 0) {
+        #if defined(NANOGUI_USE_OPENGL)
+            CHK(glDrawBuffer(GL_BACK));
+        #else
+            GLenum buf = GL_BACK;
+            CHK(glDrawBuffers(1, &buf));
+        #endif
+    }
 
     Vector2i src_end = src_offset + src_size,
              dst_end = dst_offset + src_size;

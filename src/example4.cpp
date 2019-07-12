@@ -65,7 +65,7 @@ public:
             void main() {
                 color = frag_color;
             })"
-#elif defined(NANOGUI_USE_GLES2)
+#elif defined(NANOGUI_USE_GLES)
             /* Vertex shader */
             R"(precision highp float;
             uniform mat4 mvp;

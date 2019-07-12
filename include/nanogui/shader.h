@@ -155,7 +155,7 @@ public:
                     size_t offset, size_t count,
                     bool indexed = false);
 
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     uint32_t shader_handle() const { return m_shader_handle; }
 #elif defined(NANOGUI_USE_METAL)
     void *pipeline_state() const { return m_pipeline_state; }
@@ -199,7 +199,7 @@ protected:
     std::string m_name;
     std::unordered_map<std::string, Buffer> m_buffers;
 
-    #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES2)
+    #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         uint32_t m_shader_handle = 0;
     #  if defined(NANOGUI_USE_OPENGL)
         uint32_t m_vertex_array_handle = 0;
