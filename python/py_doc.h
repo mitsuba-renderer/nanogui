@@ -503,13 +503,16 @@ Parameter ``parent``:
 Parameter ``samples``:
     The number of pixel samples (MSAA)
 
-Parameter ``has_depth``:
+Parameter ``has_depth_buffer``:
     Should the widget allocate a depth buffer for the underlying
     render pass?
 
-Parameter ``has_stencil``:
+Parameter ``has_stencil_buffer``:
     Should the widget allocate a stencil buffer for the underlying
-    render pass?)doc";
+    render pass?
+
+Parameter ``clear``:
+    Should the widget clear its color/depth/stencil buffer?)doc";
 
 static const char *__doc_nanogui_Canvas_background_color = R"doc(Return whether the widget border is drawn)doc";
 
@@ -528,6 +531,8 @@ static const char *__doc_nanogui_Canvas_m_draw_border = R"doc()doc";
 static const char *__doc_nanogui_Canvas_m_render_pass = R"doc()doc";
 
 static const char *__doc_nanogui_Canvas_m_render_pass_resolved = R"doc()doc";
+
+static const char *__doc_nanogui_Canvas_m_render_to_texture = R"doc()doc";
 
 static const char *__doc_nanogui_Canvas_render_pass = R"doc(Return the render pass associated with the canvas object)doc";
 
@@ -1076,220 +1081,6 @@ static const char *__doc_nanogui_FormHelper_set_window = R"doc(Set the active Wi
 static const char *__doc_nanogui_FormHelper_widget_font_size = R"doc(The size of the font being used for non-group / non-label widgets.)doc";
 
 static const char *__doc_nanogui_FormHelper_window = R"doc(Access the currently active Window instance)doc";
-
-static const char *__doc_nanogui_GLFramebuffer = R"doc(Helper class for creating framebuffer objects.)doc";
-
-static const char *__doc_nanogui_GLFramebuffer_GLFramebuffer = R"doc(Default constructor: unusable until you call the ``init()`` method)doc";
-
-static const char *__doc_nanogui_GLFramebuffer_bind = R"doc(Bind the framebuffer object)doc";
-
-static const char *__doc_nanogui_GLFramebuffer_blit = R"doc(Blit the framebuffer object onto the screen)doc";
-
-static const char *__doc_nanogui_GLFramebuffer_download_tga =
-R"doc(Quick and dirty method to write a TGA (32bpp RGBA) file of the
-framebuffer contents for debugging)doc";
-
-static const char *__doc_nanogui_GLFramebuffer_free = R"doc(Release all associated resources)doc";
-
-static const char *__doc_nanogui_GLFramebuffer_init =
-R"doc(Create a new framebuffer with the specified size and number of MSAA
-samples)doc";
-
-static const char *__doc_nanogui_GLFramebuffer_m_color = R"doc()doc";
-
-static const char *__doc_nanogui_GLFramebuffer_m_depth = R"doc()doc";
-
-static const char *__doc_nanogui_GLFramebuffer_m_framebuffer = R"doc()doc";
-
-static const char *__doc_nanogui_GLFramebuffer_m_samples = R"doc()doc";
-
-static const char *__doc_nanogui_GLFramebuffer_m_size = R"doc()doc";
-
-static const char *__doc_nanogui_GLFramebuffer_ready = R"doc(Return whether or not the framebuffer object has been initialized)doc";
-
-static const char *__doc_nanogui_GLFramebuffer_release = R"doc(Release/unbind the framebuffer object)doc";
-
-static const char *__doc_nanogui_GLFramebuffer_samples = R"doc(Return the number of MSAA samples)doc";
-
-static const char *__doc_nanogui_GLShader =
-R"doc(Helper class for compiling and linking OpenGL shaders and uploading
-associated vertex and index buffers.)doc";
-
-static const char *__doc_nanogui_GLShader_Buffer =
-R"doc(A wrapper struct for maintaining various aspects of items being
-managed by OpenGL. Buffers are created when GLShader::upload_attrib is
-called.)doc";
-
-static const char *__doc_nanogui_GLShader_Buffer_attrib_id = R"doc(The associated attribute handle (if VAO not used))doc";
-
-static const char *__doc_nanogui_GLShader_Buffer_comp_size = R"doc(The size (in bytes) of an individual value in this buffer.)doc";
-
-static const char *__doc_nanogui_GLShader_Buffer_dim = R"doc(The dimension of this buffer (typically the row width).)doc";
-
-static const char *__doc_nanogui_GLShader_Buffer_gl_type = R"doc(The OpenGL type identifier of this buffer.)doc";
-
-static const char *__doc_nanogui_GLShader_Buffer_id = R"doc(The OpenGL buffer handle.)doc";
-
-static const char *__doc_nanogui_GLShader_Buffer_integral = R"doc(Distinguishes between integral and floating point buffers)doc";
-
-static const char *__doc_nanogui_GLShader_Buffer_owned = R"doc(Was this buffer allocated by the curent GLShader?)doc";
-
-static const char *__doc_nanogui_GLShader_Buffer_size = R"doc(Size of the entire buffer in bytes)doc";
-
-static const char *__doc_nanogui_GLShader_Buffer_version = R"doc(Version tag associated with the data contained in this buffer.)doc";
-
-static const char *__doc_nanogui_GLShader_GLShader = R"doc(Create an unitialized OpenGL shader)doc";
-
-static const char *__doc_nanogui_GLShader_attrib =
-R"doc(Return the handle of a named shader attribute (-1 if it does not
-exist))doc";
-
-static const char *__doc_nanogui_GLShader_attrib_buffer =
-R"doc((Advanced) Returns a reference to the specified GLShader::Buffer.
-
-```
-Danger:
-Extreme caution must be exercised when using this method.  The user is
-discouraged from explicitly storing the reference returned, as it can
-change, become deprecated, or no longer reside in
-:member:`m_buffer_objects <nanogui::GLShader::m_buffer_objects>`.
-There are generally very few use cases that justify using this method
-directly.  For example, if you need the version of a buffer, call
-:func:`attrib_version <nanogui::GLShader::attrib_version>`.  If you want
-to share data between :class:`GLShader <nanogui::GLShader>` objects,
-call :func:`share_attrib <nanogui::GLShader::share_attrib>`.
-One example use case for this method is sharing data between different
-GPU pipelines such as CUDA or OpenCL.  When sharing data, you
-typically need to map pointers between the API's.  The returned
-buffer's :member:`Buffer::id <nanogui::GLShader::Buffer::id>` is the
-``GLuint`` you will want to map to the other API.
-In short, only use this method if you absolutely need to.
-
-```
-
-Parameter ``name``:
-    The name of the desired attribute.
-
-Returns:
-    A reference to the current buffer associated with ``name``. Should
-    not be explicitly stored.
-
-Throws:
-    std::runtime_error If ``name`` is not found.)doc";
-
-static const char *__doc_nanogui_GLShader_attrib_size = R"doc(Return the size of the a given vertex buffer)doc";
-
-static const char *__doc_nanogui_GLShader_attrib_version = R"doc(Return the version number of a given attribute)doc";
-
-static const char *__doc_nanogui_GLShader_bind =
-R"doc(Select this shader for subsequent draw calls. Simply executes
-``glUseProgram`` with m_program_shader, and ``glBindVertexArray`` with
-m_vertex_array_object.)doc";
-
-static const char *__doc_nanogui_GLShader_buffer_size = R"doc(Return the size of all registered buffers in bytes)doc";
-
-static const char *__doc_nanogui_GLShader_define =
-R"doc(Set a preprocessor definition. Custom preprocessor definitions must be
-added **before** initializing the shader (e.g., via init_from_files).
-See also: m_definitions.)doc";
-
-static const char *__doc_nanogui_GLShader_download_attrib = R"doc(Download a vertex buffer object to CPU memory)doc";
-
-static const char *__doc_nanogui_GLShader_draw_array = R"doc(Draw a sequence of primitives)doc";
-
-static const char *__doc_nanogui_GLShader_draw_indexed = R"doc(Draw a sequence of primitives using a previously uploaded index buffer)doc";
-
-static const char *__doc_nanogui_GLShader_free = R"doc(Release underlying OpenGL objects)doc";
-
-static const char *__doc_nanogui_GLShader_free_attrib = R"doc(Completely free an existing attribute buffer)doc";
-
-static const char *__doc_nanogui_GLShader_has_attrib = R"doc(Check if an attribute was registered a given name)doc";
-
-static const char *__doc_nanogui_GLShader_init =
-R"doc(Initialize the shader using the specified source strings.
-
-Parameter ``name``:
-    The name this shader will be registered as.
-
-Parameter ``vertex_str``:
-    The source of the vertex shader as a string.
-
-Parameter ``fragment_str``:
-    The source of the fragment shader as a string.
-
-Parameter ``geometry_str``:
-    The source of the geometry shader as a string. The default value
-    is the empty string, which indicates no geometry shader will be
-    used.)doc";
-
-static const char *__doc_nanogui_GLShader_init_from_files =
-R"doc(Initialize the shader using the specified files on disk.
-
-Parameter ``name``:
-    The name this shader will be registered as.
-
-Parameter ``vertex_fname``:
-    The path to the file containing the source of the fragment shader.
-
-Parameter ``fragment_fname``:
-    The path to the file containing the source of the vertex shader.
-
-Parameter ``geometry_fname``:
-    The path to the file containing the source of the geometry shader.
-    The default value is the empty string, which indicates no geometry
-    shader will be used.)doc";
-
-static const char *__doc_nanogui_GLShader_invalidate_attribs = R"doc(Invalidate the version numbers associated with attribute data)doc";
-
-static const char *__doc_nanogui_GLShader_m_buffer_objects =
-R"doc(The map of string names to buffer objects representing the various
-attributes that have been uploaded using upload_attrib.)doc";
-
-static const char *__doc_nanogui_GLShader_m_definitions =
-R"doc(```
-The map of preprocessor names to values (if any have been created).  If
-a definition was added seeking to create ``#define WIDTH 256``, the key
-would be ``"WIDTH"`` and the value would be ``"256"``.  These definitions
-will be included automatically in the string that gets compiled for the
-vertex, geometry, and fragment shader code.
-
-```)doc";
-
-static const char *__doc_nanogui_GLShader_m_fragment_shader =
-R"doc(The fragment shader handle of this GLShader (as returned by
-``glCreateShader``).)doc";
-
-static const char *__doc_nanogui_GLShader_m_name = R"doc(The registered name of this GLShader.)doc";
-
-static const char *__doc_nanogui_GLShader_m_program_shader = R"doc(The OpenGL program handle (as returned by ``glCreateProgram``).)doc";
-
-static const char *__doc_nanogui_GLShader_m_vertex_shader =
-R"doc(The vertex shader handle of this GLShader (as returned by
-``glCreateShader``).)doc";
-
-static const char *__doc_nanogui_GLShader_name = R"doc(Return the name of the shader)doc";
-
-static const char *__doc_nanogui_GLShader_reset_attrib_version = R"doc(Reset the version number of a given attribute)doc";
-
-static const char *__doc_nanogui_GLShader_set_uniform = R"doc(Initialize a uniform parameter with a scalar value)doc";
-
-static const char *__doc_nanogui_GLShader_set_uniform_2 = R"doc(Initialize a uniform parameter with an Enoki array)doc";
-
-static const char *__doc_nanogui_GLShader_set_uniform_3 = R"doc(Initialize a uniform parameter with a 4x4 matrix (float))doc";
-
-static const char *__doc_nanogui_GLShader_share_attrib =
-R"doc(Create a symbolic link to an attribute of another GLShader. This
-avoids duplicating unnecessary data)doc";
-
-static const char *__doc_nanogui_GLShader_uniform = R"doc(Return the handle of a uniform attribute (-1 if it does not exist))doc";
-
-static const char *__doc_nanogui_GLShader_upload_attrib =
-R"doc(Upload a memory region as a vertex buffer object (refreshing it as
-needed))doc";
-
-static const char *__doc_nanogui_GLShader_upload_attrib_2 = R"doc(Low-level version of upload_attrib)doc";
-
-static const char *__doc_nanogui_GLShader_upload_indices = R"doc(Upload an index buffer)doc";
 
 static const char *__doc_nanogui_Graph = R"doc(Simple graph widget for showing a function plot.)doc";
 
@@ -1879,6 +1670,8 @@ static const char *__doc_nanogui_RenderPass_m_clear_color = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_clear_depth = R"doc()doc";
 
+static const char *__doc_nanogui_RenderPass_m_clear_shader = R"doc()doc";
+
 static const char *__doc_nanogui_RenderPass_m_clear_stencil = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_command_buffer = R"doc()doc";
@@ -1890,6 +1683,8 @@ static const char *__doc_nanogui_RenderPass_m_cull_mode = R"doc()doc";
 static const char *__doc_nanogui_RenderPass_m_depth_test = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_depth_write = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_framebuffer_size = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_pass_descriptor = R"doc()doc";
 

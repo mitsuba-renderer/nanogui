@@ -1,6 +1,7 @@
 #include <nanogui/renderpass.h>
 #include <nanogui/screen.h>
 #include <nanogui/texture.h>
+#include <nanogui/shader.h>
 #include <nanogui/metal.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -14,7 +15,8 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
                        bool clear)
     : m_targets(color_targets.size() + 2), m_clear(clear),
       m_clear_color(color_targets.size()), m_viewport_offset(0),
-      m_viewport_size(0), m_depth_test(DepthTest::Less), m_depth_write(true),
+      m_viewport_size(0), m_framebuffer_size(0),
+      m_depth_test(DepthTest::Less), m_depth_write(true),
       m_cull_mode(CullMode::Back), m_blit_target(blit_target), m_active(false),
       m_command_buffer(nullptr), m_command_encoder(nullptr) {
 
@@ -39,28 +41,18 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
         Screen *screen   = dynamic_cast<Screen *>(m_targets[i].get());
 
-        MTLRenderPassAttachmentDescriptor *att;
-        if (i == 0)
-            att = pass_descriptor.depthAttachment;
-        else if (i == 1)
-            att = pass_descriptor.stencilAttachment;
-        else
-            att = pass_descriptor.colorAttachments[i-2];
-
-        att.loadAction = clear ? MTLLoadActionClear : MTLLoadActionLoad;
-        att.storeAction = MTLStoreActionStore;
-
         if (texture) {
             if (!(texture->flags() & Texture::TextureFlags::RenderTarget))
                 throw std::runtime_error("RenderPass::RenderPass(): target texture "
                                          "must be created with render_target=true!");
-            m_viewport_size = max(m_viewport_size, texture->size());
+            m_framebuffer_size = max(m_framebuffer_size, texture->size());
         } else if (screen) {
-            m_viewport_size = max(m_viewport_size, screen->framebuffer_size());
+            m_framebuffer_size = max(m_framebuffer_size, screen->framebuffer_size());
         } else if (m_targets[i].get()) {
             throw std::runtime_error("RenderPas::RenderPass(): invalid attachment type!");
         }
     }
+    m_viewport_size = m_framebuffer_size;
 
     m_pass_descriptor = (__bridge_retained void *) pass_descriptor;
 
@@ -86,6 +78,9 @@ void RenderPass::begin() {
 
     MTLRenderPassDescriptor *pass_descriptor =
         (__bridge MTLRenderPassDescriptor *) m_pass_descriptor;
+
+    bool clear_manual = m_clear && (m_viewport_offset != Vector2i(0, 0) ||
+                                    m_viewport_size != m_framebuffer_size);
 
     for (size_t i = 0; i < m_targets.size(); ++i) {
         Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
@@ -117,6 +112,9 @@ void RenderPass::begin() {
 
         att.texture = texture_handle;
 
+        att.loadAction = m_clear && ! clear_manual ?
+            MTLLoadActionClear : MTLLoadActionLoad;
+
         RenderPass *blit_rp = dynamic_cast<RenderPass *>(m_blit_target.get());
         if (blit_rp && i < blit_rp->targets().size()) {
             const Texture *resolve_texture =
@@ -134,6 +132,8 @@ void RenderPass::begin() {
                 throw std::runtime_error("RenderPass::begin(): 'blit_target' size mismatch!");
             att.storeAction = MTLStoreActionMultisampleResolve;
             att.resolveTexture = resolve_texture_handle;
+        } else {
+            att.storeAction = MTLStoreActionStore;
         }
     }
 
@@ -159,6 +159,71 @@ void RenderPass::begin() {
     m_active = true;
 
     set_viewport(m_viewport_offset, m_viewport_size);
+
+    if (clear_manual) {
+        MTLDepthStencilDescriptor *depth_desc = [MTLDepthStencilDescriptor new];
+        depth_desc.depthCompareFunction = MTLCompareFunctionAlways;
+        depth_desc.depthWriteEnabled = m_targets[0].get() != nullptr;
+        id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
+        id<MTLDepthStencilState> depth_state =
+            [device newDepthStencilStateWithDescriptor: depth_desc];
+        [command_encoder setDepthStencilState: depth_state];
+
+        if (!m_clear_shader) {
+            m_clear_shader = new Shader(
+                this,
+
+                "clear_shader",
+
+                /* Vertex shader */
+                R"(using namespace metal;
+
+                struct VertexOut {
+                    float4 position [[position]];
+                };
+
+                vertex VertexOut vertex_main(const device float2 *position,
+                                             constant float &clear_depth,
+                                             uint id [[vertex_id]]) {
+                    VertexOut vert;
+                    vert.position = float4(position[id], clear_depth, 1.f);
+                    return vert;
+                })",
+
+                /* Fragment shader */
+                R"(using namespace metal;
+
+                struct VertexOut {
+                    float4 position [[position]];
+                };
+
+                fragment float4 fragment_main(VertexOut vert [[stage_in]],
+                                              constant float4 &clear_color) {
+                    return clear_color;
+                })"
+            );
+
+            const float positions[] = {
+                -1.f, -1.f,
+                 1.f, -1.f,
+                -1.f,  1.f,
+                 1.f, -1.f,
+                 1.f,  1.f,
+                -1.f,  1.f
+            };
+
+            m_clear_shader->set_buffer("position", enoki::EnokiType::Float32, 2,
+                                       { 6, 2, 1 }, positions);
+        }
+
+        m_clear_shader->set_uniform("clear_color", m_clear_color.at(0));
+        m_clear_shader->set_uniform("clear_depth", m_clear_depth);
+        m_clear_shader->begin();
+        m_clear_shader->draw_array(Shader::PrimitiveType::Triangle, 0, 6, false);
+        m_clear_shader->end();
+    }
+
+
     set_depth_test(m_depth_test, m_depth_write);
     set_cull_mode(m_cull_mode);
 }
@@ -185,6 +250,7 @@ void RenderPass::resize(const Vector2i &size) {
         if (texture)
             texture->resize(size);
     }
+    m_framebuffer_size = size;
     m_viewport_offset = Vector2i(0, 0);
     m_viewport_size = size;
 }
@@ -225,6 +291,10 @@ void RenderPass::set_viewport(const Vector2i &offset, const Vector2i &size) {
           (double) offset.x(), (double) offset.y(),
           (double) size.x(),   (double) size.y(),
           0.0, 1.0 }
+        ];
+        [command_encoder setScissorRect: (MTLScissorRect) {
+          (NSUInteger) offset.x(), (NSUInteger) offset.y(),
+          (NSUInteger) size.x(),   (NSUInteger) size.y() }
         ];
     }
 }

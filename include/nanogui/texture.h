@@ -119,7 +119,7 @@ public:
     /// Load an image from the given file using stb-image
     Texture(const std::string &filename,
             InterpolationMode interpolation_mode = InterpolationMode::Bilinear,
-            WrapMode wrap_mode = WrapMode::Repeat);
+            WrapMode wrap_mode                   = WrapMode::Repeat);
 
     /// Return the pixel format
     PixelFormat pixel_format() const { return m_pixel_format; }

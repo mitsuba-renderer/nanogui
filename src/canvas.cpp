@@ -22,30 +22,74 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-Canvas::Canvas(Widget *parent, uint8_t samples, bool has_depth, bool has_stencil)
+Canvas::Canvas(Widget *parent, uint8_t samples,
+               bool has_depth_buffer, bool has_stencil_buffer,
+               bool clear)
     : Widget(parent), m_draw_border(true) {
     m_size = Vector2i(250, 250);
     m_border_color = m_theme->m_border_light;
+
+#if defined(NANOGUI_USE_GLES)
+    samples = 1;
+#endif
 
     Screen *scr = screen();
     if (scr == nullptr)
         throw std::runtime_error("Canvas::Canvas(): could not find parent screen!");
 
-    Texture *color_texture = new Texture(
-        scr->pixel_format(),
-        scr->component_format(),
-        m_size,
-        Texture::InterpolationMode::Bilinear,
-        Texture::WrapMode::ClampToEdge,
-        samples,
-        Texture::TextureFlags::RenderTarget
-    );
+    m_render_to_texture = samples != 1
+        || (has_depth_buffer && !scr->has_depth_buffer())
+        || (has_stencil_buffer && !scr->has_stencil_buffer());
 
-    Texture *depth_stencil_texture = nullptr;
-    if (has_depth) {
-        depth_stencil_texture = new Texture(
-            has_stencil ? Texture::PixelFormat::DepthStencil
-                        : Texture::PixelFormat::Depth,
+    Object *color_texture = nullptr,
+           *depth_texture = nullptr;
+
+    if (has_stencil_buffer && !has_stencil_buffer)
+        throw std::runtime_error("Canvas::Canvas(): has_stencil implies has_depth!");
+
+    if (!m_render_to_texture) {
+        color_texture = scr;
+        if (has_depth_buffer) {
+#if defined(NANOGUI_USE_METAL)
+            depth_texture = scr->depth_stencil_texture();
+#else
+            depth_texture = scr;
+#endif
+        }
+    } else {
+        color_texture = new Texture(
+            scr->pixel_format(),
+            scr->component_format(),
+            m_size,
+            Texture::InterpolationMode::Bilinear,
+            Texture::WrapMode::ClampToEdge,
+            samples,
+            Texture::TextureFlags::RenderTarget
+        );
+
+#if defined(NANOGUI_USE_METAL)
+        Texture *color_texture_resolved = nullptr;
+
+        if (samples > 1) {
+            color_texture_resolved = new Texture(
+                scr->pixel_format(),
+                scr->component_format(),
+                m_size,
+                Texture::InterpolationMode::Bilinear,
+                Texture::WrapMode::ClampToEdge,
+                1,
+                Texture::TextureFlags::RenderTarget
+            );
+
+            m_render_pass_resolved = new RenderPass(
+                { color_texture_resolved }
+            );
+        }
+#endif
+
+        depth_texture = new Texture(
+            has_stencil_buffer ? Texture::PixelFormat::DepthStencil
+                               : Texture::PixelFormat::Depth,
             Texture::ComponentFormat::Float32,
             m_size,
             Texture::InterpolationMode::Bilinear,
@@ -53,39 +97,18 @@ Canvas::Canvas(Widget *parent, uint8_t samples, bool has_depth, bool has_stencil
             samples,
             Texture::TextureFlags::RenderTarget
         );
-    } else if (has_stencil) {
-        throw std::runtime_error("Canvas::Canvas(): has_stencil implies has_depth!");
     }
-
-#if defined(NANOGUI_USE_METAL)
-    Texture *color_texture_resolved = nullptr;
-
-    if (samples > 1) {
-        color_texture_resolved = new Texture(
-            scr->pixel_format(),
-            scr->component_format(),
-            m_size,
-            Texture::InterpolationMode::Bilinear,
-            Texture::WrapMode::ClampToEdge,
-            1,
-            Texture::TextureFlags::RenderTarget
-        );
-
-        m_render_pass_resolved = new RenderPass(
-            { color_texture_resolved }
-        );
-    }
-#endif
 
     m_render_pass = new RenderPass(
         { color_texture },
-        depth_stencil_texture,
-        has_stencil ? depth_stencil_texture : nullptr,
+        depth_texture,
+        has_stencil_buffer ? depth_texture : nullptr,
 #if defined(NANOGUI_USE_METAL)
-        m_render_pass_resolved
+        m_render_pass_resolved,
 #else
-        nullptr
+        nullptr,
 #endif
+        clear
     );
 }
 
@@ -125,48 +148,60 @@ void Canvas::draw(NVGcontext *ctx) {
     }
 
     Vector2i fbsize = m_size;
+    Vector2i offset = absolute_position();
     if (m_draw_border)
         fbsize -= 2;
-    fbsize = Vector2i(fbsize * pixel_ratio);
 
-    m_render_pass->resize(fbsize);
-#if defined(NANOGUI_USE_METAL)
-    m_render_pass_resolved->resize(fbsize);
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
+    if (m_render_to_texture)
+        offset = Vector2i(offset.x(), scr->size().y() - offset.y() - m_size.y());
 #endif
+
+    if (m_draw_border)
+        offset += Vector2i(1, 1);
+
+    fbsize = Vector2i(fbsize * pixel_ratio);
+    offset = Vector2i(offset * pixel_ratio);
+
+    if (m_render_to_texture) {
+        m_render_pass->resize(fbsize);
+#if defined(NANOGUI_USE_METAL)
+        m_render_pass_resolved->resize(fbsize);
+#endif
+    } else {
+        m_render_pass->set_viewport(offset, fbsize);
+    }
+
     m_render_pass->begin();
     draw_contents();
     m_render_pass->end();
-
-    Vector2i abspos = absolute_position(), offset = abspos;
-
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
-     offset = Vector2i(abspos.x(), scr->size().y() - abspos.y() - m_size.y());
-#endif
 
     if (m_draw_border) {
         nvgBeginPath(ctx);
         nvgStrokeWidth(ctx, 1.f);
         nvgStrokeColor(ctx, m_border_color);
         nvgRoundedRect(ctx, m_pos.x() + .5f, m_pos.y() + .5f,
-                       m_size.x() - 1.f, m_size.y() - 1.f, m_theme->m_window_corner_radius);
+                       m_size.x() - 1.f, m_size.y() - 1.f,
+                       m_theme->m_window_corner_radius);
         nvgStroke(ctx);
-        offset += Vector2i(1, 1);
     }
 
-    RenderPass *rp = m_render_pass;
+    if (m_render_to_texture) {
+        RenderPass *rp = m_render_pass;
 #if defined(NANOGUI_USE_METAL)
-    if (m_render_pass_resolved)
-        rp = m_render_pass_resolved;
+        if (m_render_pass_resolved)
+            rp = m_render_pass_resolved;
 #endif
-
-    rp->blit_to(Vector2i(0, 0), fbsize,
-                scr, offset * pixel_ratio);
+        rp->blit_to(Vector2i(0, 0), fbsize, scr, offset);
+    }
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     Vector2i scr_fbsize = scr->framebuffer_size();
     CHK(glDisable(GL_DEPTH_TEST));
+    CHK(glDisable(GL_SCISSOR_TEST));
     CHK(glDisable(GL_CULL_FACE));
     CHK(glViewport(0, 0, scr_fbsize.x(), scr_fbsize.y()));
+    CHK(glScissor(0, 0, scr_fbsize.x(), scr_fbsize.y()));
 #endif
 }
 

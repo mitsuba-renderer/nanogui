@@ -13,9 +13,9 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
                        bool clear)
     : m_targets(color_targets.size() + 2), m_clear(clear),
       m_clear_color(color_targets.size()), m_viewport_offset(0),
-      m_viewport_size(0), m_depth_test(DepthTest::Less), m_depth_write(true),
-      m_cull_mode(CullMode::Back), m_blit_target(blit_target), m_active(false),
-      m_framebuffer_handle(0) {
+      m_viewport_size(0), m_framebuffer_size(0), m_depth_test(DepthTest::Less),
+      m_depth_write(true), m_cull_mode(CullMode::Back), m_blit_target(blit_target),
+      m_active(false), m_framebuffer_handle(0) {
 
     m_targets[0] = depth_target;
     m_targets[1] = stencil_target;
@@ -53,7 +53,7 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         Screen *screen = dynamic_cast<Screen *>(m_targets[i].get());
         Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
         if (screen) {
-            m_viewport_size = max(m_viewport_size, screen->framebuffer_size());
+            m_framebuffer_size = max(m_framebuffer_size, screen->framebuffer_size());
 #if defined(NANOGUI_USE_OPENGL)
             if (i >= 2)
                 draw_buffers.push_back(GL_BACK_LEFT);
@@ -71,10 +71,11 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
             if (i >= 2)
                 draw_buffers.push_back(attachment_id);
 #endif
-            m_viewport_size = max(m_viewport_size, texture->size());
+            m_framebuffer_size = max(m_framebuffer_size, texture->size());
             has_texture = true;
         }
     }
+    m_viewport_size = m_framebuffer_size;
 
     if (has_screen && !has_texture) {
         CHK(glDeleteFramebuffers(1, &m_framebuffer_handle));
@@ -146,55 +147,44 @@ void RenderPass::begin() {
 #endif
     m_active = true;
 
-    m_framebuffer_size = 0;
-    for (size_t i = 0; i < m_targets.size(); ++i) {
-        Screen *screen = dynamic_cast<Screen *>(m_targets[i].get());
-        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
-
-        if (screen)
-            m_framebuffer_size = max(m_framebuffer_size, screen->framebuffer_size());
-        else if (texture)
-            m_framebuffer_size = max(m_framebuffer_size, texture->size());
-    }
-
     CHK(glGetIntegerv(GL_VIEWPORT, m_viewport_backup));
+    CHK(glGetIntegerv(GL_SCISSOR_BOX, m_scissor_backup));
 
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_handle));
     set_viewport(m_viewport_offset, m_viewport_size);
 
-    if (!m_clear)
-        return;
-
+    if (m_clear) {
 #if defined(NANOGUI_USE_OPENGL)
-    for (size_t i = 0; i < m_targets.size(); ++i) {
-        if (i == 0 && m_targets[0]) {
-            if (m_targets[0] == m_targets[1])
-                CHK(glClearBufferfi(GL_DEPTH_STENCIL, 0, m_clear_depth, m_clear_stencil));
-            else {
-                CHK(glClearBufferfv(GL_DEPTH, 0, &m_clear_depth));
+        for (size_t i = 0; i < m_targets.size(); ++i) {
+            if (i == 0 && m_targets[0]) {
+                if (m_targets[0] == m_targets[1])
+                    CHK(glClearBufferfi(GL_DEPTH_STENCIL, 0, m_clear_depth, m_clear_stencil));
+                else {
+                    CHK(glClearBufferfv(GL_DEPTH, 0, &m_clear_depth));
+                }
             }
-        }
 
-        if (i >= 2)
-            CHK(glClearBufferfv(GL_COLOR, i - 2, m_clear_color[i - 2].data()));
-    }
+            if (i >= 2)
+                CHK(glClearBufferfv(GL_COLOR, i - 2, m_clear_color[i - 2].data()));
+        }
 #else
-    GLenum what = 0;
-    if (m_targets[0]) {
-        glClearDepthf(m_clear_depth);
-        what |= GL_DEPTH_BUFFER_BIT;
-    }
-    if (m_targets[1]) {
-        glClearStencil(m_clear_stencil);
-        what |= GL_STENCIL_BUFFER_BIT;
-    }
-    if (m_targets[2]) {
-        glClearColor(m_clear_color[0].r(), m_clear_color[0].g(),
-                     m_clear_color[0].b(), m_clear_color[0].w());
-        what |= GL_COLOR_BUFFER_BIT;
-    }
-    glClear(what);
+        GLenum what = 0;
+        if (m_targets[0]) {
+            CHK(glClearDepthf(m_clear_depth));
+            what |= GL_DEPTH_BUFFER_BIT;
+        }
+        if (m_targets[1]) {
+            CHK(glClearStencil(m_clear_stencil));
+            what |= GL_STENCIL_BUFFER_BIT;
+        }
+        if (m_targets[2]) {
+            CHK(glClearColor(m_clear_color[0].r(), m_clear_color[0].g(),
+                             m_clear_color[0].b(), m_clear_color[0].w()));
+            what |= GL_COLOR_BUFFER_BIT;
+        }
+        CHK(glClear(what));
 #endif
+    }
 
     set_depth_test(m_depth_test, m_depth_write);
     set_cull_mode(m_cull_mode);
@@ -212,6 +202,8 @@ void RenderPass::end() {
 
     CHK(glViewport(m_viewport_backup[0], m_viewport_backup[1],
                    m_viewport_backup[2], m_viewport_backup[3]));
+    CHK(glScissor(m_scissor_backup[0], m_scissor_backup[1],
+                  m_scissor_backup[2], m_scissor_backup[3]));
 
     m_active = false;
 }
@@ -222,6 +214,7 @@ void RenderPass::resize(const Vector2i &size) {
         if (texture)
             texture->resize(size);
     }
+    m_framebuffer_size = size;
     m_viewport_offset = Vector2i(0, 0);
     m_viewport_size = size;
 }
@@ -246,6 +239,14 @@ void RenderPass::set_viewport(const Vector2i &offset, const Vector2i &size) {
         int ypos = m_framebuffer_size.y() - m_viewport_size.y() - m_viewport_offset.y();
         CHK(glViewport(m_viewport_offset.x(), ypos,
                        m_viewport_size.x(), m_viewport_size.y()));
+        CHK(glScissor(m_viewport_offset.x(), ypos,
+                      m_viewport_size.x(), m_viewport_size.y()));
+
+        if (m_viewport_offset == Vector2i(0, 0) &&
+            m_viewport_size == m_framebuffer_size)
+            CHK(glDisable(GL_SCISSOR_TEST));
+        else
+            CHK(glEnable(GL_SCISSOR_TEST));
     }
 }
 

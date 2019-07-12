@@ -56,7 +56,7 @@ static void gl_map_texture_format(Texture::PixelFormat &pixel_format,
                                   GLenum &internal_format_gl);
 
 void Texture::init() {
-#if defined(NANOGUI_USE_GLES) && NANOGUI_GLES_VERSION == 2
+#if defined(NANOGUI_USE_GLES)
     m_samples = 1;
 #endif
 
@@ -168,6 +168,7 @@ void Texture::upload(const uint8_t *data) {
         if (m_interpolation_mode == InterpolationMode::Trilinear)
             CHK(glGenerateMipmap(tex_mode));
     } else {
+#if defined(NANOGUI_USE_OPENGL)
         CHK(glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer_handle));
         if (m_samples == 1)
             CHK(glRenderbufferStorage(GL_RENDERBUFFER, internal_format_gl,
@@ -175,6 +176,10 @@ void Texture::upload(const uint8_t *data) {
         else
             CHK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_samples, internal_format_gl,
                                                  (GLsizei) m_size.x(), (GLsizei) m_size.y()));
+#else
+        CHK(glRenderbufferStorage(GL_RENDERBUFFER, internal_format_gl,
+                                  (GLsizei) m_size.x(), (GLsizei) m_size.y()));
+#endif
     }
 }
 

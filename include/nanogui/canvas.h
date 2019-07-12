@@ -47,26 +47,32 @@ public:
      * \param samples
      *     The number of pixel samples (MSAA)
      *
-     * \param has_depth
+     * \param has_depth_buffer
      *     Should the widget allocate a depth buffer for
      *     the underlying render pass?
      *
-     * \param has_stencil
+     * \param has_stencil_buffer
      *     Should the widget allocate a stencil buffer for
      *     the underlying render pass?
+     *
+     * \param clear
+     *     Should the widget clear its color/depth/stencil buffer?
      */
     Canvas(
         Widget *parent,
         uint8_t samples = 4,
-        bool has_depth = true,
-        bool has_stencil = false
+        bool has_depth_buffer = true,
+        bool has_stencil_buffer = false,
+        bool clear = true
     );
 
     /// Return the render pass associated with the canvas object
     RenderPass *render_pass() { return m_render_pass; }
 
     /// Specify whether to draw the widget border
-    void set_draw_border(const bool draw_border) { m_draw_border = draw_border; }
+    void set_draw_border(const bool draw_border) {
+        m_draw_border = draw_border;
+    }
 
     /// Return whether the widget border will be drawn
     bool draw_border() const { return m_draw_border; }
@@ -98,6 +104,7 @@ protected:
 #endif
     bool m_draw_border;
     Color m_border_color;
+    bool m_render_to_texture;
 };
 
 NAMESPACE_END(nanogui)

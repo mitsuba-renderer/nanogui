@@ -44,7 +44,10 @@ Texture::Texture(const std::string &filename,
         default:
             throw std::runtime_error("Texture::Texture(): unsupported channel count!");
     }
+    PixelFormat pixel_format = m_pixel_format;
     init();
+    if (m_pixel_format != pixel_format)
+        throw std::runtime_error("Texture::Texture(): pixel format not supported by the hardware!");
     upload((const uint8_t *) texture_data.get());
 }
 

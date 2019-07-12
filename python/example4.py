@@ -183,7 +183,7 @@ class TestApp(Screen):
     def __init__(self):
         super(TestApp, self).__init__((800, 600), "NanoGUI Test", False)
 
-        window = Window(self, "Canvas Demo")
+        window = Window(self, "Canvas widget demo")
         window.set_position((15, 15))
         window.set_layout(GroupLayout())
 

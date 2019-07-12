@@ -37,7 +37,7 @@ using enoki::EnokiType;
 
 class MyCanvas : public Canvas {
 public:
-    MyCanvas(Widget *parent) : Canvas(parent), m_rotation(0.f) {
+    MyCanvas(Widget *parent) : Canvas(parent, 1), m_rotation(0.f) {
         using namespace nanogui;
 
         m_shader = new Shader(
@@ -196,7 +196,7 @@ public:
     ExampleApplication() : nanogui::Screen(Vector2i(800, 600), "NanoGUI Test", false) {
         using namespace nanogui;
 
-        Window *window = new Window(this, "GLCanvas Demo");
+        Window *window = new Window(this, "Canvas widget demo");
         window->set_position(Vector2i(15, 15));
         window->set_layout(new GroupLayout());
 

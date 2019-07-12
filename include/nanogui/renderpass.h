@@ -170,6 +170,7 @@ protected:
     uint8_t m_clear_stencil;
     Vector2i m_viewport_offset;
     Vector2i m_viewport_size;
+    Vector2i m_framebuffer_size;
     DepthTest m_depth_test;
     bool m_depth_write;
     CullMode m_cull_mode;
@@ -177,12 +178,12 @@ protected:
     bool m_active;
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     uint32_t m_framebuffer_handle;
-    Vector2i m_framebuffer_size;
-    int m_viewport_backup[4];
+    int m_viewport_backup[4], m_scissor_backup[4];
 #elif defined(NANOGUI_USE_METAL)
     void *m_command_buffer;
     void *m_command_encoder;
     void *m_pass_descriptor;
+    ref<Shader> m_clear_shader;
 #endif
 };
 
