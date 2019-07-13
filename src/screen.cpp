@@ -607,8 +607,9 @@ void Screen::draw_contents() {
 }
 
 void Screen::nvg_flush() {
-    nvgEndFrame(m_nvg_context);
-    nvgBeginFrame(m_nvg_context, m_size[0], m_size[1], m_pixel_ratio);
+    NVGparams *params = nvgInternalParams(m_nvg_context);
+    params->renderFlush(params->userPtr);
+    params->renderViewport(params->userPtr, m_size[0], m_size[1], m_pixel_ratio);
 }
 
 void Screen::draw_widgets() {

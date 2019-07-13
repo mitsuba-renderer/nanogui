@@ -108,6 +108,7 @@ void register_render(py::module &m) {
     using WrapMode          = Texture::WrapMode;
     using TextureFlags      = Texture::TextureFlags;
     using PrimitiveType     = Shader::PrimitiveType;
+    using BlendMode         = Shader::BlendMode;
     using DepthTest         = RenderPass::DepthTest;
     using CullMode          = RenderPass::CullMode;
 
@@ -179,7 +180,13 @@ void register_render(py::module &m) {
 #endif
         ;
 
-    auto shader = py::class_<Shader, Object, ref<Shader>>(m, "Shader", D(Shader))
+    auto shader = py::class_<Shader, Object, ref<Shader>>(m, "Shader", D(Shader));
+
+    py::enum_<BlendMode>(shader, "BlendMode", D(Shader, BlendMode))
+        .value("None", BlendMode::None, D(Shader, BlendMode, None))
+        .value("AlphaBlend", BlendMode::AlphaBlend, D(Shader, BlendMode, AlphaBlend));
+
+    shader
         .def(py::init<RenderPass *, const std::string &,
                       const std::string &, const std::string &>(),
              D(Shader, Shader), "name"_a, "vertex_shader"_a,

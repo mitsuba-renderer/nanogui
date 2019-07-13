@@ -23,7 +23,7 @@ NAMESPACE_BEGIN(nanogui)
 
 class NANOGUI_EXPORT Shader : public Object {
 public:
-    // The type of geometry that should be rendered
+    /// The type of geometry that should be rendered
     enum class PrimitiveType {
         Point,
         Line,
@@ -31,6 +31,13 @@ public:
         Triangle,
         TriangleStrip
     };
+
+    /// Alpha blending mode
+    enum class BlendMode {
+        None,
+        AlphaBlend // alpha * new_color + (1 - alpha) * old_color
+    };
+
 
     /**
      * \brief Initialize the shader using the specified source strings.
@@ -51,7 +58,8 @@ public:
     Shader(RenderPass *render_pass,
            const std::string &name,
            const std::string &vertex_shader,
-           const std::string &fragment_shader);
+           const std::string &fragment_shader,
+           BlendMode mode = BlendMode::None);
 
     /// Return the render pass associated with this shader
     RenderPass *render_pass() { return m_render_pass.get(); }
@@ -198,6 +206,7 @@ protected:
     ref<RenderPass> m_render_pass;
     std::string m_name;
     std::unordered_map<std::string, Buffer> m_buffers;
+    BlendMode m_blend_mode;
 
     #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         uint32_t m_shader_handle = 0;

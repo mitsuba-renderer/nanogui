@@ -1930,6 +1930,12 @@ static const char *__doc_nanogui_Screen_update_focus = R"doc()doc";
 
 static const char *__doc_nanogui_Shader = R"doc()doc";
 
+static const char *__doc_nanogui_Shader_BlendMode = R"doc(Alpha blending mode)doc";
+
+static const char *__doc_nanogui_Shader_BlendMode_AlphaBlend = R"doc()doc";
+
+static const char *__doc_nanogui_Shader_BlendMode_None = R"doc()doc";
+
 static const char *__doc_nanogui_Shader_Buffer = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_BufferType = R"doc()doc";
@@ -1970,7 +1976,7 @@ static const char *__doc_nanogui_Shader_Buffer_to_string = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_Buffer_type = R"doc()doc";
 
-static const char *__doc_nanogui_Shader_PrimitiveType = R"doc()doc";
+static const char *__doc_nanogui_Shader_PrimitiveType = R"doc(The type of geometry that should be rendered)doc";
 
 static const char *__doc_nanogui_Shader_PrimitiveType_Line = R"doc()doc";
 
@@ -2027,6 +2033,8 @@ Parameter ``indexed``:
     buffer with name ``indices`` must have been uploaded using set().)doc";
 
 static const char *__doc_nanogui_Shader_end = R"doc(End drawing using this shader)doc";
+
+static const char *__doc_nanogui_Shader_m_blend_mode = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_m_buffers = R"doc()doc";
 

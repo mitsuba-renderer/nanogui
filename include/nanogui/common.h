@@ -140,6 +140,8 @@ using Vector4f     = enoki::Array<float, 4>;
 using Vector2i     = enoki::Array<int32_t, 2>;
 using Vector3i     = enoki::Array<int32_t, 3>;
 using Vector4i     = enoki::Array<int32_t, 4>;
+using Matrix2f     = enoki::Matrix<float, 2>;
+using Matrix3f     = enoki::Matrix<float, 3>;
 using Matrix4f     = enoki::Matrix<float, 4>;
 using Quaternion4f = enoki::Quaternion<float>;
 

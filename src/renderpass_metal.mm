@@ -204,12 +204,8 @@ void RenderPass::begin() {
             );
 
             const float positions[] = {
-                -1.f, -1.f,
-                 1.f, -1.f,
-                -1.f,  1.f,
-                 1.f, -1.f,
-                 1.f,  1.f,
-                -1.f,  1.f
+                -1.f, -1.f, 1.f, -1.f, -1.f, 1.f,
+                 1.f, -1.f, 1.f,  1.f, -1.f, 1.f
             };
 
             m_clear_shader->set_buffer("position", enoki::EnokiType::Float32, 2,
@@ -292,9 +288,11 @@ void RenderPass::set_viewport(const Vector2i &offset, const Vector2i &size) {
           (double) size.x(),   (double) size.y(),
           0.0, 1.0 }
         ];
+        Vector2i scissor_size = max(min(offset + size, m_framebuffer_size) - offset, 0);
+        Vector2i scissor_offset = max(min(offset, m_framebuffer_size), 0);
         [command_encoder setScissorRect: (MTLScissorRect) {
-          (NSUInteger) offset.x(), (NSUInteger) offset.y(),
-          (NSUInteger) size.x(),   (NSUInteger) size.y() }
+          (NSUInteger) scissor_offset.x(), (NSUInteger) scissor_offset.y(),
+          (NSUInteger) scissor_size.x(),   (NSUInteger) scissor_size.y() }
         ];
     }
 }

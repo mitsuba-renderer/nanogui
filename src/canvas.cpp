@@ -131,21 +131,7 @@ void Canvas::draw(NVGcontext *ctx) {
 
     Widget::draw(ctx);
 
-    const Widget *p = parent();
-    std::vector<const Widget *> parents;
-    parents.reserve(10);
-    while (p) {
-        nvgRestore(ctx);
-        parents.push_back(p);
-        p = p->parent();
-    }
     scr->nvg_flush();
-    nvgSave(ctx);
-    for (auto it = parents.rbegin(); it != parents.rend(); ++it) {
-        const Widget *w = *it;
-        nvgTranslate(ctx, w->position().x(), w->position().y());
-        nvgSave(ctx);
-    }
 
     Vector2i fbsize = m_size;
     Vector2i offset = absolute_position();
@@ -169,6 +155,7 @@ void Canvas::draw(NVGcontext *ctx) {
         m_render_pass_resolved->resize(fbsize);
 #endif
     } else {
+        m_render_pass->resize(scr->framebuffer_size());
         m_render_pass->set_viewport(offset, fbsize);
     }
 
@@ -194,15 +181,6 @@ void Canvas::draw(NVGcontext *ctx) {
 #endif
         rp->blit_to(Vector2i(0, 0), fbsize, scr, offset);
     }
-
-#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
-    Vector2i scr_fbsize = scr->framebuffer_size();
-    CHK(glDisable(GL_DEPTH_TEST));
-    CHK(glDisable(GL_SCISSOR_TEST));
-    CHK(glDisable(GL_CULL_FACE));
-    CHK(glViewport(0, 0, scr_fbsize.x(), scr_fbsize.y()));
-    CHK(glScissor(0, 0, scr_fbsize.x(), scr_fbsize.y()));
-#endif
 }
 
 NAMESPACE_END(nanogui)

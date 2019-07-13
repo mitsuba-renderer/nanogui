@@ -179,6 +179,10 @@ protected:
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     uint32_t m_framebuffer_handle;
     int m_viewport_backup[4], m_scissor_backup[4];
+    bool m_depth_test_backup;
+    bool m_depth_write_backup;
+    bool m_scissor_test_backup;
+    bool m_cull_face_backup;
 #elif defined(NANOGUI_USE_METAL)
     void *m_command_buffer;
     void *m_command_encoder;

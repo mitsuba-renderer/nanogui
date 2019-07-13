@@ -229,7 +229,6 @@ void Widget::draw(NVGcontext *ctx) {
     if (m_children.empty())
         return;
 
-    nvgSave(ctx);
     nvgTranslate(ctx, m_pos.x(), m_pos.y());
     for (auto child : m_children) {
         if (!child->visible())
@@ -246,7 +245,7 @@ void Widget::draw(NVGcontext *ctx) {
             nvgRestore(ctx);
         #endif
     }
-    nvgRestore(ctx);
+    nvgTranslate(ctx, -m_pos.x(), -m_pos.y());
 }
 
 NAMESPACE_END(nanogui)

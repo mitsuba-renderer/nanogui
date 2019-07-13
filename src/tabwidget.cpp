@@ -365,8 +365,8 @@ void TabWidget::perform_layout(NVGcontext* ctx) {
     int tab_height = font_size() + 2 * m_theme->m_tab_button_vertical_padding;
 
     for (Widget *child : m_children) {
-        child->set_position(Vector2i(m_padding, m_padding + tab_height));
-        child->set_size(m_size - Vector2i(2*m_padding, 2*m_padding + tab_height));
+        child->set_position(Vector2i(m_padding, m_padding + tab_height + 1));
+        child->set_size(m_size - Vector2i(2*m_padding, 2*m_padding + tab_height + 1));
         child->perform_layout(ctx);
     }
 }

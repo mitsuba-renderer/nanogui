@@ -58,8 +58,9 @@ id<MTLFunction> compile_metal_shader(id<MTLDevice> device,
 Shader::Shader(RenderPass *render_pass,
                const std::string &name,
                const std::string &vertex_shader,
-               const std::string &fragment_shader)
-    : m_render_pass(render_pass), m_name(name), m_pipeline_state(nullptr) {
+               const std::string &fragment_shader,
+               BlendMode blend_mode)
+    : m_render_pass(render_pass), m_name(name), m_blend_mode(blend_mode), m_pipeline_state(nullptr) {
     id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
     id<MTLFunction> vertex_func   = compile_metal_shader(device, name, "vertex", vertex_shader),
                     fragment_func = compile_metal_shader(device, name, "fragment", fragment_shader);
@@ -105,7 +106,20 @@ Shader::Shader(RenderPass *render_pass,
             pipeline_desc.stencilAttachmentPixelFormat = pixel_format;
         else
             pipeline_desc.colorAttachments[i-2].pixelFormat = pixel_format;
+
+        if (i >= 2 && blend_mode == BlendMode::AlphaBlend) {
+            MTLRenderPipelineColorAttachmentDescriptor *att =
+                pipeline_desc.colorAttachments[i - 2];
+            att.blendingEnabled             = YES;
+            att.rgbBlendOperation           = MTLBlendOperationAdd;
+            att.alphaBlendOperation         = MTLBlendOperationAdd;
+            att.sourceRGBBlendFactor        = MTLBlendFactorSourceAlpha;
+            att.sourceAlphaBlendFactor      = MTLBlendFactorSourceAlpha;
+            att.destinationRGBBlendFactor   = MTLBlendFactorOneMinusSourceAlpha;
+            att.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+        }
     }
+
     pipeline_desc.sampleCount = sample_count;
 
     NSError *error = nil;

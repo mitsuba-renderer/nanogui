@@ -37,7 +37,7 @@ using enoki::EnokiType;
 
 class MyCanvas : public Canvas {
 public:
-    MyCanvas(Widget *parent) : Canvas(parent, 1), m_rotation(0.f) {
+    MyCanvas(Widget *parent) : Canvas(parent), m_rotation(0.f) {
         using namespace nanogui;
 
         m_shader = new Shader(

@@ -54,8 +54,9 @@ static GLuint compile_gl_shader(GLenum type,
 Shader::Shader(RenderPass *render_pass,
                const std::string &name,
                const std::string &vertex_shader,
-               const std::string &fragment_shader)
-    : m_render_pass(render_pass), m_name(name), m_shader_handle(0) {
+               const std::string &fragment_shader,
+               BlendMode blend_mode)
+    : m_render_pass(render_pass), m_name(name), m_blend_mode(blend_mode), m_shader_handle(0) {
 
     GLuint vertex_shader_handle   = compile_gl_shader(GL_VERTEX_SHADER,   name, vertex_shader),
            fragment_shader_handle = compile_gl_shader(GL_FRAGMENT_SHADER, name, fragment_shader);
@@ -502,9 +503,16 @@ void Shader::begin() {
 
         buf.dirty = false;
     }
+
+    if (m_blend_mode == BlendMode::AlphaBlend) {
+        CHK(glEnable(GL_BLEND));
+        CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    }
 }
 
 void Shader::end() {
+    if (m_blend_mode == BlendMode::AlphaBlend)
+        CHK(glDisable(GL_BLEND));
 #if defined(NANOGUI_USE_OPENGL)
     CHK(glBindVertexArray(0));
 #else

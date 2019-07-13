@@ -149,6 +149,13 @@ void RenderPass::begin() {
 
     CHK(glGetIntegerv(GL_VIEWPORT, m_viewport_backup));
     CHK(glGetIntegerv(GL_SCISSOR_BOX, m_scissor_backup));
+    GLboolean depth_write;
+    CHK(glGetBooleanv(GL_DEPTH_WRITEMASK, &depth_write));
+    m_depth_write_backup = depth_write;
+
+    m_depth_test_backup = glIsEnabled(GL_DEPTH_TEST);
+    m_scissor_test_backup = glIsEnabled(GL_SCISSOR_TEST);
+    m_cull_face_backup = glIsEnabled(GL_CULL_FACE);
 
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_handle));
     set_viewport(m_viewport_offset, m_viewport_size);
@@ -204,6 +211,23 @@ void RenderPass::end() {
                    m_viewport_backup[2], m_viewport_backup[3]));
     CHK(glScissor(m_scissor_backup[0], m_scissor_backup[1],
                   m_scissor_backup[2], m_scissor_backup[3]));
+
+    if (m_depth_test_backup)
+        CHK(glEnable(GL_DEPTH_TEST));
+    else
+        CHK(glDisable(GL_DEPTH_TEST));
+
+    CHK(glDepthMask(m_depth_write_backup));
+
+    if (m_scissor_test_backup)
+        CHK(glEnable(GL_SCISSOR_TEST));
+    else
+        CHK(glDisable(GL_SCISSOR_TEST));
+
+    if (m_cull_face_backup)
+        CHK(glEnable(GL_CULL_FACE));
+    else
+        CHK(glDisable(GL_CULL_FACE));
 
     m_active = false;
 }
