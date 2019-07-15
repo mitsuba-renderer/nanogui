@@ -117,8 +117,10 @@ PYBIND11_MODULE(nanogui, m) {
 
 #if defined(NANOGUI_USE_OPENGL)
     m.attr("api") = "opengl";
-#elif defined(NANOGUI_USE_GLES)
+#elif defined(NANOGUI_USE_GLES) && NANOGUI_GLES_VERSION == 2
     m.attr("api") = "gles2";
+#elif defined(NANOGUI_USE_GLES) && NANOGUI_GLES_VERSION == 3
+    m.attr("api") = "gles3";
 #elif defined(NANOGUI_USE_METAL)
     m.attr("api") = "metal";
 #endif

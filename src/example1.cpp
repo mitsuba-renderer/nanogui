@@ -27,7 +27,7 @@
 #include <nanogui/textbox.h>
 #include <nanogui/slider.h>
 #include <nanogui/imagepanel.h>
-//#include <nanogui/imageview.h>
+#include <nanogui/imageview.h>
 #include <nanogui/vscrollpanel.h>
 #include <nanogui/colorwheel.h>
 #include <nanogui/colorpicker.h>
@@ -37,7 +37,7 @@
 #include <nanogui/shader.h>
 #include <nanogui/renderpass.h>
 #include <enoki/transform.h>
-#include <iostream>
+#include <stb_image.h>
 
 using namespace nanogui;
 
@@ -153,40 +153,51 @@ public:
 
         auto image_window = new Window(this, "Selected image");
         image_window->set_position(Vector2i(710, 15));
-        image_window->set_layout(new GroupLayout());
+        image_window->set_layout(new GroupLayout(3));
 
-        // Load all of the images by creating a GLTexture object and saving the pixel data.
-        for (auto& icon : icons)
-            m_images.push_back(new Texture(icon.second + ".png"));
+        // Create a Texture instance for each object
+        for (auto& icon : icons) {
+            Vector2i size;
+            int n = 0;
+            ImageHolder texture_data(
+                stbi_load((icon.second + ".png").c_str(), &size.x(), &size.y(), &n, 0),
+                stbi_image_free);
+            assert(n == 4);
 
-        // Set the first texture
-        //auto image_view = new ImageView(image_window,
-                //m_images_data.empty() ? 0 : m_images_data[0].first.texture());
+            Texture *tex = new Texture(
+                Texture::PixelFormat::RGBA,
+                Texture::ComponentFormat::UInt8,
+                size,
+                Texture::InterpolationMode::Trilinear,
+                Texture::InterpolationMode::Nearest);
+
+            tex->upload(texture_data.get());
+
+            m_images.emplace_back(tex, std::move(texture_data));
+        }
+
+        ImageView *image_view = new ImageView(image_window);
+        if (!m_images.empty())
+            image_view->set_image(m_images[0].first);
+        image_view->center();
         m_current_image = 0;
-        // Change the active textures.
-        //img_panel->set_callback([this, image_view](int i) {
-            //image_view->bind_image(m_images_data[i].first.texture());
-            //m_current_image = i;
-            //std::cout << "Selected item " << i << '\n';
-        //});
-        //image_view->set_grid_threshold(20);
-        //image_view->set_pixel_info_threshold(20);
-        //image_view->set_pixel_info_callback(
-            //[this, image_view](const Vector2i& index) -> std::pair<std::string, Color> {
-            //auto& image_data = m_images_data[m_current_image].second;
-            //auto& texture_size = image_view->image_size();
-            //std::string string_data;
-            //uint16_t channel_sum = 0;
-            //for (int i = 0; i != 4; ++i) {
-                //auto& channel_data = image_data[4*index.y()*texture_size.x() + 4*index.x() + i];
-                //channel_sum += channel_data;
-                //string_data += (std::to_string(static_cast<int>(channel_data)) + "\n");
-            //}
-            //float intensity = static_cast<float>(255 - (channel_sum / 4)) / 255.0f;
-            //float color_scale = intensity > 0.5f ? (intensity + 1) / 2 : intensity / 2;
-            //Color text_color = Color(color_scale, 1.0f);
-            //return { string_data, text_color };
-        //});
+
+        img_panel->set_callback([this, image_view](int i) {
+            std::cout << "Selected item " << i << std::endl;
+            image_view->set_image(m_images[i].first);
+            m_current_image = i;
+        });
+
+        image_view->set_pixel_callback(
+            [this](const Vector2i& index, char **out, size_t size) {
+                const Texture *texture = m_images[m_current_image].first.get();
+                uint8_t *data = m_images[m_current_image].second.get();
+                for (int ch = 0; ch < 4; ++ch) {
+                    uint8_t value = data[(index.x() + index.y() * texture->size().x())*4 + ch];
+                    snprintf(out[ch], size, "%i", (int) value);
+                }
+            }
+        );
 
         new Label(window, "File dialog", "sans-bold");
         tools = new Widget(window);
@@ -546,7 +557,8 @@ private:
     ref<Shader> m_shader;
     ref<RenderPass> m_render_pass;
 
-    std::vector<ref<Texture>> m_images;
+    using ImageHolder = std::unique_ptr<uint8_t[], void(*)(void*)>;
+    std::vector<std::pair<ref<Texture>, ImageHolder>> m_images;
     int m_current_image;
 };
 

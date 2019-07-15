@@ -13,22 +13,26 @@ import nanogui
 import math
 import time
 import gc
+import numpy as np
 
-from nanogui import Color, ColorPicker, Screen, Window, GroupLayout, BoxLayout, \
-                    ToolButton, Label, Button, Widget, \
-                    Popup, PopupButton, CheckBox, MessageDialog, VScrollPanel, \
-                    ImagePanel, ImageView, ComboBox, ProgressBar, Slider, \
-                    TextBox, ColorWheel, Graph, GridLayout, \
-                    Alignment, Orientation, TabWidget, IntBox, GLShader
+from nanogui import Color, ColorPicker, Screen, Window, GroupLayout, \
+                    BoxLayout, ToolButton, Label, Button, Widget, \
+                    Popup, PopupButton, CheckBox, MessageDialog, \
+                    VScrollPanel, ImagePanel, ImageView, ComboBox, \
+                    ProgressBar, Slider, TextBox, ColorWheel, Graph, \
+                    GridLayout, Alignment, Orientation, TabWidget, \
+                    IntBox, RenderPass, Shader, Texture
 
-from nanogui import gl, glfw, entypo
+from nanogui import glfw, entypo
 
 # A simple counter, used for dynamic tab creation with TabWidget callback
 counter = 1
 
+
 class TestApp(Screen):
     def __init__(self):
         super(TestApp, self).__init__((1024, 768), "NanoGUI Test")
+        self.shader = None
 
         window = Window(self, "Button demo")
         window.set_position((15, 15))
@@ -85,7 +89,7 @@ class TestApp(Screen):
         popup_btn.set_side(Popup.Side.Left)
         popup_left = popup_btn.popup()
         popup_left.set_layout(GroupLayout())
-        CheckBox(popup_left, "Another check box");
+        CheckBox(popup_left, "Another check box")
 
         window = Window(self, "Basic widgets")
         window.set_position((200, 15))
@@ -149,14 +153,18 @@ class TestApp(Screen):
         img_window.set_position((710, 15))
         img_window.set_layout(GroupLayout())
 
-        img_view = ImageView(img_window, icons[0][0])
+        img_view = ImageView(img_window)
+        img_view.set_image(Texture(icons[0][1] + ".png",
+                                   Texture.InterpolationMode.Trilinear,
+                                   Texture.InterpolationMode.Nearest))
+        img_view.center()
 
         def cb(i):
             print("Selected item %i" % i)
-            img_view.bind_image(icons[i][0])
+            img_view.set_image(Texture(icons[i][1] + ".png",
+                                       Texture.InterpolationMode.Trilinear,
+                                       Texture.InterpolationMode.Nearest))
         img_panel.set_callback(cb)
-
-        img_view.set_grid_threshold(3)
 
         Label(window, "File dialog", "sans-bold")
         tools = Widget(window)
@@ -316,9 +324,9 @@ class TestApp(Screen):
         cobo.set_font_size(16)
         cobo.set_fixed_size((100, 20))
 
-        Label(window, "Color picker :", "sans-bold");
-        cp = ColorPicker(window, Color(255, 120, 0, 255));
-        cp.set_fixed_size((100, 20));
+        Label(window, "Color picker :", "sans-bold")
+        cp = ColorPicker(window, Color(255, 120, 0, 255))
+        cp.set_fixed_size((100, 20))
 
         def cp_final_cb(color):
             print(
@@ -341,7 +349,7 @@ class TestApp(Screen):
         layout.set_spacing(0, 10)
         window.set_layout(layout)
         window.set_position((425, 500))
-        Label(window, "Combined: ");
+        Label(window, "Combined: ")
         b = Button(window, "ColorWheel", entypo.ICON_500PX)
         Label(window, "Red: ")
         red_int_box = IntBox(window)
@@ -371,94 +379,96 @@ class TestApp(Screen):
 
         self.perform_layout()
 
-        try:
-            import numpy as np
+        self.render_pass = RenderPass([self])
+        self.render_pass.set_clear_color(0, Color(0.3, 0.3, 0.32, 1.0))
 
-            self.shader = GLShader()
-            if nanogui.opengl:
-                self.shader.init(
-                    # An identifying name
-                    "a_simple_shader",
+        if nanogui.api == 'opengl':
+            vertex_shader = """
+            #version 330
+            uniform mat4 mvp;
+            in vec3 position;
+            void main() {
+                gl_Position = mvp * vec4(position, 1.0);
+            }"""
 
-                    # Vertex shader
-                    """#version 330
-                        uniform mat4 model_view_proj;
-                    in vec3 position;
-                    void main() {
-                            gl_Position = model_view_proj * vec4(position, 1.0);
-                    }""",
+            fragment_shader = """
+            #version 330
+            out vec4 color;
+            uniform float intensity;
+            void main() {
+                color = vec4(vec3(intensity), 1.0);
+            }"""
+        elif nanogui.api == 'gles2' or nanogui.api == 'gles3':
+            vertex_shader = """
+            precision highp float;
+            uniform mat4 mvp;
+            attribute vec3 position;
+            void main() {
+                gl_Position = mvp * vec4(position, 1.0);
+            }"""
 
-                    """#version 330
-                    out vec4 color;
-                    uniform float intensity;
-                    void main() {
-                        color = vec4(vec3(intensity), 1.0);
-                    }"""
-                )
-            else: # GLES2
-                self.shader.init(
-                    # An identifying name
-                    "a_simple_shader",
+            fragment_shader = """
+            precision highp float;
+            uniform float intensity;
+            void main() {
+                gl_FragColor = vec4(vec3(intensity), 1.0);
+            }"""
+        elif nanogui.api == 'metal':
+            vertex_shader = """
+            using namespace metal;
+            struct VertexOut {
+                float4 position [[position]];
+            };
 
-                    # Vertex shader
-                    """precision highp float;
-                    uniform mat4 model_view_proj;
-                    attribute vec3 position;
-                    void main() {
-                        gl_Position = model_view_proj * vec4(position, 1.0);
-                    }""",
+            vertex VertexOut vertex_main(const device packed_float3 *position,
+                                         constant float4x4 &mvp,
+                                         uint id [[vertex_id]]) {
+                VertexOut vert;
+                vert.position = mvp * float4(position[id], 1.f);
+                return vert;
+            }"""
 
-                    """precision highp float;
-                    uniform float intensity;
-                    void main() {
-                        gl_FragColor = vec4(vec3(intensity), 1.0);
-                    }"""
-                )
+            fragment_shader = """
+            using namespace metal;
+            fragment float4 fragment_main(const constant float &intensity) {
+                return float4(intensity);
+            }"""
 
-            # Draw 2 triangles
-            indices = np.array(
-                [[0, 2], [1, 3], [2, 0]],
-                dtype=np.int32)
+        self.shader = Shader(
+            self.render_pass,
+            # An identifying name
+            "A simple shader",
+            vertex_shader,
+            fragment_shader
+        )
 
-            positions = np.array(
-                [[-1, 1, 1, -1],
-                 [-1, -1, 1, 1],
-                 [0, 0, 0, 0]],
-                dtype=np.float32)
+        self.shader.set_buffer("indices", np.array([0, 1, 2, 2, 3, 0], dtype=np.uint32))
+        self.shader.set_buffer("position", np.array(
+            [[-1, -1, 0],
+             [1, -1, 0],
+             [1, 1, 0],
+             [-1, 1, 0]],
+            dtype=np.float32
+        ))
 
-            self.shader.bind()
-            self.shader.upload_indices(indices)
-            self.shader.upload_attrib("position", positions)
-            self.shader.set_uniform("intensity", 0.5)
-        except ImportError:
-            self.shader = None
-            pass
+        self.shader.set_buffer("intensity", np.array(0.5, dtype=np.float32))
 
     def draw(self, ctx):
         self.progress.set_value(math.fmod(time.time() / 10, 1))
         super(TestApp, self).draw(ctx)
 
     def draw_contents(self):
-        if self.shader is not None:
-            import numpy as np
-            self.shader.bind()
+        if self.shader is None:
+            return
+        self.render_pass.resize(self.framebuffer_size())
+        s = self.size()
+        with self.render_pass:
+            mvp = nanogui.scale([s[1] / float(s[0]) * 0.25, 0.25, 0.25]) @ \
+                  nanogui.rotate([0, 0, 1], glfw.getTime())
+            self.shader.set_buffer("mvp", np.float32(mvp.T))
+            with self.shader:
+                self.shader.draw_array(Shader.PrimitiveType.Triangle, 0, 6, True)
 
-            angle = time.time()
-
-            mvp = np.array(
-                [[np.cos(angle), -np.sin(angle), 0, 0],
-                 [np.sin(angle), np.cos(angle), 0, 0],
-                 [0, 0, 1, 0],
-                 [0, 0, 0, 1]],
-                dtype=np.float32
-            )
-
-            mvp[0:3, 0:3] *= 0.25
-            mvp[0, :] *= self.size()[1] / self.size()[0]
-
-            self.shader.set_uniform("model_view_proj", mvp)
-            self.shader.draw_indexed(gl.TRIANGLES, 0, 2)
-        super(TestApp, self).draw_contents()
 
     def keyboard_event(self, key, scancode, action, modifiers):
         if super(TestApp, self).keyboard_event(key, scancode,
@@ -474,7 +484,7 @@ if __name__ == "__main__":
     test = TestApp()
     test.draw_all()
     test.set_visible(True)
-    nanogui.mainloop(refresh=50)
+    nanogui.mainloop(refresh=1 / 60.0 * 1000)
     del test
     gc.collect()
     nanogui.shutdown()

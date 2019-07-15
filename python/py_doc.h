@@ -1318,6 +1318,68 @@ static const char *__doc_nanogui_ImagePanel_set_callback = R"doc()doc";
 
 static const char *__doc_nanogui_ImagePanel_set_images = R"doc()doc";
 
+static const char *__doc_nanogui_ImageView =
+R"doc(A widget for displaying, panning, and zooming images. Numerical RGBA
+pixel information is shown at large magnifications.)doc";
+
+static const char *__doc_nanogui_ImageView_ImageView = R"doc(Initialize the widget)doc";
+
+static const char *__doc_nanogui_ImageView_center = R"doc(Center the image on the screen)doc";
+
+static const char *__doc_nanogui_ImageView_draw = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_draw_contents = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_image = R"doc(Return the currently active image)doc";
+
+static const char *__doc_nanogui_ImageView_image_2 = R"doc(Return the currently active image (const version))doc";
+
+static const char *__doc_nanogui_ImageView_keyboard_event = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_m_draw_image_border = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_m_image = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_m_image_background_color = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_m_image_border_color = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_m_image_shader = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_m_offset = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_m_pixel_callback = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_m_scale = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_mouse_drag_event = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_offset = R"doc(Return the pixel offset of the zoomed image rectangle)doc";
+
+static const char *__doc_nanogui_ImageView_pixel_callback =
+R"doc(Return the callback that is used to acquire information about pixel
+components)doc";
+
+static const char *__doc_nanogui_ImageView_pixel_to_pos = R"doc(Convert a pixel position in the image to a position within the widget)doc";
+
+static const char *__doc_nanogui_ImageView_pos_to_pixel = R"doc(Convert a position within the widget to a pixel position in the image)doc";
+
+static const char *__doc_nanogui_ImageView_reset = R"doc(Center the image on the screen and set the scale to 1:1)doc";
+
+static const char *__doc_nanogui_ImageView_scale = R"doc(Return the current magnification of the image)doc";
+
+static const char *__doc_nanogui_ImageView_scroll_event = R"doc()doc";
+
+static const char *__doc_nanogui_ImageView_set_image = R"doc(Set the currently active image)doc";
+
+static const char *__doc_nanogui_ImageView_set_offset = R"doc(Set the pixel offset of the zoomed image rectangle)doc";
+
+static const char *__doc_nanogui_ImageView_set_pixel_callback =
+R"doc(Set the callback that is used to acquire information about pixel
+components)doc";
+
+static const char *__doc_nanogui_ImageView_set_scale = R"doc(Set the current magnification of the image)doc";
+
 static const char *__doc_nanogui_IntBox =
 R"doc(A specialization of TextBox for representing integral values.
 
@@ -2530,8 +2592,6 @@ static const char *__doc_nanogui_Texture_init = R"doc(Initialize the texture han
 static const char *__doc_nanogui_Texture_m_component_format = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_flags = R"doc()doc";
-
-static const char *__doc_nanogui_Texture_m_interpolation_mode = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_mag_interpolation_mode = R"doc()doc";
 

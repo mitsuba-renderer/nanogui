@@ -48,7 +48,7 @@ class MyCanvas(Canvas):
                         color = frag_color;
                     }
                     """
-            elif nanogui.api == 'gles2':
+            elif nanogui.api == 'gles2' or nanogui.api == 'gles3':
                 vertex_shader = """
                     precision highp float;
                     uniform mat4 mvp;
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     test = TestApp()
     test.draw_all()
     test.set_visible(True)
-    nanogui.mainloop(1 / 60.0 * 1000)
+    nanogui.mainloop(refresh=1 / 60.0 * 1000)
     del test
     gc.collect()
     nanogui.shutdown()
