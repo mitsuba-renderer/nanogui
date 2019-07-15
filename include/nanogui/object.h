@@ -34,7 +34,7 @@ public:
     int get_ref_count() const { return m_ref_count; };
 
     /// Increase the object's reference count by one
-    void inc_ref() const { ++m_ref_count; }
+    void inc_ref() const;
 
     /** \brief Decrease the reference count of
      * the object and possibly deallocate it.

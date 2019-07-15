@@ -62,7 +62,7 @@ public:
            BlendMode mode = BlendMode::None);
 
     /// Return the render pass associated with this shader
-    RenderPass *render_pass() { return m_render_pass.get(); }
+    RenderPass *render_pass() { return m_render_pass; }
 
     /// Return the name of this shader
     const std::string &name() const { return m_name; }
@@ -203,7 +203,7 @@ protected:
     virtual ~Shader();
 
 protected:
-    ref<RenderPass> m_render_pass;
+    RenderPass* m_render_pass;
     std::string m_name;
     std::unordered_map<std::string, Buffer> m_buffers;
     BlendMode m_blend_mode;

@@ -49,7 +49,6 @@ void register_widget(py::module &m) {
         .def("remove_child", (void(Widget::*)(int)) &Widget::remove_child, D(Widget, remove_child))
         .def("remove_child", (void(Widget::*)(const Widget *)) &Widget::remove_child, D(Widget, remove_child, 2))
         .def("__delitem__", (void(Widget::*)(int)) &Widget::remove_child, D(Widget, remove_child, 2))
-        .def("window", &Widget::window, D(Widget, window))
         .def("enabled", &Widget::enabled, D(Widget, enabled))
         .def("set_enabled", &Widget::set_enabled, D(Widget, set_enabled))
         .def("focused", &Widget::focused, D(Widget, focused))
@@ -81,6 +80,8 @@ void register_widget(py::module &m) {
              D(Widget, keyboard_character_event))
         .def("preferred_size", &Widget::preferred_size, D(Widget, preferred_size))
         .def("perform_layout", &Widget::perform_layout, D(Widget, perform_layout))
+        .def("screen", py::overload_cast<>(&Widget::screen, py::const_), D(Widget, screen))
+        .def("window", py::overload_cast<>(&Widget::window, py::const_), D(Widget, window))
         .def("draw", &Widget::draw, D(Widget, draw));
 
     py::class_<Window, Widget, ref<Window>, PyWindow>(m, "Window", D(Window))

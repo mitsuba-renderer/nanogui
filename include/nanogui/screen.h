@@ -236,7 +236,7 @@ public:
 protected:
     GLFWwindow *m_glfw_window = nullptr;
     NVGcontext *m_nvg_context = nullptr;
-    GLFWcursor *m_cursors[(int) Cursor::CursorCount];
+    GLFWcursor *m_cursors[(size_t) Cursor::CursorCount];
     Cursor m_cursor;
     std::vector<Widget *> m_focus_path;
     Vector2i m_fbsize;

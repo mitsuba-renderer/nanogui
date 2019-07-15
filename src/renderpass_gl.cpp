@@ -156,6 +156,7 @@ void RenderPass::begin() {
     m_depth_test_backup = glIsEnabled(GL_DEPTH_TEST);
     m_scissor_test_backup = glIsEnabled(GL_SCISSOR_TEST);
     m_cull_face_backup = glIsEnabled(GL_CULL_FACE);
+    m_blend_backup = glIsEnabled(GL_BLEND);
 
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_handle));
     set_viewport(m_viewport_offset, m_viewport_size);
@@ -195,6 +196,9 @@ void RenderPass::begin() {
 
     set_depth_test(m_depth_test, m_depth_write);
     set_cull_mode(m_cull_mode);
+
+    if (m_blend_backup)
+        CHK(glDisable(GL_BLEND));
 }
 
 void RenderPass::end() {
@@ -228,6 +232,11 @@ void RenderPass::end() {
         CHK(glEnable(GL_CULL_FACE));
     else
         CHK(glDisable(GL_CULL_FACE));
+
+    if (m_blend_backup)
+        CHK(glEnable(GL_BLEND));
+    else
+        CHK(glDisable(GL_BLEND));
 
     m_active = false;
 }

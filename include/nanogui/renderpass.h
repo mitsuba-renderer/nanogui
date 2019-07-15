@@ -183,6 +183,7 @@ protected:
     bool m_depth_write_backup;
     bool m_scissor_test_backup;
     bool m_cull_face_backup;
+    bool m_blend_backup;
 #elif defined(NANOGUI_USE_METAL)
     void *m_command_buffer;
     void *m_command_encoder;

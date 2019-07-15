@@ -17,7 +17,8 @@
 NAMESPACE_BEGIN(nanogui)
 
 VScrollPanel::VScrollPanel(Widget *parent)
-    : Widget(parent), m_child_preferred_height(0), m_scroll(0.0f), m_update_layout(false) { }
+    : Widget(parent), m_child_preferred_height(0),
+      m_scroll(0.0f), m_update_layout(false) { }
 
 void VScrollPanel::perform_layout(NVGcontext *ctx) {
     Widget::perform_layout(ctx);
@@ -48,7 +49,7 @@ Vector2i VScrollPanel::preferred_size(NVGcontext *ctx) const {
 }
 
 bool VScrollPanel::mouse_drag_event(const Vector2i &p, const Vector2i &rel,
-                            int button, int modifiers) {
+                                    int button, int modifiers) {
     if (!m_children.empty() && m_child_preferred_height > m_size.y()) {
         float scrollh = height() *
             std::min(1.0f, height() / (float)m_child_preferred_height);

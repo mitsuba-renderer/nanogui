@@ -163,9 +163,13 @@ public:
 
     /// Walk up the hierarchy and return the parent window
     Window *window();
+    /// Walk up the hierarchy and return the parent window (const version)
+    const Window *window() const;
 
     /// Walk up the hierarchy and return the parent screen
     Screen *screen();
+    /// Walk up the hierarchy and return the parent screen (const version)
+    const Screen *screen() const;
 
     /// Return whether or not this widget is currently enabled
     bool enabled() const { return m_enabled; }

@@ -322,8 +322,8 @@ bool TabWidgetBase::mouse_enter_event(const Vector2i &/* p */, bool /* enter */)
     return false;
 }
 
-bool TabWidgetBase::mouse_motion_event(const Vector2i &p, const Vector2i &/* rel */,
-                                       int /* button */, int /* modifiers */) {
+bool TabWidgetBase::mouse_motion_event(const Vector2i &p, const Vector2i &rel,
+                                       int button, int modifiers) {
     auto [index, close] = tab_at_position(p, false);
 
     if (m_tab_drag_index != -1) {
@@ -353,7 +353,7 @@ bool TabWidgetBase::mouse_motion_event(const Vector2i &p, const Vector2i &/* rel
         return true;
     }
 
-    return false;
+    return Widget::mouse_motion_event(p, rel, button, modifiers);
 }
 
 TabWidget::TabWidget(Widget *parent, const std::string &font)

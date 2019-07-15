@@ -16,7 +16,10 @@
 #include <nanogui/opengl.h>
 #include <nanogui/screen.h>
 
-//#define NANOGUI_SHOW_WIDGET_BOUNDS
+/* Uncomment the following definition to draw red bounding
+   boxes around widgets (useful for debugging drawing code) */
+
+// #define NANOGUI_SHOW_WIDGET_BOUNDS 1
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -30,6 +33,13 @@ Widget::Widget(Widget *parent)
 }
 
 Widget::~Widget() {
+    if (std::uncaught_exceptions() > 0) {
+        /* If a widget constructor throws an exception, it is immediately
+           dealloated but may still be referenced by a parent. Be conservative
+           and don't decrease the reference count of children while dispatching
+           exceptions. */
+        return;
+    }
     for (auto child : m_children) {
         if (child)
             child->dec_ref();
@@ -167,12 +177,17 @@ void Widget::add_child(Widget * widget) {
 }
 
 void Widget::remove_child(const Widget *widget) {
+    size_t child_count = m_children.size();
     m_children.erase(std::remove(m_children.begin(), m_children.end(), widget),
                      m_children.end());
+    if (m_children.size() == child_count)
+        throw std::runtime_error("Widget::remove_child(): widget not found!");
     widget->dec_ref();
 }
 
 void Widget::remove_child(int index) {
+    if (index < 0 || index >= (int) m_children.size())
+        throw std::runtime_error("Widget::remove_child(): out of bounds!");
     Widget *widget = m_children[index];
     m_children.erase(m_children.begin() + index);
     widget->dec_ref();
@@ -208,6 +223,9 @@ Screen *Widget::screen() {
         widget = widget->parent();
     }
 }
+
+const Screen *Widget::screen() const { return const_cast<Widget*>(this)->screen(); }
+const Window *Widget::window() const { return const_cast<Widget*>(this)->window(); }
 
 void Widget::request_focus() {
     Widget *widget = this;

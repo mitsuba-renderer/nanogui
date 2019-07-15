@@ -9,28 +9,6 @@ void Texture::init() {
     m_size = 0;
     resize(size);
 
-    MTLSamplerMinMagFilter interpolation_mode_mtl;
-    MTLSamplerMipFilter interpolation_mode_mip_mtl;
-
-    switch (m_interpolation_mode) {
-        case InterpolationMode::Nearest:
-            interpolation_mode_mtl     = MTLSamplerMinMagFilterNearest;
-            interpolation_mode_mip_mtl = MTLSamplerMipFilterNotMipmapped;
-            break;
-
-        case InterpolationMode::Bilinear:
-            interpolation_mode_mtl     = MTLSamplerMinMagFilterLinear;
-            interpolation_mode_mip_mtl = MTLSamplerMipFilterNotMipmapped;
-            break;
-
-        case InterpolationMode::Trilinear:
-            interpolation_mode_mtl     = MTLSamplerMinMagFilterLinear;
-            interpolation_mode_mip_mtl = MTLSamplerMipFilterLinear;
-            break;
-
-        default: throw std::runtime_error("Texture::Texture(): invalid interpolation mode!");
-    }
-
     MTLSamplerAddressMode wrap_mode_mtl;
     switch (m_wrap_mode) {
         case WrapMode::Repeat:       wrap_mode_mtl = MTLSamplerAddressModeRepeat; break;
@@ -41,9 +19,22 @@ void Texture::init() {
 
     id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
     MTLSamplerDescriptor *sampler_desc = [MTLSamplerDescriptor new];
-    sampler_desc.minFilter = interpolation_mode_mtl;
-    sampler_desc.magFilter = interpolation_mode_mtl;
-    sampler_desc.mipFilter = interpolation_mode_mip_mtl;
+
+    sampler_desc.minFilter =
+        m_min_interpolation_mode == InterpolationMode::Nearest
+            ? MTLSamplerMinMagFilterNearest
+            : MTLSamplerMinMagFilterLinear;
+
+    sampler_desc.magFilter =
+        m_mag_interpolation_mode == InterpolationMode::Nearest
+            ? MTLSamplerMinMagFilterNearest
+            : MTLSamplerMinMagFilterLinear;
+
+    sampler_desc.mipFilter =
+        m_min_interpolation_mode == InterpolationMode::Trilinear
+            ? MTLSamplerMipFilterLinear
+            : MTLSamplerMipFilterNotMipmapped;
+
     sampler_desc.sAddressMode = wrap_mode_mtl;
     sampler_desc.tAddressMode = wrap_mode_mtl;
     id<MTLSamplerState> sampler = [device newSamplerStateWithDescriptor:sampler_desc];
@@ -87,7 +78,7 @@ void Texture::upload(const uint8_t *data) {
                 destinationLevel: 0
                destinationOrigin: MTLOriginMake(0, 0, 0)];
 
-    if (m_interpolation_mode == InterpolationMode::Trilinear)
+    if (m_min_interpolation_mode == InterpolationMode::Trilinear)
         [command_encoder generateMipmapsForTexture: texture];
 
     [command_encoder endEncoding];
@@ -244,7 +235,7 @@ void Texture::resize(const Vector2i &size) {
             throw std::runtime_error("Texture::Texture(): invalid pixel format!");
     }
 
-    bool mipmap = m_interpolation_mode == InterpolationMode::Trilinear;
+    bool mipmap = m_min_interpolation_mode == InterpolationMode::Trilinear;
     id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
     MTLTextureDescriptor *texture_desc =
         [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: pixel_format_mtl

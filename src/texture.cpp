@@ -6,13 +6,15 @@ NAMESPACE_BEGIN(nanogui)
 Texture::Texture(PixelFormat pixel_format,
                  ComponentFormat component_format,
                  const Vector2i &size,
-                 InterpolationMode interpolation_mode,
+                 InterpolationMode min_interpolation_mode,
+                 InterpolationMode mag_interpolation_mode,
                  WrapMode wrap_mode,
                  uint8_t samples,
                  uint8_t flags)
     : m_pixel_format(pixel_format),
       m_component_format(component_format),
-      m_interpolation_mode(interpolation_mode),
+      m_min_interpolation_mode(min_interpolation_mode),
+      m_mag_interpolation_mode(mag_interpolation_mode),
       m_wrap_mode(wrap_mode),
       m_samples(samples),
       m_flags(flags),
@@ -22,10 +24,12 @@ Texture::Texture(PixelFormat pixel_format,
 }
 
 Texture::Texture(const std::string &filename,
-                 InterpolationMode interpolation_mode,
+                 InterpolationMode min_interpolation_mode,
+                 InterpolationMode mag_interpolation_mode,
                  WrapMode wrap_mode)
     : m_component_format(ComponentFormat::UInt8),
-      m_interpolation_mode(interpolation_mode),
+      m_min_interpolation_mode(min_interpolation_mode),
+      m_mag_interpolation_mode(mag_interpolation_mode),
       m_wrap_mode(wrap_mode),
       m_samples(1),
       m_flags(TextureFlags::ShaderRead) {

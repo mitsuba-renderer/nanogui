@@ -158,7 +158,7 @@ Screen::Screen()
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
       m_shutdown_glfw(false), m_fullscreen(false), m_depth_buffer(false),
       m_stencil_buffer(false), m_float_buffer(false), m_redraw(false) {
-    memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
+    memset(m_cursors, 0, sizeof(GLFWcursor *) * (size_t) Cursor::CursorCount);
 #if defined(NANOGUI_USE_OPENGL)
     GLint n_stencil_bits = 0, n_depth_bits = 0;
     CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
@@ -220,6 +220,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_ALPHA_BITS, color_bits);
     glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits);
     glfwWindowHint(GLFW_DEPTH_BITS, depth_bits);
+    glfwWindowHint(GLFW_SAMPLES, 1);
 
 #if defined(GLFW_FLOATBUFFER)
     glfwWindowHint(GLFW_FLOATBUFFER, float_buffer ? GL_TRUE : GL_FALSE);
@@ -404,6 +405,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
             Texture::ComponentFormat::Float32,
             framebuffer_size(),
             Texture::InterpolationMode::Bilinear,
+            Texture::InterpolationMode::Bilinear,
             Texture::WrapMode::ClampToEdge,
             1,
             Texture::TextureFlags::RenderTarget
@@ -487,7 +489,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     m_redraw = true;
     __nanogui_screens[m_glfw_window] = this;
 
-    for (int i=0; i < (int) Cursor::CursorCount; ++i)
+    for (size_t i = 0; i < (size_t) Cursor::CursorCount; ++i)
         m_cursors[i] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR + i);
 
     /// Fixes retina display-related font rendering issue (#185)
@@ -497,7 +499,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 
 Screen::~Screen() {
     __nanogui_screens.erase(m_glfw_window);
-    for (int i=0; i < (int) Cursor::CursorCount; ++i) {
+    for (size_t i = 0; i < (size_t) Cursor::CursorCount; ++i) {
         if (m_cursors[i])
             glfwDestroyCursor(m_cursors[i]);
     }

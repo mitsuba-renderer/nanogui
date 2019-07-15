@@ -111,15 +111,17 @@ public:
     Texture(PixelFormat pixel_format,
             ComponentFormat component_format,
             const Vector2i &size,
-            InterpolationMode interpolation_mode = InterpolationMode::Bilinear,
-            WrapMode wrap_mode = WrapMode::Repeat,
+            InterpolationMode min_interpolation_mode = InterpolationMode::Bilinear,
+            InterpolationMode mag_interpolation_mode = InterpolationMode::Bilinear,
+            WrapMode wrap_mode = WrapMode::ClampToEdge,
             uint8_t samples = 1,
             uint8_t flags = (uint8_t) TextureFlags::ShaderRead);
 
     /// Load an image from the given file using stb-image
     Texture(const std::string &filename,
-            InterpolationMode interpolation_mode = InterpolationMode::Bilinear,
-            WrapMode wrap_mode                   = WrapMode::Repeat);
+            InterpolationMode min_interpolation_mode = InterpolationMode::Bilinear,
+            InterpolationMode mag_interpolation_mode = InterpolationMode::Bilinear,
+            WrapMode wrap_mode                       = WrapMode::ClampToEdge);
 
     /// Return the pixel format
     PixelFormat pixel_format() const { return m_pixel_format; }
@@ -127,8 +129,11 @@ public:
     /// Return the component format
     ComponentFormat component_format() const { return m_component_format; }
 
-    /// Return the interpolation mode
-    InterpolationMode interpolation_mode() const { return m_interpolation_mode; }
+    /// Return the interpolation mode for minimization
+    InterpolationMode min_interpolation_mode() const { return m_min_interpolation_mode; }
+
+    /// Return the interpolation mode for minimization
+    InterpolationMode mag_interpolation_mode() const { return m_mag_interpolation_mode; }
 
     /// Return the wrap mode
     WrapMode wrap_mode() const { return m_wrap_mode; }
@@ -175,7 +180,8 @@ protected:
 protected:
     PixelFormat m_pixel_format;
     ComponentFormat m_component_format;
-    InterpolationMode m_interpolation_mode;
+    InterpolationMode m_min_interpolation_mode;
+    InterpolationMode m_mag_interpolation_mode;
     WrapMode m_wrap_mode;
     uint8_t m_samples;
     uint8_t m_flags;

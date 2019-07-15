@@ -60,23 +60,25 @@ void Texture::init() {
     m_samples = 1;
 #endif
 
-    GLuint min_filter = 0, mag_filter = 0;
-    switch (m_interpolation_mode) {
-        case InterpolationMode::Nearest:
-            min_filter = mag_filter = GL_NEAREST;
-            break;
+    GLuint interpolation_mode_gl[2];
+    for (int i = 0; i<2; ++i) {
+        switch (i == 0 ? m_min_interpolation_mode : m_mag_interpolation_mode) {
+            case InterpolationMode::Nearest:
+                interpolation_mode_gl[i] = GL_NEAREST;
+                break;
 
-        case InterpolationMode::Bilinear:
-            min_filter = mag_filter = GL_LINEAR;
-            break;
+            case InterpolationMode::Bilinear:
+                interpolation_mode_gl[i] = GL_LINEAR;
+                break;
 
-        case InterpolationMode::Trilinear:
-            min_filter = GL_LINEAR;
-            mag_filter = GL_LINEAR_MIPMAP_LINEAR;
-            break;
+            case InterpolationMode::Trilinear:
+                interpolation_mode_gl[i] = GL_LINEAR_MIPMAP_LINEAR;
+                break;
 
-        default: throw std::runtime_error("Texture::Texture(): invalid interpolation mode!");
+            default: throw std::runtime_error("Texture::Texture(): invalid interpolation mode!");
+        }
     }
+
 
     GLuint wrap_mode_gl = 0;
     switch (m_wrap_mode) {
@@ -103,8 +105,8 @@ void Texture::init() {
     if (m_flags & (uint8_t) TextureFlags::ShaderRead) {
         CHK(glGenTextures(1, &m_texture_handle));
         CHK(glBindTexture(tex_mode, m_texture_handle));
-        CHK(glTexParameteri(tex_mode, GL_TEXTURE_MAG_FILTER, mag_filter));
-        CHK(glTexParameteri(tex_mode, GL_TEXTURE_MIN_FILTER, min_filter));
+        CHK(glTexParameteri(tex_mode, GL_TEXTURE_MIN_FILTER, interpolation_mode_gl[0]));
+        CHK(glTexParameteri(tex_mode, GL_TEXTURE_MAG_FILTER, interpolation_mode_gl[1]));
         CHK(glTexParameteri(tex_mode, GL_TEXTURE_WRAP_S, wrap_mode_gl));
         CHK(glTexParameteri(tex_mode, GL_TEXTURE_WRAP_T, wrap_mode_gl));
 
@@ -153,6 +155,13 @@ void Texture::upload(const uint8_t *data) {
         GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
         CHK(glBindTexture(tex_mode, m_texture_handle));
 
+        if (data) {
+            CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+            CHK(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
+            CHK(glPixelStorei(GL_UNPACK_SKIP_ROWS, 0));
+            CHK(glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0));
+        }
+
 #if defined(NANOGUI_USE_OPENGL)
         if (m_samples == 1)
             CHK(glTexImage2D(tex_mode, 0, internal_format_gl, (GLsizei) m_size.x(),
@@ -165,7 +174,8 @@ void Texture::upload(const uint8_t *data) {
                          (GLsizei) m_size.y(), 0, pixel_format_gl, component_format_gl, data));
 #endif
 
-        if (m_interpolation_mode == InterpolationMode::Trilinear)
+        if (m_min_interpolation_mode == InterpolationMode::Trilinear ||
+            m_mag_interpolation_mode == InterpolationMode::Trilinear)
             CHK(glGenerateMipmap(tex_mode));
     } else {
 #if defined(NANOGUI_USE_OPENGL)

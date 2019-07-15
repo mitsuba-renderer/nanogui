@@ -149,19 +149,22 @@ void register_render(py::module &m) {
         .value("RenderTarget", TextureFlags::RenderTarget, D(Texture, TextureFlags, RenderTarget));
 
     texture
-        .def(py::init<PixelFormat, ComponentFormat,
-             const Vector2i &, InterpolationMode, WrapMode, uint8_t, uint8_t>(),
-             D(Texture, Texture), "pixel_format"_a, "component_format"_a,
-             "size"_a, "interpolation_mode"_a = InterpolationMode::Bilinear,
-             "wrap_mode"_a = WrapMode::Repeat, "samples"_a = 1,
+        .def(py::init<PixelFormat, ComponentFormat, const Vector2i &,
+                      InterpolationMode, InterpolationMode, WrapMode, uint8_t, uint8_t>(),
+             D(Texture, Texture), "pixel_format"_a, "component_format"_a, "size"_a,
+             "min_interpolation_mode"_a = InterpolationMode::Bilinear,
+             "mag_interpolation_mode"_a = InterpolationMode::Bilinear,
+             "wrap_mode"_a = WrapMode::ClampToEdge, "samples"_a = 1,
              "flags"_a = (uint8_t) TextureFlags::ShaderRead)
-        .def(py::init<const std::string &, InterpolationMode, WrapMode>(),
+        .def(py::init<const std::string &, InterpolationMode, InterpolationMode, WrapMode>(),
              D(Texture, Texture, 2), "filename"_a,
-             "interpolation_mode"_a = InterpolationMode::Bilinear,
-             "wrap_mode"_a = WrapMode::Repeat)
+             "min_interpolation_mode"_a = InterpolationMode::Bilinear,
+             "mag_interpolation_mode"_a = InterpolationMode::Bilinear,
+             "wrap_mode"_a = WrapMode::ClampToEdge)
         .def("pixel_format", &Texture::pixel_format, D(Texture, pixel_format))
         .def("component_format", &Texture::component_format, D(Texture, component_format))
-        .def("interpolation_mode", &Texture::interpolation_mode, D(Texture, interpolation_mode))
+        .def("min_interpolation_mode", &Texture::min_interpolation_mode, D(Texture, min_interpolation_mode))
+        .def("mag_interpolation_mode", &Texture::mag_interpolation_mode, D(Texture, mag_interpolation_mode))
         .def("wrap_mode", &Texture::wrap_mode, D(Texture, wrap_mode))
         .def("samples", &Texture::samples, D(Texture, samples))
         .def("flags", &Texture::flags, D(Texture, flags))

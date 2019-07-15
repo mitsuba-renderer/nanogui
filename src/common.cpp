@@ -400,12 +400,16 @@ std::vector<std::string> file_dialog(const std::vector<std::pair<std::string, st
 }
 #endif
 
+void Object::inc_ref() const {
+    m_ref_count++;
+}
+
 void Object::dec_ref(bool dealloc) const noexcept {
     --m_ref_count;
     if (m_ref_count == 0 && dealloc) {
         delete this;
     } else if (m_ref_count < 0) {
-        fprintf(stderr, "Internal error: Object reference count < 0!\n");
+        fprintf(stderr, "Internal error: %p: object reference count < 0!\n", this);
         abort();
     }
 }
