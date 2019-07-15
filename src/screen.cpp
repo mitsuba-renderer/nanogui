@@ -60,6 +60,10 @@
 #  include <GLFW/glfw3native.h>
 #endif
 
+#if !defined(GL_RGBA_FLOAT_MODE)
+#  define GL_RGBA_FLOAT_MODE 0x8820
+#endif
+
 NAMESPACE_BEGIN(nanogui)
 
 std::map<GLFWwindow *, Screen *> __nanogui_screens;
@@ -161,12 +165,15 @@ Screen::Screen()
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (size_t) Cursor::CursorCount);
 #if defined(NANOGUI_USE_OPENGL)
     GLint n_stencil_bits = 0, n_depth_bits = 0;
+    GLboolean float_mode;
     CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
         GL_DEPTH, GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &n_depth_bits));
     CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
         GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits));
+    CHK(glGetBooleanv(GL_RGBA_FLOAT_MODE, &float_mode));
     m_depth_buffer = n_depth_bits > 0;
     m_stencil_buffer = n_stencil_bits > 0;
+    m_float_buffer = (bool) float_mode;
 #endif
 }
 
@@ -211,7 +218,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
         depth_bits = 24;
         stencil_bits = 8;
     }
-    if (float_buffer)
+    if (m_float_buffer)
         color_bits = 16;
 
     glfwWindowHint(GLFW_RED_BITS, color_bits);
@@ -220,26 +227,48 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_ALPHA_BITS, color_bits);
     glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits);
     glfwWindowHint(GLFW_DEPTH_BITS, depth_bits);
-    glfwWindowHint(GLFW_SAMPLES, 1);
 
-#if defined(GLFW_FLOATBUFFER)
-    glfwWindowHint(GLFW_FLOATBUFFER, float_buffer ? GL_TRUE : GL_FALSE);
+#if (defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_METAL)) && defined(GLFW_FLOATBUFFER)
+    glfwWindowHint(GLFW_FLOATBUFFER, m_float_buffer ? GL_TRUE : GL_FALSE);
 #else
-    m_float_buffer = float_buffer = false;
+    m_float_buffer = false;
 #endif
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
 
-    if (fullscreen) {
-        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-        m_glfw_window = glfwCreateWindow(mode->width, mode->height,
-                                         caption.c_str(), monitor, nullptr);
-    } else {
-        m_glfw_window = glfwCreateWindow(size.x(), size.y(),
-                                         caption.c_str(), nullptr, nullptr);
+    for (int i = 0; i < 2; ++i) {
+        if (fullscreen) {
+            GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+            m_glfw_window = glfwCreateWindow(mode->width, mode->height,
+                                             caption.c_str(), monitor, nullptr);
+        } else {
+            m_glfw_window = glfwCreateWindow(size.x(), size.y(),
+                                             caption.c_str(), nullptr, nullptr);
+        }
+
+        if (m_glfw_window == nullptr && m_float_buffer) {
+            m_float_buffer = false;
+#if defined(GLFW_FLOATBUFFER)
+            glfwWindowHint(GLFW_FLOATBUFFER, GL_FALSE);
+#endif
+            fprintf(stderr, "Could not allocate floating point framebuffer, retrying without..\n");
+        } else {
+            break;
+        }
     }
+
+#if defined(NANOGUI_USE_OPENGL)
+    if (m_float_buffer) {
+        GLboolean float_mode;
+        CHK(glGetBooleanv(GL_RGBA_FLOAT_MODE, &float_mode));
+        if (!float_mode) {
+            fprintf(stderr, "Could not allocate floating point framebuffer.\n");
+            m_float_buffer = false;
+        }
+    }
+#endif
 
     if (!m_glfw_window) {
         (void) gl_major; (void) gl_minor;
