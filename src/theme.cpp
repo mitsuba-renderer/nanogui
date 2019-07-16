@@ -80,11 +80,11 @@ Theme::Theme(NVGcontext *ctx) {
     m_text_box_up_icon                  = ENTYPO_ICON_CHEVRON_UP;
     m_text_box_down_icon                = ENTYPO_ICON_CHEVRON_DOWN;
 
-    m_font_normal = nvgCreateFontMem(ctx, "sans", roboto_regular_ttf,
+    m_font_normal = nvgCreateFontMem(ctx, "sans", (uint8_t *) roboto_regular_ttf,
                                      roboto_regular_ttf_size, 0);
-    m_font_bold = nvgCreateFontMem(ctx, "sans-bold", roboto_bold_ttf,
+    m_font_bold = nvgCreateFontMem(ctx, "sans-bold", (uint8_t *) roboto_bold_ttf,
                                    roboto_bold_ttf_size, 0);
-    m_font_icons = nvgCreateFontMem(ctx, "icons", entypo_ttf,
+    m_font_icons = nvgCreateFontMem(ctx, "icons", (uint8_t *) entypo_ttf,
                                     entypo_ttf_size, 0);
 
     if (m_font_normal == -1 || m_font_bold == -1 || m_font_icons == -1)

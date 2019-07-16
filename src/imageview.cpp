@@ -16,95 +16,29 @@
 #include <nanogui/screen.h>
 #include <nanogui/opengl.h>
 #include <enoki/transform.h>
+#include <nanogui_resources.h>
 
 NAMESPACE_BEGIN(nanogui)
+
+#define NANOGUI_RESOURCE_STRING(name) std::string(name, name + name##_size)
+
+#if defined(NANOGUI_USE_OPENGL)
+#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_gl)
+#elif defined(NANOGUI_USE_GLES)
+#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_gles)
+#elif defined(NANOGUI_USE_METAL)
+#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_metallib)
+#endif
 
 ImageView::ImageView(Widget *parent) : Canvas(parent, 1, false, false, false) {
     render_pass()->set_clear_color(0, Color(0.3f, 0.3f, 0.32f, 1.f));
 
     m_image_shader = new Shader(
         render_pass(),
-
         /* An identifying name */
         "a_simple_shader",
-
-#if defined(NANOGUI_USE_OPENGL)
-        /* Vertex shader */
-        R"(#version 330
-        uniform mat4 matrix_image;
-        uniform mat4 matrix_background;
-        in vec2 position;
-        out vec2 position_background;
-        out vec2 uv;
-        void main() {
-            vec4 p = vec4(position, 0.0, 1.0);
-            gl_Position = matrix_image * p;
-            position_background = (matrix_background * p).xy;
-            uv = position;
-        })",
-
-        /* Fragment shader */
-        R"(#version 330
-        in vec2 uv;
-        in vec2 position_background;
-        out vec4 frag_color;
-        uniform sampler2D image;
-        uniform vec4 background_color;
-        void main() {
-            vec2 frac = position_background - floor(position_background);
-            float checkerboard = ((frac.x > .5) == (frac.y > .5)) ? 0.4 : 0.5;
-
-            vec4 background = (1.0 - background_color.a) * vec4(vec3(checkerboard), 1.0) +
-                                      background_color.a * vec4(background_color.rgb, 1.0);
-
-            vec4 value = texture(image, uv);
-            frag_color = (1.0 - value.a) * background + value.a * vec4(value.rgb, 1.0);
-        })",
-#elif defined(NANOGUI_USE_METAL)
-        /* Vertex shader */
-        R"(using namespace metal;
-
-        struct VertexOut {
-            float4 position_image [[position]];
-            float2 position_background;
-            float2 uv;
-        };
-
-        vertex VertexOut vertex_main(const device float2 *position,
-                                     constant float4x4 &matrix_image,
-                                     constant float4x4 &matrix_background,
-                                     uint id [[vertex_id]]) {
-            float4 p = float4(position[id], 0.f, 1.f);
-            VertexOut vert;
-            vert.position_image = matrix_image * p;
-            vert.position_background = (matrix_background * p).xy;
-            vert.uv = p.xy;
-            return vert;
-        })",
-
-        /* Fragment shader */
-        R"(using namespace metal;
-
-        struct VertexOut {
-            float4 position_image [[position]];
-            float2 position_background;
-            float2 uv;
-        };
-
-        fragment float4 fragment_main(VertexOut vert [[stage_in]],
-                                      texture2d<float, access::sample> image,
-                                      constant float4 &background_color,
-                                      sampler image_sampler) {
-            float2 frac = vert.position_background - floor(vert.position_background);
-            float checkerboard = ((frac.x > .5f) == (frac.y > .5f)) ? .4f : .5f;
-
-            float4 background = (1.f - background_color.a) * float4(float3(checkerboard), 1.f) +
-                                        background_color.a * float4(background_color.rgb, 1.f);
-
-            float4 value = image.sample(image_sampler, vert.uv);
-            return (1.f - value.a) * background + value.a * float4(value.rgb, 1.f);
-        })",
-#endif
+        NANOGUI_SHADER(imageview_vertex),
+        NANOGUI_SHADER(imageview_fragment),
         Shader::BlendMode::AlphaBlend
     );
 
@@ -221,8 +155,8 @@ void ImageView::draw(NVGcontext *ctx) {
         nvgFontFace(ctx, "sans-bold");
         nvgTextAlign(ctx, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
 
-        Vector2i start = Vector2i(pos_to_pixel(Vector2f(0.f, 0.f))) - 1,
-                 end   = Vector2i(pos_to_pixel(Vector2f(m_size))) + 1;
+        Vector2i start = max(0, Vector2i(pos_to_pixel(Vector2f(0.f, 0.f))) - 1),
+                 end   = min(Vector2i(pos_to_pixel(Vector2f(m_size))) + 1, m_image->size() - 1);
 
         char text_buf[80],
             *text[4] = { text_buf, text_buf + 20, text_buf + 40, text_buf + 60 };

@@ -86,6 +86,7 @@ mark_as_advanced(ENOKI_PYBIND11_DIR NANOGUI_PYBIND11_DIR NANOGUI_ENOKI_DIR)
 set(NANOGUI_EXTRA_LIBS "")
 set(NANOGUI_EXTRA_DEFS "")
 set(NANOGUI_EXTRA_INCS "")
+set(NANOGUI_EXTRA_GLOB "")
 
 # Platform-dependent files for libnanogui
 set(LIBNANOGUI_EXTRA_SOURCE "")
@@ -146,16 +147,19 @@ endif()
 
 if (NANOGUI_BACKEND STREQUAL "OpenGL")
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_OPENGL)
+  list(APPEND NANOGUI_EXTRA_GLOB "resources/*.gl")
   message(STATUS "NanoGUI: using OpenGL backend.")
 endif()
 
 if (NANOGUI_BACKEND STREQUAL "GLES 2")
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_GLES -DNANOGUI_GLES_VERSION=2)
+  list(APPEND NANOGUI_EXTRA_GLOB "resources/*.gles")
   message(STATUS "NanoGUI: using GLES 2 backend.")
 endif()
 
 if (NANOGUI_BACKEND STREQUAL "GLES 3")
   list(APPEND NANOGUI_EXTRA_DEFS -DNANOGUI_USE_GLES -DNANOGUI_GLES_VERSION=3)
+  list(APPEND NANOGUI_EXTRA_GLOB "resources/*.gles")
   message(STATUS "NanoGUI: using GLES 3 backend.")
 endif()
 
@@ -165,7 +169,7 @@ if (NANOGUI_BACKEND STREQUAL "Metal")
     ext/nanovg_metal/src/nanovg_mtl.m ext/nanovg_metal/src/nanovg_mtl.h
     src/texture_metal.mm src/shader_metal.mm src/renderpass_metal.mm
   )
-
+  list(APPEND NANOGUI_EXTRA_GLOB "resources/*.metal")
   include_directories(ext/nanovg_metal/src)
   message(STATUS "NanoGUI: using Metal backend.")
 endif()
@@ -401,11 +405,33 @@ endif()
 # Run simple cmake converter to put font files into the data segment
 
 # Glob up resource files
-file(GLOB resources "${CMAKE_CURRENT_SOURCE_DIR}/resources/*.ttf")
+file(GLOB resources
+  "${CMAKE_CURRENT_SOURCE_DIR}/resources/*.ttf"
+  ${NANOGUI_EXTRA_GLOB}
+)
+
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/resources")
+
+# Precompile .metal shaders to .metallib files
+foreach(fname_in IN LISTS resources)
+  if (NANOGUI_BACKEND STREQUAL "Metal" AND fname_in MATCHES "\\.metal")
+    get_filename_component(fname_out ${fname_in} NAME)
+    set(fname_out "${CMAKE_CURRENT_BINARY_DIR}/resources/${fname_out}lib")
+    add_custom_command(
+        OUTPUT ${fname_out}
+        DEPENDS ${fname_in}
+        COMMAND xcrun -sdk macosx metal -O3 "${fname_in}" -o "${fname_out}"
+        VERBATIM
+    )
+  else()
+    set(fname_out "${fname_in}")
+  endif()
+  list(APPEND resources_processed ${fname_out})
+endforeach()
 
 # Concatenate resource files into a comma separated string
-string (REGEX REPLACE "([^\\]|^);" "\\1," resources_string "${resources}")
-string (REGEX REPLACE "[\\](.)" "\\1" resources_string "${resources_string}")
+string(REGEX REPLACE "([^\\]|^);" "\\1," resources_string "${resources_processed}")
+string(REGEX REPLACE "[\\](.)" "\\1" resources_string "${resources_string}")
 
 # Create command line for running bin2c cmake script
 set(bin2c_cmdline
@@ -414,11 +440,12 @@ set(bin2c_cmdline
   "-DINPUT_FILES=${resources_string}"
   -P "${CMAKE_CURRENT_SOURCE_DIR}/resources/bin2c.cmake")
 
+
 # Run bin2c on resource files
 add_custom_command(
   OUTPUT nanogui_resources.cpp nanogui_resources.h
   COMMAND ${CMAKE_COMMAND} ARGS ${bin2c_cmdline}
-  DEPENDS ${resources}
+  DEPENDS ${resources} ${resources_processed}
   COMMENT "Running bin2c"
   PRE_BUILD VERBATIM)
 

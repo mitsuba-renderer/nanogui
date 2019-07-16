@@ -1,0 +1,18 @@
+#version 330
+
+in vec2 uv;
+in vec2 position_background;
+out vec4 frag_color;
+uniform sampler2D image;
+uniform vec4 background_color;
+
+void main() {
+    vec2 frac = position_background - floor(position_background);
+    float checkerboard = ((frac.x > .5) == (frac.y > .5)) ? 0.4 : 0.5;
+
+    vec4 background = (1.0 - background_color.a) * vec4(vec3(checkerboard), 1.0) +
+                              background_color.a * vec4(background_color.rgb, 1.0);
+
+    vec4 value = texture(image, uv);
+    frag_color = (1.0 - value.a) * background + value.a * vec4(value.rgb, 1.0);
+}

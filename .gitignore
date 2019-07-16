@@ -31,6 +31,7 @@ libnanogui.so
 libnanogui.a
 libnanogui.bc
 libnanogui.dylib
+*.metallib
 .vscode/
 # html documentation specific
 *.pyc

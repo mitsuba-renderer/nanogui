@@ -44,6 +44,7 @@ using namespace nanogui;
 class ExampleApplication : public Screen {
 public:
     ExampleApplication() : Screen(Vector2i(1024, 768), "NanoGUI Test") {
+        inc_ref();
         Window *window = new Window(this, "Button demo");
         window->set_position(Vector2i(15, 15));
         window->set_layout(new GroupLayout());
@@ -568,6 +569,7 @@ int main(int /* argc */, char ** /* argv */) {
 
         /* scoped variables */ {
             ref<ExampleApplication> app = new ExampleApplication();
+            app->dec_ref();
             app->draw_all();
             app->set_visible(true);
             nanogui::mainloop(1 / 60.f * 1000);
