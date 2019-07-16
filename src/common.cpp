@@ -134,7 +134,7 @@ void mainloop(float refresh) {
     std::chrono::microseconds quantum;
     size_t quantum_count = 1;
     if (refresh >= 0) {
-        quantum = std::chrono::microseconds(ssize_t(refresh * 1'000));
+        quantum = std::chrono::microseconds(enoki::ssize_t(refresh * 1'000));
         while (quantum.count() > 50'000) {
             quantum /= 2;
             quantum_count *= 2;

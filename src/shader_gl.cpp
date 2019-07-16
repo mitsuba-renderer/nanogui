@@ -220,13 +220,13 @@ Shader::Shader(RenderPass *render_pass,
     };
 
     for (int i = 0; i < attribute_count; ++i) {
-        char name[128];
+        char attr_name[128];
         GLenum type = 0;
         GLint size = 0;
-        CHK(glGetActiveAttrib(m_shader_handle, i, sizeof(name), nullptr,
-                              &size, &type, name));
-        GLint index = glGetAttribLocation(m_shader_handle, name);
-        register_buffer(VertexBuffer, name, index, type);
+        CHK(glGetActiveAttrib(m_shader_handle, i, sizeof(attr_name), nullptr,
+                              &size, &type, attr_name));
+        GLint index = glGetAttribLocation(m_shader_handle, attr_name);
+        register_buffer(VertexBuffer, attr_name, index, type);
     }
 
     for (int i = 0; i < uniform_count; ++i) {

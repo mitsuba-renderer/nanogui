@@ -64,7 +64,7 @@ int TabWidgetBase::append_tab(const std::string &caption) {
 int TabWidgetBase::tab_index(int id) const {
     for (size_t i = 0; i<m_tab_ids.size(); ++i) {
         if (m_tab_ids[i] == id)
-            return i;
+            return (int) i;
     }
     throw std::runtime_error("TabWidgetBase::tab_index(): not found!");
 }
@@ -174,7 +174,7 @@ void TabWidgetBase::draw(NVGcontext* ctx) {
             nvgText(ctx, x_pos, y_pos + 1, utf8(icon).data(), nullptr);
         }
     }
-    if (m_tab_drag_index != -1 & m_tab_drag_start != m_tab_drag_end) {
+    if (m_tab_drag_index != -1 && m_tab_drag_start != m_tab_drag_end) {
         int x_pos = m_pos.x() + m_tab_drag_min + m_tab_drag_end - m_tab_drag_start;
         nvgBeginPath(ctx);
         nvgRoundedRect(ctx, x_pos + 0.5f, m_pos.y() + 1.5f, m_tab_drag_max - m_tab_drag_min,
@@ -218,7 +218,7 @@ std::pair<int, bool> TabWidgetBase::tab_at_position(const Vector2i &p, bool test
         if (x >= m_tab_offsets[i] && x < m_tab_offsets[i + 1]) {
             int r = m_tab_offsets[i + 1] - x;
             return {
-                i, m_tabs_closeable &&
+                (int) i, m_tabs_closeable &&
                    r < m_theme->m_tab_button_horizontal_padding + m_close_width - 4 &&
                    r > m_theme->m_tab_button_horizontal_padding - 4 &&
                    p.y() - m_pos.y() > m_theme->m_tab_button_vertical_padding &&

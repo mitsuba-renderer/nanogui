@@ -224,4 +224,17 @@ extern NANOGUI_EXPORT size_t enoki_type_size(enoki::EnokiType type);
 /// Return the name (e.g. "uint8") associated with a specific Enoki type
 extern NANOGUI_EXPORT const char *enoki_type_name(enoki::EnokiType type);
 
+/// Access binary data stored in nanogui_resources.cpp
+#define NANOGUI_RESOURCE_STRING(name) std::string(name, name + name##_size)
+
+/// Access a shader stored in nanogui_resources.cpp
+#if defined(NANOGUI_USE_OPENGL)
+#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_gl)
+#elif defined(NANOGUI_USE_GLES)
+#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_gles)
+#elif defined(NANOGUI_USE_METAL)
+#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_metallib)
+#endif
+
+
 NAMESPACE_END(nanogui)

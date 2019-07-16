@@ -20,16 +20,6 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-#define NANOGUI_RESOURCE_STRING(name) std::string(name, name + name##_size)
-
-#if defined(NANOGUI_USE_OPENGL)
-#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_gl)
-#elif defined(NANOGUI_USE_GLES)
-#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_gles)
-#elif defined(NANOGUI_USE_METAL)
-#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_metallib)
-#endif
-
 ImageView::ImageView(Widget *parent) : Canvas(parent, 1, false, false, false) {
     render_pass()->set_clear_color(0, Color(0.3f, 0.3f, 0.32f, 1.f));
 
@@ -65,6 +55,8 @@ void ImageView::set_image(Texture *image) {
 }
 
 void ImageView::center() {
+    if (!m_image)
+        return;
     m_offset = .5f * (m_size * screen()->pixel_ratio() - m_image->size() * scale());
 }
 

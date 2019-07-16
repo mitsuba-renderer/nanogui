@@ -494,6 +494,7 @@ extern NANOGUI_EXPORT std::vector<std::pair<int, std::string>>
 /// Convenience function for instanting a PNG icon from the application's data segment (via bin2c)
 #define nvgImageIcon(ctx, name) nanogui::__nanogui_get_image(ctx, #name, name##_png, name##_png_size)
 /// Helper function used by nvg_image_icon
-extern NANOGUI_EXPORT int __nanogui_get_image(NVGcontext *ctx, const std::string &name, uint8_t *data, uint32_t size);
+extern NANOGUI_EXPORT int __nanogui_get_image(NVGcontext *ctx, const std::string &name,
+                                              uint8_t *data, uint32_t size);
 
 NAMESPACE_END(nanogui)

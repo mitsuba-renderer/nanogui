@@ -48,7 +48,7 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         else if (i == 1)
             attachment_id = GL_STENCIL_ATTACHMENT;
         else
-            attachment_id = GL_COLOR_ATTACHMENT0 + i - 2;
+            attachment_id = (GLenum) (GL_COLOR_ATTACHMENT0 + i - 2);
 
         Screen *screen = dynamic_cast<Screen *>(m_targets[i].get());
         Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
@@ -173,7 +173,7 @@ void RenderPass::begin() {
             }
 
             if (i >= 2)
-                CHK(glClearBufferfv(GL_COLOR, i - 2, m_clear_color[i - 2].data()));
+                CHK(glClearBufferfv(GL_COLOR, (GLint) i - 2, m_clear_color[i - 2].data()));
         }
 #else
         GLenum what = 0;

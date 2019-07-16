@@ -107,7 +107,7 @@ public:
     void set_clear_depth(float depth);
 
     /// Return the clear stencil for the stencil attachment
-    uint8_t clear_stencil() const { return m_clear_depth; }
+    uint8_t clear_stencil() const { return m_clear_stencil; }
 
     /// Set the clear stencil for the stencil attachment
     void set_clear_stencil(uint8_t stencil);
