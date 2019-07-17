@@ -18,7 +18,7 @@ NAMESPACE_BEGIN(nanogui)
 
 VScrollPanel::VScrollPanel(Widget *parent)
     : Widget(parent), m_child_preferred_height(0),
-      m_scroll(0.0f), m_update_layout(false) { }
+      m_scroll(0.f), m_update_layout(false) { }
 
 void VScrollPanel::perform_layout(NVGcontext *ctx) {
     Widget::perform_layout(ctx);
@@ -32,8 +32,8 @@ void VScrollPanel::perform_layout(NVGcontext *ctx) {
     m_child_preferred_height = child->preferred_size(ctx).y();
 
     if (m_child_preferred_height > m_size.y()) {
-        child->set_position(Vector2i(0, -m_scroll*(m_child_preferred_height - m_size.y())));
-        child->set_size(Vector2i(m_size.x()-12, m_child_preferred_height));
+        child->set_position(Vector2i(0, -m_scroll * (m_child_preferred_height - m_size.y())));
+        child->set_size(Vector2i(m_size.x() - 12, m_child_preferred_height));
     } else {
         child->set_position(Vector2i(0));
         child->set_size(m_size);
@@ -52,10 +52,10 @@ bool VScrollPanel::mouse_drag_event(const Vector2i &p, const Vector2i &rel,
                                     int button, int modifiers) {
     if (!m_children.empty() && m_child_preferred_height > m_size.y()) {
         float scrollh = height() *
-            std::min(1.0f, height() / (float)m_child_preferred_height);
+            std::min(1.f, height() / (float) m_child_preferred_height);
 
-        m_scroll = std::max((float) 0.0f, std::min((float) 1.0f,
-                     m_scroll + rel.y() / (float)(m_size.y() - 8 - scrollh)));
+        m_scroll = std::max(0.f, std::min(1.f,
+                     m_scroll + rel.y() / (m_size.y() - 8.f - scrollh)));
         m_update_layout = true;
         return true;
     } else {
@@ -63,15 +63,44 @@ bool VScrollPanel::mouse_drag_event(const Vector2i &p, const Vector2i &rel,
     }
 }
 
+bool VScrollPanel::mouse_button_event(const Vector2i &p, int button, bool down,
+                                      int modifiers) {
+    if (Widget::mouse_button_event(p, button, down, modifiers))
+        return true;
+
+    if (down && button == GLFW_MOUSE_BUTTON_1 && !m_children.empty() &&
+        m_child_preferred_height > m_size.y() && 
+        p.x() > m_pos.x() + m_size.x() - 13 &&
+        p.x() < m_pos.x() + m_size.x() - 4) {
+
+        int scrollh = (int) (height() *
+            std::min(1.f, height() / (float) m_child_preferred_height));
+        int start = (int) (m_pos.y() + 4 + 1 + (m_size.y() - 8 - scrollh) * m_scroll);
+
+        float delta = 0.f;
+
+        if (p.y() < start)
+            delta = -m_size.y() / (float) m_child_preferred_height;
+        else if (p.y() > start + scrollh)
+            delta = m_size.y() / (float) m_child_preferred_height;
+
+        m_scroll = std::max(0.f, std::min(1.f, m_scroll + delta*0.98f));
+
+        m_children[0]->set_position(
+            Vector2i(0, -m_scroll * (m_child_preferred_height - m_size.y())));
+        m_update_layout = true;
+        return true;
+    }
+    return false;
+}
+
 bool VScrollPanel::scroll_event(const Vector2i &p, const Vector2f &rel) {
     if (!m_children.empty() && m_child_preferred_height > m_size.y()) {
         auto child = m_children[0];
-        float scroll_amount = rel.y() * (m_size.y() / 20.0f);
-        float scrollh = height() *
-            std::min(1.0f, height() / (float) m_child_preferred_height);
+        float scroll_amount = rel.y() * m_size.y() * .5f;
 
-        m_scroll = std::max((float) 0.0f, std::min((float) 1.0f,
-                m_scroll - scroll_amount / (float)(m_size.y() - 8 - scrollh)));
+        m_scroll = std::max(0.f, std::min(1.f,
+                m_scroll - scroll_amount / m_child_preferred_height));
 
         Vector2i old_pos = child->position();
         child->set_position(Vector2i(0, -m_scroll*(m_child_preferred_height - m_size.y())));
@@ -92,7 +121,7 @@ void VScrollPanel::draw(NVGcontext *ctx) {
     child->set_position(Vector2i(0, -m_scroll*(m_child_preferred_height - m_size.y())));
     m_child_preferred_height = child->preferred_size(ctx).y();
     float scrollh = height() *
-        std::min(1.0f, height() / (float) m_child_preferred_height);
+        std::min(1.f, height() / (float) m_child_preferred_height);
 
     if (m_update_layout) {
         m_update_layout = false;
