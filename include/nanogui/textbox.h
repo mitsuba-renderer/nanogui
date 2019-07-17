@@ -141,8 +141,7 @@ protected:
  * Template parameters should be integral types, e.g. ``int``, ``long``,
  * ``uint32_t``, etc.
  */
-template <typename Scalar>
-class IntBox : public TextBox {
+template <typename Scalar> class IntBox : public TextBox {
 public:
     IntBox(Widget *parent, Scalar value = (Scalar) 0) : TextBox(parent) {
         set_default_value("0");
@@ -181,18 +180,22 @@ public:
     void set_value_increment(Scalar incr) {
         m_value_increment = incr;
     }
+
     void set_min_value(Scalar min_value) {
         m_min_value = min_value;
     }
+
     void set_max_value(Scalar max_value) {
         m_max_value = max_value;
     }
+
     void set_min_max_values(Scalar min_value, Scalar max_value) {
         set_min_value(min_value);
         set_max_value(max_value);
     }
 
-    virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override {
+    virtual bool mouse_button_event(const Vector2i &p, int button, bool down,
+                                    int modifiers) override {
         if ((m_editable || m_spinnable) && down)
             m_mouse_down_value = value();
 
@@ -212,23 +215,27 @@ public:
 
         return TextBox::mouse_button_event(p, button, down, modifiers);
     }
-    virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override {
-        if (TextBox::mouse_drag_event(p, rel, button, modifiers)) {
+
+    virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button,
+                                  int modifiers) override {
+        if (TextBox::mouse_drag_event(p, rel, button, modifiers))
             return true;
-        }
-        if (m_spinnable && !focused() && button == 2 /* 1 << GLFW_MOUSE_BUTTON_2 */ && m_mouse_down_pos.x() != -1) {
-                int value_delta = static_cast<int>((p.x() - m_mouse_down_pos.x()) / float(10));
-                set_value(m_mouse_down_value + value_delta * m_value_increment);
-                if (m_callback)
-                    m_callback(m_value);
-                return true;
+
+        if (m_spinnable && !focused() && button == 2 /* 1 << GLFW_MOUSE_BUTTON_2 */ &&
+            m_mouse_down_pos.x() != -1) {
+            int value_delta = static_cast<int>((p.x() - m_mouse_down_pos.x()) / float(10));
+            set_value(m_mouse_down_value + value_delta * m_value_increment);
+            if (m_callback)
+                m_callback(m_value);
+            return true;
         }
         return false;
     }
+
     virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override {
-        if (Widget::scroll_event(p, rel)) {
+        if (Widget::scroll_event(p, rel))
             return true;
-        }
+
         if (m_spinnable && !focused()) {
               int value_delta = (rel.y() > 0) ? 1 : -1;
               set_value(value() + value_delta*m_value_increment);
@@ -249,23 +256,24 @@ private:
  *
  * \brief A specialization of TextBox representing floating point values.
 
- * Template parameters should be float types, e.g. ``float``, ``double``,
- * ``float64_t``, etc.
+ *  The emplate parametersshould a be floating point type, e.g. ``float`` or
+ *  ``double``.
  */
-template <typename Scalar>
-class FloatBox : public TextBox {
+template <typename Scalar> class FloatBox : public TextBox {
 public:
     FloatBox(Widget *parent, Scalar value = (Scalar) 0.f) : TextBox(parent) {
         m_number_format = sizeof(Scalar) == sizeof(float) ? "%.4g" : "%.7g";
         set_default_value("0");
         set_format("[-+]?[0-9]*\\.?[0-9]+([e_e][-+]?[0-9]+)?");
         set_value_increment((Scalar) 0.1);
-        set_min_max_values(std::numeric_limits<Scalar>::lowest(), std::numeric_limits<Scalar>::max());
+        set_min_max_values(std::numeric_limits<Scalar>::lowest(),
+                           std::numeric_limits<Scalar>::max());
         set_value(value);
         set_spinnable(false);
     }
 
     std::string number_format() const { return m_number_format; }
+
     void number_format(const std::string &format) { m_number_format = format; }
 
     Scalar value() const {
@@ -291,18 +299,22 @@ public:
     void set_value_increment(Scalar incr) {
         m_value_increment = incr;
     }
+
     void set_min_value(Scalar min_value) {
         m_min_value = min_value;
     }
+
     void set_max_value(Scalar max_value) {
         m_max_value = max_value;
     }
+
     void set_min_max_values(Scalar min_value, Scalar max_value) {
         set_min_value(min_value);
         set_max_value(max_value);
     }
 
-    virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override {
+    virtual bool mouse_button_event(const Vector2i &p, int button, bool down,
+                                    int modifiers) override {
         if ((m_editable || m_spinnable) && down)
             m_mouse_down_value = value();
 
@@ -322,11 +334,14 @@ public:
 
         return TextBox::mouse_button_event(p, button, down, modifiers);
     }
-    virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override {
-        if (TextBox::mouse_drag_event(p, rel, button, modifiers)) {
+
+    virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button,
+                                  int modifiers) override {
+        if (TextBox::mouse_drag_event(p, rel, button, modifiers))
             return true;
-        }
-        if (m_spinnable && !focused() && button == 2 /* 1 << GLFW_MOUSE_BUTTON_2 */ && m_mouse_down_pos.x() != -1) {
+
+        if (m_spinnable && !focused() && button == 2 /* 1 << GLFW_MOUSE_BUTTON_2 */ &&
+            m_mouse_down_pos.x() != -1) {
             int value_delta = static_cast<int>((p.x() - m_mouse_down_pos.x()) / float(10));
             set_value(m_mouse_down_value + value_delta * m_value_increment);
             if (m_callback)
@@ -335,10 +350,11 @@ public:
         }
         return false;
     }
+
     virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override {
-        if (Widget::scroll_event(p, rel)) {
+        if (Widget::scroll_event(p, rel))
             return true;
-        }
+
         if (m_spinnable && !focused()) {
             int value_delta = (rel.y() > 0) ? 1 : -1;
             set_value(value() + value_delta*m_value_increment);

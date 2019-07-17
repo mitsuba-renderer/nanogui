@@ -10,8 +10,8 @@
 /**
  * \file nanogui/texture.h
  *
- * \brief Defines abstractions for textures that work with OpenGL,
- * OpenGL ES, and Metal.
+ * \brief Defines an abstraction for textures that works with
+ * OpenGL, OpenGL ES, and Metal.
  */
 
 #pragma once

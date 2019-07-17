@@ -46,6 +46,7 @@ extern void register_basics(py::module &m);
 extern void register_button(py::module &m);
 extern void register_tabs(py::module &m);
 extern void register_textbox(py::module &m);
+extern void register_textarea(py::module &m);
 extern void register_theme(py::module &m);
 extern void register_canvas(py::module &m);
 extern void register_formhelper(py::module &m);
@@ -254,6 +255,7 @@ PYBIND11_MODULE(nanogui, m) {
     register_button(m);
     register_tabs(m);
     register_textbox(m);
+    register_textarea(m);
     register_theme(m);
     register_canvas(m);
     register_formhelper(m);

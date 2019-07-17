@@ -361,6 +361,7 @@ class Slider;
 class TabWidgetBase;
 class TabWidget;
 class TextBox;
+class TextArea;
 class Texture;
 class Theme;
 class ToolButton;

@@ -420,7 +420,7 @@ foreach(fname_in IN LISTS resources)
     add_custom_command(
         OUTPUT ${fname_out}
         DEPENDS ${fname_in}
-        COMMAND xcrun -sdk macosx metal -O3 "${fname_in}" -o "${fname_out}"
+        COMMAND xcrun -sdk macosx metal -std=osx-metal2.0 -O3 "${fname_in}" -o "${fname_out}"
         VERBATIM
     )
   else()
@@ -491,6 +491,7 @@ add_library(nanogui-obj OBJECT
   include/nanogui/slider.h src/slider.cpp
   include/nanogui/messagedialog.h src/messagedialog.cpp
   include/nanogui/textbox.h src/textbox.cpp
+  include/nanogui/textarea.h src/textarea.cpp
   include/nanogui/imagepanel.h src/imagepanel.cpp
   include/nanogui/vscrollpanel.h src/vscrollpanel.cpp
   include/nanogui/colorwheel.h src/colorwheel.cpp
@@ -636,6 +637,7 @@ if (NANOGUI_BUILD_PYTHON)
     python/button.cpp
     python/tabs.cpp
     python/textbox.cpp
+    python/textarea.cpp
     python/theme.cpp
     python/formhelper.cpp
     python/misc.cpp
