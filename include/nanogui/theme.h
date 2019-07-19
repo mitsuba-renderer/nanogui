@@ -32,11 +32,13 @@ public:
 
     /* Fonts */
     /// The standard font face (default: ``"sans"`` from ``resources/roboto_regular.ttf``).
-    int m_font_normal;
+    int m_font_sans_regular;
     /// The bold font face (default: ``"sans-bold"`` from ``resources/roboto_regular.ttf``).
-    int m_font_bold;
+    int m_font_sans_bold;
     /// The icon font face (default: ``"icons"`` from ``resources/entypo.ttf``).
     int m_font_icons;
+    /// The monospace font face (default: ``"mono"`` from ``resources/inconsolata_regular.ttf``).
+    int m_font_mono_regular;
     /**
      * The amount of scaling that is applied to each icon to fit the size of
      * NanoGUI widgets.  The default value is ``0.77f``, setting to e.g. higher

@@ -69,7 +69,7 @@ bool VScrollPanel::mouse_button_event(const Vector2i &p, int button, bool down,
         return true;
 
     if (down && button == GLFW_MOUSE_BUTTON_1 && !m_children.empty() &&
-        m_child_preferred_height > m_size.y() && 
+        m_child_preferred_height > m_size.y() &&
         p.x() > m_pos.x() + m_size.x() - 13 &&
         p.x() < m_pos.x() + m_size.x() - 4) {
 

@@ -45,6 +45,10 @@ void TextArea::append(const std::string &text) {
             m_max_size = max(m_max_size, m_offset);
         }
     } while (*str++ != 0);
+
+    VScrollPanel *vscroll = dynamic_cast<VScrollPanel *>(m_parent);
+    if (vscroll)
+        vscroll->perform_layout(ctx);
 }
 
 void TextArea::clear() {

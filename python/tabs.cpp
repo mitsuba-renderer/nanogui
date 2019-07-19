@@ -26,6 +26,8 @@ void register_tabs(py::module &m) {
         .def("set_tabs_closeable", &TabWidgetBase::set_tabs_closeable, D(TabWidgetBase, set_tabs_closeable))
         .def("padding", &TabWidgetBase::padding, D(TabWidgetBase, padding))
         .def("set_padding", &TabWidgetBase::set_padding, D(TabWidgetBase, set_padding))
+        .def("set_background_color", &TabWidgetBase::set_background_color, D(TabWidgetBase, set_background_color))
+        .def("background_color", &TabWidgetBase::background_color, D(TabWidgetBase, background_color))
         .def("set_callback", &TabWidgetBase::set_callback, D(TabWidgetBase, set_callback))
         .def("callback", &TabWidgetBase::callback, D(TabWidgetBase, callback))
         .def("close_callback", &TabWidgetBase::close_callback, D(TabWidgetBase, close_callback))

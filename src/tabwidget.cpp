@@ -22,7 +22,7 @@
 NAMESPACE_BEGIN(nanogui)
 
 TabWidgetBase::TabWidgetBase(Widget *parent, const std::string &font)
-    : Widget(parent), m_font(font) {
+    : Widget(parent), m_font(font), m_background_color(Color(0.f, 0.f)) {
     m_tab_offsets.push_back(0);
 }
 
@@ -113,14 +113,22 @@ Vector2i TabWidgetBase::preferred_size(NVGcontext* ctx) const {
 }
 
 void TabWidgetBase::draw(NVGcontext* ctx) {
-    Widget::draw(ctx);
-
     if (m_tab_offsets.size() != m_tab_captions.size() + 1)
-        throw std::runtime_error("Must run TabWidget2::perform_layout() after adding/removing tabs!");
+        throw std::runtime_error("Must run TabWidget::perform_layout() after adding/removing tabs!");
 
     int tab_height = font_size() + 2 * m_theme->m_tab_button_vertical_padding;
 
-    NVGpaint background_color = nvgLinearGradient(
+    if (m_background_color.w() != 0.f) {
+        nvgFillColor(ctx, m_background_color);
+        nvgBeginPath(ctx);
+        nvgRoundedRect(ctx, m_pos.x() + .5f, m_pos.y() + .5f + tab_height, m_size.x(),
+                       m_size.y() - tab_height - 2, m_theme->m_button_corner_radius);
+        nvgFill(ctx);
+    }
+
+    Widget::draw(ctx);
+
+    NVGpaint tab_background_color = nvgLinearGradient(
         ctx, m_pos.x(), m_pos.y() + 1, m_pos.x(), m_pos.y() + tab_height,
         m_theme->m_button_gradient_top_pushed, m_theme->m_button_gradient_bot_pushed);
 
@@ -150,7 +158,7 @@ void TabWidgetBase::draw(NVGcontext* ctx) {
             nvgRoundedRect(ctx, x_pos + 0.5f, y_pos + 1.5f, width,
                            tab_height + 4, m_theme->m_button_corner_radius);
 
-            nvgFillPaint(ctx, background_color);
+            nvgFillPaint(ctx, tab_background_color);
             nvgFill(ctx);
 
             nvgStrokeColor(ctx, m_theme->m_border_dark);
@@ -201,7 +209,7 @@ void TabWidgetBase::draw(NVGcontext* ctx) {
         nvgSave(ctx);
         nvgIntersectScissor(ctx, m_pos.x(), m_pos.y() + tab_height, m_size.x(), m_size.y());
         nvgBeginPath(ctx);
-        nvgRoundedRect(ctx, m_pos.x() + .5f, m_pos.y() + i + 0.5f, m_size.x() - 1,
+        nvgRoundedRect(ctx, m_pos.x() + .5f, m_pos.y() + i + .5f, m_size.x() - 1,
                        m_size.y() - 2, m_theme->m_button_corner_radius);
         nvgStroke(ctx);
         nvgRestore(ctx);

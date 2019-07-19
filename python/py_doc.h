@@ -2218,6 +2218,8 @@ static const char *__doc_nanogui_TabWidgetBase_TabWidgetBase = R"doc(Construct a
 
 static const char *__doc_nanogui_TabWidgetBase_append_tab = R"doc(Appends a new tab and returns its ID.)doc";
 
+static const char *__doc_nanogui_TabWidgetBase_background_color = R"doc(Return the widget's background color (a global property))doc";
+
 static const char *__doc_nanogui_TabWidgetBase_callback =
 R"doc(Callback that is used to notify a listener about tab changes (will be
 called with the tab ID))doc";
@@ -2231,6 +2233,8 @@ static const char *__doc_nanogui_TabWidgetBase_draw = R"doc()doc";
 static const char *__doc_nanogui_TabWidgetBase_insert_tab = R"doc(Inserts a new tab at the specified position and returns its ID.)doc";
 
 static const char *__doc_nanogui_TabWidgetBase_m_active_tab = R"doc()doc";
+
+static const char *__doc_nanogui_TabWidgetBase_m_background_color = R"doc()doc";
 
 static const char *__doc_nanogui_TabWidgetBase_m_callback = R"doc()doc";
 
@@ -2293,6 +2297,8 @@ static const char *__doc_nanogui_TabWidgetBase_remove_tab = R"doc(Removes a tab 
 static const char *__doc_nanogui_TabWidgetBase_selected_id = R"doc(Return the ID of the currently active tab)doc";
 
 static const char *__doc_nanogui_TabWidgetBase_selected_index = R"doc(Return the index of the currently active tab)doc";
+
+static const char *__doc_nanogui_TabWidgetBase_set_background_color = R"doc(Set the widget's background color (a global property))doc";
 
 static const char *__doc_nanogui_TabWidgetBase_set_callback =
 R"doc(Set a callback that is used to notify a listener about tab changes
@@ -2741,15 +2747,19 @@ static const char *__doc_nanogui_Theme_m_drop_shadow =
 R"doc(The color of the drop shadow drawn behind widgets (default:
 intensity=``0``, alpha=``128``; see nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_font_bold =
-R"doc(The bold font face (default: ``"sans-bold"`` from
-``resources/roboto_regular.ttf``).)doc";
-
 static const char *__doc_nanogui_Theme_m_font_icons =
 R"doc(The icon font face (default: ``"icons"`` from
 ``resources/entypo.ttf``).)doc";
 
-static const char *__doc_nanogui_Theme_m_font_normal =
+static const char *__doc_nanogui_Theme_m_font_mono_regular =
+R"doc(The monospace font face (default: ``"mono"`` from
+``resources/inconsolata_regular.ttf``).)doc";
+
+static const char *__doc_nanogui_Theme_m_font_sans_bold =
+R"doc(The bold font face (default: ``"sans-bold"`` from
+``resources/roboto_regular.ttf``).)doc";
+
+static const char *__doc_nanogui_Theme_m_font_sans_regular =
 R"doc(The standard font face (default: ``"sans"`` from
 ``resources/roboto_regular.ttf``).)doc";
 
@@ -3244,10 +3254,7 @@ R"doc(Enqueue a function to be executed executed before the application is
 redrawn the next time.
 
 NanoGUI is not thread-safe, and async() provides a mechanism for
-queuing up UI-related state changes from other threads.
-
-Parameter ``redraw``:
-    Generate an event that will request the application to be redrawn?)doc";
+queuing up UI-related state changes from other threads.)doc";
 
 static const char *__doc_nanogui_chdir_to_bundle_parent =
 R"doc(Move to the application bundle's parent directory

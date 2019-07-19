@@ -76,6 +76,16 @@ public:
     int padding() const { return m_padding; }
     void set_padding(int value) { m_padding = value; }
 
+    /// Set the widget's background color (a global property)
+    void set_background_color(const Color &background_color) {
+        m_background_color = background_color;
+    }
+
+    /// Return the widget's background color (a global property)
+    const Color &background_color() const {
+        return m_background_color;
+    }
+
     /// Callback that is used to notify a listener about tab changes (will be called with the tab ID)
     std::function<void(int)> callback() const { return m_callback; }
     /// Set a callback that is used to notify a listener about tab changes (will be called with the tab ID)
@@ -125,6 +135,7 @@ protected:
     std::function<void(int)> m_callback;
     std::function<void(int)> m_close_callback;
     std::function<Popup*(int, Screen*)> m_popup_callback;
+    Color m_background_color;
 };
 
 /**

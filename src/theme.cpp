@@ -80,14 +80,17 @@ Theme::Theme(NVGcontext *ctx) {
     m_text_box_up_icon                  = ENTYPO_ICON_CHEVRON_UP;
     m_text_box_down_icon                = ENTYPO_ICON_CHEVRON_DOWN;
 
-    m_font_normal = nvgCreateFontMem(ctx, "sans", (uint8_t *) roboto_regular_ttf,
-                                     roboto_regular_ttf_size, 0);
-    m_font_bold = nvgCreateFontMem(ctx, "sans-bold", (uint8_t *) roboto_bold_ttf,
-                                   roboto_bold_ttf_size, 0);
+    m_font_sans_regular = nvgCreateFontMem(ctx, "sans", (uint8_t *) roboto_regular_ttf,
+                                           roboto_regular_ttf_size, 0);
+    m_font_sans_bold = nvgCreateFontMem(ctx, "sans-bold", (uint8_t *) roboto_bold_ttf,
+                                        roboto_bold_ttf_size, 0);
     m_font_icons = nvgCreateFontMem(ctx, "icons", (uint8_t *) entypo_ttf,
                                     entypo_ttf_size, 0);
+    m_font_mono_regular = nvgCreateFontMem(ctx, "mono", (uint8_t *) inconsolata_regular_ttf,
+                                           inconsolata_regular_ttf_size, 0);
 
-    if (m_font_normal == -1 || m_font_bold == -1 || m_font_icons == -1)
+    if (m_font_sans_regular == -1 || m_font_sans_bold == -1 ||
+        m_font_icons == -1 || m_font_mono_regular == -1)
         throw std::runtime_error("Could not load fonts!");
 }
 
