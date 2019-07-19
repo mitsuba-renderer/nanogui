@@ -26,7 +26,7 @@
 #if !defined(_WIN32)
 #  include <locale.h>
 #  include <signal.h>
-#  include <sys/dir.h>
+#  include <dirent.h>
 #endif
 
 #if defined(EMSCRIPTEN)
