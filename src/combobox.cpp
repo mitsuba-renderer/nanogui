@@ -48,7 +48,7 @@ void ComboBox::set_items(const std::vector<std::string> &items, const std::vecto
     if (m_selected_index < 0 || m_selected_index >= (int) items.size())
         m_selected_index = 0;
     while (m_container->child_count() != 0)
-        m_container->remove_child(m_container->child_count()-1);
+        m_container->remove_child_at(m_container->child_count()-1);
 
     if (m_scroll == nullptr && items.size() > 8) {
         m_scroll = new VScrollPanel(m_popup);

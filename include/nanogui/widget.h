@@ -141,7 +141,7 @@ public:
     void add_child(Widget *widget);
 
     /// Remove a child widget by index
-    void remove_child(int index);
+    void remove_child_at(int index);
 
     /// Remove a child widget by value
     void remove_child(const Widget *widget);

@@ -185,9 +185,9 @@ void Widget::remove_child(const Widget *widget) {
     widget->dec_ref();
 }
 
-void Widget::remove_child(int index) {
+void Widget::remove_child_at(int index) {
     if (index < 0 || index >= (int) m_children.size())
-        throw std::runtime_error("Widget::remove_child(): out of bounds!");
+        throw std::runtime_error("Widget::remove_child_at(): out of bounds!");
     Widget *widget = m_children[index];
     m_children.erase(m_children.begin() + index);
     widget->dec_ref();

@@ -31,7 +31,7 @@ public:
     Object(const Object &) : m_ref_count(0) {}
 
     /// Return the current reference count
-    int get_ref_count() const { return m_ref_count; };
+    int ref_count() const { return m_ref_count; };
 
     /// Increase the object's reference count by one
     void inc_ref() const;
