@@ -76,6 +76,9 @@ static double emscripten_last = 0;
 static float emscripten_refresh = 0;
 #endif
 
+std::mutex m_async_mutex;
+std::vector<std::function<void()>> m_async_functions;
+
 void mainloop(float refresh) {
     if (mainloop_active)
         throw std::runtime_error("Main loop is already running!");
@@ -91,6 +94,13 @@ void mainloop(float refresh) {
                 emscripten_last = emscripten_now;
             }
         #endif
+
+        /* Run async functions */ {
+            std::lock_guard<std::mutex> guard(m_async_mutex);
+            for (auto &f : m_async_functions)
+                f();
+            m_async_functions.clear();
+        }
 
         for (auto kv : __nanogui_screens) {
             Screen *screen = kv.second;
@@ -178,6 +188,11 @@ void mainloop(float refresh) {
     }
 
     refresh_thread.join();
+}
+
+void async(const std::function<void()> &func) {
+    std::lock_guard<std::mutex> guard(m_async_mutex);
+    m_async_functions.push_back(func);
 }
 
 void leave() {

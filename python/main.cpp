@@ -131,6 +131,7 @@ PYBIND11_MODULE(nanogui, m) {
 
     m.def("init", &nanogui::init, D(init));
     m.def("shutdown", &nanogui::shutdown, D(shutdown));
+
     m.def("mainloop", [](float refresh, py::object detach) -> MainloopHandle* {
         if (!detach.is(py::none())) {
             if (handle)
@@ -218,6 +219,7 @@ PYBIND11_MODULE(nanogui, m) {
     }, "refresh"_a = -1, "detach"_a = py::none(),
        D(mainloop), py::keep_alive<0, 2>());
 
+    m.def("async", &nanogui::async, D(async));
     m.def("leave", &nanogui::leave, D(leave));
     m.def("active", &nanogui::active, D(active));
     m.def("file_dialog", (std::string(*)(const std::vector<std::pair<std::string, std::string>> &, bool)) &nanogui::file_dialog, D(file_dialog));

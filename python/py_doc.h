@@ -3239,6 +3239,16 @@ static const char *__doc_nanogui_Window_title = R"doc(Return the window title)do
 
 static const char *__doc_nanogui_active = R"doc(Return whether or not a main loop is currently active)doc";
 
+static const char *__doc_nanogui_async =
+R"doc(Enqueue a function to be executed executed before the application is
+redrawn the next time.
+
+NanoGUI is not thread-safe, and async() provides a mechanism for
+queuing up UI-related state changes from other threads.
+
+Parameter ``redraw``:
+    Generate an event that will request the application to be redrawn?)doc";
+
 static const char *__doc_nanogui_chdir_to_bundle_parent =
 R"doc(Move to the application bundle's parent directory
 

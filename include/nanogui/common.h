@@ -432,6 +432,15 @@ extern NANOGUI_EXPORT void leave();
 extern NANOGUI_EXPORT bool active();
 
 /**
+ * \brief Enqueue a function to be executed executed before
+ * the application is redrawn the next time.
+ *
+ * NanoGUI is not thread-safe, and async() provides a mechanism
+ * for queuing up UI-related state changes from other threads.
+ */
+extern NANOGUI_EXPORT void async(const std::function<void()> &func);
+
+/**
  * \brief Open a native file open/save dialog.
  *
  * \param filetypes
