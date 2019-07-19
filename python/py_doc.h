@@ -2396,6 +2396,10 @@ static const char *__doc_nanogui_TextArea_m_max_size = R"doc()doc";
 
 static const char *__doc_nanogui_TextArea_m_offset = R"doc()doc";
 
+static const char *__doc_nanogui_TextArea_m_padding = R"doc()doc";
+
+static const char *__doc_nanogui_TextArea_padding = R"doc(Return the amount of padding that is added around the text)doc";
+
 static const char *__doc_nanogui_TextArea_preferred_size = R"doc()doc";
 
 static const char *__doc_nanogui_TextArea_set_background_color = R"doc(Set the widget's background color (a global property))doc";
@@ -2403,6 +2407,8 @@ static const char *__doc_nanogui_TextArea_set_background_color = R"doc(Set the w
 static const char *__doc_nanogui_TextArea_set_font = R"doc(Set the used font)doc";
 
 static const char *__doc_nanogui_TextArea_set_foreground_color = R"doc(Set the foreground color (applies to all subsequently added text))doc";
+
+static const char *__doc_nanogui_TextArea_set_padding = R"doc(Set the amount of padding to add around the text)doc";
 
 static const char *__doc_nanogui_TextBox =
 R"doc(Fancy text box with builtin regular expression-based validation.
@@ -2903,6 +2909,8 @@ static const char *__doc_nanogui_VScrollPanel_m_child_preferred_height = R"doc()
 static const char *__doc_nanogui_VScrollPanel_m_scroll = R"doc()doc";
 
 static const char *__doc_nanogui_VScrollPanel_m_update_layout = R"doc()doc";
+
+static const char *__doc_nanogui_VScrollPanel_mouse_button_event = R"doc()doc";
 
 static const char *__doc_nanogui_VScrollPanel_mouse_drag_event = R"doc()doc";
 

@@ -54,6 +54,12 @@ public:
         return m_background_color;
     }
 
+    /// Set the amount of padding to add around the text
+    void set_padding(int padding) { m_padding = padding; }
+
+    /// Return the amount of padding that is added around the text
+    int padding() const { return m_padding; }
+
     /// Append text at the end of the widget
     void append(const std::string &text);
 
@@ -82,6 +88,7 @@ private:
     Color m_background_color;
     std::string m_font;
     Vector2i m_offset, m_max_size;
+    int m_padding;
 };
 
 NAMESPACE_END(nanogui)

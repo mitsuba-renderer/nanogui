@@ -194,7 +194,7 @@ public:
 
     /// Compute the layout of all widgets
     void perform_layout() {
-        Widget::perform_layout(m_nvg_context);
+        this->perform_layout(m_nvg_context);
     }
 
 public:

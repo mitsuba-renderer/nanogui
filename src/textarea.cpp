@@ -19,7 +19,7 @@ NAMESPACE_BEGIN(nanogui)
 
 TextArea::TextArea(Widget *parent) : Widget(parent),
   m_foreground_color(Color(0, 0)), m_background_color(Color(0, 0)),
-  m_font("sans"), m_offset(0), m_max_size(0) {
+  m_font("sans"), m_offset(0), m_max_size(0), m_padding(0) {
 }
 
 void TextArea::append(const std::string &text) {
@@ -53,7 +53,7 @@ void TextArea::clear() {
 }
 
 Vector2i TextArea::preferred_size(NVGcontext *) const {
-    return m_max_size;
+    return m_max_size + m_padding * 2;
 }
 
 void TextArea::draw(NVGcontext *ctx) {
@@ -69,7 +69,7 @@ void TextArea::draw(NVGcontext *ctx) {
             m_blocks.begin(),
             m_blocks.end(),
             window_offset,
-            [](const Block &block, int value) { return block.offset.y() < value; }
+            [&](const Block &block, int value) { return block.offset.y() + font_size() < value; }
         );
 
         end_it = std::upper_bound(
@@ -78,9 +78,13 @@ void TextArea::draw(NVGcontext *ctx) {
             window_offset + window_size,
             [](int value, const Block &block) { return value < block.offset.y(); }
         );
+    }
 
-        if (start_it > m_blocks.begin())
-            --start_it;
+    if (m_background_color.w() != 0.f) {
+        nvgFillColor(ctx, m_background_color);
+        nvgBeginPath(ctx);
+        nvgRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y());
+        nvgFill(ctx);
     }
 
     nvgFontFace(ctx, m_font.c_str());
@@ -93,8 +97,8 @@ void TextArea::draw(NVGcontext *ctx) {
         if (color == Color(0, 0))
             color = m_theme->m_text_color;
         nvgFillColor(ctx, color);
-        nvgText(ctx, m_pos.x() + block.offset.x(),
-                     m_pos.y() + block.offset.y(),
+        nvgText(ctx, m_pos.x() + block.offset.x() + m_padding,
+                     m_pos.y() + block.offset.y() + m_padding,
                 block.text.c_str(), nullptr);
     }
 }
