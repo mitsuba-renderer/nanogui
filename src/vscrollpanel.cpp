@@ -118,7 +118,10 @@ void VScrollPanel::draw(NVGcontext *ctx) {
     if (m_children.empty())
         return;
     Widget *child = m_children[0];
-    child->set_position(Vector2i(0, -m_scroll*(m_child_preferred_height - m_size.y())));
+    int yoffset = 0;
+    if (m_child_preferred_height > m_size.y())
+        yoffset = -m_scroll*(m_child_preferred_height - m_size.y());
+    child->set_position(Vector2i(0, yoffset));
     m_child_preferred_height = child->preferred_size(ctx).y();
     float scrollh = height() *
         std::min(1.f, height() / (float) m_child_preferred_height);

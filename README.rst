@@ -17,7 +17,7 @@ NanoGUI
 .. begin_brief_description
 
 NanoGUI is a minimalistic cross-platform widget library for OpenGL 3+, GLES 2/3,
-and Metal. It supports automatic layout generation, stateful C++11 lambdas
+and Metal. It supports automatic layout generation, stateful C++ lambdas
 callbacks, a variety of useful widget types and Retina-capable rendering on
 Apple devices thanks to NanoVG_ by Mikko Mononen. Python bindings of all
 functionality are provided using pybind11_.
@@ -77,21 +77,22 @@ Description
 
 .. begin_long_description
 
-NanoGUI builds on GLFW_ for cross-platform OpenGL context creation and event handling,
-GLAD_ to use OpenGL 3.x or higher Windows, Enoki_ for basic vector types, and NanoVG_ to
-draw 2D primitives.
+NanoGUI builds on GLFW_ for cross-platform context creation and event handling,
+GLAD_ to access OpenGL functionality on Windows, Enoki_ for basic vector types,
+and NanoVG_/MetalNanoVG_ to draw 2D primitives.
 
 Note that the dependency library NanoVG already includes some basic example code to draw
 good-looking static widgets; what NanoGUI does is to flesh it out into a complete GUI
 toolkit with event handling, layout generation, etc.
 
 NanoGUI currently works on Mac OS X (Clang) Linux (GCC or Clang) and Windows (Visual
-Studio ≥ 2015); it requires a recent C++11 capable compiler. All dependencies are
+Studio ≥ 2017); it requires a recent C++17 capable compiler. All dependencies are
 jointly built using a CMake-based build system.
 
 .. _GLFW: http://www.glfw.org/
 .. _GLAD: https://github.com/Dav1dde/glad
 .. _Enoki: https://github.com/mitsuba-renderer/enoki
+.. _MetalNanoVG: https://github.com/ollix/MetalNanoVG
 
 .. end_long_description
 
@@ -99,7 +100,7 @@ Creating widgets
 ----------------------------------------------------------------------------------------
 
 NanoGUI makes it easy to instantiate widgets, set layout constraints, and
-register event callbacks using high-level C++11 code. For instance, the
+register event callbacks using high-level C++17 code. For instance, the
 following two lines from the included example application add a new button to
 an existing window `window` and register an event callback.
 
@@ -145,7 +146,7 @@ The Python version of this same piece of code looks like this:
 
    # Add a slider and set defaults
    slider = Slider(panel)
-   slider.set_value(0.5f)
+   slider.set_value(0.5)
    slider.set_fixed_width(80)
 
    # Add a textbox and set defaults
