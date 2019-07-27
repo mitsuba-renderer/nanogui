@@ -97,7 +97,7 @@ bool VScrollPanel::mouse_button_event(const Vector2i &p, int button, bool down,
 bool VScrollPanel::scroll_event(const Vector2i &p, const Vector2f &rel) {
     if (!m_children.empty() && m_child_preferred_height > m_size.y()) {
         auto child = m_children[0];
-        float scroll_amount = rel.y() * m_size.y() * .5f;
+        float scroll_amount = rel.y() * m_size.y() * .25f;
 
         m_scroll = std::max(0.f, std::min(1.f,
                 m_scroll - scroll_amount / m_child_preferred_height));

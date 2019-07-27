@@ -93,21 +93,21 @@ public:
     virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual void draw(NVGcontext* ctx) override;
 protected:
-    bool check_format(const std::string& input,const std::string& format);
+    bool check_format(const std::string &input, const std::string &format);
     bool copy_selection();
     void paste_from_clipboard();
     bool delete_selection();
 
     void update_cursor(NVGcontext *ctx, float lastx,
-                      const NVGglyphPosition *glyphs, int size);
-    float cursor_index2Position(int index, float lastx,
-                               const NVGglyphPosition *glyphs, int size);
-    int position2Cursor_index(float posx, float lastx,
-                             const NVGglyphPosition *glyphs, int size);
+                       const NVGglyphPosition *glyphs, int size);
+    float cursor_index_to_position(int index, float lastx,
+                                   const NVGglyphPosition *glyphs, int size);
+    int position_to_cursor_index(float posx, float lastx,
+                                 const NVGglyphPosition *glyphs, int size);
 
     /// The location (if any) for the spin area.
     enum class SpinArea { None, Top, Bottom };
-    SpinArea spin_area(const Vector2i & pos);
+    SpinArea spin_area(const Vector2i &pos);
 
 protected:
     bool m_editable;

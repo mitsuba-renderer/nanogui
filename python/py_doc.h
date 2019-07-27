@@ -2364,7 +2364,10 @@ static const char *__doc_nanogui_TabWidget_update_visibility = R"doc()doc";
 
 static const char *__doc_nanogui_TextArea =
 R"doc(Multi-line read-only text widget, ideal for displaying log messages
-etc.)doc";
+etc.
+
+Appended text can use different colors, but the font size is fixed for
+the entire widget.)doc";
 
 static const char *__doc_nanogui_TextArea_Block = R"doc()doc";
 
@@ -2374,6 +2377,8 @@ static const char *__doc_nanogui_TextArea_Block_offset = R"doc()doc";
 
 static const char *__doc_nanogui_TextArea_Block_text = R"doc()doc";
 
+static const char *__doc_nanogui_TextArea_Block_width = R"doc()doc";
+
 static const char *__doc_nanogui_TextArea_TextArea = R"doc()doc";
 
 static const char *__doc_nanogui_TextArea_append = R"doc(Append text at the end of the widget)doc";
@@ -2382,6 +2387,8 @@ static const char *__doc_nanogui_TextArea_append_line = R"doc(Append a line of t
 
 static const char *__doc_nanogui_TextArea_background_color = R"doc(Return the widget's background color (a global property))doc";
 
+static const char *__doc_nanogui_TextArea_block_to_position = R"doc()doc";
+
 static const char *__doc_nanogui_TextArea_clear = R"doc(Clear all current contents)doc";
 
 static const char *__doc_nanogui_TextArea_draw = R"doc()doc";
@@ -2389,6 +2396,8 @@ static const char *__doc_nanogui_TextArea_draw = R"doc()doc";
 static const char *__doc_nanogui_TextArea_font = R"doc(Return the used font)doc";
 
 static const char *__doc_nanogui_TextArea_foreground_color = R"doc(Return the foreground color (applies to all subsequently added text))doc";
+
+static const char *__doc_nanogui_TextArea_is_selectable = R"doc(Return whether the text can be selected using the mouse)doc";
 
 static const char *__doc_nanogui_TextArea_m_background_color = R"doc()doc";
 
@@ -2404,9 +2413,25 @@ static const char *__doc_nanogui_TextArea_m_offset = R"doc()doc";
 
 static const char *__doc_nanogui_TextArea_m_padding = R"doc()doc";
 
+static const char *__doc_nanogui_TextArea_m_selectable = R"doc()doc";
+
+static const char *__doc_nanogui_TextArea_m_selection_color = R"doc()doc";
+
+static const char *__doc_nanogui_TextArea_m_selection_end = R"doc()doc";
+
+static const char *__doc_nanogui_TextArea_m_selection_start = R"doc()doc";
+
+static const char *__doc_nanogui_TextArea_mouse_button_event = R"doc()doc";
+
+static const char *__doc_nanogui_TextArea_mouse_drag_event = R"doc()doc";
+
 static const char *__doc_nanogui_TextArea_padding = R"doc(Return the amount of padding that is added around the text)doc";
 
+static const char *__doc_nanogui_TextArea_position_to_block = R"doc()doc";
+
 static const char *__doc_nanogui_TextArea_preferred_size = R"doc()doc";
+
+static const char *__doc_nanogui_TextArea_selection_color = R"doc(Return the widget's selection color (a global property))doc";
 
 static const char *__doc_nanogui_TextArea_set_background_color = R"doc(Set the widget's background color (a global property))doc";
 
@@ -2415,6 +2440,10 @@ static const char *__doc_nanogui_TextArea_set_font = R"doc(Set the used font)doc
 static const char *__doc_nanogui_TextArea_set_foreground_color = R"doc(Set the foreground color (applies to all subsequently added text))doc";
 
 static const char *__doc_nanogui_TextArea_set_padding = R"doc(Set the amount of padding to add around the text)doc";
+
+static const char *__doc_nanogui_TextArea_set_selectable = R"doc(Set whether the text can be selected using the mouse)doc";
+
+static const char *__doc_nanogui_TextArea_set_selection_color = R"doc(Set the widget's selection color (a global property))doc";
 
 static const char *__doc_nanogui_TextBox =
 R"doc(Fancy text box with builtin regular expression-based validation.
@@ -2451,7 +2480,7 @@ static const char *__doc_nanogui_TextBox_check_format = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_copy_selection = R"doc()doc";
 
-static const char *__doc_nanogui_TextBox_cursor_index2Position = R"doc()doc";
+static const char *__doc_nanogui_TextBox_cursor_index_to_position = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_default_value = R"doc()doc";
 
@@ -2525,7 +2554,7 @@ static const char *__doc_nanogui_TextBox_placeholder =
 R"doc(Return the placeholder text to be displayed while the text box is
 empty.)doc";
 
-static const char *__doc_nanogui_TextBox_position2Cursor_index = R"doc()doc";
+static const char *__doc_nanogui_TextBox_position_to_cursor_index = R"doc()doc";
 
 static const char *__doc_nanogui_TextBox_preferred_size = R"doc()doc";
 

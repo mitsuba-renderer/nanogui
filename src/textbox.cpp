@@ -229,8 +229,8 @@ void TextBox::draw(NVGcontext* ctx) {
         // compute text offset
         int prev_cpos = m_cursor_pos > 0 ? m_cursor_pos - 1 : 0;
         int next_cpos = m_cursor_pos < nglyphs ? m_cursor_pos + 1 : nglyphs;
-        float prev_cx = cursor_index2Position(prev_cpos, text_bound[2], glyphs, nglyphs);
-        float next_cx = cursor_index2Position(next_cpos, text_bound[2], glyphs, nglyphs);
+        float prev_cx = cursor_index_to_position(prev_cpos, text_bound[2], glyphs, nglyphs);
+        float next_cx = cursor_index_to_position(next_cpos, text_bound[2], glyphs, nglyphs);
 
         if (next_cx > clip_x + clip_width)
             m_text_offset -= next_cx - (clip_x + clip_width) + 1;
@@ -250,9 +250,9 @@ void TextBox::draw(NVGcontext* ctx) {
 
         if (m_cursor_pos > -1) {
             if (m_selection_pos > -1) {
-                float caretx = cursor_index2Position(m_cursor_pos, text_bound[2],
+                float caretx = cursor_index_to_position(m_cursor_pos, text_bound[2],
                                                     glyphs, nglyphs);
-                float selx = cursor_index2Position(m_selection_pos, text_bound[2],
+                float selx = cursor_index_to_position(m_selection_pos, text_bound[2],
                                                   glyphs, nglyphs);
 
                 if (caretx > selx)
@@ -266,7 +266,7 @@ void TextBox::draw(NVGcontext* ctx) {
                 nvgFill(ctx);
             }
 
-            float caretx = cursor_index2Position(m_cursor_pos, text_bound[2], glyphs, nglyphs);
+            float caretx = cursor_index_to_position(m_cursor_pos, text_bound[2], glyphs, nglyphs);
 
             // draw cursor
             nvgBeginPath(ctx);
@@ -286,7 +286,7 @@ bool TextBox::mouse_enter_event(const Vector2i &p, bool enter) {
 }
 
 bool TextBox::mouse_button_event(const Vector2i &p, int button, bool down,
-                               int modifiers) {
+                                 int modifiers) {
 
     if (button == GLFW_MOUSE_BUTTON_1 && down && !m_focused) {
         if (!m_spinnable || spin_area(p) == SpinArea::None) /* not on scrolling arrows */
@@ -342,7 +342,7 @@ bool TextBox::mouse_button_event(const Vector2i &p, int button, bool down,
 }
 
 bool TextBox::mouse_motion_event(const Vector2i &p, const Vector2i & /* rel */,
-                               int /* button */, int /* modifiers */) {
+                                 int /* button */, int /* modifiers */) {
     m_mouse_pos = p;
 
     if (!m_editable)
@@ -356,13 +356,12 @@ bool TextBox::mouse_motion_event(const Vector2i &p, const Vector2i & /* rel */,
 }
 
 bool TextBox::mouse_drag_event(const Vector2i &p, const Vector2i &/* rel */,
-                             int /* button */, int /* modifiers */) {
+                               int /* button */, int /* modifiers */) {
     m_mouse_pos = p;
     m_mouse_drag_pos = p;
 
-    if (m_editable && focused()) {
+    if (m_editable && focused())
         return true;
-    }
     return false;
 }
 
@@ -553,7 +552,7 @@ bool TextBox::delete_selection() {
             m_value_temp.erase(m_value_temp.begin() + begin);
         else
             m_value_temp.erase(m_value_temp.begin() + begin,
-                             m_value_temp.begin() + end);
+                               m_value_temp.begin() + end);
 
         m_cursor_pos = begin;
         m_selection_pos = -1;
@@ -574,7 +573,7 @@ void TextBox::update_cursor(NVGcontext *, float lastx,
             m_selection_pos = -1;
 
         m_cursor_pos =
-            position2Cursor_index(m_mouse_down_pos.x(), lastx, glyphs, size);
+            position_to_cursor_index(m_mouse_down_pos.x(), lastx, glyphs, size);
 
         m_mouse_down_pos = Vector2i(-1, -1);
     } else if (m_mouse_drag_pos.x() != -1) {
@@ -582,7 +581,7 @@ void TextBox::update_cursor(NVGcontext *, float lastx,
             m_selection_pos = m_cursor_pos;
 
         m_cursor_pos =
-            position2Cursor_index(m_mouse_drag_pos.x(), lastx, glyphs, size);
+            position_to_cursor_index(m_mouse_drag_pos.x(), lastx, glyphs, size);
     } else {
         // set cursor to last character
         if (m_cursor_pos == -2)
@@ -593,8 +592,8 @@ void TextBox::update_cursor(NVGcontext *, float lastx,
         m_selection_pos = -1;
 }
 
-float TextBox::cursor_index2Position(int index, float lastx,
-                                    const NVGglyphPosition *glyphs, int size) {
+float TextBox::cursor_index_to_position(int index, float lastx,
+                                        const NVGglyphPosition *glyphs, int size) {
     float pos = 0;
     if (index == size)
         pos = lastx; // last character
@@ -604,8 +603,8 @@ float TextBox::cursor_index2Position(int index, float lastx,
     return pos;
 }
 
-int TextBox::position2Cursor_index(float posx, float lastx,
-                                  const NVGglyphPosition *glyphs, int size) {
+int TextBox::position_to_cursor_index(float posx, float lastx,
+                                    const NVGglyphPosition *glyphs, int size) {
     int m_cursor_id = 0;
     float caretx = glyphs[m_cursor_id].x;
     for (int j = 1; j < size; j++) {
