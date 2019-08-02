@@ -564,9 +564,9 @@
  *              <td align="left"><code>ICON_CONTROLLER_NEXT</code>
  *            </tr>
  *            <tr class="row-odd">
- *              <td align="right"><code>ENTYPO_ICON_CONTROLLER_PAUS</code></td>
+ *              <td align="right"><code>ENTYPO_ICON_CONTROLLER_PAUSE</code></td>
  *              <td align="center"><span class="entypo-icon-controller-paus"></span></td>
- *              <td align="left"><code>ICON_CONTROLLER_PAUS</code>
+ *              <td align="left"><code>ICON_CONTROLLER_PAUSE</code>
  *            </tr>
  *            <tr class="row-even">
  *              <td align="right"><code>ENTYPO_ICON_CONTROLLER_PLAY</code></td>
@@ -2235,7 +2235,7 @@
 #define ENTYPO_ICON_CONTROLLER_FAST_FORWARD           0x0000F160
 #define ENTYPO_ICON_CONTROLLER_JUMP_TO_START          0x0000F161
 #define ENTYPO_ICON_CONTROLLER_NEXT                   0x0000F162
-#define ENTYPO_ICON_CONTROLLER_PAUS                   0x0000F163
+#define ENTYPO_ICON_CONTROLLER_PAUSE                  0x0000F163
 #define ENTYPO_ICON_CONTROLLER_PLAY                   0x0000F164
 #define ENTYPO_ICON_CONTROLLER_RECORD                 0x0000F165
 #define ENTYPO_ICON_CONTROLLER_STOP                   0x0000F166

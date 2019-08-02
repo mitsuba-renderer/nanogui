@@ -70,16 +70,24 @@ bool TextArea::keyboard_event(int key, int /* scancode */, int action, int modif
                 std::swap(start, end);
 
             std::string str;
+            const int max_glyphs = 1024;
+            NVGglyphPosition glyphs[max_glyphs + 1];
             for (int i = start.x(); i <= end.x(); ++i) {
                 if (i > start.x() && m_blocks[i].offset.y() != m_blocks[i-1].offset.y())
                     str += '\n';
 
+                const Block &block = m_blocks[i];
+                NVGcontext *ctx = screen()->nvg_context();
+                int nglyphs = nvgTextGlyphPositions(ctx, block.offset.x(), block.offset.y(),
+                                                    block.text.c_str(), nullptr, glyphs, max_glyphs);
+                glyphs[nglyphs].str = block.text.c_str() + block.text.length();
+
                 if (i == start.x() && i == end.x())
-                    str += m_blocks[i].text.substr(start.y(), end.y() - start.y());
+                    str += std::string(glyphs[start.y()].str, glyphs[end.y()].str);
                 else if (i == start.x())
-                    str += m_blocks[i].text.substr(start.y(), m_blocks[i].text.length() - start.y());
+                    str += std::string(glyphs[start.y()].str, glyphs[nglyphs].str);
                 else if (i == end.x())
-                    str += m_blocks[i].text.substr(0, end.y());
+                    str += std::string(glyphs[0].str, glyphs[end.y()].str);
                 else
                     str += m_blocks[i].text;
             }
@@ -225,23 +233,30 @@ Vector2i TextArea::position_to_block(const Vector2i &pos) const {
         }
     );
 
-    if (it == m_blocks.end())
-        return Vector2i(-1, 1);
-
+    const int max_glyphs = 1024;
+    NVGglyphPosition glyphs[max_glyphs];
     int selection = 0;
-    for (auto it2 = it; it2 != m_blocks.end() && it2->offset.y() == it->offset.y(); ++it2) {
-        const Block &block = *it2;
-        const int max_glyphs = 1024;
-        NVGglyphPosition glyphs[max_glyphs];
-        nvgFontSize(ctx, font_size());
-        nvgFontFace(ctx, m_font.c_str());
-        int nglyphs =
-            nvgTextGlyphPositions(ctx, block.offset.x(), block.offset.y(),
-                                  block.text.c_str(), nullptr, glyphs, max_glyphs);
 
-        for (int i = 0; i < nglyphs; ++i) {
-            if (glyphs[i].minx + glyphs[i].maxx < pos.x() * 2)
-                selection = i + 1;
+    if (it == m_blocks.end()) {
+        if (m_blocks.empty())
+            return Vector2i(-1, 1);
+        it = m_blocks.end() - 1;
+        const Block &block = *it;
+        selection = nvgTextGlyphPositions(ctx, block.offset.x(), block.offset.y(),
+                              block.text.c_str(), nullptr, glyphs, max_glyphs);
+    } else {
+        for (auto it2 = it; it2 != m_blocks.end() && it2->offset.y() == it->offset.y(); ++it2) {
+            const Block &block = *it2;
+            nvgFontSize(ctx, font_size());
+            nvgFontFace(ctx, m_font.c_str());
+            int nglyphs =
+                nvgTextGlyphPositions(ctx, block.offset.x(), block.offset.y(),
+                                      block.text.c_str(), nullptr, glyphs, max_glyphs);
+
+            for (int i = 0; i < nglyphs; ++i) {
+                if (glyphs[i].minx + glyphs[i].maxx < pos.x() * 2)
+                    selection = i + 1;
+            }
         }
     }
 

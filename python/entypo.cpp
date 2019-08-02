@@ -112,7 +112,7 @@ void register_entypo(py::module &m) {
         C(CONTROLLER_FAST_FORWARD);
         C(CONTROLLER_JUMP_TO_START);
         C(CONTROLLER_NEXT);
-        C(CONTROLLER_PAUS);
+        C(CONTROLLER_PAUSE);
         C(CONTROLLER_PLAY);
         C(CONTROLLER_RECORD);
         C(CONTROLLER_STOP);
