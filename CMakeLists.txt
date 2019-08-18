@@ -504,6 +504,7 @@ add_library(nanogui-obj OBJECT
   include/nanogui/imageview.h src/imageview.cpp
   include/nanogui/renderpass.h
   include/nanogui/formhelper.h
+  include/nanogui/icons.h
   include/nanogui/toolbutton.h
   include/nanogui/opengl.h
   include/nanogui/arcball.h
@@ -629,7 +630,7 @@ if (NANOGUI_BUILD_PYTHON)
   add_library(nanogui-python-obj OBJECT
     python/main.cpp
     python/glfw.cpp
-    python/entypo.cpp
+    python/icons.cpp
     python/color.cpp
     python/widget.cpp
     python/layout.cpp

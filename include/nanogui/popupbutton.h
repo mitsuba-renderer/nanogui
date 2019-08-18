@@ -14,7 +14,6 @@
 
 #include <nanogui/button.h>
 #include <nanogui/popup.h>
-#include <nanogui/entypo.h>
 
 NAMESPACE_BEGIN(nanogui)
 

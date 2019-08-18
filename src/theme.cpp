@@ -13,7 +13,7 @@
 
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
-#include <nanogui/entypo.h>
+#include <nanogui/icons.h>
 #include <nanogui_resources.h>
 
 NAMESPACE_BEGIN(nanogui)
@@ -22,7 +22,7 @@ Theme::Theme(NVGcontext *ctx) {
     m_standard_font_size                 = 16;
     m_button_font_size                   = 20;
     m_text_box_font_size                 = 20;
-    m_icon_scale                         = 0.77f;
+    m_icon_scale                         = 0.60f;
 
     m_window_corner_radius               = 2;
     m_window_header_height               = 30;
@@ -67,25 +67,23 @@ Theme::Theme(NVGcontext *ctx) {
     m_window_popup                       = Color(50, 255);
     m_window_popup_transparent           = Color(50, 0);
 
-    m_check_box_icon                    = ENTYPO_ICON_CHECK;
-    m_message_information_icon          = ENTYPO_ICON_INFO_WITH_CIRCLE;
-    m_message_question_icon             = ENTYPO_ICON_HELP_WITH_CIRCLE;
-    m_message_warning_icon              = ENTYPO_ICON_WARNING;
-    m_message_alt_button_icon           = ENTYPO_ICON_CIRCLE_WITH_CROSS;
-    m_message_primary_button_icon       = ENTYPO_ICON_CHECK;
-    m_popup_chevron_right_icon          = ENTYPO_ICON_CHEVRON_RIGHT;
-    m_popup_chevron_left_icon           = ENTYPO_ICON_CHEVRON_LEFT;
-    m_tab_header_left_icon              = ENTYPO_ICON_ARROW_BOLD_LEFT;
-    m_tab_header_right_icon             = ENTYPO_ICON_ARROW_BOLD_RIGHT;
-    m_text_box_up_icon                  = ENTYPO_ICON_CHEVRON_UP;
-    m_text_box_down_icon                = ENTYPO_ICON_CHEVRON_DOWN;
+    m_check_box_icon                    = FA_CHECK;
+    m_message_information_icon          = FA_INFO_CIRCLE;
+    m_message_question_icon             = FA_QUESTION_CIRCLE;
+    m_message_warning_icon              = FA_EXCLAMATION_TRIANGLE;
+    m_message_alt_button_icon           = FA_TIMES_CIRCLE;
+    m_message_primary_button_icon       = FA_CHECK;
+    m_popup_chevron_right_icon          = FA_CHEVRON_RIGHT;
+    m_popup_chevron_left_icon           = FA_CHEVRON_LEFT;
+    m_text_box_up_icon                  = FA_CHEVRON_UP;
+    m_text_box_down_icon                = FA_CHEVRON_DOWN;
 
     m_font_sans_regular = nvgCreateFontMem(ctx, "sans", (uint8_t *) roboto_regular_ttf,
                                            roboto_regular_ttf_size, 0);
     m_font_sans_bold = nvgCreateFontMem(ctx, "sans-bold", (uint8_t *) roboto_bold_ttf,
                                         roboto_bold_ttf_size, 0);
-    m_font_icons = nvgCreateFontMem(ctx, "icons", (uint8_t *) entypo_ttf,
-                                    entypo_ttf_size, 0);
+    m_font_icons = nvgCreateFontMem(ctx, "icons", (uint8_t *) fontawesome_solid_ttf,
+                                    fontawesome_solid_ttf_size, 0);
     m_font_mono_regular = nvgCreateFontMem(ctx, "mono", (uint8_t *) inconsolata_regular_ttf,
                                            inconsolata_regular_ttf_size, 0);
 

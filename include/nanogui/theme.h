@@ -200,29 +200,25 @@ public:
      */
     Color m_window_popup_transparent;
 
-    /// Icon to use for Check_box widgets (default: ``ENTYPO_ICON_CHECK``).
+    /// Icon to use for check box widgets (default: ``FA_CHECK``).
     int m_check_box_icon;
-    /// Icon to use for informational Message_dialog widgets (default: ``ENTYPO_ICON_INFO_WITH_CIRCLE``).
+    /// Icon to use for informational message dialog widgets (default: ``FA_INFO_CIRCLE``).
     int m_message_information_icon;
-    /// Icon to use for interrogative Message_dialog widgets (default: ``ENTYPO_ICON_HELP_WITH_CIRCLE``).
+    /// Icon to use for interrogative message dialog widgets (default: ``FA_QUESTION_CIRCLE``).
     int m_message_question_icon;
-    /// Icon to use for warning Message_dialog widgets (default: ``ENTYPO_ICON_WARNING``).
+    /// Icon to use for warning message dialog widgets (default: ``FA_EXCLAMATION_TRINAGLE``).
     int m_message_warning_icon;
-    /// Icon to use on Message_dialog alt button (default: ``ENTYPO_ICON_CIRCLE_WITH_CROSS``).
+    /// Icon to use on message dialog alt button (default: ``FA_CIRCLE_WITH_CROSS``).
     int m_message_alt_button_icon;
-    /// Icon to use on Message_dialog primary button (default: ``ENTYPO_ICON_CHECK``).
+    /// Icon to use on message_dialog primary button (default: ``FA_CHECK``).
     int m_message_primary_button_icon;
-    /// Icon to use for Popup_button widgets opening to the right (default: ``ENTYPO_ICON_CHEVRON_RIGHT``).
+    /// Icon to use for Popup_button widgets opening to the right (default: ``FA_CHEVRON_RIGHT``).
     int m_popup_chevron_right_icon;
-    /// Icon to use for Popup_button widgets opening to the left (default: ``ENTYPO_ICON_CHEVRON_LEFT``).
+    /// Icon to use for Popup_button widgets opening to the left (default: ``FA_CHEVRON_LEFT``).
     int m_popup_chevron_left_icon;
-    /// Icon to indicate hidden tabs to the left on a Tab_header (default: ``ENTYPO_ICON_ARROW_BOLD_LEFT``).
-    int m_tab_header_left_icon;
-    /// Icon to indicate hidden tabs to the right on a Tab_header (default: ``ENTYPO_ICON_ARROW_BOLD_RIGHT``).
-    int m_tab_header_right_icon;
-    /// Icon to use when a Text_box has an up toggle (e.g. Int_box) (default: ``ENTYPO_ICON_CHEVRON_UP``).
+    /// Icon to use when a text box has an up toggle (e.g. IntBox) (default: ``FA_CHEVRON_UP``).
     int m_text_box_up_icon;
-    /// Icon to use when a Text_box has a down toggle (e.g. Int_box) (default: ``ENTYPO_ICON_CHEVRON_DOWN``).
+    /// Icon to use when a text box has a down toggle (e.g. IntBox) (default: ``FA_CHEVRON_DOWN``).
     int m_text_box_down_icon;
 
 protected:

@@ -18,7 +18,7 @@ from nanogui import Canvas, Shader, RenderPass, Screen, Window, \
     GroupLayout, Color, Widget, BoxLayout, Orientation, Alignment, \
     Button
 
-from nanogui import glfw, entypo
+from nanogui import glfw
 
 class MyCanvas(Canvas):
     def __init__(self, parent):

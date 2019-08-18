@@ -60,8 +60,6 @@ void register_theme(py::module &m) {
          .def_readwrite("m_message_primary_button_icon", &Theme::m_message_primary_button_icon, D(Theme, m_message_primary_button_icon))
          .def_readwrite("m_popup_chevron_right_icon", &Theme::m_popup_chevron_right_icon, D(Theme, m_popup_chevron_right_icon))
          .def_readwrite("m_popup_chevron_left_icon", &Theme::m_popup_chevron_left_icon, D(Theme, m_popup_chevron_left_icon))
-         .def_readwrite("m_tab_header_left_icon", &Theme::m_tab_header_left_icon, D(Theme, m_tab_header_left_icon))
-         .def_readwrite("m_tab_header_right_icon", &Theme::m_tab_header_right_icon, D(Theme, m_tab_header_right_icon))
          .def_readwrite("m_text_box_up_icon", &Theme::m_text_box_up_icon, D(Theme, m_text_box_up_icon))
          .def_readwrite("m_text_box_down_icon", &Theme::m_text_box_down_icon, D(Theme, m_text_box_down_icon));
 }

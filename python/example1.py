@@ -23,7 +23,7 @@ from nanogui import Color, ColorPicker, Screen, Window, GroupLayout, \
                     GridLayout, Alignment, Orientation, TabWidget, \
                     IntBox, RenderPass, Shader, Texture
 
-from nanogui import glfw, entypo
+from nanogui import glfw, icons
 
 # A simple counter, used for dynamic tab creation with TabWidget callback
 counter = 1
@@ -45,7 +45,7 @@ class TestApp(Screen):
             print("pushed!")
         b.set_callback(cb)
 
-        b = Button(window, "Styled", entypo.ICON_ROCKET)
+        b = Button(window, "Styled", icons.FA_ROCKET)
         b.set_background_color(Color(0, 0, 1.0, 0.1))
         b.set_callback(cb)
 
@@ -68,24 +68,24 @@ class TestApp(Screen):
         tools.set_layout(BoxLayout(Orientation.Horizontal,
                                   Alignment.Middle, 0, 6))
 
-        ToolButton(tools, entypo.ICON_CLOUD)
-        ToolButton(tools, entypo.ICON_CONTROLLER_FAST_FORWARD)
-        ToolButton(tools, entypo.ICON_COMPASS)
-        ToolButton(tools, entypo.ICON_INSTALL)
+        ToolButton(tools, icons.FA_CLOUD)
+        ToolButton(tools, icons.FA_FAST_FORWARD)
+        ToolButton(tools, icons.FA_COMPASS)
+        ToolButton(tools, icons.FA_UTENSILS)
 
         Label(window, "Popup buttons", "sans-bold")
-        popup_btn = PopupButton(window, "Popup", entypo.ICON_EXPORT)
+        popup_btn = PopupButton(window, "Popup", icons.FA_FLASK)
         popup = popup_btn.popup()
         popup.set_layout(GroupLayout())
         Label(popup, "Arbitrary widgets can be placed here")
         CheckBox(popup, "A check box")
         # popup right
-        popup_btn = PopupButton(popup, "Recursive popup", entypo.ICON_FLASH)
+        popup_btn = PopupButton(popup, "Recursive popup", icons.FA_CHART_PIE)
         popup_right = popup_btn.popup()
         popup_right.set_layout(GroupLayout())
         CheckBox(popup_right, "Another check box")
         # popup left
-        popup_btn = PopupButton(popup, "Recursive popup", entypo.ICON_FLASH)
+        popup_btn = PopupButton(popup, "Recursive popup", icons.FA_DNA)
         popup_btn.set_side(Popup.Side.Left)
         popup_left = popup_btn.popup()
         popup_left.set_layout(GroupLayout())
@@ -132,21 +132,21 @@ class TestApp(Screen):
         import sys
         os.chdir(sys.path[0])
         try:
-            icons = nanogui.load_image_directory(self.nvg_context(), "icons")
+            icons_data = nanogui.load_image_directory(self.nvg_context(), "icons")
         except:
             try:
-                icons = nanogui.load_image_directory(self.nvg_context(), "../icons")
+                icons_data = nanogui.load_image_directory(self.nvg_context(), "../icons")
             except:
-                icons = nanogui.load_image_directory(self.nvg_context(), "../resources/icons")
+                icons_data = nanogui.load_image_directory(self.nvg_context(), "../resources/icons")
 
 
         Label(window, "Image panel & scroll panel", "sans-bold")
         image_panel_btn = PopupButton(window, "Image Panel")
-        image_panel_btn.set_icon(entypo.ICON_FOLDER)
+        image_panel_btn.set_icon(icons.FA_IMAGES)
         popup = image_panel_btn.popup()
         vscroll = VScrollPanel(popup)
         img_panel = ImagePanel(vscroll)
-        img_panel.set_images(icons)
+        img_panel.set_images(icons_data)
         popup.set_fixed_size((245, 150))
 
         img_window = Window(self, "Selected image")
@@ -154,14 +154,14 @@ class TestApp(Screen):
         img_window.set_layout(GroupLayout())
 
         img_view = ImageView(img_window)
-        img_view.set_image(Texture(icons[0][1] + ".png",
+        img_view.set_image(Texture(icons_data[0][1] + ".png",
                                    Texture.InterpolationMode.Trilinear,
                                    Texture.InterpolationMode.Nearest))
         img_view.center()
 
         def cb(i):
             print("Selected item %i" % i)
-            img_view.set_image(Texture(icons[i][1] + ".png",
+            img_view.set_image(Texture(icons_data[i][1] + ".png",
                                        Texture.InterpolationMode.Trilinear,
                                        Texture.InterpolationMode.Nearest))
         img_panel.set_callback(cb)
@@ -350,7 +350,7 @@ class TestApp(Screen):
         window.set_layout(layout)
         window.set_position((425, 500))
         Label(window, "Combined: ")
-        b = Button(window, "ColorWheel", entypo.ICON_500PX)
+        b = Button(window, "ColorWheel", icons.FA_INFINITY)
         Label(window, "Red: ")
         red_int_box = IntBox(window)
         red_int_box.set_editable(False)

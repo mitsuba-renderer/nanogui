@@ -33,10 +33,12 @@ choice of vector library:
    (specifically, ``underscore_case`` for methods and variables rather than
    ``camelCase``).
 
-2. OpenGL 3+, GLES 2/3, and Metal are supported. GLES 2 allows NanoGUI to run on
-   ARM devices including the Raspberry Pi and in browsers via WebGL. the
-   Metal backend supports modern Macs, iPhones, etc. NanoGUI includes generic
-   wrappers around shaders and textures that work for all of these frameworks.
+2. GUI Rendering now provides backends for OpenGL 3+, GLES 2/3, and Metal. GLES 2
+   support allows NanoGUI to run on ARM devices including the Raspberry Pi
+   and in browsers via WebGL. The Metal backend supports modern Macs, iPhones, etc.
+
+   NanoGUI includes generic wrappers around shaders and textures that work for
+   all of these frameworks.
 
 3. The event loop is much more conservative by default and only issues redraw
    calls when explicitly requested by an event callback.
@@ -51,11 +53,15 @@ choice of vector library:
 6. Significantly revamped tab widget (supports right-click context menus,
    draggable, and closeable tabs) and image view widget.
 
+7. The Entypo_ icon font has been replaced by FontAwesome_ (v5.10.1).
+
 .. _NanoVG: https://github.com/memononen/NanoVG
 .. _pybind11: https://github.com/wjakob/pybind11
 .. _NanoGUI: https://github.com/wjakob/nanogui
 .. _Enoki: https://github.com/mitsuba-renderer/enoki
 .. _Tekari: https://rgl.epfl.ch/tekari?url=%2F%2Frgl.s3.eu-central-1.amazonaws.com%2Fmedia%2Fuploads%2Fwjakob%2F2018%2F08%2F27%2Firidescent-paper.txt&log=1
+.. _Entypo: http://www.entypo.com
+.. _FontAwesome: https://github.com/FortAwesome/Font-Awesome
 
 .. end_brief_description
 
@@ -242,10 +248,12 @@ terms and conditions of this license.
 
 .. _LICENSE: https://github.com/wjakob/nanogui/blob/master/LICENSE.txt
 
-NanoGUI uses Daniel Bruce's `Entypo+ <http://www.entypo.com/>`_ font for the
-icons used on various widgets.  This work is licensed under a
-`CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0/>`_ license.
-Commercial entities using NanoGUI should consult the proper legal counsel for
-how to best adhere to the attribution clause of the license.
+Note that NanoGUI ships with several fonts that use different (though similarly
+unencumbered) licenses, in particular `Roboto
+<https://github.com/google/roboto/>`_, `Inconsolata
+<https://github.com/googlefonts/Inconsolata>`, and the free version of the
+`FontAwesome <https://github.com/FortAwesome/Font-Awesome>`_ icon font
+(v5.10.1). The latter two are distributed under the SIL Open Font License,
+Version 1.1, while Roboto is distributed under the Apache 2.0 license.
 
 .. end_license

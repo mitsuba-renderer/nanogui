@@ -22,7 +22,7 @@
 #include <nanogui/popupbutton.h>
 #include <nanogui/combobox.h>
 #include <nanogui/progressbar.h>
-#include <nanogui/entypo.h>
+#include <nanogui/icons.h>
 #include <nanogui/messagedialog.h>
 #include <nanogui/textbox.h>
 #include <nanogui/slider.h>
@@ -58,7 +58,7 @@ public:
         b->set_tooltip("short tooltip");
 
         /* Alternative construction notation using variadic template */
-        b = window->add<Button>("Styled", ENTYPO_ICON_ROCKET);
+        b = window->add<Button>("Styled", FA_ROCKET);
         b->set_background_color(Color(0, 0, 255, 25));
         b->set_callback([] { std::cout << "pushed!" << std::endl; });
         b->set_tooltip("This button has a fairly long tooltip. It is so long, in "
@@ -80,24 +80,24 @@ public:
         tools->set_layout(new BoxLayout(Orientation::Horizontal,
                                        Alignment::Middle, 0, 6));
 
-        b = new ToolButton(tools, ENTYPO_ICON_CLOUD);
-        b = new ToolButton(tools, ENTYPO_ICON_CONTROLLER_FAST_FORWARD);
-        b = new ToolButton(tools, ENTYPO_ICON_COMPASS);
-        b = new ToolButton(tools, ENTYPO_ICON_INSTALL);
+        b = new ToolButton(tools, FA_CLOUD);
+        b = new ToolButton(tools, FA_FAST_FORWARD);
+        b = new ToolButton(tools, FA_COMPASS);
+        b = new ToolButton(tools, FA_UTENSILS);
 
         new Label(window, "Popup buttons", "sans-bold");
-        PopupButton *popup_btn = new PopupButton(window, "Popup", ENTYPO_ICON_EXPORT);
+        PopupButton *popup_btn = new PopupButton(window, "Popup", FA_FLASK);
         Popup *popup = popup_btn->popup();
         popup->set_layout(new GroupLayout());
         new Label(popup, "Arbitrary widgets can be placed here");
         new CheckBox(popup, "A check box");
         // popup right
-        popup_btn = new PopupButton(popup, "Recursive popup", ENTYPO_ICON_FLASH);
+        popup_btn = new PopupButton(popup, "Recursive popup", FA_CHART_PIE);
         Popup *popup_right = popup_btn->popup();
         popup_right->set_layout(new GroupLayout());
         new CheckBox(popup_right, "Another check box");
         // popup left
-        popup_btn = new PopupButton(popup, "Recursive popup", ENTYPO_ICON_FLASH);
+        popup_btn = new PopupButton(popup, "Recursive popup", FA_DNA);
         popup_btn->set_side(Popup::Side::Left);
         Popup *popup_left = popup_btn->popup();
         popup_left->set_layout(new GroupLayout());
@@ -145,7 +145,7 @@ public:
 
         new Label(window, "Image panel & scroll panel", "sans-bold");
         PopupButton *image_panel_btn = new PopupButton(window, "Image Panel");
-        image_panel_btn->set_icon(ENTYPO_ICON_FOLDER);
+        image_panel_btn->set_icon(FA_IMAGES);
         popup = image_panel_btn->popup();
         VScrollPanel *vscroll = new VScrollPanel(popup);
         ImagePanel *img_panel = new ImagePanel(vscroll);
@@ -323,7 +323,7 @@ public:
         auto ib = panel->add<IntBox<int>>();
         ib->set_editable(true);
 
-        b = panel->add<Button>("", ENTYPO_ICON_FORWARD);
+        b = panel->add<Button>("", FA_FORWARD);
         b->set_fixed_size(Vector2i(22, 22));
         ib->set_fixed_height(22);
         b->set_callback([tab_widget, ib] {
@@ -404,7 +404,7 @@ public:
         window->set_layout(layout);
         window->set_position(Vector2i(425, 500));
         new Label(window, "Combined: ");
-        b = new Button(window, "Color_wheel", ENTYPO_ICON_500PX);
+        b = new Button(window, "ColorWheel", FA_INFINITY);
         new Label(window, "Red: ");
         auto red_int_box = new IntBox<int>(window);
         red_int_box->set_editable(false);

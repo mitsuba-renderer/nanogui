@@ -17,7 +17,7 @@
 #include <nanogui/layout.h>
 #include <nanogui/button.h>
 #include <nanogui/opengl.h>
-#include <nanogui/entypo.h>
+#include <nanogui/icons.h>
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -91,7 +91,7 @@ void TabWidgetBase::perform_layout(NVGcontext* ctx) {
 
     nvgFontFace(ctx, "icons");
     m_close_width =
-        nvgTextBounds(ctx, 0, 0, utf8(ENTYPO_ICON_CIRCLE_WITH_CROSS).data(), nullptr, unused);
+        nvgTextBounds(ctx, 0, 0, utf8(FA_TIMES_CIRCLE).data(), nullptr, unused);
 }
 
 Vector2i TabWidgetBase::preferred_size(NVGcontext* ctx) const {
@@ -178,7 +178,7 @@ void TabWidgetBase::draw(NVGcontext* ctx) {
             nvgFillColor(ctx, i == (size_t) m_close_index_pushed ? m_theme->m_text_color_shadow
                                                                  : m_theme->m_text_color);
             auto icon =
-                m_close_index == (int) i ? ENTYPO_ICON_CIRCLE_WITH_CROSS : ENTYPO_ICON_CROSS;
+                m_close_index == (int) i ? FA_TIMES_CIRCLE : FA_TIMES;
             nvgText(ctx, x_pos, y_pos + 1, utf8(icon).data(), nullptr);
         }
     }
