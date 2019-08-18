@@ -249,6 +249,8 @@ Shader::Shader(RenderPass *render_pass,
 #if defined(NANOGUI_USE_OPENGL)
     CHK(glGenVertexArrays(1, &m_vertex_array_handle));
 #endif
+
+    m_uses_point_size = vertex_shader.find("gl_PointSize") != std::string::npos;
 }
 
 Shader::~Shader() {
@@ -508,11 +510,16 @@ void Shader::begin() {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     }
+
+    if (m_uses_point_size)
+        CHK(glEnable(GL_PROGRAM_POINT_SIZE));
 }
 
 void Shader::end() {
     if (m_blend_mode == BlendMode::AlphaBlend)
         CHK(glDisable(GL_BLEND));
+    if (m_uses_point_size)
+        CHK(glDisable(GL_PROGRAM_POINT_SIZE));
 #if defined(NANOGUI_USE_OPENGL)
     CHK(glBindVertexArray(0));
 #else

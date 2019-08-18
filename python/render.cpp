@@ -191,10 +191,11 @@ void register_render(py::module &m) {
 
     shader
         .def(py::init<RenderPass *, const std::string &,
-                      const std::string &, const std::string &>(),
-             D(Shader, Shader), "renderpass"_a, "name"_a, "vertex_shader"_a,
-             "fragment_shader"_a)
+                      const std::string &, const std::string &, Shader::BlendMode>(),
+             D(Shader, Shader), "render_pass"_a, "name"_a, "vertex_shader"_a,
+             "fragment_shader"_a, "blend_mode"_a = BlendMode::None)
         .def("name", &Shader::name, D(Shader, name))
+        .def("blend_mode", &Shader::blend_mode, D(Shader, blend_mode))
         .def("set_buffer", &shader_set_buffer, D(Shader, set_buffer))
         .def("set_texture", &Shader::set_texture, D(Shader, set_texture))
         .def("begin", &Shader::begin, D(Shader, begin))

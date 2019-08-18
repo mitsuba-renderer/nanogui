@@ -59,13 +59,16 @@ public:
            const std::string &name,
            const std::string &vertex_shader,
            const std::string &fragment_shader,
-           BlendMode mode = BlendMode::None);
+           BlendMode blend_mode = BlendMode::None);
 
     /// Return the render pass associated with this shader
     RenderPass *render_pass() { return m_render_pass; }
 
     /// Return the name of this shader
     const std::string &name() const { return m_name; }
+
+    /// Return the blending mode of this shader
+    BlendMode blend_mode() const { return m_blend_mode; }
 
     /**
      * \brief Upload a buffer (e.g. vertex positions) that will be associated
@@ -212,6 +215,7 @@ protected:
         uint32_t m_shader_handle = 0;
     #  if defined(NANOGUI_USE_OPENGL)
         uint32_t m_vertex_array_handle = 0;
+        bool m_uses_point_size = false;
     #  endif
     #elif defined(NANOGUI_USE_METAL)
         void *m_pipeline_state;

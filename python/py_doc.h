@@ -2076,6 +2076,8 @@ The Python bindings also include extra ``__enter__`` and ``__exit__``
 aliases so that the shader can be activated via Pythons 'with'
 statement.)doc";
 
+static const char *__doc_nanogui_Shader_blend_mode = R"doc(Return the blending mode of this shader)doc";
+
 static const char *__doc_nanogui_Shader_draw_array =
 R"doc(Render geometry arrays, either directly or using an index array.
 
@@ -2398,6 +2400,8 @@ static const char *__doc_nanogui_TextArea_font = R"doc(Return the used font)doc"
 static const char *__doc_nanogui_TextArea_foreground_color = R"doc(Return the foreground color (applies to all subsequently added text))doc";
 
 static const char *__doc_nanogui_TextArea_is_selectable = R"doc(Return whether the text can be selected using the mouse)doc";
+
+static const char *__doc_nanogui_TextArea_keyboard_event = R"doc()doc";
 
 static const char *__doc_nanogui_TextArea_m_background_color = R"doc()doc";
 
@@ -2766,7 +2770,7 @@ static const char *__doc_nanogui_Theme_m_button_gradient_top_unfocused =
 R"doc(The top gradient color for buttons not in focus (default:
 intensity=``74``, alpha=``255``; see nanogui::Color::Color(int,int)).)doc";
 
-static const char *__doc_nanogui_Theme_m_check_box_icon = R"doc(Icon to use for Check_box widgets (default: ``ENTYPO_ICON_CHECK``).)doc";
+static const char *__doc_nanogui_Theme_m_check_box_icon = R"doc(Icon to use for check box widgets (default: ``FA_CHECK``).)doc";
 
 static const char *__doc_nanogui_Theme_m_disabled_text_color =
 R"doc(The disable dtext color (default: intensity=``255``, alpha=``80``; see
@@ -2800,32 +2804,30 @@ NanoGUI widgets. The default value is ``0.77f``, setting to e.g.
 higher than ``1.0f`` is generally discouraged.)doc";
 
 static const char *__doc_nanogui_Theme_m_message_alt_button_icon =
-R"doc(Icon to use on Message_dialog alt button (default:
-``ENTYPO_ICON_CIRCLE_WITH_CROSS``).)doc";
+R"doc(Icon to use on message dialog alt button (default:
+``FA_CIRCLE_WITH_CROSS``).)doc";
 
 static const char *__doc_nanogui_Theme_m_message_information_icon =
-R"doc(Icon to use for informational Message_dialog widgets (default:
-``ENTYPO_ICON_INFO_WITH_CIRCLE``).)doc";
+R"doc(Icon to use for informational message dialog widgets (default:
+``FA_INFO_CIRCLE``).)doc";
 
-static const char *__doc_nanogui_Theme_m_message_primary_button_icon =
-R"doc(Icon to use on Message_dialog primary button (default:
-``ENTYPO_ICON_CHECK``).)doc";
+static const char *__doc_nanogui_Theme_m_message_primary_button_icon = R"doc(Icon to use on message_dialog primary button (default: ``FA_CHECK``).)doc";
 
 static const char *__doc_nanogui_Theme_m_message_question_icon =
-R"doc(Icon to use for interrogative Message_dialog widgets (default:
-``ENTYPO_ICON_HELP_WITH_CIRCLE``).)doc";
+R"doc(Icon to use for interrogative message dialog widgets (default:
+``FA_QUESTION_CIRCLE``).)doc";
 
 static const char *__doc_nanogui_Theme_m_message_warning_icon =
-R"doc(Icon to use for warning Message_dialog widgets (default:
-``ENTYPO_ICON_WARNING``).)doc";
+R"doc(Icon to use for warning message dialog widgets (default:
+``FA_EXCLAMATION_TRINAGLE``).)doc";
 
 static const char *__doc_nanogui_Theme_m_popup_chevron_left_icon =
 R"doc(Icon to use for Popup_button widgets opening to the left (default:
-``ENTYPO_ICON_CHEVRON_LEFT``).)doc";
+``FA_CHEVRON_LEFT``).)doc";
 
 static const char *__doc_nanogui_Theme_m_popup_chevron_right_icon =
 R"doc(Icon to use for Popup_button widgets opening to the right (default:
-``ENTYPO_ICON_CHEVRON_RIGHT``).)doc";
+``FA_CHEVRON_RIGHT``).)doc";
 
 static const char *__doc_nanogui_Theme_m_standard_font_size =
 R"doc(The font size for all widgets other than buttons and textboxes
@@ -2845,14 +2847,6 @@ static const char *__doc_nanogui_Theme_m_tab_control_width =
 R"doc(Used to help specify what lies "in bound" for a Tab_header widget
 (default: ``20``).)doc";
 
-static const char *__doc_nanogui_Theme_m_tab_header_left_icon =
-R"doc(Icon to indicate hidden tabs to the left on a Tab_header (default:
-``ENTYPO_ICON_ARROW_BOLD_LEFT``).)doc";
-
-static const char *__doc_nanogui_Theme_m_tab_header_right_icon =
-R"doc(Icon to indicate hidden tabs to the right on a Tab_header (default:
-``ENTYPO_ICON_ARROW_BOLD_RIGHT``).)doc";
-
 static const char *__doc_nanogui_Theme_m_tab_inner_margin = R"doc(The inner margin on a Tab_header widget (default: ``5``).)doc";
 
 static const char *__doc_nanogui_Theme_m_tab_max_button_width =
@@ -2862,14 +2856,14 @@ R"doc(The maximum size for buttons on a Tab_header widget (default:
 static const char *__doc_nanogui_Theme_m_tab_min_button_width = R"doc(The minimum size for buttons on a Tab_header widget (default: ``20``).)doc";
 
 static const char *__doc_nanogui_Theme_m_text_box_down_icon =
-R"doc(Icon to use when a Text_box has a down toggle (e.g. Int_box) (default:
-``ENTYPO_ICON_CHEVRON_DOWN``).)doc";
+R"doc(Icon to use when a text box has a down toggle (e.g. IntBox) (default:
+``FA_CHEVRON_DOWN``).)doc";
 
 static const char *__doc_nanogui_Theme_m_text_box_font_size = R"doc(The font size for text boxes (default: ``20``).)doc";
 
 static const char *__doc_nanogui_Theme_m_text_box_up_icon =
-R"doc(Icon to use when a Text_box has an up toggle (e.g. Int_box) (default:
-``ENTYPO_ICON_CHEVRON_UP``).)doc";
+R"doc(Icon to use when a text box has an up toggle (e.g. IntBox) (default:
+``FA_CHEVRON_UP``).)doc";
 
 static const char *__doc_nanogui_Theme_m_text_color =
 R"doc(The text color (default: intensity=``255``, alpha=``160``; see
