@@ -177,9 +177,14 @@ void TabWidgetBase::draw(NVGcontext* ctx) {
             nvgFontFace(ctx, "icons");
             nvgFillColor(ctx, i == (size_t) m_close_index_pushed ? m_theme->m_text_color_shadow
                                                                  : m_theme->m_text_color);
-            auto icon =
-                m_close_index == (int) i ? FA_TIMES_CIRCLE : FA_TIMES;
-            nvgText(ctx, x_pos, y_pos + 1, utf8(icon).data(), nullptr);
+            bool highlight = m_close_index == (int) i;
+            auto icon = highlight ? FA_TIMES_CIRCLE : FA_TIMES;
+            float fs       = font_size() * (highlight ? 1.f : .70f),
+                  offset_x = highlight ? 0.f : (fs * .40f),
+                  offset_y = highlight ? 0.f : (fs * .21f);
+            nvgFontSize(ctx, fs);
+            nvgText(ctx, x_pos + offset_x, y_pos + offset_y + .5f, utf8(icon).data(), nullptr);
+            nvgFontSize(ctx, font_size());
         }
     }
     if (m_tab_drag_index != -1 && m_tab_drag_start != m_tab_drag_end) {
