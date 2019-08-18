@@ -251,9 +251,11 @@ terms and conditions of this license.
 Note that NanoGUI ships with several fonts that use different (though similarly
 unencumbered) licenses, in particular `Roboto
 <https://github.com/google/roboto/>`_, `Inconsolata
-<https://github.com/googlefonts/Inconsolata>`, and the free version of the
-`FontAwesome <https://github.com/FortAwesome/Font-Awesome>`_ icon font
-(v5.10.1). The latter two are distributed under the SIL Open Font License,
-Version 1.1, while Roboto is distributed under the Apache 2.0 license.
+<https://github.com/googlefonts/Inconsolata>`_, and the free version of the
+`Font Awesome icon font <https://github.com/FortAwesome/Font-Awesome>`_
+(v5.10.1). The latter two are distributed under the `SIL Open Font License
+Version 1.1 <https://opensource.org/licenses/OFL-1.1>`_, while Roboto is
+distributed under the `Apache 2.0
+<https://opensource.org/licenses/Apache-2.0>`_ license.
 
 .. end_license
