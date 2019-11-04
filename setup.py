@@ -10,8 +10,8 @@ from distutils.version import LooseVersion
 from distutils.command.install_headers import install_headers
 
 headers = [
-    'include/nanogui/glcanvas.h',
     'include/nanogui/colorpicker.h',
+    'include/nanogui/arcball.h',
     'include/nanogui/renderpass.h',
     'include/nanogui/theme.h',
     'include/nanogui/colorwheel.h',
@@ -22,11 +22,11 @@ headers = [
     'include/nanogui/shader.h',
     'include/nanogui/popup.h',
     'include/nanogui/opengl.h',
-    'include/nanogui/glutil.h',
     'include/nanogui/widget.h',
     'include/nanogui/nanogui.h',
     'include/nanogui/combobox.h',
     'include/nanogui/popupbutton.h',
+    'include/nanogui/icons.h',
     'include/nanogui/toolbutton.h',
     'include/nanogui/window.h',
     'include/nanogui/imageview.h',
@@ -36,16 +36,17 @@ headers = [
     'include/nanogui/slider.h',
     'include/nanogui/common.h',
     'include/nanogui/button.h',
-    'include/nanogui/entypo.h',
     'include/nanogui/object.h',
     'include/nanogui/texture.h',
     'include/nanogui/metal.h',
     'include/nanogui/screen.h',
+    'include/nanogui/canvas.h',
     'include/nanogui/python.h',
     'include/nanogui/messagedialog.h',
     'include/nanogui/vscrollpanel.h',
     'include/nanogui/formhelper.h',
-    'include/nanogui/tabwidget.h'
+    'include/nanogui/tabwidget.h',
+    'include/nanogui/textarea.h'
 ]
 
 
