@@ -80,6 +80,8 @@ size_t Texture::channels() const {
         case PixelFormat::RA:           result = 2;  break;
         case PixelFormat::RGB:          result = 3;  break;
         case PixelFormat::RGBA:         result = 4;  break;
+        case PixelFormat::BGR:          result = 3;  break;
+        case PixelFormat::BGRA:         result = 4;  break;
         case PixelFormat::Depth:        result = 1;  break;
         case PixelFormat::DepthStencil: result = 2;  break;
         default: throw std::runtime_error("Texture::channels(): invalid "
