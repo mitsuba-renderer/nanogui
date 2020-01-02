@@ -2,6 +2,7 @@
 
 #include "python.h"
 #include <enoki/transform.h>
+#include <pybind11/numpy.h>
 
 using enoki::EnokiType;
 

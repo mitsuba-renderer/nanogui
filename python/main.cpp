@@ -116,6 +116,18 @@ static void sigint_handler(int sig) {
 PYBIND11_MODULE(nanogui, m) {
     m.attr("__doc__") = "NanoGUI plugin";
 
+#if defined(NANOGUI_PYTHON_USE_ENOKI_BINDINGS)
+    py::object ek;
+    try {
+        ek = py::module::import("enoki.scalar");
+    } catch (py::error_already_set &) {
+        throw py::import_error("Could not import 'enoki.scalar' -- you must "
+                               "also build Enoki's Python bindings!");
+    }
+    m.attr("Vector2f") = ek.attr("Vector2f");
+    m.attr("Vector2i") = ek.attr("Vector2i");
+#endif
+
 #if defined(NANOGUI_USE_OPENGL)
     m.attr("api") = "opengl";
 #elif defined(NANOGUI_USE_GLES) && NANOGUI_GLES_VERSION == 2
