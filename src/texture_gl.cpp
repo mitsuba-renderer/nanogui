@@ -157,9 +157,17 @@ void Texture::upload(const uint8_t *data) {
 
         if (data) {
             CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+#if defined(NANOGUI_USE_GLES) && NANOGUI_GLES_VERSION == 2
+            if (glfwExtensionSupported("GL_EXT_unpack_subimage")) {
+                CHK(glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0));
+                CHK(glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0));
+                CHK(glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0));
+            }
+#else
             CHK(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
             CHK(glPixelStorei(GL_UNPACK_SKIP_ROWS, 0));
             CHK(glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0));
+#endif
         }
 
 #if defined(NANOGUI_USE_OPENGL)
