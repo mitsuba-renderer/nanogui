@@ -37,7 +37,6 @@
 #  else
 #    error You must select a backend (OpenGL/GLES2/GLES3/Metal)
 #  endif
-#  define GLFW_INCLUDE_GLEXT
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
 #include <GLFW/glfw3.h>
@@ -46,7 +45,7 @@
 #  if NANOGUI_GLES_VERSION == 2
 #    include <GLES2/gl2ext.h>
 #  elif NANOGUI_GLES_VERSION == 3
-#    include <GLES3/gl3ext.h>
+#    include <GLES3/gl2ext.h>
 #  endif
 #endif
 

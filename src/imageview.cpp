@@ -26,7 +26,7 @@ ImageView::ImageView(Widget *parent) : Canvas(parent, 1, false, false, false) {
     m_image_shader = new Shader(
         render_pass(),
         /* An identifying name */
-        "imageview_shader",
+        "a_simple_shader",
         NANOGUI_SHADER(imageview_vertex),
         NANOGUI_SHADER(imageview_fragment),
         Shader::BlendMode::AlphaBlend
