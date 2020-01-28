@@ -14,7 +14,9 @@ static EnokiType dtype_to_enoki(const py::dtype &dtype) {
                 case 2: return EnokiType::Int16;
                 case 4: return EnokiType::Int32;
                 case 8: return EnokiType::Int64;
+                default: break;
             }
+            break;
 
         case 'u':
             switch (dtype.itemsize()) {
@@ -22,14 +24,21 @@ static EnokiType dtype_to_enoki(const py::dtype &dtype) {
                 case 2: return EnokiType::UInt16;
                 case 4: return EnokiType::UInt32;
                 case 8: return EnokiType::UInt64;
+                default: break;
             }
+            break;
 
         case 'f':
             switch (dtype.itemsize()) {
                 case 2: return EnokiType::Float16;
                 case 4: return EnokiType::Float32;
                 case 8: return EnokiType::Float64;
+                default: break;
             }
+            break;
+
+        default:
+            break;
     }
 
     return EnokiType::Invalid;
