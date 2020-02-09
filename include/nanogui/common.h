@@ -441,6 +441,12 @@ extern NANOGUI_EXPORT bool active();
 extern NANOGUI_EXPORT void async(const std::function<void()> &func);
 
 /**
+ * \brief Schedule a function to be executed periodically when
+ * the application is redrawn the next time.
+ */
+extern NANOGUI_EXPORT void recurring(const std::function<void()> &func);
+
+/**
  * \brief Open a native file open/save dialog.
  *
  * \param filetypes
