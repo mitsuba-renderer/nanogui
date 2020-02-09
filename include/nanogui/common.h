@@ -447,6 +447,11 @@ extern NANOGUI_EXPORT void async(const std::function<void()> &func);
 extern NANOGUI_EXPORT void recurring(const std::function<void()> &func);
 
 /**
+ * \brief Sets interval in which recurring functions should be executed.
+ */
+extern NANOGUI_EXPORT void set_recurring_execution_interval(double interval);
+
+/**
  * \brief Open a native file open/save dialog.
  *
  * \param filetypes

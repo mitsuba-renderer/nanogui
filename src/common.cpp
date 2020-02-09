@@ -83,10 +83,11 @@ std::vector<std::function<void()>> m_async_functions;
 std::mutex m_recurring_mutex;
 std::vector<std::function<void()>> m_recurring_functions;
 double m_last_iteration = 0.f;
+double m_recurring_execution_interval = 1.0f;
 
 void run_recurring_functions() {
     double elapsed = glfwGetTime() - m_last_iteration;
-    if (elapsed > 1.0f) {
+    if (elapsed > m_recurring_execution_interval) {
         m_last_iteration = glfwGetTime();
         std::lock_guard<std::mutex> guard(m_recurring_mutex);
         for (auto &f : m_recurring_functions)
@@ -219,6 +220,10 @@ void async(const std::function<void()> &func) {
 void recurring(const std::function<void()> &func) {
     std::lock_guard<std::mutex> guard(m_recurring_mutex);
     m_recurring_functions.push_back(func);
+}
+
+void set_recurring_execution_interval(double interval) {
+    m_recurring_execution_interval = interval;
 }
 
 void leave() {
