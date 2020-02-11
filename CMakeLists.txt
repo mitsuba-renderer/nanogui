@@ -59,7 +59,6 @@ option(NANOGUI_BUILD_PYTHON              "Build a Python plugin for NanoGUI?" ${
 option(NANOGUI_BUILD_GLAD                "Build GLAD OpenGL loader library? (needed on Windows)" ${NANOGUI_BUILD_GLAD_DEFAULT})
 option(NANOGUI_BUILD_GLFW                "Build GLFW?" ${NANOGUI_BUILD_GLFW_DEFAULT})
 option(NANOGUI_INSTALL                   "Install NanoGUI on `make install`?" ON)
-option(NANOGUI_PYTHON_USE_ENOKI_BINDINGS "Advanced: map vector types (e.g. Vector2f) to Enoki's python bindings instead of NumPy?" OFF)
 
 if (NOT NANOGUI_BACKEND)
   if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv7" OR
@@ -77,22 +76,16 @@ endif()
 
 set_property(CACHE NANOGUI_BACKEND PROPERTY STRINGS "OpenGL" "GLES 2" "GLES 3" "Metal")
 
-set(NANOGUI_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling the Python plugin")
-
-# Allow overriding the pybind11 and Enoki version used to compile NanoGUI
-set(ENOKI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/enoki/ext/pybind11"
-  CACHE STRING "Path containing the 'pybind11' library used to compile Enoki.")
-set(NANOGUI_PYBIND11_DIR "${ENOKI_PYBIND11_DIR}"
+# Allow overriding the pybind11 library used to compile NanoGUI
+set(NANOGUI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11"
   CACHE STRING "Path containing the 'pybind11' library used to compile nanogui.")
-set(NANOGUI_ENOKI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/enoki"
-  CACHE STRING "Path containing the 'enoki' library used to compile nanogui.")
-mark_as_advanced(ENOKI_PYBIND11_DIR NANOGUI_PYBIND11_DIR NANOGUI_ENOKI_DIR)
+mark_as_advanced(NANOGUI_PYBIND11_DIR)
 
 if (NANOGUI_BUILD_PYTHON)
   # Try to autodetect Python (can be overridden manually if needed)
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/ext/enoki/ext/pybind11/tools")
-  set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4)
-  find_package(PythonLibsNew ${NANOGUI_PYTHON_VERSION})
+  list(APPEND CMAKE_MODULE_PATH "${NANOGUI_PYBIND11_DIR}/tools")
+  set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6 3.5 3.4)
+  find_package(PythonLibsNew)
   if (NOT PYTHONLIBS_FOUND)
     # Python not found -- disable the plugin
     set(NANOGUI_BUILD_PYTHON OFF CACHE BOOL "Build a Python plugin for NanoGUI?" FORCE)
@@ -143,11 +136,6 @@ macro(CHECK_CXX_COMPILER_AND_LINKER_FLAGS _RESULT _CXX_FLAGS _LINKER_FLAGS)
   set(CMAKE_REQUIRED_FLAGS "")
   set(CMAKE_REQUIRED_LIBRARIES "")
 endmacro()
-
-add_subdirectory("${NANOGUI_ENOKI_DIR}" "ext_build/enoki")
-
-enoki_set_compile_flags()
-enoki_set_native_flags()
 
 # Python support: add NANOGUI_PYTHON flag to all targets
 if (NANOGUI_BUILD_PYTHON)
@@ -507,12 +495,12 @@ add_library(nanogui-obj OBJECT
   include/nanogui/texture.h src/texture.cpp
   include/nanogui/shader.h src/shader.cpp
   include/nanogui/imageview.h src/imageview.cpp
+  include/nanogui/traits.h src/traits.cpp
   include/nanogui/renderpass.h
   include/nanogui/formhelper.h
   include/nanogui/icons.h
   include/nanogui/toolbutton.h
   include/nanogui/opengl.h
-  include/nanogui/arcball.h
   include/nanogui/nanogui.h
 )
 
@@ -608,10 +596,6 @@ if (NANOGUI_BUILD_PYTHON AND (APPLE OR CMAKE_SYSTEM MATCHES "Linux"))
   add_definitions(-DCORO_SJLJ)
   include_directories(ext/coro)
   list(APPEND LIBNANOGUI_PYTHON_EXTRA_SOURCE ext/coro/coro.c)
-
-  if (NANOGUI_PYTHON_USE_ENOKI_BINDINGS)
-    add_definitions(-DNANOGUI_PYTHON_USE_ENOKI_BINDINGS=1)
-  endif()
 endif()
 
 if (NANOGUI_BUILD_PYTHON)
@@ -641,6 +625,7 @@ if (NANOGUI_BUILD_PYTHON)
     python/canvas.cpp
     python/nanovg.cpp
     python/render.cpp
+    python/vector.cpp
     python/python.h python/py_doc.h
     ${LIBNANOGUI_PYTHON_EXTRA_SOURCE})
 

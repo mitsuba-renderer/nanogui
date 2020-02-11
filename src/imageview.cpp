@@ -15,7 +15,6 @@
 #include <nanogui/texture.h>
 #include <nanogui/screen.h>
 #include <nanogui/opengl.h>
-#include <enoki/transform.h>
 #include <nanogui_resources.h>
 
 NAMESPACE_BEGIN(nanogui)
@@ -37,8 +36,8 @@ ImageView::ImageView(Widget *parent) : Canvas(parent, 1, false, false, false) {
         1.f, 0.f, 1.f, 1.f, 0.f, 1.f
     };
 
-    m_image_shader->set_buffer("position", enoki::EnokiType::Float32, 2,
-                         { 6, 2, 1 }, positions);
+    m_image_shader->set_buffer("position", VariableType::Float32, { 6, 2 },
+                               positions);
     m_render_pass->set_cull_mode(RenderPass::CullMode::Disabled);
 
     m_image_border_color = m_theme->m_border_dark;
@@ -54,10 +53,18 @@ void ImageView::set_image(Texture *image) {
     m_image = image;
 }
 
+float ImageView::scale() const {
+    return std::pow(2.f, m_scale / 5.f);
+}
+
+void ImageView::set_scale(float scale) {
+    m_scale = std::log2(scale) * 5.f;
+}
+
 void ImageView::center() {
     if (!m_image)
         return;
-    m_offset = .5f * (m_size * screen()->pixel_ratio() - m_image->size() * scale());
+    m_offset = Vector2i(.5f * (Vector2f(m_size) * screen()->pixel_ratio() - Vector2f(m_image->size()) * scale()));
 }
 
 void ImageView::reset() {
@@ -110,7 +117,9 @@ bool ImageView::scroll_event(const Vector2i &p, const Vector2f &rel) {
     m_scale += rel.y();
 
     // Restrict scaling to a reasonable range
-    m_scale = std::max(m_scale, std::min(0.f, std::log2(40.f / hmax(m_image->size())) * 5.f));
+    m_scale = std::max(
+        m_scale, std::min(0.f, std::log2(40.f / std::max(m_image->size().x(),
+                                                         m_image->size().y())) * 5.f));
     m_scale = std::min(m_scale, 45.f);
 
     Vector2f p2 = pos_to_pixel(p - m_pos);
@@ -124,8 +133,8 @@ void ImageView::draw(NVGcontext *ctx) {
 
     Canvas::draw(ctx);
 
-    Vector2i top_left = pixel_to_pos(Vector2f(0.f, 0.f)),
-             size     = pixel_to_pos(Vector2f(m_image->size())) - top_left;
+    Vector2i top_left = Vector2i(pixel_to_pos(Vector2f(0.f, 0.f))),
+             size     = Vector2i(pixel_to_pos(Vector2f(m_image->size())) - Vector2f(top_left));
 
     if (m_draw_image_border) {
         nvgBeginPath(ctx);
@@ -147,7 +156,7 @@ void ImageView::draw(NVGcontext *ctx) {
         nvgFontFace(ctx, "sans-bold");
         nvgTextAlign(ctx, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
 
-        Vector2i start = max(0, Vector2i(pos_to_pixel(Vector2f(0.f, 0.f))) - 1),
+        Vector2i start = max(Vector2i(0), Vector2i(pos_to_pixel(Vector2f(0.f, 0.f))) - 1),
                  end   = min(Vector2i(pos_to_pixel(Vector2f(m_size))) + 1, m_image->size() - 1);
 
         char text_buf[80],
@@ -191,25 +200,26 @@ void ImageView::draw_contents() {
     m_offset = Vector2i(Vector2i(m_offset / pixel_ratio) * pixel_ratio);
 
     Vector2f bound1 = m_size * pixel_ratio,
-             bound2 = -m_image->size() * scale();
+             bound2 = -Vector2f(m_image->size()) * scale();
 
-    enoki::mask_t<Vector2i> out_of_bounds = neq(m_offset >= bound1, m_offset < bound2);
-    m_offset[out_of_bounds] = enoki::max(enoki::min(m_offset, bound1), bound2);
+    if ((m_offset.x() >= bound1.x()) != (m_offset.x() < bound2.x()))
+        m_offset.x() = std::max(std::min(m_offset.x(), bound1.x()), bound2.x());
+    if ((m_offset.y() >= bound1.y()) != (m_offset.y() < bound2.y()))
+        m_offset.y() = std::max(std::min(m_offset.y(), bound1.y()), bound2.y());
 
     Vector2i viewport_size = render_pass()->viewport().second;
 
     float scale = std::pow(2.f, m_scale / 5.f);
 
     Matrix4f matrix_background =
-        enoki::scale<Matrix4f>(Vector3f(m_image->size().x() * scale / 20.f,
-                                        m_image->size().y() * scale / 20.f, 1.f));
+        Matrix4f::scale(Vector3f(m_image->size().x() * scale / 20.f,
+                                 m_image->size().y() * scale / 20.f, 1.f));
 
     Matrix4f matrix_image =
-        enoki::ortho<Matrix4f>(0.f, viewport_size.x(),
-                               viewport_size.y(), 0.f, -1.f, 1.f) *
-        enoki::translate<Matrix4f>(Vector3f(m_offset.x(), (int) m_offset.y(), 0.f)) *
-        enoki::scale<Matrix4f>(Vector3f(m_image->size().x() * scale,
-                                        m_image->size().y() * scale, 1.f));
+        Matrix4f::ortho(0.f, viewport_size.x(), viewport_size.y(), 0.f, -1.f, 1.f) *
+        Matrix4f::translate(Vector3f(m_offset.x(), (int) m_offset.y(), 0.f)) *
+        Matrix4f::scale(Vector3f(m_image->size().x() * scale,
+                                 m_image->size().y() * scale, 1.f));
 
     m_image_shader->set_uniform("matrix_image",      Matrix4f(matrix_image));
     m_image_shader->set_uniform("matrix_background", Matrix4f(matrix_background));

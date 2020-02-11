@@ -113,14 +113,49 @@ public:
     /// Send an event that will cause the screen to be redrawn at the next event loop iteration
     void redraw();
 
-    /// Clear the screen with the background color (glClearColor, glClear, etc.)
+    /**
+     * \brief Redraw the screen if the redraw flag is set
+     *
+     * This function does everything -- it calls \ref draw_setup(), \ref
+     * draw_contents() (which also clears the screen by default), \ref draw(),
+     * and finally \ref draw_teardown().
+     *
+     * \sa redraw
+     */
+    virtual void draw_all();
+
+    /**
+     * \brief Clear the screen with the background color (glClearColor, glClear, etc.)
+     *
+     * You typically won't need to call this function yourself, as it is called by
+     * the default implementation of \ref draw_contents() (which is called by \ref draw_all())
+     */
     virtual void clear();
 
-    /// Draw the Screen contents
-    virtual void draw_all();
+    /**
+     * \brief Prepare the graphics pipeline for the next frame
+     *
+     * This involves steps such as obtaining a drawable, querying the drawable
+     * resolution, setting the viewport used for drawing, etc..
+     *
+     * You typically won't need to call this function yourself, as it is called
+     * by \ref draw_all(), which is executed by the run loop.
+     */
+    virtual void draw_setup();
 
     /// Calls clear() and draws the window contents --- put your rendering code here.
     virtual void draw_contents();
+
+    /**
+     * \brief Wrap up drawing of the current frame
+     *
+     * This involves steps such as releasing the current drawable, swapping
+     * the framebuffer, etc.
+     *
+     * You typically won't need to call this function yourself, as it is called
+     * by \ref draw_all(), which is executed by the run loop.
+     */
+    virtual void draw_teardown();
 
     /// Return the ratio between pixel and device coordinates (e.g. >= 2 on Mac Retina displays)
     float pixel_ratio() const { return m_pixel_ratio; }
@@ -258,6 +293,7 @@ protected:
     std::function<void(Vector2i)> m_resize_callback;
 #if defined(NANOGUI_USE_METAL)
     void *m_metal_texture = nullptr;
+    void *m_metal_drawable = nullptr;
     ref<Texture> m_depth_stencil_texture;
 #endif
 };

@@ -52,22 +52,6 @@ void register_misc(py::module &m) {
         .def("set_images", &ImagePanel::set_images, D(ImagePanel, set_images))
         .def("callback", &ImagePanel::callback, D(ImagePanel, callback))
         .def("set_callback", &ImagePanel::set_callback, D(ImagePanel, set_callback));
-
-    py::class_<Arcball>(m, "Arcball", D(Arcball))
-        .def(py::init<float>(), "speed_factor"_a = 2.f, D(Arcball, Arcball))
-        .def(py::init<const Quaternion4f &>(), D(Arcball, Arcball, 2))
-        .def("state", (Quaternion4f& (Arcball::*)()) &Arcball::state, D(Arcball, state))
-        .def("set_state", &Arcball::set_state, D(Arcball, set_state))
-        .def("size", &Arcball::size, D(Arcball, size))
-        .def("set_size", &Arcball::set_size, D(Arcball, set_size))
-        .def("speed_factor", &Arcball::speed_factor, D(Arcball, speed_factor))
-        .def("set_speed_factor", &Arcball::set_speed_factor, D(Arcball, set_speed_factor))
-        .def("active", &Arcball::active, D(Arcball, active))
-        .def("button", &Arcball::button, "pos"_a, "pressed"_a, D(Arcball, button))
-        .def("motion", &Arcball::motion, "pos"_a, D(Arcball, motion))
-        .def("matrix", &Arcball::matrix, D(Arcball, matrix))
-        .def("active_state", &Arcball::active_state, D(Arcball, active_state))
-        .def("interrupt", &Arcball::interrupt, D(Arcball, interrupt));
 }
 
 #endif

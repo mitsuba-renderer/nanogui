@@ -36,7 +36,7 @@
 #include <nanogui/texture.h>
 #include <nanogui/shader.h>
 #include <nanogui/renderpass.h>
-#include <enoki/transform.h>
+#include <iostream>
 #include <stb_image.h>
 
 using namespace nanogui;
@@ -514,8 +514,8 @@ public:
             -1.f, 1.f, 0.f
         };
 
-        m_shader->set_buffer("indices", enoki::EnokiType::UInt32, 1, {3*2, 1, 1}, indices);
-        m_shader->set_buffer("position", enoki::EnokiType::Float32, 2, {4, 3, 1}, positions);
+        m_shader->set_buffer("indices", VariableType::UInt32, {3*2}, indices);
+        m_shader->set_buffer("position", VariableType::Float32, {4, 3}, positions);
         m_shader->set_uniform("intensity", 0.5f);
     }
 
@@ -538,9 +538,9 @@ public:
     }
 
     virtual void draw_contents() {
-        Matrix4f mvp = enoki::scale<Matrix4f>(Vector3f(
+        Matrix4f mvp = Matrix4f::scale(Vector3f(
                            (float) m_size.y() / (float) m_size.x() * 0.25f, 0.25f, 0.25f)) *
-                       enoki::rotate<Matrix4f>(Vector3f(0, 0, 1), (float) glfwGetTime());
+                       Matrix4f::rotate(Vector3f(0, 0, 1), (float) glfwGetTime());
 
         m_shader->set_uniform("mvp", mvp);
 

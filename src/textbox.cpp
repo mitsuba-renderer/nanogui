@@ -22,7 +22,7 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-TextBox::TextBox(Widget *parent,const std::string &value)
+TextBox::TextBox(Widget *parent, const std::string &value)
     : Widget(parent),
       m_editable(false),
       m_spinnable(false),
@@ -604,7 +604,7 @@ float TextBox::cursor_index_to_position(int index, float lastx,
 }
 
 int TextBox::position_to_cursor_index(float posx, float lastx,
-                                    const NVGglyphPosition *glyphs, int size) {
+                                      const NVGglyphPosition *glyphs, int size) {
     int m_cursor_id = 0;
     float caretx = glyphs[m_cursor_id].x;
     for (int j = 1; j < size; j++) {

@@ -55,9 +55,9 @@ public:
     void set_offset(const Vector2f &offset) { m_offset = offset; }
 
     /// Return the current magnification of the image
-    float scale() const { return std::pow(2.f, m_scale / 5.f); }
+    float scale() const;
     /// Set the current magnification of the image
-    void set_scale(float scale) { m_scale = std::log2(scale) * 5.f; }
+    void set_scale(float scale);
 
     /// Convert a position within the widget to a pixel position in the image
     Vector2f pos_to_pixel(const Vector2f &p) const;

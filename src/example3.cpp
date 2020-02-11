@@ -184,9 +184,11 @@ int main(int /* argc */, char ** /* argv */) {
         glfwPollEvents();
 
         // Draw nanogui
+        screen->draw_setup();
         screen->clear(); // glClear
         screen->draw_contents();
         screen->draw_widgets();
+        screen->draw_teardown();
 
         glfwSwapBuffers(window);
     }

@@ -33,10 +33,10 @@ Vector2i Window::preferred_size(NVGcontext *ctx) const {
     float bounds[4];
     nvgTextBounds(ctx, 0, 0, m_title.c_str(), nullptr, bounds);
 
-    return max(result, Vector2i(
-        bounds[2]-bounds[0] + 20,
-        bounds[3]-bounds[1]
-    ));
+    return Vector2i(
+        std::max(result.x(), (int) (bounds[2]-bounds[0] + 20)),
+        std::max(result.y(), (int) (bounds[3]-bounds[1]))
+    );
 }
 
 Widget *Window::button_panel() {

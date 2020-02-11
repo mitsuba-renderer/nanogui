@@ -17,6 +17,7 @@
 #pragma once
 
 #include <nanogui/object.h>
+#include <nanogui/traits.h>
 #include <unordered_map>
 
 NAMESPACE_BEGIN(nanogui)
@@ -37,7 +38,6 @@ public:
         None,
         AlphaBlend // alpha * new_color + (1 - alpha) * old_color
     };
-
 
     /**
      * \brief Initialize the shader using the specified source strings.
@@ -80,11 +80,13 @@ public:
      *
      * The buffer will be replaced if it is already present.
      */
-    void set_buffer(const std::string &name,
-                    enoki::EnokiType type,
-                    size_t ndim,
-                    std::array<size_t, 3> shape,
-                    const void *data);
+    void set_buffer(const std::string &name, VariableType type, size_t ndim,
+                    const size_t *shape, const void *data);
+
+    void set_buffer(const std::string &name, VariableType type,
+                    std::initializer_list<size_t> shape, const void *data) {
+        set_buffer(name, type, shape.end() - shape.begin(), shape.begin(), data);
+    }
 
     /**
      * \brief Upload a uniform variable (e.g. a vector or matrix) that will be
@@ -92,32 +94,48 @@ public:
      */
     template <typename Array> void set_uniform(const std::string &name,
                                                const Array &value) {
-        std::array<size_t, 3> shape = { 1, 1, 1 };
-        size_t ndim;
+        size_t shape[3] = { 1, 1, 1 };
+        size_t ndim = (size_t) -1;
         const void *data;
+        VariableType vtype = VariableType::Invalid;
 
-        if constexpr (enoki::array_depth_v<Array> == 0) {
+        if constexpr (std::is_scalar_v<Array>) {
             data = &value;
             ndim = 0;
-        } else if constexpr (enoki::array_depth_v<Array> == 1) {
-            data = value.data();
-            shape[0] = value.size();
+            vtype = get_type<Array>();
+        } else if constexpr (is_nanogui_array_v<Array>) {
+            data = value.v;
             ndim = 1;
-        } else if constexpr (enoki::array_depth_v<Array> == 2) {
-            data = value.data();
-            shape[0] = value.size();
-            shape[1] = value[0].size();
+            shape[0] = Array::Size;
+            vtype = get_type<typename Array::Value>();
+        } else if constexpr (is_nanogui_matrix_v<Array>) {
+            data = value.m;
             ndim = 2;
-        } else if constexpr (enoki::array_depth_v<Array> == 3) {
+            shape[0] = Array::Size;
+            shape[1] = Array::Size;
+            vtype = get_type<typename Array::Value>();
+        } else if constexpr (is_enoki_array_v<Array>) {
+            if constexpr (Array::Depth == 1) {
+                shape[0] = value.size();
+                ndim = 1;
+            } else if constexpr (Array::Depth == 2) {
+                shape[0] = value.size();
+                shape[1] = value[0].size();
+                ndim = 2;
+            } else if constexpr (Array::Depth == 3) {
+                shape[0] = value.size();
+                shape[1] = value[0].size();
+                shape[2] = value[0][0].size();
+                ndim = 3;
+            }
             data = value.data();
-            shape[0] = value.size();
-            shape[1] = value[0].size();
-            shape[2] = value[0][0].size();
-            ndim = 3;
-        } else {
-            throw std::runtime_error("Shader::set_uniform(): invalid input array dimension!");
+            vtype = get_type<typename Array::Scalar>();
         }
-        set_buffer(name, enoki::enoki_type_v<enoki::scalar_t<Array>>, ndim, shape, data);
+
+        if (ndim == (size_t) -1)
+            throw std::runtime_error("Shader::set_uniform(): invalid input array dimension!");
+
+        set_buffer(name, vtype, ndim, shape, data);
     }
 
     /**
@@ -192,10 +210,10 @@ protected:
     struct Buffer {
         void *buffer = nullptr;
         BufferType type = Unknown;
-        enoki::EnokiType dtype = enoki::EnokiType::Invalid;
+        VariableType dtype = VariableType::Invalid;
         int index = 0;
         size_t ndim = 0;
-        std::array<size_t, 3> shape { 0, 0, 0 };
+        size_t shape[3] { 0, 0, 0 };
         size_t size = 0;
         bool dirty = false;
 
@@ -221,12 +239,6 @@ protected:
         void *m_pipeline_state;
     #endif
 };
-
-/// Return the size in bytes associated with a specific Enoki type
-extern NANOGUI_EXPORT size_t enoki_type_size(enoki::EnokiType type);
-
-/// Return the name (e.g. "uint8") associated with a specific Enoki type
-extern NANOGUI_EXPORT const char *enoki_type_name(enoki::EnokiType type);
 
 /// Access binary data stored in nanogui_resources.cpp
 #define NANOGUI_RESOURCE_STRING(name) std::string(name, name + name##_size)

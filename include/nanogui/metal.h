@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <nanogui/common.h>
+#include <nanogui/vector.h>
 
 #if defined(NANOGUI_USE_METAL)
 NAMESPACE_BEGIN(nanogui)

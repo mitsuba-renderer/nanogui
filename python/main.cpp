@@ -37,6 +37,7 @@ namespace {
 }
 #endif
 
+extern void register_vector(py::module &m);
 extern void register_glfw(py::module &m);
 extern void register_entypo(py::module &m);
 extern void register_eigen(py::module &m);
@@ -115,18 +116,6 @@ static void sigint_handler(int sig) {
 
 PYBIND11_MODULE(nanogui, m) {
     m.attr("__doc__") = "NanoGUI plugin";
-
-#if defined(NANOGUI_PYTHON_USE_ENOKI_BINDINGS)
-    py::object ek;
-    try {
-        ek = py::module::import("enoki.scalar");
-    } catch (py::error_already_set &) {
-        throw py::import_error("Could not import 'enoki.scalar' -- you must "
-                               "also build Enoki's Python bindings!");
-    }
-    m.attr("Vector2f") = ek.attr("Vector2f");
-    m.attr("Vector2i") = ek.attr("Vector2i");
-#endif
 
 #if defined(NANOGUI_USE_OPENGL)
     m.attr("api") = "opengl";
@@ -260,6 +249,7 @@ PYBIND11_MODULE(nanogui, m) {
         .value("Horizontal", Orientation::Horizontal)
         .value("Vertical", Orientation::Vertical);
 
+    register_vector(m);
     register_glfw(m);
     register_entypo(m);
     register_eigen(m);

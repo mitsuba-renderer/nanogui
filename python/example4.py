@@ -16,13 +16,13 @@ import gc
 
 from nanogui import Canvas, Shader, RenderPass, Screen, Window, \
     GroupLayout, Color, Widget, BoxLayout, Orientation, Alignment, \
-    Button
+    Button, Matrix4f
 
 from nanogui import glfw
 
 class MyCanvas(Canvas):
     def __init__(self, parent):
-        super(MyCanvas, self).__init__(parent)
+        super(MyCanvas, self).__init__(parent, 1)
 
         try:
             import numpy as np
@@ -147,24 +147,24 @@ class MyCanvas(Canvas):
             return
         import numpy as np
 
-        view = nanogui.look_at(
+        view = Matrix4f.look_at(
             origin=[0, -2, -10],
             target=[0, 0, 0],
             up=[0, 1, 0]
         )
 
-        model = nanogui.rotate(
+        model = Matrix4f.rotate(
             [0, 1, 0],
             glfw.getTime()
         )
 
-        model2 = nanogui.rotate(
+        model2 = Matrix4f.rotate(
             [1, 0, 0],
             self.rotation
         )
 
         size = self.size()
-        proj = nanogui.perspective(
+        proj = Matrix4f.perspective(
             fov=25 * np.pi / 180,
             near=0.1,
             far=20,
@@ -173,7 +173,7 @@ class MyCanvas(Canvas):
 
         mvp = proj @ view @ model @ model2
 
-        self.shader.set_buffer("mvp", np.float32(mvp.T))
+        self.shader.set_buffer("mvp", np.float32(mvp).T)
         with self.shader:
             self.shader.draw_array(Shader.PrimitiveType.Triangle,
                                    0, 36, indexed=True)
@@ -195,7 +195,7 @@ class TestApp(Screen):
         tools.set_layout(BoxLayout(Orientation.Horizontal,
                                   Alignment.Middle, 0, 5))
 
-        b0 = Button(tools, "Random Color")
+        b0 = Button(tools, "Random Background")
         def cb0():
             self.canvas.set_background_color(Color(random.random(), random.random(), random.random(), 1.0))
         b0.set_callback(cb0)

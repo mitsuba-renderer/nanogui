@@ -8,12 +8,8 @@
 #include <nanogui/opengl.h>
 
 #include <pybind11/stl.h>
-#include <pybind11/operators.h>
 #include <pybind11/functional.h>
 #include <nanogui/python.h>
-#if !defined(NANOGUI_PYTHON_USE_ENOKI_BINDINGS)
-#  include <enoki/python.h>
-#endif
 #include "py_doc.h"
 
 PYBIND11_MAKE_OPAQUE(nanogui::Color)

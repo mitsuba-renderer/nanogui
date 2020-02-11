@@ -21,7 +21,7 @@ from nanogui import Color, ColorPicker, Screen, Window, GroupLayout, \
                     VScrollPanel, ImagePanel, ImageView, ComboBox, \
                     ProgressBar, Slider, TextBox, ColorWheel, Graph, \
                     GridLayout, Alignment, Orientation, TabWidget, \
-                    IntBox, RenderPass, Shader, Texture
+                    IntBox, RenderPass, Shader, Texture, Matrix4f
 
 from nanogui import glfw, icons
 
@@ -463,16 +463,16 @@ class TestApp(Screen):
         self.render_pass.resize(self.framebuffer_size())
         s = self.size()
         with self.render_pass:
-            mvp = nanogui.scale([s[1] / float(s[0]) * 0.25, 0.25, 0.25]) @ \
-                  nanogui.rotate([0, 0, 1], glfw.getTime())
-            self.shader.set_buffer("mvp", np.float32(mvp.T))
+            mvp = Matrix4f.scale([s[1] / float(s[0]) * 0.25, 0.25, 0.25]) @ \
+                  Matrix4f.rotate([0, 0, 1], glfw.getTime())
+            self.shader.set_buffer("mvp", np.float32(mvp).T)
             with self.shader:
                 self.shader.draw_array(Shader.PrimitiveType.Triangle, 0, 6, True)
 
 
     def keyboard_event(self, key, scancode, action, modifiers):
         if super(TestApp, self).keyboard_event(key, scancode,
-                                              action, modifiers):
+                                               action, modifiers):
             return True
         if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
             self.set_visible(False)

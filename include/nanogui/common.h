@@ -14,10 +14,9 @@
 
 #pragma once
 
-#include <enoki/array.h>
 #include <stdint.h>
-#include <array>
 #include <vector>
+#include <string>
 
 /* Set to 1 to draw boxes around widgets */
 //#define NANOGUI_SHOW_WIDGET_BOUNDS 1
@@ -133,206 +132,13 @@ enum class Cursor {
     CursorCount ///< Not a cursor --- should always be last: enables a loop over the cursor types.
 };
 
-/* Import some common Enoki types */
-using Vector2f     = enoki::Array<float, 2>;
-using Vector3f     = enoki::Array<float, 3>;
-using Vector4f     = enoki::Array<float, 4>;
-using Vector2i     = enoki::Array<int32_t, 2>;
-using Vector3i     = enoki::Array<int32_t, 3>;
-using Vector4i     = enoki::Array<int32_t, 4>;
-using Matrix2f     = enoki::Matrix<float, 2>;
-using Matrix3f     = enoki::Matrix<float, 3>;
-using Matrix4f     = enoki::Matrix<float, 4>;
-using Quaternion4f = enoki::Quaternion<float>;
-
-
-/**
- * \class Color common.h nanogui/common.h
- *
- * \brief Stores an RGBA floating point color value.
- *
- * This class simply wraps around an ``Vector4f``, providing some convenient
- * methods and terminology for thinking of it as a color.  The data operates in the
- * same way as ``Vector4f``, and the following values are identical:
- *
- * \rst
- * +---------+-------------+-----------------------+-------------+
- * | Channel | Array Index | enoki Vector4f Value  | Color Value |
- * +=========+=============+=======================+=============+
- * | Red     | ``0``       | x()                   | r()         |
- * +---------+-------------+-----------------------+-------------+
- * | Green   | ``1``       | y()                   | g()         |
- * +---------+-------------+-----------------------+-------------+
- * | Blue    | ``2``       | z()                   | b()         |
- * +---------+-------------+-----------------------+-------------+
- * | Alpha   | ``3``       | w()                   | w()         |
- * +---------+-------------+-----------------------+-------------+
- *
- * .. note::
- *    The method for the alpha component is **always** ``w()``.
- * \endrst
- */
-class Color : public Vector4f {
-public:
-    using Vector4f::Vector4f;
-
-    /// Default constructor: represents black (``r, g, b, a = 0``)
-    Color() : Color(0, 0, 0, 0) { }
-
-    /// Initialize from a 4D vector
-    Color(const Vector4f &color) : Vector4f(color) { }
-
-    /**
-     * Copies (x, y, z) from the input vector, and uses the value specified by
-     * the ``alpha`` parameter for this Color object's alpha component.
-     *
-     * \param color
-     * The three dimensional float vector being copied.
-     *
-     * \param alpha
-     * The value to set this object's alpha component to.
-     */
-    Color(const Vector3f &color, float alpha)
-        : Color(color[0], color[1], color[2], alpha) { }
-
-    /**
-     * Copies (x, y, z) from the input vector, casted as floats first and then
-     * divided by ``255.0``, and uses the value specified by the ``alpha``
-     * parameter, casted to a float and divided by ``255.0`` as well, for this
-     * Color object's alpha component.
-     *
-     * \param color
-     * The three dimensional integer vector being copied, will be divided by ``255.0``.
-     *
-     * \param alpha
-     * The value to set this object's alpha component to, will be divided by ``255.0``.
-     */
-    Color(const Vector3i &color, int alpha)
-        : Color(Vector3f(color) / 255.f, alpha / 255.f) { }
-
-    /**
-     * Copies (x, y, z) from the input vector, and sets the alpha of this color
-     * to be ``1.0``.
-     *
-     * \param color
-     * The three dimensional float vector being copied.
-     */
-    Color(const Vector3f &color) : Color(color, 1.0f) {}
-
-    /**
-     * Copies (x, y, z) from the input vector, casting to floats and dividing by
-     * ``255.0``.  The alpha of this color will be set to ``1.0``.
-     *
-     * \param color
-     * The three dimensional integer vector being copied, will be divided by ``255.0``.
-     */
-    Color(const Vector3i &color)
-        : Color(Vector3f(color) / 255.f, 1.f) { }
-
-    /**
-     * Copies (x, y, z, w) from the input vector, casting to floats and dividing
-     * by ``255.0``.
-     *
-     * \param color
-     * The three dimensional integer vector being copied, will be divided by ``255.0``.
-     */
-    Color(const Vector4i &color)
-        : Color(Vector4f(color) / 255.f) { }
-
-    /**
-     * Creates the Color ``(intensity, intensity, intensity, alpha)``.
-     *
-     * \param intensity
-     * The value to be used for red, green, and blue.
-     *
-     * \param alpha
-     * The alpha component of the color.
-     */
-    Color(float intensity, float alpha)
-        : Color(Vector3f(intensity), alpha) { }
-
-    /**
-     * Creates the Color ``(intensity, intensity, intensity, alpha) / 255.0``.
-     * Values are casted to floats before division.
-     *
-     * \param intensity
-     * The value to be used for red, green, and blue, will be divided by ``255.0``.
-     *
-     * \param alpha
-     * The alpha component of the color, will be divided by ``255.0``.
-     */
-    Color(int intensity, int alpha)
-        : Color(Vector3i(intensity), alpha) { }
-
-    /**
-     * Explicit constructor: creates the Color ``(r, g, b, a)``.
-     *
-     * \param r
-     * The red component of the color.
-     *
-     * \param g
-     * The green component of the color.
-     *
-     * \param b
-     * The blue component of the color.
-     *
-     * \param a
-     * The alpha component of the color.
-     */
-    Color(float r, float g, float b, float a) : Color(Vector4f(r, g, b, a)) { }
-
-    /**
-     * Explicit constructor: creates the Color ``(r, g, b, a) / 255.0``.
-     * Values are casted to floats before division.
-     *
-     * \param r
-     * The red component of the color, will be divided by ``255.0``.
-     *
-     * \param g
-     * The green component of the color, will be divided by ``255.0``.
-     *
-     * \param b
-     * The blue component of the color, will be divided by ``255.0``.
-     *
-     * \param a
-     * The alpha component of the color, will be divided by ``255.0``.
-     */
-    Color(int r, int g, int b, int a) : Color(Vector4f((float) r, (float) g, (float) b, (float) a) / 255.f) { }
-
-    /// Return a reference to the red channel
-    float &r() { return x(); }
-    /// Return a reference to the red channel (const version)
-    const float &r() const { return x(); }
-    /// Return a reference to the green channel
-    float &g() { return y(); }
-    /// Return a reference to the green channel (const version)
-    const float &g() const { return y(); }
-    /// Return a reference to the blue channel
-    float &b() { return z(); }
-    /// Return a reference to the blue channel (const version)
-    const float &b() const { return z(); }
-
-    /**
-     * Computes the luminance as ``l = 0.299r + 0.587g + 0.144b + 0.0a``.  If
-     * the luminance is less than 0.5, white is returned.  If the luminance is
-     * greater than or equal to 0.5, black is returned.  Both returns will have
-     * an alpha component of 1.0.
-     */
-    Color contrasting_color() const {
-        float luminance = enoki::dot(*this, Color(0.299f, 0.587f, 0.144f, 0.f));
-        return Color(luminance < 0.5f ? 1.f : 0.f, 1.f);
-    }
-
-    /// Allows for conversion between this Color and NanoVG's representation.
-    inline operator const NVGcolor &() const;
-};
-
 // skip the forward declarations for the docs
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 /* Forward declarations */
 template <typename T> class ref;
 class AdvancedGridLayout;
+struct ArrayBase;
 class BoxLayout;
 class Button;
 class CheckBox;
@@ -348,6 +154,7 @@ class ImagePanel;
 class ImageView;
 class Label;
 class Layout;
+struct MatrixBase;
 class MessageDialog;
 class Object;
 class Popup;
@@ -495,7 +302,7 @@ extern NANOGUI_EXPORT void chdir_to_bundle_parent();
  * \param c
  *     The UTF32 character to be converted.
  */
-extern NANOGUI_EXPORT std::array<char, 8> utf8(int c);
+extern NANOGUI_EXPORT std::string utf8(uint32_t c);
 
 /// Load a directory of PNG images and upload them to the GPU (suitable for use with ImagePanel)
 extern NANOGUI_EXPORT std::vector<std::pair<int, std::string>>
@@ -508,3 +315,9 @@ extern NANOGUI_EXPORT int __nanogui_get_image(NVGcontext *ctx, const std::string
                                               uint8_t *data, uint32_t size);
 
 NAMESPACE_END(nanogui)
+
+NAMESPACE_BEGIN(enoki)
+/// Base class of all Enoki arrays
+template <typename Value_, typename Derived_> struct ArrayBase;
+NAMESPACE_END(enoki)
+

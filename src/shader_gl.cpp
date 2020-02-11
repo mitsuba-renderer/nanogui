@@ -11,8 +11,6 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-using enoki::EnokiType;
-
 static GLuint compile_gl_shader(GLenum type,
                                 const std::string &name,
                                 const std::string &shader_string) {
@@ -83,8 +81,8 @@ Shader::Shader(RenderPass *render_pass,
     CHK(glGetProgramiv(m_shader_handle, GL_ACTIVE_ATTRIBUTES, &attribute_count));
     CHK(glGetProgramiv(m_shader_handle, GL_ACTIVE_UNIFORMS, &uniform_count));
 
-    auto register_buffer = [&](BufferType type, const std::string &name, int index,
-                               GLenum gl_type) {
+    auto register_buffer = [&](BufferType type, const std::string &name,
+                               int index, GLenum gl_type) {
         if (m_buffers.find(name) != m_buffers.end())
             throw std::runtime_error(
                 "Shader::Shader(): duplicate attribute/uniform name in shader code!");
@@ -93,114 +91,115 @@ Shader::Shader(RenderPass *render_pass,
                 "Shader::Shader(): argument name 'indices' is reserved!");
 
         Buffer &buf = m_buffers[name];
-        buf.shape = { 1, 1, 1 };
+        for (int i = 0; i < 3; ++i)
+            buf.shape[i] = 1;
         buf.ndim = 1;
         buf.index = index;
         buf.type = type;
 
         switch (gl_type) {
             case GL_FLOAT:
-                buf.dtype = EnokiType::Float32;
+                buf.dtype = VariableType::Float32;
                 buf.ndim = 0;
                 break;
 
             case GL_FLOAT_VEC2:
-                buf.dtype = EnokiType::Float32;
+                buf.dtype = VariableType::Float32;
                 buf.shape[0] = 2;
                 break;
 
             case GL_FLOAT_VEC3:
-                buf.dtype = EnokiType::Float32;
+                buf.dtype = VariableType::Float32;
                 buf.shape[0] = 3;
                 break;
 
             case GL_FLOAT_VEC4:
-                buf.dtype = EnokiType::Float32;
+                buf.dtype = VariableType::Float32;
                 buf.shape[0] = 4;
                 break;
 
             case GL_INT:
-                buf.dtype = EnokiType::Int32;
+                buf.dtype = VariableType::Int32;
                 buf.ndim = 0;
                 break;
 
             case GL_INT_VEC2:
-                buf.dtype = EnokiType::Int32;
+                buf.dtype = VariableType::Int32;
                 buf.shape[0] = 2;
                 break;
 
             case GL_INT_VEC3:
-                buf.dtype = EnokiType::Int32;
+                buf.dtype = VariableType::Int32;
                 buf.shape[0] = 3;
                 break;
 
             case GL_INT_VEC4:
-                buf.dtype = EnokiType::Int32;
+                buf.dtype = VariableType::Int32;
                 buf.shape[0] = 4;
                 break;
 
 #if defined(NANOGUI_USE_OPENGL)
             case GL_UNSIGNED_INT:
-                buf.dtype = EnokiType::UInt32;
+                buf.dtype = VariableType::UInt32;
                 buf.ndim = 0;
                 break;
 
             case GL_UNSIGNED_INT_VEC2:
-                buf.dtype = EnokiType::UInt32;
+                buf.dtype = VariableType::UInt32;
                 buf.shape[0] = 2;
                 break;
 
             case GL_UNSIGNED_INT_VEC3:
-                buf.dtype = EnokiType::UInt32;
+                buf.dtype = VariableType::UInt32;
                 buf.shape[0] = 3;
                 break;
 
             case GL_UNSIGNED_INT_VEC4:
-                buf.dtype = EnokiType::UInt32;
+                buf.dtype = VariableType::UInt32;
                 buf.shape[0] = 4;
                 break;
 #endif
 
             case GL_BOOL:
-                buf.dtype = EnokiType::Bool;
+                buf.dtype = VariableType::Bool;
                 buf.ndim = 0;
                 break;
 
             case GL_BOOL_VEC2:
-                buf.dtype = EnokiType::Bool;
+                buf.dtype = VariableType::Bool;
                 buf.shape[0] = 2;
                 break;
 
             case GL_BOOL_VEC3:
-                buf.dtype = EnokiType::Bool;
+                buf.dtype = VariableType::Bool;
                 buf.shape[0] = 3;
                 break;
 
             case GL_BOOL_VEC4:
-                buf.dtype = EnokiType::Bool;
+                buf.dtype = VariableType::Bool;
                 buf.shape[0] = 4;
                 break;
 
             case GL_FLOAT_MAT2:
-                buf.dtype = EnokiType::Float32;
+                buf.dtype = VariableType::Float32;
                 buf.shape[0] = buf.shape[1] = 2;
                 buf.ndim = 2;
                 break;
 
             case GL_FLOAT_MAT3:
-                buf.dtype = EnokiType::Float32;
+                buf.dtype = VariableType::Float32;
                 buf.shape[0] = buf.shape[1] = 3;
                 buf.ndim = 2;
                 break;
 
             case GL_FLOAT_MAT4:
-                buf.dtype = EnokiType::Float32;
+                buf.dtype = VariableType::Float32;
                 buf.shape[0] = buf.shape[1] = 4;
                 buf.ndim = 2;
                 break;
 
             case GL_SAMPLER_2D:
-                buf.dtype = EnokiType::Invalid;
+                buf.dtype = VariableType::Invalid;
                 buf.ndim = 0;
                 buf.type = FragmentTexture;
                 break;
@@ -242,9 +241,10 @@ Shader::Shader(RenderPass *render_pass,
     Buffer &buf = m_buffers["indices"];
     buf.index = -1;
     buf.ndim = 1;
-    buf.shape = { 0, 1, 1 };
+    buf.shape[0] = 0;
+    buf.shape[1] = buf.shape[2] = 1;
     buf.type = IndexBuffer;
-    buf.dtype = EnokiType::UInt32;
+    buf.dtype = VariableType::UInt32;
 
 #if defined(NANOGUI_USE_OPENGL)
     CHK(glGenVertexArrays(1, &m_vertex_array_handle));
@@ -261,9 +261,9 @@ Shader::~Shader() {
 }
 
 void Shader::set_buffer(const std::string &name,
-                        EnokiType dtype,
+                        VariableType dtype,
                         size_t ndim,
-                        std::array<size_t, 3> shape,
+                        const size_t *shape,
                         const void *data) {
     auto it = m_buffers.find(name);
     if (it == m_buffers.end())
@@ -273,25 +273,26 @@ void Shader::set_buffer(const std::string &name,
     Buffer &buf = m_buffers[name];
 
     bool mismatch = ndim != buf.ndim || dtype != buf.dtype;
-    if (buf.type == UniformBuffer) {
-        mismatch |= shape != buf.shape;
-    } else if (buf.type == VertexBuffer || buf.type == IndexBuffer) {
-        for (int i = 1; i < 3; ++i)
-            mismatch |= shape[i] != buf.shape[i];
-    }
+    for (int i = (buf.type == UniformBuffer ? 0 : 1); i < 3; ++i)
+        mismatch |= shape[i] != buf.shape[i];
 
     if (mismatch) {
         Buffer arg;
         arg.type = buf.type;
         arg.ndim = ndim;
-        arg.shape = shape;
+        for (int i = 0; i< 3; ++i)
+            arg.shape[i] = i < arg.ndim ? shape[i] : 1;
         arg.dtype = dtype;
         throw std::runtime_error("Buffer::set_buffer(\"" + name +
                                  "\"): shape/dtype mismatch: expected " + buf.to_string() +
                                  ", got " + arg.to_string());
     }
 
-    size_t size = enoki_type_size(dtype) * shape[0] * shape[1] * shape[2];
+    size_t size = type_size(dtype);
+    for (int i = 0; i < 3; ++i) {
+        size *= shape[i];
+        buf.shape[i] = shape[i];
+    }
 
     if (buf.type == UniformBuffer) {
         if (buf.buffer && buf.size != size) {
@@ -317,7 +318,6 @@ void Shader::set_buffer(const std::string &name,
 
     buf.dtype = dtype;
     buf.ndim  = ndim;
-    buf.shape   = shape;
     buf.size  = size;
     buf.dirty = true;
 }
@@ -375,14 +375,14 @@ void Shader::begin() {
                 CHK(glEnableVertexAttribArray(buf.index));
 
                 switch (buf.dtype) {
-                    case EnokiType::Int8:    gl_type = GL_BYTE;           break;
-                    case EnokiType::UInt8:   gl_type = GL_UNSIGNED_BYTE;  break;
-                    case EnokiType::Int16:   gl_type = GL_SHORT;          break;
-                    case EnokiType::UInt16:  gl_type = GL_UNSIGNED_SHORT; break;
-                    case EnokiType::Int32:   gl_type = GL_INT;            break;
-                    case EnokiType::UInt32:  gl_type = GL_UNSIGNED_INT;   break;
-                    case EnokiType::Float16: gl_type = GL_HALF_FLOAT;     break;
-                    case EnokiType::Float32: gl_type = GL_FLOAT;          break;
+                    case VariableType::Int8:    gl_type = GL_BYTE;           break;
+                    case VariableType::UInt8:   gl_type = GL_UNSIGNED_BYTE;  break;
+                    case VariableType::Int16:   gl_type = GL_SHORT;          break;
+                    case VariableType::UInt16:  gl_type = GL_UNSIGNED_SHORT; break;
+                    case VariableType::Int32:   gl_type = GL_INT;            break;
+                    case VariableType::UInt32:  gl_type = GL_UNSIGNED_INT;   break;
+                    case VariableType::Float16: gl_type = GL_HALF_FLOAT;     break;
+                    case VariableType::Float32: gl_type = GL_FLOAT;          break;
                     default:
                         throw std::runtime_error(
                             "Shader::begin(): unsupported vertex buffer type!");
@@ -412,7 +412,7 @@ void Shader::begin() {
                                              "\" has an invalid shapeension (expected ndim=0/1/2, got " +
                                              std::to_string(buf.ndim) + ")");
                 switch (buf.dtype) {
-                    case EnokiType::Float32:
+                    case VariableType::Float32:
                         if (buf.ndim < 2) {
                             const float *v = (const float *) buf.buffer;
                             switch (buf.shape[0]) {
@@ -436,9 +436,9 @@ void Shader::begin() {
                         break;
 
 #if defined(NANOGUI_USE_GLES)
-                    case EnokiType::UInt32:
+                    case VariableType::UInt32:
 #endif
-                    case EnokiType::Int32: {
+                    case VariableType::Int32: {
                             const int32_t *v = (const int32_t *) buf.buffer;
                             if (buf.ndim < 2) {
                                 switch (buf.shape[0]) {
@@ -455,7 +455,7 @@ void Shader::begin() {
                         break;
 
 #if defined(NANOGUI_USE_OPENGL)
-                    case EnokiType::UInt32: {
+                    case VariableType::UInt32: {
                             const uint32_t *v = (const uint32_t *) buf.buffer;
                             if (buf.ndim < 2) {
                                 switch (buf.shape[0]) {
@@ -472,7 +472,7 @@ void Shader::begin() {
                         break;
 #endif
 
-                    case EnokiType::Bool: {
+                    case VariableType::Bool: {
                             const uint8_t *v = (const uint8_t *) buf.buffer;
                             if (buf.ndim < 2) {
                                 switch (buf.shape[0]) {

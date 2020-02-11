@@ -1,38 +1,35 @@
 #ifdef NANOGUI_PYTHON
 
 #include "python.h"
-#include <enoki/transform.h>
 #include <pybind11/numpy.h>
 
-using enoki::EnokiType;
-
-static EnokiType dtype_to_enoki(const py::dtype &dtype) {
+static VariableType dtype_to_enoki(const py::dtype &dtype) {
     switch (dtype.kind()) {
         case 'i':
             switch (dtype.itemsize()) {
-                case 1: return EnokiType::Int8;
-                case 2: return EnokiType::Int16;
-                case 4: return EnokiType::Int32;
-                case 8: return EnokiType::Int64;
+                case 1: return VariableType::Int8;
+                case 2: return VariableType::Int16;
+                case 4: return VariableType::Int32;
+                case 8: return VariableType::Int64;
                 default: break;
             }
             break;
 
         case 'u':
             switch (dtype.itemsize()) {
-                case 1: return EnokiType::UInt8;
-                case 2: return EnokiType::UInt16;
-                case 4: return EnokiType::UInt32;
-                case 8: return EnokiType::UInt64;
+                case 1: return VariableType::UInt8;
+                case 2: return VariableType::UInt16;
+                case 4: return VariableType::UInt32;
+                case 8: return VariableType::UInt64;
                 default: break;
             }
             break;
 
         case 'f':
             switch (dtype.itemsize()) {
-                case 2: return EnokiType::Float16;
-                case 4: return EnokiType::Float32;
-                case 8: return EnokiType::Float64;
+                case 2: return VariableType::Float16;
+                case 4: return VariableType::Float32;
+                case 8: return VariableType::Float64;
                 default: break;
             }
             break;
@@ -41,7 +38,7 @@ static EnokiType dtype_to_enoki(const py::dtype &dtype) {
             break;
     }
 
-    return EnokiType::Invalid;
+    return VariableType::Invalid;
 }
 
 static void shader_set_buffer(Shader &shader, const std::string &name, py::array array) {
@@ -49,12 +46,12 @@ static void shader_set_buffer(Shader &shader, const std::string &name, py::array
         throw py::type_error("Shader::set_buffer(): tensor rank must be < 3!");
     array = py::array::ensure(array, py::array::c_style);
 
-    EnokiType dtype = dtype_to_enoki(array.dtype());
+    VariableType dtype = dtype_to_enoki(array.dtype());
 
-    if (dtype == EnokiType::Invalid)
+    if (dtype == VariableType::Invalid)
         throw py::type_error("Shader::set_buffer(): unsupported array dtype!");
 
-    std::array<size_t, 3> dim {
+    size_t dim[3] {
         array.ndim() > 0 ? (size_t) array.shape(0) : 1,
         array.ndim() > 1 ? (size_t) array.shape(1) : 1,
         array.ndim() > 2 ? (size_t) array.shape(2) : 1
@@ -89,8 +86,8 @@ static py::array texture_download(Texture &texture) {
 
 static void texture_upload(Texture &texture, py::array array) {
     size_t n_channels = array.ndim() == 3 ? array.shape(2) : 1;
-    EnokiType dtype         = dtype_to_enoki(array.dtype()),
-              dtype_texture = (EnokiType) texture.component_format();
+    VariableType dtype         = dtype_to_enoki(array.dtype()),
+                 dtype_texture = (VariableType) texture.component_format();
 
     if (array.ndim() != 2 && array.ndim() != 3)
         throw std::runtime_error("Texture::upload(): expected a 2 or 3-dimensional array!");
@@ -105,8 +102,8 @@ static void texture_upload(Texture &texture, py::array array) {
     else if (dtype != dtype_texture)
         throw std::runtime_error(
             std::string("Texture::upload(): dtype of array (") +
-            enoki_type_name(dtype) + ") does not match the texture (" +
-            enoki_type_name(dtype_texture) + ")!");
+            type_name(dtype) + ") does not match the texture (" +
+            type_name(dtype_texture) + ")!");
 
     texture.upload((const uint8_t *) array.data());
 }
@@ -275,20 +272,6 @@ void register_render(py::module &m) {
         .value("NotEqual", DepthTest::NotEqual, D(RenderPass, DepthTest, NotEqual))
         .value("GreaterEqual", DepthTest::GreaterEqual, D(RenderPass, DepthTest, GreaterEqual))
         .value("Always", DepthTest::Always, D(RenderPass, DepthTest, Always));
-
-    m.def("translate", &enoki::translate<Matrix4f, Vector3f>, "v"_a);
-    m.def("scale", &enoki::scale<Matrix4f, Vector3f>, "v"_a);
-    m.def("rotate", &enoki::rotate<Matrix4f, Vector3f>, "axis"_a, "angle"_a);
-    m.def("perspective", &enoki::perspective<Matrix4f>, "fov"_a, "near"_a, "far"_a,
-          "aspect"_a = 1.f);
-    m.def("frustum", &enoki::frustum<Matrix4f>, "left"_a, "right"_a,
-          "bottom"_a, "top"_a, "near"_a, "far"_a);
-    m.def("frustum", &enoki::frustum<Matrix4f>, "left"_a, "right"_a,
-          "bottom"_a, "top"_a, "near"_a, "far"_a);
-    m.def("ortho", &enoki::ortho<Matrix4f>, "left"_a, "right"_a,
-          "bottom"_a, "top"_a, "near"_a, "far"_a);
-    m.def("look_at", &enoki::look_at<Matrix4f, Vector3f, Vector3f>, "origin"_a,
-          "target"_a, "up"_a);
 }
 
 #endif

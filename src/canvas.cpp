@@ -155,7 +155,8 @@ void Canvas::draw(NVGcontext *ctx) {
     if (m_render_to_texture) {
         m_render_pass->resize(fbsize);
 #if defined(NANOGUI_USE_METAL)
-        m_render_pass_resolved->resize(fbsize);
+        if (m_render_pass_resolved)
+            m_render_pass_resolved->resize(fbsize);
 #endif
     } else {
         m_render_pass->resize(scr->framebuffer_size());

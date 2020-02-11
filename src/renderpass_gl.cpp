@@ -173,7 +173,7 @@ void RenderPass::begin() {
             }
 
             if (i >= 2)
-                CHK(glClearBufferfv(GL_COLOR, (GLint) i - 2, m_clear_color[i - 2].data()));
+                CHK(glClearBufferfv(GL_COLOR, (GLint) i - 2, m_clear_color[i - 2].v));
         }
 #else
         GLenum what = 0;

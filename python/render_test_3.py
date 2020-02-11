@@ -3,7 +3,7 @@
 import sys
 sys.path.append('python')
 import nanogui
-from nanogui import Shader, Texture, RenderPass, Screen
+from nanogui import Shader, Texture, RenderPass, Screen, Matrix4f
 from nanogui import glfw
 import numpy as np
 from PIL import Image
@@ -122,19 +122,19 @@ class MyScreen(Screen):
 
     def draw_contents(self):
         with self.render_pass:
-            view = nanogui.look_at(
+            view = Matrix4f.look_at(
                 origin=[0, -2, -10],
                 target=[0, 0, 0],
                 up=[0, 1, 0]
             )
 
-            model = nanogui.rotate(
+            model = Matrix4f.rotate(
                 [0, 1, 0],
                 glfw.getTime() * 0.01
             )
 
             fbsize = self.framebuffer_size()
-            proj = nanogui.perspective(
+            proj = Matrix4f.perspective(
                 fov=25 * np.pi / 180,
                 near=0.1,
                 far=20,
@@ -142,14 +142,14 @@ class MyScreen(Screen):
             )
 
             mvp = proj @ view @ model
-            self.shader.set_buffer("mvp", np.float32(mvp.T))
+            self.shader.set_buffer("mvp", np.float32(mvp).T)
             with self.shader:
                 self.shader.draw_array(Shader.PrimitiveType.Triangle,
                                        0, 6, indexed=True)
 
     def keyboard_event(self, key, scancode, action, modifiers):
         if super(MyScreen, self).keyboard_event(key, scancode,
-                                              action, modifiers):
+                                                action, modifiers):
             return True
         if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
             self.set_visible(False)

@@ -16,26 +16,26 @@ NanoGUI
 
 .. begin_brief_description
 
-NanoGUI is a minimalistic cross-platform widget library for OpenGL 3+, GLES 2/3,
-and Metal. It supports automatic layout generation, stateful C++ lambdas
+NanoGUI is a minimalistic cross-platform widget library for OpenGL 3+, GLES
+2/3, and Metal. It supports automatic layout generation, stateful C++ lambdas
 callbacks, a variety of useful widget types and Retina-capable rendering on
 Apple devices thanks to NanoVG_ by Mikko Mononen. Python bindings of all
 functionality are provided using pybind11_.
 
-**Note**: This repository contains an Enoki_-compatible port of the original
-NanoGUI_.
-
-This repository incorporates a number of additional changes that go beyond the
-choice of vector library:
+**Note**: This repository contains an improved port of the original NanoGUI_.
+The most visible change to developers is that it no longer relies on Eigen or
+Enoki and ships with its own (absolutely minimal) vector library. Additionally,
+the the repository here incorporates the following changes:
 
 1. A different set of naming conventions is used for function and variable
    names that feels more natural in a mixed C++ & Python environment.
    (specifically, ``underscore_case`` for methods and variables rather than
    ``camelCase``).
 
-2. GUI Rendering now provides backends for OpenGL 3+, GLES 2/3, and Metal. GLES 2
-   support allows NanoGUI to run on ARM devices including the Raspberry Pi
-   and in browsers via WebGL. The Metal backend supports modern Macs, iPhones, etc.
+2. GUI Rendering now provides backends for OpenGL 3+, GLES 2/3, and Metal. GLES
+   2 support allows NanoGUI to run on ARM devices including the Raspberry Pi
+   and in browsers via WebGL. The Metal backend supports modern Macs, iPhones,
+   etc.
 
    NanoGUI includes generic wrappers around shaders and textures that work for
    all of these frameworks.
@@ -58,7 +58,6 @@ choice of vector library:
 .. _NanoVG: https://github.com/memononen/NanoVG
 .. _pybind11: https://github.com/wjakob/pybind11
 .. _NanoGUI: https://github.com/wjakob/nanogui
-.. _Enoki: https://github.com/mitsuba-renderer/enoki
 .. _Tekari: https://rgl.epfl.ch/tekari?url=%2F%2Frgl.s3.eu-central-1.amazonaws.com%2Fmedia%2Fuploads%2Fwjakob%2F2018%2F08%2F27%2Firidescent-paper.txt&log=1
 .. _Entypo: http://www.entypo.com
 .. _FontAwesome: https://github.com/FortAwesome/Font-Awesome
@@ -84,8 +83,8 @@ Description
 .. begin_long_description
 
 NanoGUI builds on GLFW_ for cross-platform context creation and event handling,
-GLAD_ to access OpenGL functionality on Windows, Enoki_ for basic vector types,
-and NanoVG_/MetalNanoVG_ to draw 2D primitives.
+GLAD_ to access OpenGL functionality on Windows, and NanoVG_/MetalNanoVG_ to
+draw 2D primitives.
 
 Note that the dependency library NanoVG already includes some basic example code to draw
 good-looking static widgets; what NanoGUI does is to flesh it out into a complete GUI
@@ -97,7 +96,6 @@ jointly built using a CMake-based build system.
 
 .. _GLFW: http://www.glfw.org/
 .. _GLAD: https://github.com/Dav1dde/glad
-.. _Enoki: https://github.com/mitsuba-renderer/enoki
 .. _MetalNanoVG: https://github.com/ollix/MetalNanoVG
 
 .. end_long_description

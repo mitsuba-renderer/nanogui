@@ -34,7 +34,9 @@ int ImagePanel::index_for_position(const Vector2i &p) const {
     bool over_image = pp.x() - std::floor(pp.x()) < icon_region &&
                       pp.y() - std::floor(pp.y()) < icon_region;
     Vector2i grid_pos(pp), grid = grid_size();
-    over_image &= all(grid_pos >= 0 && grid_pos < grid && pp >= 0);
+    over_image &= grid_pos.x() >= 0 && grid_pos.y() >= 0 && pp.x() >= 0 &&
+                  pp.y() >= 0 && grid_pos.x() < grid.x() &&
+                  grid_pos.y() < grid.y();
     return over_image ? (grid_pos.x() + grid_pos.y() * grid.x()) : -1;
 }
 

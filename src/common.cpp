@@ -145,7 +145,7 @@ void mainloop(float refresh) {
     std::chrono::microseconds quantum;
     size_t quantum_count = 1;
     if (refresh >= 0) {
-        quantum = std::chrono::microseconds(enoki::ssize_t(refresh * 1'000));
+        quantum = std::chrono::microseconds((int64_t)(refresh * 1'000));
         while (quantum.count() > 50'000) {
             quantum /= 2;
             quantum_count *= 2;
@@ -220,8 +220,8 @@ void shutdown() {
 #  define NANOGUI_FALLTHROUGH
 #endif
 
-std::array<char, 8> utf8(int c) {
-    std::array<char, 8> seq;
+std::string utf8(uint32_t c) {
+    char seq[8];
     int n = 0;
     if (c < 0x80) n = 1;
     else if (c < 0x800) n = 2;
@@ -238,7 +238,7 @@ std::array<char, 8> utf8(int c) {
         case 2: seq[1] = 0x80 | (c & 0x3f); c = c >> 6; c |= 0xc0;      NANOGUI_FALLTHROUGH
         case 1: seq[0] = c;
     }
-    return seq;
+    return std::string(seq, seq + n);
 }
 
 int __nanogui_get_image(NVGcontext *ctx, const std::string &name, uint8_t *data, uint32_t size) {
