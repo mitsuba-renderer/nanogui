@@ -37,6 +37,7 @@
 #include <nanogui/shader.h>
 #include <nanogui/renderpass.h>
 #include <iostream>
+#include <memory>
 #include <stb_image.h>
 
 using namespace nanogui;

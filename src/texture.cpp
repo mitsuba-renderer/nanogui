@@ -1,5 +1,6 @@
 #include <nanogui/texture.h>
 #include <stb_image.h>
+#include <memory>
 
 NAMESPACE_BEGIN(nanogui)
 

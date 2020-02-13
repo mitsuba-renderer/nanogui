@@ -11,8 +11,10 @@
 
 #include <nanogui/common.h>
 #include <nanogui/traits.h>
+#include <cassert>
 #include <cmath>
 #include <iosfwd>
+#include <string.h> // memset
 
 NAMESPACE_BEGIN(nanogui)
 
