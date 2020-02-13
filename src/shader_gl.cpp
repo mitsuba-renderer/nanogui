@@ -273,14 +273,14 @@ void Shader::set_buffer(const std::string &name,
     Buffer &buf = m_buffers[name];
 
     bool mismatch = ndim != buf.ndim || dtype != buf.dtype;
-    for (int i = (buf.type == UniformBuffer ? 0 : 1); i < 3; ++i)
+    for (size_t i = (buf.type == UniformBuffer ? 0 : 1); i < ndim; ++i)
         mismatch |= shape[i] != buf.shape[i];
 
     if (mismatch) {
         Buffer arg;
         arg.type = buf.type;
         arg.ndim = ndim;
-        for (int i = 0; i< 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
             arg.shape[i] = i < arg.ndim ? shape[i] : 1;
         arg.dtype = dtype;
         throw std::runtime_error("Buffer::set_buffer(\"" + name +
@@ -289,9 +289,9 @@ void Shader::set_buffer(const std::string &name,
     }
 
     size_t size = type_size(dtype);
-    for (int i = 0; i < 3; ++i) {
-        size *= shape[i];
-        buf.shape[i] = shape[i];
+    for (size_t i = 0; i < 3; ++i) {
+        buf.shape[i] = i < ndim ? shape[i] : 1;
+        size *= buf.shape[i];
     }
 
     if (buf.type == UniformBuffer) {

@@ -583,7 +583,7 @@ if (NANOGUI_BUILD_EXAMPLES)
 
   target_link_libraries(example1      nanogui)
   target_link_libraries(example2      nanogui)
-  target_link_libraries(example3      nanogui)
+  target_link_libraries(example3      nanogui ${opengl_library})
   target_link_libraries(example4      nanogui)
   target_link_libraries(example_icons nanogui)
 
