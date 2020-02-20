@@ -229,13 +229,13 @@ Shader::Shader(RenderPass *render_pass,
     }
 
     for (int i = 0; i < uniform_count; ++i) {
-        char name[128];
+        char uniform_name[128];
         GLenum type = 0;
         GLint size = 0;
-        CHK(glGetActiveUniform(m_shader_handle, i, sizeof(name), nullptr,
-                               &size, &type, name));
-        GLint index = glGetUniformLocation(m_shader_handle, name);
-        register_buffer(UniformBuffer, name, index, type);
+        CHK(glGetActiveUniform(m_shader_handle, i, sizeof(uniform_name), nullptr,
+                               &size, &type, uniform_name));
+        GLint index = glGetUniformLocation(m_shader_handle, uniform_name);
+        register_buffer(UniformBuffer, uniform_name, index, type);
     }
 
     Buffer &buf = m_buffers["indices"];

@@ -34,6 +34,8 @@ using nanogui::Shader;
 using nanogui::Canvas;
 using nanogui::ref;
 
+constexpr float Pi = 3.14159f;
+
 class MyCanvas : public Canvas {
 public:
     MyCanvas(Widget *parent) : Canvas(parent, 1), m_rotation(0.f) {
@@ -167,7 +169,7 @@ public:
         );
 
         Matrix4f proj = Matrix4f::perspective(
-            float(25 * M_PI / 180),
+            float(25 * Pi / 180),
             0.1f,
             20.f,
             m_size.x() / (float) m_size.y()
@@ -213,7 +215,7 @@ public:
 
         Button *b1 = new Button(tools, "Random Rotation");
         b1->set_callback([this]() {
-            m_canvas->set_rotation((float) M_PI * rand() / (float) RAND_MAX);
+            m_canvas->set_rotation((float) Pi * rand() / (float) RAND_MAX);
         });
 
         perform_layout();
