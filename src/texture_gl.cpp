@@ -156,14 +156,16 @@ void Texture::upload(const uint8_t *data) {
         GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
         CHK(glBindTexture(tex_mode, m_texture_handle));
 
-        if (data) {
+        if (data)
             CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+
+#if defined(NANOGUI_USE_OPENGL)
+        if (data) {
             CHK(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
             CHK(glPixelStorei(GL_UNPACK_SKIP_ROWS, 0));
             CHK(glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0));
         }
 
-#if defined(NANOGUI_USE_OPENGL)
         if (m_samples == 1)
             CHK(glTexImage2D(tex_mode, 0, internal_format_gl, (GLsizei) m_size.x(),
                              (GLsizei) m_size.y(), 0, pixel_format_gl, component_format_gl, data));

@@ -577,7 +577,7 @@ int main(int /* argc */, char ** /* argv */) {
         }
 
         nanogui::shutdown();
-    } catch (const std::runtime_error &e) {
+    } catch (const std::exception &e) {
         std::string error_msg = std::string("Caught a fatal error: ") + std::string(e.what());
         #if defined(_WIN32)
             MessageBoxA(nullptr, error_msg.c_str(), NULL, MB_ICONERROR | MB_OK);
@@ -585,6 +585,8 @@ int main(int /* argc */, char ** /* argv */) {
             std::cerr << error_msg << std::endl;
         #endif
         return -1;
+    } catch (...) {
+        std::cerr << "Caught an unknown error!" << std::endl;
     }
 
     return 0;
