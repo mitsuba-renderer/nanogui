@@ -147,10 +147,10 @@ public:
     void remove_child(const Widget *widget);
 
     /// Retrieves the child at the specific position
-    const Widget* child_at(int index) const { return m_children[index]; }
+    const Widget* child_at(int index) const { return m_children[(size_t) index]; }
 
     /// Retrieves the child at the specific position
-    Widget* child_at(int index) { return m_children[index]; }
+    Widget* child_at(int index) { return m_children[(size_t) index]; }
 
     /// Returns the index of a specific child or -1 if not found
     int child_index(Widget* widget) const;
