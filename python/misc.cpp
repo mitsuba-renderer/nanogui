@@ -44,7 +44,9 @@ void register_misc(py::module &m) {
         .def("text_color", &Graph::text_color, D(Graph, text_color))
         .def("set_text_color", &Graph::set_text_color, D(Graph, set_text_color))
         .def("values", (std::vector<float> &(Graph::*)(void)) &Graph::values, D(Graph, values))
-        .def("set_values", &Graph::set_values, D(Graph, set_values));
+        .def("set_values", &Graph::set_values, D(Graph, set_values))
+        .def("draw_vertical", &Graph::draw_vertical, D(Graph, draw_vertical))
+        .def("set_draw_vertical", &Graph::set_draw_vertical, D(Graph, set_draw_vertical));
 
     py::class_<ImagePanel, Widget, ref<ImagePanel>, PyImagePanel>(m, "ImagePanel", D(ImagePanel))
         .def(py::init<Widget *>(), "parent"_a, D(ImagePanel, ImagePanel))

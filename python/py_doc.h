@@ -1132,6 +1132,8 @@ static const char *__doc_nanogui_Graph_set_text_color = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_set_values = R"doc()doc";
 
+static const char* __doc_nanogui_Graph_set_draw_vertical = R"doc()doc";
+
 static const char *__doc_nanogui_Graph_stroke_color = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_text_color = R"doc()doc";
@@ -1139,6 +1141,8 @@ static const char *__doc_nanogui_Graph_text_color = R"doc()doc";
 static const char *__doc_nanogui_Graph_values = R"doc()doc";
 
 static const char *__doc_nanogui_Graph_values_2 = R"doc()doc";
+
+static const char* __doc_nanogui_Graph_draw_vertical = R"doc()doc";
 
 static const char *__doc_nanogui_GridLayout =
 R"doc(Grid layout.
