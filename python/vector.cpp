@@ -17,7 +17,7 @@ auto register_vector_type(py::module &m, const char *name) {
 
     array.def(py::init<Value>())
          .def(py::init<const Array &>())
-         .def(py::init([](const std::array<Value, Size> &arr) {
+         .def(py::init([Size](const std::array<Value, Size> &arr) {
             Array a;
             for (size_t i = 0; i < Size; ++i)
                 a[i] = arr[i];
@@ -37,12 +37,12 @@ auto register_vector_type(py::module &m, const char *name) {
          .def(py::self -= py::self)
          .def(py::self *= py::self)
          .def(py::self /= py::self)
-         .def("__getitem__", [](const Array &a, size_t index) -> Value {
+         .def("__getitem__", [Size](const Array &a, size_t index) -> Value {
              if (index >= Size)
                  throw py::index_error();
              return a[index];
          }, "index"_a)
-         .def("__setitem__", [](Array &a, size_t index, Value value) {
+         .def("__setitem__", [Size](Array &a, size_t index, Value value) {
              if (index >= Size)
                  throw py::index_error();
              a[index] = value;
@@ -51,7 +51,7 @@ auto register_vector_type(py::module &m, const char *name) {
                             [](Array &a, const Value &v) { a.x() = v; })
          .def_property("y", [](const Array &a) { return a.y(); },
                             [](Array &a, const Value &v) { a.y() = v; })
-         .def_buffer([](Array &m) -> py::buffer_info {
+         .def_buffer([Size](Array &m) -> py::buffer_info {
               return py::buffer_info(
                   m.v,                                    // Pointer to buffer
                   sizeof(Value),                          // Size of one scalar
