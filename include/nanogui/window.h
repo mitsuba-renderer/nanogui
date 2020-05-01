@@ -24,7 +24,7 @@ NAMESPACE_BEGIN(nanogui)
 class NANOGUI_EXPORT Window : public Widget {
     friend class Popup;
 public:
-    Window(Widget *parent, const std::string &title = "Untitled");
+    Window(Widget *parent, const std::string &title = "Window");
 
     /// Return the window title
     const std::string &title() const { return m_title; }
@@ -45,8 +45,14 @@ public:
     /// Center the window in the current \ref Screen
     void center();
 
-    /// Draw the window
-    virtual void draw(NVGcontext *ctx) override;
+     /// Draw the window frame
+    virtual void drawWindowFrame(NVGcontext* ctx);
+    /// Draw the window shadow
+    virtual void drawWindowShadow(NVGcontext* ctx);
+    /// Draw the window title bar
+    virtual void drawTitleBar(NVGcontext* ctx);
+   /// Draw the window
+    virtual void draw(NVGcontext* ctx) override;
     /// Handle mouse enter/leave events
     virtual bool mouse_enter_event(const Vector2i &p, bool enter) override;
     /// Handle window drag events
@@ -67,6 +73,32 @@ protected:
     Widget *m_button_panel;
     bool m_modal;
     bool m_drag;
+};
+
+/**
+ * \class Window window.h nanogui/window.h
+ *
+ * \brief Top-level window widget.
+ */
+class NANOGUI_EXPORT ResizableWindow : public Window {
+public:
+    ResizableWindow(Widget* parent, const std::string& title = "Resizable window", bool enforceMinHeight = true);
+    /// Draw the window
+    virtual void draw(NVGcontext* ctx) override;
+    bool mouse_button_event(const Vector2i& p, int button, bool down, int modifiers) override;
+    bool mouse_motion_event(const Vector2i& p, const Vector2i& rel, int button, int modifiers) override;
+    /// Accept scroll events and scroll in the window, or propagate them to the widget under the mouse cursor
+    virtual bool scroll_event(const Vector2i& p, const Vector2f& rel) override;
+    /// Invoke the associated layout generator to properly place child widgets, if any
+    virtual void perform_layout(NVGcontext* ctx) override;
+private:
+    bool m_resizing;
+    bool m_draggingScrollbar;
+    bool m_layoutChanged;
+    Vector2i m_downPos;
+    Vector2i m_preferred;
+    bool m_enforceMinHeight;
+    float m_scroll;
 };
 
 NAMESPACE_END(nanogui)

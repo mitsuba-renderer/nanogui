@@ -38,6 +38,7 @@
 #include <nanogui/renderpass.h>
 #include <iostream>
 #include <memory>
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 using namespace nanogui;
@@ -46,38 +47,38 @@ class ExampleApplication : public Screen {
 public:
     ExampleApplication() : Screen(Vector2i(1024, 768), "NanoGUI Test") {
         inc_ref();
-        Window *window = new Window(this, "Button demo");
-        window->set_position(Vector2i(15, 15));
-        window->set_layout(new GroupLayout());
+        
+        ResizableWindow *resizableWindow = new ResizableWindow(this, "Button demo");
+        resizableWindow->set_position(Vector2i(15, 15));
+        resizableWindow->set_layout(new GroupLayout());
+        
+        // No need to store a pointer, the data structure will be automatically freed when the parent window is deleted
+        new Label(resizableWindow, "Push buttons", "sans-bold");
 
-        /* No need to store a pointer, the data structure will be automatically
-           freed when the parent window is deleted */
-        new Label(window, "Push buttons", "sans-bold");
-
-        Button *b = new Button(window, "Plain button");
+        Button* b = new Button(resizableWindow, "Plain button");
         b->set_callback([] { std::cout << "pushed!" << std::endl; });
         b->set_tooltip("short tooltip");
 
-        /* Alternative construction notation using variadic template */
-        b = window->add<Button>("Styled", FA_ROCKET);
+        // Alternative construction notation using variadic template
+        b = resizableWindow->add<Button>("Styled", FA_ROCKET);
         b->set_background_color(Color(0, 0, 255, 25));
         b->set_callback([] { std::cout << "pushed!" << std::endl; });
         b->set_tooltip("This button has a fairly long tooltip. It is so long, in "
                 "fact, that the shown text will span several lines.");
 
-        new Label(window, "Toggle buttons", "sans-bold");
-        b = new Button(window, "Toggle me");
+        new Label(resizableWindow, "Toggle buttons", "sans-bold");
+        b = new Button(resizableWindow, "Toggle me");
         b->set_flags(Button::ToggleButton);
         b->set_change_callback([](bool state) { std::cout << "Toggle button state: " << state << std::endl; });
 
-        new Label(window, "Radio buttons", "sans-bold");
-        b = new Button(window, "Radio button 1");
+        new Label(resizableWindow, "Radio buttons", "sans-bold");
+        b = new Button(resizableWindow, "Radio button 1");
         b->set_flags(Button::RadioButton);
-        b = new Button(window, "Radio button 2");
+        b = new Button(resizableWindow, "Radio button 2");
         b->set_flags(Button::RadioButton);
 
-        new Label(window, "A tool palette", "sans-bold");
-        Widget *tools = new Widget(window);
+        new Label(resizableWindow, "A tool palette", "sans-bold");
+        Widget* tools = new Widget(resizableWindow);
         tools->set_layout(new BoxLayout(Orientation::Horizontal,
                                        Alignment::Middle, 0, 6));
 
@@ -86,8 +87,8 @@ public:
         b = new ToolButton(tools, FA_COMPASS);
         b = new ToolButton(tools, FA_UTENSILS);
 
-        new Label(window, "Popup buttons", "sans-bold");
-        PopupButton *popup_btn = new PopupButton(window, "Popup", FA_FLASK);
+        new Label(resizableWindow, "Popup buttons", "sans-bold");
+        PopupButton *popup_btn = new PopupButton(resizableWindow, "Popup", FA_FLASK);
         Popup *popup = popup_btn->popup();
         popup->set_layout(new GroupLayout());
         new Label(popup, "Arbitrary widgets can be placed here");
@@ -103,34 +104,44 @@ public:
         Popup *popup_left = popup_btn->popup();
         popup_left->set_layout(new GroupLayout());
         new CheckBox(popup_left, "Another check box");
+       
+        resizableWindow = new ResizableWindow(this, "Scrollable resizableWindow");
+        resizableWindow->set_position(Vector2i(15, 500));
+        resizableWindow->set_layout(new GroupLayout());
 
-        window = new Window(this, "Basic widgets");
-        window->set_position(Vector2i(200, 15));
-        window->set_layout(new GroupLayout());
 
-        new Label(window, "Message dialog", "sans-bold");
-        tools = new Widget(window);
+        new Label(resizableWindow, "Message dialog", "sans-bold");
+        tools = new Widget(resizableWindow);
         tools->set_layout(new BoxLayout(Orientation::Horizontal,
-                                       Alignment::Middle, 0, 6));
+            Alignment::Middle, 0, 6));
         b = new Button(tools, "Info");
         b->set_callback([&] {
             auto dlg = new MessageDialog(this, MessageDialog::Type::Information, "Title", "This is an information message");
             dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
-        });
+            });
         b = new Button(tools, "Warn");
         b->set_callback([&] {
             auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Title", "This is a warning message");
             dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
-        });
+            });
         b = new Button(tools, "Ask");
         b->set_callback([&] {
             auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Title", "This is a question message", "Yes", "No", true);
             dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
-        });
+            });
+        popup_btn = new PopupButton(resizableWindow, "Popup", FA_FLASK);
+        popup = popup_btn->popup();
+        popup->set_layout(new GroupLayout());
+        new Label(popup, "Arbitrary widgets can be placed here");
+        new CheckBox(popup, "A check box");
+        
+        resizableWindow = new ResizableWindow(this, "Basic widgets", false);
+        resizableWindow->set_position(Vector2i(200, 15));
+        resizableWindow->set_layout(new GroupLayout());
 
 #if defined(_WIN32)
         /// Executable is in the Debug/Release/.. subdirectory
-        std::string resources_folder_path("../icons");
+        std::string resources_folder_path("../../../Resources/icons");
 #else
         std::string resources_folder_path("./icons");
 #endif
@@ -144,8 +155,8 @@ public:
         }
 #endif
 
-        new Label(window, "Image panel & scroll panel", "sans-bold");
-        PopupButton *image_panel_btn = new PopupButton(window, "Image Panel");
+        new Label(resizableWindow, "Image panel & scroll panel", "sans-bold");
+        PopupButton *image_panel_btn = new PopupButton(resizableWindow, "Image Panel");
         image_panel_btn->set_icon(FA_IMAGES);
         popup = image_panel_btn->popup();
         VScrollPanel *vscroll = new VScrollPanel(popup);
@@ -201,8 +212,8 @@ public:
             }
         );
 
-        new Label(window, "File dialog", "sans-bold");
-        tools = new Widget(window);
+        new Label(resizableWindow, "File dialog", "sans-bold");
+        tools = new Widget(resizableWindow);
         tools->set_layout(new BoxLayout(Orientation::Horizontal,
                                        Alignment::Middle, 0, 6));
         b = new Button(tools, "Open");
@@ -216,22 +227,22 @@ public:
                     { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, true) << std::endl;
         });
 
-        new Label(window, "Combo box", "sans-bold");
-        new ComboBox(window, { "Combo box item 1", "Combo box item 2", "Combo box item 3"});
-        new Label(window, "Check box", "sans-bold");
-        CheckBox *cb = new CheckBox(window, "Flag 1",
+        new Label(resizableWindow, "Combo box", "sans-bold");
+        new ComboBox(resizableWindow, { "Combo box item 1", "Combo box item 2", "Combo box item 3"});
+        new Label(resizableWindow, "Check box", "sans-bold");
+        CheckBox *cb = new CheckBox(resizableWindow, "Flag 1",
             [](bool state) { std::cout << "Check box 1 state: " << state << std::endl; }
         );
         cb->set_checked(true);
-        cb = new CheckBox(window, "Flag 2",
+        cb = new CheckBox(resizableWindow, "Flag 2",
             [](bool state) { std::cout << "Check box 2 state: " << state << std::endl; }
         );
-        new Label(window, "Progress bar", "sans-bold");
-        m_progress = new ProgressBar(window);
+        new Label(resizableWindow, "Progress bar", "sans-bold");
+        m_progress = new ProgressBar(resizableWindow);
 
-        new Label(window, "Slider and text box", "sans-bold");
+        new Label(resizableWindow, "Slider and text box", "sans-bold");
 
-        Widget *panel = new Widget(window);
+        Widget *panel = new Widget(resizableWindow);
         panel->set_layout(new BoxLayout(Orientation::Horizontal,
                                        Alignment::Middle, 0, 20));
 
@@ -253,7 +264,7 @@ public:
         text_box->set_font_size(20);
         text_box->set_alignment(TextBox::Alignment::Right);
 
-        window = new Window(this, "Misc. widgets");
+        Window *window = new Window(this, "Misc. widgets");
         window->set_position(Vector2i(425,15));
         window->set_layout(new GroupLayout());
 
@@ -343,7 +354,8 @@ public:
         layout->set_spacing(0, 10);
         window->set_layout(layout);
 
-        /* FP widget */ {
+        // FP widget
+        {
             new Label(window, "Floating point :", "sans-bold");
             text_box = new TextBox(window);
             text_box->set_editable(true);
@@ -355,7 +367,8 @@ public:
             text_box->set_format("[-]?[0-9]*\\.?[0-9]+");
         }
 
-        /* Positive integer widget */ {
+        // Positive integer widget
+        {
             new Label(window, "Positive integer :", "sans-bold");
             auto int_box = new IntBox<int>(window);
             int_box->set_editable(true);
@@ -370,7 +383,8 @@ public:
             int_box->set_value_increment(2);
         }
 
-        /* Checkbox widget */ {
+        // Checkbox widget
+        {
             new Label(window, "Checkbox :", "sans-bold");
 
             cb = new CheckBox(window, "Check me");
@@ -430,7 +444,6 @@ public:
             int alpha = (int) (c.w() * 255.0f);
             alpha_int_box->set_value(alpha);
         });
-
         perform_layout();
 
         /* All NanoGUI widgets are initialized at this point. Now
