@@ -11,7 +11,6 @@ from distutils.command.install_headers import install_headers
 
 headers = [
     'include/nanogui/colorpicker.h',
-    'include/nanogui/arcball.h',
     'include/nanogui/renderpass.h',
     'include/nanogui/theme.h',
     'include/nanogui/colorwheel.h',
