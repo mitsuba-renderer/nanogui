@@ -43,6 +43,8 @@ headers = [
     'include/nanogui/texture.h',
     'include/nanogui/theme.h',
     'include/nanogui/toolbutton.h',
+    'include/nanogui/traits.h',
+    'include/nanogui/vector.h',
     'include/nanogui/vscrollpanel.h',
     'include/nanogui/widget.h',
     'include/nanogui/window.h'
