@@ -109,6 +109,19 @@ template <typename Value_, size_t Size_> struct Array : ArrayBase {
         return *this;
     }
 
+	friend Array operator*(const Array& a, float b) {
+		Array result;
+		for (size_t i = 0; i < Size; ++i)
+			result[i] = a.v[i] * b;
+		return result;
+	}
+
+	Array& operator*=(float a) {
+		for (size_t i = 0; i < Size; ++i)
+			v[i] *= a;
+		return *this;
+	}
+
     friend Array operator/(const Array &a, const Array &b) {
         Array result;
         for (size_t i = 0; i < Size; ++i)
@@ -121,6 +134,19 @@ template <typename Value_, size_t Size_> struct Array : ArrayBase {
             v[i] /= a.v[i];
         return *this;
     }
+
+	friend Array operator/(const Array& a, float b) {
+		Array result;
+		for (size_t i = 0; i < Size; ++i)
+			result[i] = a.v[i] / b;
+		return result;
+	}
+
+	Array& operator/=(float a) {
+		for (size_t i = 0; i < Size; ++i)
+			v[i] /= a;
+		return *this;
+	}
 
     bool operator==(const Array &a) const {
         for (size_t i = 0; i < Size; ++i) {
