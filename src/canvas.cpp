@@ -149,8 +149,8 @@ void Canvas::draw(NVGcontext *ctx) {
     if (m_draw_border)
         offset += Vector2i(1, 1);
 
-    fbsize = Vector2i(fbsize * pixel_ratio);
-    offset = Vector2i(offset * pixel_ratio);
+    fbsize = Vector2i(Vector2f(fbsize) * pixel_ratio);
+    offset = Vector2i(Vector2f(offset) * pixel_ratio);
 
     if (m_render_to_texture) {
         m_render_pass->resize(fbsize);
