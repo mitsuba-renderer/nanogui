@@ -388,12 +388,12 @@ void Shader::begin() {
                             "Shader::begin(): unsupported vertex buffer type!");
                 }
 
-                if (buf.ndim != 2)
+                if (buf.ndim != 1 && buf.ndim != 2)
                     throw std::runtime_error("\"" + m_name + "\": vertex attribute \"" + key +
-                                             "\" has an invalid shapeension (expected ndim=2, got " +
+                                             "\" has an invalid shapeension (expected ndim=1 or ndim=2, got " +
                                              std::to_string(buf.ndim) + ")");
 
-                CHK(glVertexAttribPointer(buf.index, (GLint) buf.shape[1],
+                CHK(glVertexAttribPointer(buf.index, (GLint) (buf.ndim == 1) ? 1 : buf.shape[1],
                                           gl_type, GL_FALSE, 0, nullptr));
                 break;
 
