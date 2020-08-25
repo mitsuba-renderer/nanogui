@@ -197,9 +197,9 @@ void ImageView::draw_contents() {
 
     /* Ensure that 'offset' is a multiple of the pixel ratio */
     float pixel_ratio = screen()->pixel_ratio();
-    m_offset = Vector2i(Vector2i(m_offset / pixel_ratio) * pixel_ratio);
+    m_offset = (Vector2f(Vector2i(m_offset / pixel_ratio)) * pixel_ratio);
 
-    Vector2f bound1 = m_size * pixel_ratio,
+    Vector2f bound1 = Vector2f(m_size) * pixel_ratio,
              bound2 = -Vector2f(m_image->size()) * scale();
 
     if ((m_offset.x() >= bound1.x()) != (m_offset.x() < bound2.x()))
