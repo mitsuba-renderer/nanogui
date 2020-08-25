@@ -88,9 +88,9 @@
 #define NANOGUI_FORCE_DISCRETE_GPU()
 #endif
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 #  if defined(NANOGUI_BUILD)
-/* Quench a few warnings on when compiling NanoGUI on Windows */
+/* Quench a few warnings on when compiling NanoGUI on Windows with MSVC */
 #    pragma warning(disable : 4127) // warning C4127: conditional expression is constant
 #    pragma warning(disable : 4244) // warning C4244: conversion from X to Y, possible loss of data
 #  endif
