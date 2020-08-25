@@ -11,6 +11,7 @@
 */
 
 #include <nanogui/popup.h>
+#include <nanogui/screen.h>
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
 
@@ -38,6 +39,20 @@ void Popup::refresh_relative_placement() {
     m_parent_window->refresh_relative_placement();
     m_visible &= m_parent_window->visible_recursive();
     m_pos = m_parent_window->position() + m_anchor_pos - Vector2i(0, m_anchor_offset);
+
+    // No matter what, make sure the popup is within the screen area
+    if (screen()) {
+        Vector2i screen_size = screen()->size();
+        for (int axis = 0; axis < 2; axis++) {
+            if (m_size[axis] >= screen_size[axis]) {
+                // Popup too big, just center it
+                m_pos[axis] = (screen_size[axis] - m_size[axis]) / 2;
+            } else {
+                // Clamp to screen space
+                m_pos[axis] = std::max(0, std::min(screen_size[axis] - m_size[axis], m_pos[axis]));
+            }
+        }
+    }
 }
 
 void Popup::draw(NVGcontext* ctx) {
