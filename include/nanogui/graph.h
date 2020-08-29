@@ -50,12 +50,17 @@ public:
     std::vector<float> &values() { return m_values; }
     void set_values(const std::vector<float> &values) { m_values = values; }
 
+    const bool& draw_vertical() const { return m_do_draw_vertical; }
+    void set_draw_vertical(const bool& do_draw_vertical) { m_do_draw_vertical = do_draw_vertical; }
+
     virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual void draw(NVGcontext *ctx) override;
 protected:
     std::string m_caption, m_header, m_footer;
     Color m_background_color, m_fill_color, m_stroke_color, m_text_color;
     std::vector<float> m_values;
+
+    bool m_do_draw_vertical;
 };
 
 NAMESPACE_END(nanogui)

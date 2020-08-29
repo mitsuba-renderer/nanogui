@@ -21,6 +21,7 @@ Graph::Graph(Widget *parent, const std::string &caption)
     m_fill_color = Color(255, 192, 0, 128);
     m_stroke_color = Color(100, 255);
     m_text_color = Color(240, 192);
+    m_do_draw_vertical = false;
 }
 
 Vector2i Graph::preferred_size(NVGcontext *) const {
@@ -39,15 +40,30 @@ void Graph::draw(NVGcontext *ctx) {
         return;
 
     nvgBeginPath(ctx);
-    nvgMoveTo(ctx, m_pos.x(), m_pos.y()+m_size.y());
-    for (size_t i = 0; i < (size_t) m_values.size(); i++) {
-        float value = m_values[i];
-        float vx = m_pos.x() + i * m_size.x() / (float) (m_values.size() - 1);
-        float vy = m_pos.y() + (1-value) * m_size.y();
-        nvgLineTo(ctx, vx, vy);
-    }
+    if (m_do_draw_vertical)
+    {
+        nvgMoveTo(ctx, m_pos.x(), m_pos.y());
+        for (size_t i = 0; i < (size_t)m_values.size(); i++) {
+            float value = m_values[i];
+            float vy = m_pos.y() + i * m_size.y() / (float)(m_values.size() - 1);
+            float vx = m_pos.x() + (1 - value) * m_size.x();
+            nvgLineTo(ctx, vx, vy);
+        }
 
-    nvgLineTo(ctx, m_pos.x() + m_size.x(), m_pos.y() + m_size.y());
+        nvgLineTo(ctx, m_pos.x(), m_pos.y() + m_size.y());
+    }
+    else
+    {
+        nvgMoveTo(ctx, m_pos.x(), m_pos.y() + m_size.y());
+        for (size_t i = 0; i < (size_t)m_values.size(); i++) {
+            float value = m_values[i];
+            float vx = m_pos.x() + i * m_size.x() / (float)(m_values.size() - 1);
+            float vy = m_pos.y() + (1 - value) * m_size.y();
+            nvgLineTo(ctx, vx, vy);
+        }
+
+        nvgLineTo(ctx, m_pos.x() + m_size.x(), m_pos.y() + m_size.y());
+    }
     nvgStrokeColor(ctx, m_stroke_color);
     nvgStroke(ctx);
     if (m_fill_color.w() > 0) {
