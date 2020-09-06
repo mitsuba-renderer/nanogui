@@ -51,9 +51,9 @@ template <typename T> constexpr VariableType get_type() {
             return VariableType::Float32;
         else if constexpr (sizeof(T) == 8)
             return VariableType::Float64;
+    } else {
+        return VariableType::Invalid;
     }
-
-    return VariableType::Invalid;
 }
 
 /// Return the size in bytes associated with a specific variable type
