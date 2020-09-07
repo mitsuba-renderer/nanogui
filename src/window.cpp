@@ -14,14 +14,17 @@
 #include <nanogui/opengl.h>
 #include <nanogui/screen.h>
 #include <nanogui/layout.h>
+#include <nanogui/popup.h>
+#include <nanogui/messagedialog.h>
 
 NAMESPACE_BEGIN(nanogui)
 
-Window::Window(Widget *parent, const std::string &title)
-    : Widget(parent), m_title(title), m_button_panel(nullptr), m_modal(false),
-      m_drag(false) { }
+Window::Window(Widget* parent, const std::string& title, bool resizable)
+    : Widget(parent), m_title(title), m_button_panel(nullptr), m_modal(false), m_drag(false),
+    m_resize_dir(Vector2i(0, 0)), m_min_size(Vector2i(0, 0)), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true) { }
 
-Vector2i Window::preferred_size(NVGcontext *ctx) const {
+Vector2i Window::preferred_size(NVGcontext* ctx) const {
+    // printf("Window::preferred_size pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     if (m_button_panel)
         m_button_panel->set_visible(false);
     Vector2i result = Widget::preferred_size(ctx);
@@ -32,14 +35,15 @@ Vector2i Window::preferred_size(NVGcontext *ctx) const {
     nvgFontFace(ctx, "sans-bold");
     float bounds[4];
     nvgTextBounds(ctx, 0, 0, m_title.c_str(), nullptr, bounds);
-
+    //  printf("Window::preferred_size post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     return Vector2i(
-        std::max(result.x(), (int) (bounds[2]-bounds[0] + 20)),
-        std::max(result.y(), (int) (bounds[3]-bounds[1]))
+        std::max(result.x(), (int)(bounds[2] - bounds[0] + 20)),
+        std::max(result.y(), (int)(bounds[3] - bounds[1]))
     );
 }
 
-Widget *Window::button_panel() {
+Widget* Window::button_panel() {
+
     if (!m_button_panel) {
         m_button_panel = new Widget(this);
         m_button_panel->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 4));
@@ -47,10 +51,12 @@ Widget *Window::button_panel() {
     return m_button_panel;
 }
 
-void Window::perform_layout(NVGcontext *ctx) {
+void Window::perform_layout(NVGcontext* ctx) {
+    //  printf("Window::perform_layout pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     if (!m_button_panel) {
         Widget::perform_layout(ctx);
-    } else {
+    }
+    else {
         m_button_panel->set_visible(false);
         Widget::perform_layout(ctx);
         for (auto w : m_button_panel->children()) {
@@ -63,9 +69,12 @@ void Window::perform_layout(NVGcontext *ctx) {
             width() - (m_button_panel->preferred_size(ctx).x() + 5), 3));
         m_button_panel->perform_layout(ctx);
     }
+    if (m_min_size == Vector2i(0, 0))
+        m_min_size = m_size;
+    // printf("Window::perform_layout post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
 }
 
-void Window::draw(NVGcontext *ctx) {
+void Window::draw(NVGcontext* ctx) {
     int ds = m_theme->m_window_drop_shadow_size, cr = m_theme->m_window_corner_radius;
     int hh = m_theme->m_window_header_height;
 
@@ -75,19 +84,19 @@ void Window::draw(NVGcontext *ctx) {
     nvgRoundedRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr);
 
     nvgFillColor(ctx, m_mouse_focus ? m_theme->m_window_fill_focused
-                                    : m_theme->m_window_fill_unfocused);
+        : m_theme->m_window_fill_unfocused);
     nvgFill(ctx);
 
 
     /* Draw a drop shadow */
     NVGpaint shadow_paint = nvgBoxGradient(
-        ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr*2, ds*2,
+        ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr * 2, ds * 2,
         m_theme->m_drop_shadow, m_theme->m_transparent);
 
     nvgSave(ctx);
     nvgResetScissor(ctx);
     nvgBeginPath(ctx);
-    nvgRect(ctx, m_pos.x()-ds,m_pos.y()-ds, m_size.x()+2*ds, m_size.y()+2*ds);
+    nvgRect(ctx, m_pos.x() - ds, m_pos.y() - ds, m_size.x() + 2 * ds, m_size.y() + 2 * ds);
     nvgRoundedRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr);
     nvgPathWinding(ctx, NVG_HOLE);
     nvgFillPaint(ctx, shadow_paint);
@@ -130,13 +139,24 @@ void Window::draw(NVGcontext *ctx) {
         nvgFontBlur(ctx, 2);
         nvgFillColor(ctx, m_theme->m_drop_shadow);
         nvgText(ctx, m_pos.x() + m_size.x() / 2,
-                m_pos.y() + hh / 2, m_title.c_str(), nullptr);
+            m_pos.y() + hh / 2, m_title.c_str(), nullptr);
 
         nvgFontBlur(ctx, 0);
         nvgFillColor(ctx, m_focused ? m_theme->m_window_title_focused
-                                    : m_theme->m_window_title_unfocused);
+            : m_theme->m_window_title_unfocused);
         nvgText(ctx, m_pos.x() + m_size.x() / 2, m_pos.y() + hh / 2 - 1,
-                m_title.c_str(), nullptr);
+            m_title.c_str(), nullptr);
+    }
+    if (m_resizable)
+    {
+        nvgSave(ctx);
+        nvgBeginPath(ctx);
+        nvgMoveTo(ctx, m_pos.x() + m_size.x() - 10, m_pos.y() + m_size.y());
+        nvgLineTo(ctx, m_pos.x() + m_size.x(), m_pos.y() + m_size.y() - 10);
+        nvgLineTo(ctx, m_pos.x() + m_size.x(), m_pos.y() + m_size.y());
+        nvgFillColor(ctx, m_theme->m_window_header_gradient_top);
+        nvgFill(ctx);
+        nvgRestore(ctx);
     }
 
     nvgRestore(ctx);
@@ -144,46 +164,203 @@ void Window::draw(NVGcontext *ctx) {
 }
 
 void Window::dispose() {
-    Widget *widget = this;
+    Widget* widget = this;
     while (widget->parent())
         widget = widget->parent();
-    ((Screen *) widget)->dispose_window(this);
+    ((Screen*)widget)->dispose_window(this);
 }
 
 void Window::center() {
-    Widget *widget = this;
+    Widget* widget = this;
     while (widget->parent())
         widget = widget->parent();
-    ((Screen *) widget)->center_window(this);
+    ((Screen*)widget)->center_window(this);
 }
 
-bool Window::mouse_enter_event(const Vector2i &p, bool enter) {
+bool Window::mouse_enter_event(const Vector2i& p, bool enter) {
     Widget::mouse_enter_event(p, enter);
     return true;
 }
 
-bool Window::mouse_drag_event(const Vector2i &, const Vector2i &rel,
-                            int button, int /* modifiers */) {
-    if (m_drag && (button & (1 << GLFW_MOUSE_BUTTON_1)) != 0) {
-        m_pos += rel;
+bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button, int /* modifiers */) {
+    if (m_can_move && m_drag && (button & (1 << GLFW_MOUSE_BUTTON_1)) != 0) {
+        if (m_can_snap)
+        {
+            int MinLR = INT_MAX;
+            int MinRL = INT_MAX;
+            int MinTB = INT_MAX;
+            int MinBT = INT_MAX;
+
+            m_snap_tot_rel += rel;
+            Vector2i temp_position = m_snap_init + m_snap_tot_rel;
+            int Top = temp_position.y();
+            int Bottom = temp_position.y() + size().y();
+            int Left = temp_position.x();
+            int Right = temp_position.x() + size().x();
+            for (Widget* ChildWindow : screen()->children())
+            {
+                // Make sure the child ius a true window and not a hidden popup or a message box (derived classes)
+                Window* CanICastWindow = dynamic_cast<Window*>(ChildWindow);
+                Popup* CanICastPopup = dynamic_cast<Popup*>(ChildWindow);
+                MessageDialog* CanICastDialog = dynamic_cast<MessageDialog*>(ChildWindow);
+                bool IsWindow = (CanICastWindow != NULL && CanICastPopup == NULL && CanICastDialog == NULL);
+                if (ChildWindow == this || !IsWindow)continue;// continue if the window is itself or the widget is not a window
+                int child_Top = ChildWindow->position().y();
+                int child_Bottom = ChildWindow->position().y() + ChildWindow->size().y();
+                int child_Left = ChildWindow->position().x();
+                int child_Right = ChildWindow->position().x() + ChildWindow->size().x();
+                bool CheckX =
+                    ((Bottom >= child_Top) && (Bottom <= child_Bottom))
+                    || ((Top >= child_Top) && (Top <= child_Bottom))
+                    || ((Top <= child_Top) && (Bottom >= child_Bottom));
+                bool CheckY =
+                    ((Right >= child_Left) && (Right <= child_Right))
+                    || ((Left >= child_Left) && (Left <= child_Right))
+                    || ((Left <= child_Left) && (Right >= child_Right));
+                if (CheckX)
+                {
+                    int LR = abs(Left - child_Right);
+                    int RL = abs(Right - child_Left);
+                    if (LR < MinLR && LR < m_snap_offset) { MinLR = LR;  temp_position.x() = child_Right; }
+                    if (RL < MinRL && RL < m_snap_offset) { MinRL = RL; temp_position.x() = child_Left - size().x(); }
+                }
+                if (CheckY)
+                {
+                    int TB = abs(Top - child_Bottom);
+                    int BT = abs(Bottom - child_Top);
+                    if (TB < MinTB && TB < m_snap_offset) { MinTB = TB; temp_position.y() = child_Bottom; }
+                    if (BT < MinBT && BT < m_snap_offset) { MinBT = BT; temp_position.y() = child_Top - size().y(); }
+                }
+            }
+            m_pos = temp_position;
+        }
+        else
+            m_pos += rel;
         m_pos = max(m_pos, Vector2i(0));
         m_pos = min(m_pos, parent()->size() - m_size);
         return true;
     }
-    return false;
-}
+    else if (m_resizable && m_resize && (button & (1 << GLFW_MOUSE_BUTTON_1)) != 0) {
+        const Vector2i& lowerRightCorner = m_pos + m_size;
+        const Vector2i& upperLeftCorner = m_pos;
+        NVGcontext* ctx = static_cast<Screen*>(parent())->nvg_context();
+        bool resized = false;
 
-bool Window::mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) {
-    if (Widget::mouse_button_event(p, button, down, modifiers))
-        return true;
-    if (button == GLFW_MOUSE_BUTTON_1) {
-        m_drag = down && (p.y() - m_pos.y()) < m_theme->m_window_header_height;
+
+        if (m_resize_dir.x() == 1) {
+            if ((rel.x() > 0 && p.x() >= lowerRightCorner.x()) || (rel.x() < 0)) {
+                m_size.x() += rel.x();
+                m_snap_tot_rel += rel.x();
+                resized = true;
+            }
+        }
+
+        if (m_resize_dir.y() == 1) {
+            if ((rel.y() > 0 && p.y() >= lowerRightCorner.y()) || (rel.y() < 0)) {
+                m_size.y() += rel.y();
+                m_snap_tot_rel += rel.y();
+                resized = true;
+            }
+        }
+
+        if (m_can_snap)
+        {
+            int MinRL = INT_MAX;
+            int MinBT = INT_MAX;
+
+            Vector2i temp_size = m_snap_init + m_snap_tot_rel;
+            int Top = position().y();
+            int Bottom = position().y() + temp_size.y();
+            int Left = position().x();
+            int Right = position().x() + temp_size.x();
+            for (Widget* ChildWindow : screen()->children())
+            {
+                // Make sure the child ius a true window and not a hidden popup or a message box (derived classes)
+                Window* CanICastWindow = dynamic_cast<Window*>(ChildWindow);
+                Popup* CanICastPopup = dynamic_cast<Popup*>(ChildWindow);
+                MessageDialog* CanICastDialog = dynamic_cast<MessageDialog*>(ChildWindow);
+                bool IsWindow = (CanICastWindow != NULL && CanICastPopup == NULL && CanICastDialog == NULL);
+                if (ChildWindow == this || !IsWindow)continue;// continue if the window is itself or the widget is not a window
+                int child_Top = ChildWindow->position().y();
+                int child_Bottom = ChildWindow->position().y() + ChildWindow->size().y();
+                int child_Left = ChildWindow->position().x();
+                int child_Right = ChildWindow->position().x() + ChildWindow->size().x();
+                bool CheckX =
+                    ((Bottom >= child_Top) && (Bottom <= child_Bottom))
+                    || ((Top >= child_Top) && (Top <= child_Bottom))
+                    || ((Top <= child_Top) && (Bottom >= child_Bottom));
+                bool CheckY =
+                    ((Right >= child_Left) && (Right <= child_Right))
+                    || ((Left >= child_Left) && (Left <= child_Right))
+                    || ((Left <= child_Left) && (Right >= child_Right));
+                if (CheckX)
+                {
+                    int RL = abs(Right - child_Left);
+                    if (RL < MinRL && RL < m_snap_offset) {
+                        MinRL = RL;
+                        m_size.x() = child_Left - Left;
+                    }
+                }
+                if (CheckY)
+                {
+                    int BT = abs(Bottom - child_Top);
+                    if (BT < MinBT && BT < m_snap_offset) {
+                        MinBT = BT;
+                        m_size.y() = child_Top - Top;
+                    }
+                }
+            }
+        }
+
+
+        m_size = max(m_size, m_min_size);
+        if (resized)
+            perform_layout(ctx);
         return true;
     }
     return false;
 }
 
-bool Window::scroll_event(const Vector2i &p, const Vector2f &rel) {
+bool Window::mouse_motion_event(const Vector2i& p, const Vector2i& rel, int button, int modifiers) {
+    if (Widget::mouse_motion_event(p, rel, button, modifiers))
+        return true;
+
+    if (m_resizable && m_fixed_size.x() == 0 && check_horizontal_resize(p) && check_vertical_resize(p))
+        m_cursor = Cursor::HVResize;
+    else if (m_resizable && m_fixed_size.x() == 0 && check_horizontal_resize(p))
+        m_cursor = Cursor::HResize;
+    else if (m_resizable && m_fixed_size.y() == 0 && check_vertical_resize(p))
+        m_cursor = Cursor::VResize;
+    else
+        m_cursor = Cursor::Arrow;
+
+    return false;
+}
+
+bool Window::mouse_button_event(const Vector2i& p, int button, bool down, int modifiers) {
+    if (Widget::mouse_button_event(p, button, down, modifiers))
+        return true;
+    if (button == GLFW_MOUSE_BUTTON_1) {
+        m_drag = down && (p.y() - m_pos.y()) < m_theme->m_window_header_height;
+        m_resize = false;
+        if (m_drag)
+        {
+            m_snap_init = position();
+            m_snap_tot_rel = Vector2f(0, 0);
+        }
+        else if (m_resizable && down) {
+            m_resize_dir.x() = (m_fixed_size.x() == 0) ? check_horizontal_resize(p) : 0;
+            m_resize_dir.y() = (m_fixed_size.y() == 0) ? check_vertical_resize(p) : 0;
+            m_resize = m_resize_dir.x() != 0 || m_resize_dir.y() != 0;
+            m_snap_init = size();
+            m_snap_tot_rel = Vector2f(0, 0);
+        }
+        return true;
+    }
+    return false;
+}
+
+bool Window::scroll_event(const Vector2i& p, const Vector2f& rel) {
     Widget::scroll_event(p, rel);
     return true;
 }
@@ -191,5 +368,28 @@ bool Window::scroll_event(const Vector2i &p, const Vector2f &rel) {
 void Window::refresh_relative_placement() {
     /* Overridden in \ref Popup */
 }
+bool Window::check_horizontal_resize(const Vector2i& mousePos) {
+    int offset = m_theme->m_resize_area_offset;
+    Vector2i lowerRightCorner = absolute_position() + size();
+    int headerLowerLeftCornerY = absolute_position().y() + m_theme->m_window_header_height;
 
+    if (mousePos.y() > headerLowerLeftCornerY && mousePos.x() >= lowerRightCorner.x() - offset &&
+        mousePos.x() <= lowerRightCorner.x()) {
+        return true;
+    }
+
+    return false;
+}
+
+bool Window::check_vertical_resize(const Vector2i& mousePos) {
+    int offset = m_theme->m_resize_area_offset;
+    Vector2i lowerRightCorner = absolute_position() + size();
+
+    // Do not check for resize area on top of the window. It is to prevent conflict drag and resize event.
+    if (mousePos.y() >= lowerRightCorner.y() - offset && mousePos.y() <= lowerRightCorner.y()) {
+        return true;
+    }
+
+    return false;
+}
 NAMESPACE_END(nanogui)

@@ -32,6 +32,7 @@ enum class Cursor; // do not put a docstring, this is already documented
  */
 class NANOGUI_EXPORT Widget : public Object {
 public:
+    Widget* SizeDebugPointer;
     /// Construct a new widget with the given parent widget
     Widget(Widget *parent);
 
@@ -68,7 +69,7 @@ public:
     }
 
     /// Return the size of the widget
-    const Vector2i &size() const { return m_size; }
+    const Vector2i& size() const { if (this == NULL) return 0; else  return m_size; }
     /// set the size of the widget
     void set_size(const Vector2i &size) { m_size = size; }
 

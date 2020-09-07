@@ -75,6 +75,8 @@ public:
     int m_tab_button_horizontal_padding;
     /// The amount of vertical padding for a Tab_header widget (default: ``2``).
     int m_tab_button_vertical_padding;
+    /// Offset to the resize area.
+    int m_resize_area_offset;
 
     /* Generic colors */
     /**

@@ -131,6 +131,7 @@ enum class Cursor {
     Hand,       ///< The hand cursor.
     HResize,    ///< The horizontal resize cursor.
     VResize,    ///< The vertical resize cursor.
+    HVResize,    ///< The vertical resize cursor.
     CursorCount ///< Not a cursor --- should always be last: enables a loop over the cursor types.
 };
 
