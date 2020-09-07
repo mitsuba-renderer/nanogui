@@ -481,16 +481,23 @@ endif()
 
 if (NANOGUI_BUILD_PYTHON)
   message(STATUS "NanoGUI: building the Python plugin.")
-  find_package(Python COMPONENTS Interpreter Development REQUIRED)
+  if (NOT TARGET pybind11::module)
+    find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
-  # Allow overriding the pybind11 library used to compile NanoGUI
-  set(NANOGUI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11"
-    CACHE STRING "Path containing the 'pybind11' library used to compile nanogui.")
+    # Allow overriding the pybind11 library used to compile NanoGUI
+    set(NANOGUI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11"
+      CACHE STRING "Path containing the 'pybind11' library used to compile nanogui.")
 
-  add_subdirectory(${NANOGUI_PYBIND11_DIR} ext/pybind11)
+    add_subdirectory(${NANOGUI_PYBIND11_DIR} ext/pybind11)
+
+    mark_as_advanced(
+      USE_PYTHON_INCLUDE_DIR PYBIND11_INSTALL PYBIND11_TEST PYBIND11_NOPYTHON
+      PYBIND11_FINDPYTHON PYBIND11_PYTHON_VERSION PYBIND11_WERROR
+      NANOGUI_PYBIND11_DIR
+    )
+  endif()
+
   add_subdirectory(python)
-  mark_as_advanced(PYBIND11_INSTALL PYBIND11_TEST PYBIND11_NOPYTHON
-                   PYBIND11_FINDPYTHON NANOGUI_PYBIND11_DIR GLFW_USE_HYBRID_HPG)
 else()
   message(STATUS "NanoGUI: not building the Python plugin.")
 endif()
