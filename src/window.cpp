@@ -250,7 +250,7 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
         if (m_resize_dir.x() == 1) {
             if ((rel.x() > 0 && p.x() >= lowerRightCorner.x()) || (rel.x() < 0)) {
                 m_size.x() += rel.x();
-                m_snap_tot_rel += rel.x();
+                m_snap_tot_rel.x() += rel.x();
                 resized = true;
             }
         }
@@ -258,7 +258,7 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
         if (m_resize_dir.y() == 1) {
             if ((rel.y() > 0 && p.y() >= lowerRightCorner.y()) || (rel.y() < 0)) {
                 m_size.y() += rel.y();
-                m_snap_tot_rel += rel.y();
+                m_snap_tot_rel.y() += rel.y();
                 resized = true;
             }
         }
@@ -268,7 +268,12 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
             int MinRL = INT_MAX;
             int MinBT = INT_MAX;
 
+            if (m_snap_init.x() + m_snap_tot_rel.x() <= m_min_size.x())
+                m_snap_tot_rel.x() = m_min_size.x() - m_snap_init.x();
+            if (m_snap_init.y() + m_snap_tot_rel.y() <= m_min_size.y())
+                m_snap_tot_rel.y() = m_min_size.y() - m_snap_init.y();
             Vector2i temp_size = m_snap_init + m_snap_tot_rel;
+            printf("new pointer:(%d, %d) size = (%d, %d)\n", temp_size.x(), temp_size.y(), size().x(), size().y());
             int Top = position().y();
             int Bottom = position().y() + temp_size.y();
             int Left = position().x();
@@ -309,7 +314,13 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
                         m_size.y() = child_Top - Top;
                     }
                 }
+
             }
+            printf("MINS :(%d, %d)\n", MinRL, MinBT);
+            if (MinRL == INT_MAX)
+                m_size.x() = temp_size.x();
+            if (MinBT == INT_MAX)
+                m_size.y() = temp_size.y();
         }
 
 
