@@ -71,6 +71,8 @@ static py::array texture_download(Texture &texture) {
         case Texture::ComponentFormat::Int32:   dtype_name = "i4"; break;
         case Texture::ComponentFormat::Float16: dtype_name = "f2"; break;
         case Texture::ComponentFormat::Float32: dtype_name = "f4"; break;
+        default:
+            throw std::runtime_error("Invalid component format");
     }
 
     py::array result(

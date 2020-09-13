@@ -6,6 +6,7 @@
 #if defined(__clang__)
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#  pragma clang diagnostic ignored "-Wunused-lambda-capture"
 #endif
 
 template <typename Array>

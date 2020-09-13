@@ -339,7 +339,7 @@ public:
      * \param alpha
      * The alpha component of the color, will be divided by ``255.0``.
      */
-    Color(size_t intensity, int alpha)
+    Color(int intensity, int alpha)
         : Color(Vector3i(intensity), alpha) { }
 
     /**
