@@ -24,7 +24,6 @@ Window::Window(Widget* parent, const std::string& title, bool resizable)
     m_resize_dir(Vector2i(0, 0)), m_min_size(Vector2i(0, 0)), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true) { }
 
 Vector2i Window::preferred_size(NVGcontext* ctx) const {
-    // printf("Window::preferred_size pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     if (m_button_panel)
         m_button_panel->set_visible(false);
     Vector2i result = Widget::preferred_size(ctx);
@@ -35,7 +34,6 @@ Vector2i Window::preferred_size(NVGcontext* ctx) const {
     nvgFontFace(ctx, "sans-bold");
     float bounds[4];
     nvgTextBounds(ctx, 0, 0, m_title.c_str(), nullptr, bounds);
-    //  printf("Window::preferred_size post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     return Vector2i(
         std::max(result.x(), (int)(bounds[2] - bounds[0] + 20)),
         std::max(result.y(), (int)(bounds[3] - bounds[1]))
@@ -52,7 +50,6 @@ Widget* Window::button_panel() {
 }
 
 void Window::perform_layout(NVGcontext* ctx) {
-    //  printf("Window::perform_layout pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     if (!m_button_panel) {
         Widget::perform_layout(ctx);
     }
@@ -71,7 +68,6 @@ void Window::perform_layout(NVGcontext* ctx) {
     }
     if (m_min_size == Vector2i(0, 0))
         m_min_size = m_size;
-    // printf("Window::perform_layout post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
 }
 
 void Window::draw(NVGcontext* ctx) {
@@ -273,7 +269,6 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
             if (m_snap_init.y() + m_snap_tot_rel.y() <= m_min_size.y())
                 m_snap_tot_rel.y() = m_min_size.y() - m_snap_init.y();
             Vector2i temp_size = m_snap_init + m_snap_tot_rel;
-            printf("new pointer:(%d, %d) size = (%d, %d)\n", temp_size.x(), temp_size.y(), size().x(), size().y());
             int Top = position().y();
             int Bottom = position().y() + temp_size.y();
             int Left = position().x();
@@ -316,7 +311,6 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
                 }
 
             }
-            printf("MINS :(%d, %d)\n", MinRL, MinBT);
             if (MinRL == INT_MAX)
                 m_size.x() = temp_size.x();
             if (MinBT == INT_MAX)

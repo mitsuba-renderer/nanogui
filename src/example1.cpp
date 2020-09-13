@@ -50,420 +50,460 @@ public:
     ExampleApplication() : Screen(Vector2i(1024, 768), "NanoGUI Test") {
         inc_ref();
 
-        Window* MenuBar = new Window(this, "");
+        Window* MenuBar1 = new Window(this, "Try to move this around");
         BoxLayout* MenuLayout = new BoxLayout(Orientation::Horizontal);
-        MenuBar->set_layout(MenuLayout);
-        MenuBar->set_position(Vector2i(200, 200));
-        PopupButton* FileBtn = new PopupButton(MenuBar, "File");
-        FileBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical));
+        MenuBar1->set_layout(MenuLayout);
+        MenuBar1->set_position(Vector2i(40, 600));
+
+        PopupButton* FileBtn = new PopupButton(MenuBar1, "File");
+        FileBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill));
         FileBtn->set_side(Popup::Left);
-        new Button(FileBtn->popup(), "Do File Stuff 1");
+
+        new Button(FileBtn->popup(), "short Stuff 1");
         new Button(FileBtn->popup(), "Do File Stuff 2");
-        PopupButton* EditBtn = new PopupButton(MenuBar, "Edit");
+        new Button(FileBtn->popup(), "Do File Stuff 3");
+        new Label(FileBtn->popup(), "-------------");
+        new Button(FileBtn->popup(), "short Stuff 4");
+        new Button(FileBtn->popup(), "short Stuff 5");
+        new Button(FileBtn->popup(), "Do File Stuff 6");
+        PopupButton* EditBtn = new PopupButton(MenuBar1, "Edit");
         EditBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical));
         EditBtn->set_side(Popup::Bottom);
-        new Button(EditBtn->popup(), "Do File Stuff 1");
+        new Button(EditBtn->popup(), "This is avery long button that will hit the borders when the popup is opened");
         new Button(EditBtn->popup(), "Do File Stuff 2");
-        PopupButton* HelpBtn = new PopupButton(MenuBar, "Help");
+        PopupButton* HelpBtn = new PopupButton(MenuBar1, "Help");
         HelpBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical));
         HelpBtn->set_side(Popup::Right);
         new Button(HelpBtn->popup(), "Help");
         new Button(HelpBtn->popup(), "About");
+        new Button(HelpBtn->popup(), "About2");
+        new Button(HelpBtn->popup(), "About3");
+        new Button(HelpBtn->popup(), "About4");
+
+        Window* MenuBar2 = new Window(this, "");
+        MenuLayout = new BoxLayout(Orientation::Horizontal);
+        MenuBar2->set_layout(MenuLayout);
+        MenuBar2->set_can_move(false);
+
+        FileBtn = new PopupButton(MenuBar2, "File");
+        FileBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill));
+        FileBtn->set_side(Popup::Bottom);
+
+        new Button(FileBtn->popup(), "short Stuff 1");
+        new Button(FileBtn->popup(), "Do File Stuff 2");
+        new Button(FileBtn->popup(), "Do File Stuff 3");
+        new Label(FileBtn->popup(), "-------------");
+        new Button(FileBtn->popup(), "short Stuff 4");
+        new Button(FileBtn->popup(), "short Stuff 5");
+        new Button(FileBtn->popup(), "Do File Stuff 6");
+        EditBtn = new PopupButton(MenuBar2, "Edit");
+        EditBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical));
+        EditBtn->set_side(Popup::Bottom);
+        new Button(EditBtn->popup(), "This is avery long button that will hit the borders when the popup is opened");
+        new Button(EditBtn->popup(), "Do File Stuff 2");
+        HelpBtn = new PopupButton(MenuBar2, "Help");
+        HelpBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical));
+        HelpBtn->set_side(Popup::Bottom);
+        new Button(HelpBtn->popup(), "Help");
+        new Button(HelpBtn->popup(), "About");
+        new Button(HelpBtn->popup(), "About2");
+        new Button(HelpBtn->popup(), "About3");
+        new Button(HelpBtn->popup(), "About4");
 
 
-    //    Window* ButtonDemoWindow = new Window(this, "", true);
-    //    ButtonDemoWindow->set_position(Vector2i(15, 15));
-    //    ButtonDemoWindow->set_layout(new GroupLayout());
+            Window* ButtonDemoWindow = new Window(this, "", true);
+            ButtonDemoWindow->set_position(Vector2i(15, 40));
+            ButtonDemoWindow->set_layout(new GroupLayout());
 
-    //    /* No need to store a pointer, the data structure will be automatically
-    //       freed when the parent window is deleted */
-    //    new Label(ButtonDemoWindow, "Push buttons", "sans-bold");
+            /* No need to store a pointer, the data structure will be automatically
+               freed when the parent window is deleted */
+            new Label(ButtonDemoWindow, "Push buttons", "sans-bold");
 
-    //    Button* b = new Button(ButtonDemoWindow, "Plain button");
-    //    b->set_callback([] { std::cout << "pushed!" << std::endl; });
-    //    b->set_tooltip("short tooltip");
+            Button* b = new Button(ButtonDemoWindow, "Plain button");
+            b->set_callback([] { std::cout << "pushed!" << std::endl; });
+            b->set_tooltip("short tooltip");
 
-    //    /* Alternative construction notation using variadic template */
+            /* Alternative construction notation using variadic template */
 
-    //    b = ButtonDemoWindow->add<Button>("Styled", FA_ROCKET);
-    //    b->set_background_color(Color(0, 0, 255, 25));
-    //    b->set_callback([] { std::cout << "pushed!" << std::endl; });
-    //    b->set_tooltip("This button has a fairly long tooltip. It is so long, in "
-    //        "fact, that the shown text will span several lines.");
-
-
-    //    new Label(ButtonDemoWindow, "Toggle buttons", "sans-bold");
-    //    b = new Button(ButtonDemoWindow, "Toggle me");
-    //    b->set_flags(Button::ToggleButton);
-    //    b->set_change_callback([](bool state) { std::cout << "Toggle button state: " << state << std::endl; });
-
-    //    new Label(ButtonDemoWindow, "Radio buttons", "sans-bold");
-    //    b = new Button(ButtonDemoWindow, "Radio button 1");
-    //    b->set_flags(Button::RadioButton);
-    //    b = new Button(ButtonDemoWindow, "Radio button 2");
-    //    b->set_flags(Button::RadioButton);
-
-    //    new Label(ButtonDemoWindow, "A tool palette", "sans-bold");
-    //    Widget* tools = new Widget(ButtonDemoWindow);
-    //    GridLayout* layout = new GridLayout(Orientation::Horizontal, 4, Alignment::Maximum, 0, 0);
-    //    tools->set_layout(layout);
-    //    layout->set_col_alignment(
-    //        { Alignment::Fill });
-
-    //    b = new ToolButton(tools, FA_CLOUD);
-    //    b = new ToolButton(tools, FA_FAST_FORWARD);
-    //    b = new ToolButton(tools, FA_COMPASS);
-    //    b = new ToolButton(tools, FA_UTENSILS);
+            b = ButtonDemoWindow->add<Button>("Styled", FA_ROCKET);
+            b->set_background_color(Color(0, 0, 255, 25));
+            b->set_callback([] { std::cout << "pushed!" << std::endl; });
+            b->set_tooltip("This button has a fairly long tooltip. It is so long, in "
+                "fact, that the shown text will span several lines.");
 
 
-    //    new Label(ButtonDemoWindow, "Popup buttons", "sans-bold");
-    //    PopupButton* popup_btn = new PopupButton(ButtonDemoWindow, "Popup", FA_FLASK);
-    //    Popup* popup = popup_btn->popup();
-    //    popup->set_layout(new GroupLayout());
-    //    new Label(popup, "Arbitrary widgets can be placed here");
-    //    new CheckBox(popup, "A check box");
-    //    // popup right
-    //    popup_btn = new PopupButton(popup, "Recursive popup", FA_CHART_PIE);
-    //    Popup* popup_right = popup_btn->popup();
-    //    popup_right->set_layout(new GroupLayout());
-    //    new CheckBox(popup_right, "Another check box");
-    //    // popup left
-    //    popup_btn = new PopupButton(popup, "Recursive popup", FA_DNA);
-    //    popup_btn->set_side(Popup::Side::Left);
-    //    Popup* popup_left = popup_btn->popup();
-    //    popup_left->set_layout(new GroupLayout());
-    //    new CheckBox(popup_left, "Another check box");
+            new Label(ButtonDemoWindow, "Toggle buttons", "sans-bold");
+            b = new Button(ButtonDemoWindow, "Toggle me");
+            b->set_flags(Button::ToggleButton);
+            b->set_change_callback([](bool state) { std::cout << "Toggle button state: " << state << std::endl; });
 
-    //    Window* BasicWidgetsWindow = new Window(this, "Basic widgets", true);
-    //    BasicWidgetsWindow->set_position(Vector2i(200, 15));
-    //    BasicWidgetsWindow->set_layout(new GroupLayout());
+            new Label(ButtonDemoWindow, "Radio buttons", "sans-bold");
+            b = new Button(ButtonDemoWindow, "Radio button 1");
+            b->set_flags(Button::RadioButton);
+            b = new Button(ButtonDemoWindow, "Radio button 2");
+            b->set_flags(Button::RadioButton);
 
-    //    new Label(BasicWidgetsWindow, "Message dialog", "sans-bold");
-    //    tools = new Widget(BasicWidgetsWindow);
-    //    tools->set_layout(new BoxLayout(Orientation::Horizontal,
-    //        Alignment::Middle, 0, 6));
-    //    b = new Button(tools, "Info");
-    //    b->set_callback([&] {
-    //        auto dlg = new MessageDialog(this, MessageDialog::Type::Information, "Title", "This is an information message");
-    //        dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
-    //        });
-    //    b = new Button(tools, "Warn");
-    //    b->set_callback([&] {
-    //        auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Title", "This is a warning message");
-    //        dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
-    //        });
-    //    b = new Button(tools, "Ask");
-    //    b->set_callback([&] {
-    //        auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Title", "This is a question message", "Yes", "No", true);
-    //        dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
-    //        });
+            new Label(ButtonDemoWindow, "A tool palette", "sans-bold");
+            Widget* tools = new Widget(ButtonDemoWindow);
+            GridLayout* layout = new GridLayout(Orientation::Horizontal, 4, Alignment::Maximum, 0, 0);
+            tools->set_layout(layout);
+            layout->set_col_alignment(
+                { Alignment::Fill });
 
-    //#if defined(_WIN32)
-    //    /// Executable is in the Debug/Release/.. subdirectory
-    //    std::string resources_folder_path("./icons");
-    //#else
-    //    std::string resources_folder_path("./icons");
-    //#endif
-    //    std::vector<std::pair<int, std::string>> icons;
+            b = new ToolButton(tools, FA_CLOUD);
+            b = new ToolButton(tools, FA_FAST_FORWARD);
+            b = new ToolButton(tools, FA_COMPASS);
+            b = new ToolButton(tools, FA_UTENSILS);
 
-    //#if !defined(EMSCRIPTEN)
-    //    try {
-    //        icons = load_image_directory(m_nvg_context, resources_folder_path);
-    //    }
-    //    catch (const std::exception& e) {
-    //        std::cerr << "Warning: " << e.what() << std::endl;
-    //    }
-    //#endif
 
-    //    new Label(BasicWidgetsWindow, "Image panel & scroll panel", "sans-bold");
-    //    PopupButton* image_panel_btn = new PopupButton(BasicWidgetsWindow, "Image Panel");
-    //    image_panel_btn->set_icon(FA_IMAGES);
-    //    popup = image_panel_btn->popup();
-    //    image_panel_btn->set_side(Popup::Side::Left);
-    //    VScrollPanel* vscroll = new VScrollPanel(popup);
-    //    ImagePanel* img_panel = new ImagePanel(vscroll);
-    //    img_panel->set_images(icons);
-    //    popup->set_fixed_size(Vector2i(245, 150));
+            new Label(ButtonDemoWindow, "Popup buttons", "sans-bold");
+            PopupButton* popup_btn = new PopupButton(ButtonDemoWindow, "Popup", FA_FLASK);
+            Popup* popup = popup_btn->popup();
+            popup->set_layout(new GroupLayout());
+            new Label(popup, "Arbitrary widgets can be placed here");
+            new CheckBox(popup, "A check box");
+            // popup right
+            popup_btn = new PopupButton(popup, "Recursive popup", FA_CHART_PIE);
+            Popup* popup_right = popup_btn->popup();
+            popup_right->set_layout(new GroupLayout());
+            new CheckBox(popup_right, "Another check box");
+            // popup left
+            popup_btn = new PopupButton(popup, "Recursive popup", FA_DNA);
+            popup_btn->set_side(Popup::Side::Left);
+            Popup* popup_left = popup_btn->popup();
+            popup_left->set_layout(new GroupLayout());
+            new CheckBox(popup_left, "Another check box");
 
-    //    auto image_window = new Window(this, "Selected image", true);
-    //    image_window->set_position(Vector2i(710, 15));
-    //    image_window->set_layout(new GroupLayout(3));
+            Window* BasicWidgetsWindow = new Window(this, "Basic widgets", true);
+            BasicWidgetsWindow->set_position(Vector2i(200, 15));
+            BasicWidgetsWindow->set_layout(new GroupLayout());
 
-    //    // Create a Texture instance for each object
-    //    for (auto& icon : icons) {
-    //        Vector2i size;
-    //        int n = 0;
-    //        ImageHolder texture_data(
-    //            stbi_load((icon.second + ".png").c_str(), &size.x(), &size.y(), &n, 0),
-    //            stbi_image_free);
-    //        assert(n == 4);
+            new Label(BasicWidgetsWindow, "Message dialog", "sans-bold");
+            tools = new Widget(BasicWidgetsWindow);
+            tools->set_layout(new BoxLayout(Orientation::Horizontal,
+                Alignment::Middle, 0, 6));
+            b = new Button(tools, "Info");
+            b->set_callback([&] {
+                auto dlg = new MessageDialog(this, MessageDialog::Type::Information, "Title", "This is an information message");
+                dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
+                });
+            b = new Button(tools, "Warn");
+            b->set_callback([&] {
+                auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Title", "This is a warning message");
+                dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
+                });
+            b = new Button(tools, "Ask");
+            b->set_callback([&] {
+                auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Title", "This is a question message", "Yes", "No", true);
+                dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
+                });
 
-    //        Texture* tex = new Texture(
-    //            Texture::PixelFormat::RGBA,
-    //            Texture::ComponentFormat::UInt8,
-    //            size,
-    //            Texture::InterpolationMode::Trilinear,
-    //            Texture::InterpolationMode::Nearest);
+        #if defined(_WIN32)
+            /// Executable is in the Debug/Release/.. subdirectory
+            std::string resources_folder_path("./icons");
+        #else
+            std::string resources_folder_path("./icons");
+        #endif
+            std::vector<std::pair<int, std::string>> icons;
 
-    //        tex->upload(texture_data.get());
+        #if !defined(EMSCRIPTEN)
+            try {
+                icons = load_image_directory(m_nvg_context, resources_folder_path);
+            }
+            catch (const std::exception& e) {
+                std::cerr << "Warning: " << e.what() << std::endl;
+            }
+        #endif
 
-    //        m_images.emplace_back(tex, std::move(texture_data));
-    //    }
+            new Label(BasicWidgetsWindow, "Image panel & scroll panel", "sans-bold");
+            PopupButton* image_panel_btn = new PopupButton(BasicWidgetsWindow, "Image Panel");
+            image_panel_btn->set_icon(FA_IMAGES);
+            popup = image_panel_btn->popup();
+            image_panel_btn->set_side(Popup::Side::Left);
+            VScrollPanel* vscroll = new VScrollPanel(popup);
+            ImagePanel* img_panel = new ImagePanel(vscroll);
+            img_panel->set_images(icons);
+            popup->set_fixed_size(Vector2i(245, 150));
 
-    //    ImageView* image_view = new ImageView(image_window);
-    //    if (!m_images.empty())
-    //        image_view->set_image(m_images[0].first);
-    //    image_view->center();
-    //    m_current_image = 0;
+            auto image_window = new Window(this, "Selected image", true);
+            image_window->set_position(Vector2i(710, 15));
+            image_window->set_layout(new GroupLayout(3));
 
-    //    img_panel->set_callback([this, image_view](int i) {
-    //        std::cout << "Selected item " << i << std::endl;
-    //        image_view->set_image(m_images[i].first);
-    //        m_current_image = i;
-    //        });
+            // Create a Texture instance for each object
+            for (auto& icon : icons) {
+                Vector2i size;
+                int n = 0;
+                ImageHolder texture_data(
+                    stbi_load((icon.second + ".png").c_str(), &size.x(), &size.y(), &n, 0),
+                    stbi_image_free);
+                assert(n == 4);
 
-    //    image_view->set_pixel_callback(
-    //        [this](const Vector2i& index, char** out, size_t size) {
-    //            const Texture* texture = m_images[m_current_image].first.get();
-    //            uint8_t* data = m_images[m_current_image].second.get();
-    //            for (int ch = 0; ch < 4; ++ch) {
-    //                uint8_t value = data[(index.x() + index.y() * texture->size().x()) * 4 + ch];
-    //                snprintf(out[ch], size, "%i", (int)value);
-    //            }
-    //        }
-    //    );
+                Texture* tex = new Texture(
+                    Texture::PixelFormat::RGBA,
+                    Texture::ComponentFormat::UInt8,
+                    size,
+                    Texture::InterpolationMode::Trilinear,
+                    Texture::InterpolationMode::Nearest);
 
-    //    new Label(BasicWidgetsWindow, "File dialog", "sans-bold");
-    //    tools = new Widget(BasicWidgetsWindow);
-    //    tools->set_layout(new BoxLayout(Orientation::Horizontal,
-    //        Alignment::Middle, 0, 6));
-    //    b = new Button(tools, "Open");
-    //    b->set_callback([&] {
-    //        std::cout << "File dialog result: " << file_dialog(
-    //            { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, false) << std::endl;
-    //        });
-    //    b = new Button(tools, "Save");
-    //    b->set_callback([&] {
-    //        std::cout << "File dialog result: " << file_dialog(
-    //            { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, true) << std::endl;
-    //        });
+                tex->upload(texture_data.get());
 
-    //    new Label(BasicWidgetsWindow, "Combo box", "sans-bold");
-    //    new ComboBox(BasicWidgetsWindow, { "Combo box item 1", "Combo box item 2", "Combo box item 3" });
-    //    new Label(BasicWidgetsWindow, "Check box", "sans-bold");
-    //    CheckBox* cb = new CheckBox(BasicWidgetsWindow, "Flag 1",
-    //        [](bool state) { std::cout << "Check box 1 state: " << state << std::endl; }
-    //    );
-    //    cb->set_checked(true);
-    //    cb = new CheckBox(BasicWidgetsWindow, "Flag 2",
-    //        [](bool state) { std::cout << "Check box 2 state: " << state << std::endl; }
-    //    );
-    //    new Label(BasicWidgetsWindow, "Progress bar", "sans-bold");
-    //    m_progress = new ProgressBar(BasicWidgetsWindow);
+                m_images.emplace_back(tex, std::move(texture_data));
+            }
 
-    //    new Label(BasicWidgetsWindow, "Slider and text box", "sans-bold");
+            ImageView* image_view = new ImageView(image_window);
+            if (!m_images.empty())
+                image_view->set_image(m_images[0].first);
+            image_view->center();
+            m_current_image = 0;
 
-    //    Widget* panel = new Widget(BasicWidgetsWindow);
-    //    panel->set_layout(new BoxLayout(Orientation::Horizontal,
-    //        Alignment::Middle, 0, 20));
+            img_panel->set_callback([this, image_view](int i) {
+                std::cout << "Selected item " << i << std::endl;
+                image_view->set_image(m_images[i].first);
+                m_current_image = i;
+                });
 
-    //    Slider* slider = new Slider(panel);
-    //    slider->set_value(0.5f);
-    //    slider->set_fixed_width(80);
+            image_view->set_pixel_callback(
+                [this](const Vector2i& index, char** out, size_t size) {
+                    const Texture* texture = m_images[m_current_image].first.get();
+                    uint8_t* data = m_images[m_current_image].second.get();
+                    for (int ch = 0; ch < 4; ++ch) {
+                        uint8_t value = data[(index.x() + index.y() * texture->size().x()) * 4 + ch];
+                        snprintf(out[ch], size, "%i", (int)value);
+                    }
+                }
+            );
 
-    //    TextBox* text_box = new TextBox(panel);
-    //    text_box->set_fixed_size(Vector2i(60, 25));
-    //    text_box->set_value("50");
-    //    text_box->set_units("%");
-    //    slider->set_callback([text_box](float value) {
-    //        text_box->set_value(std::to_string((int)(value * 100)));
-    //        });
-    //    slider->set_final_callback([&](float value) {
-    //        std::cout << "Final slider value: " << (int)(value * 100) << std::endl;
-    //        });
-    //    text_box->set_fixed_size(Vector2i(60, 25));
-    //    text_box->set_font_size(20);
-    //    text_box->set_alignment(TextBox::Alignment::Right);
+            new Label(BasicWidgetsWindow, "File dialog", "sans-bold");
+            tools = new Widget(BasicWidgetsWindow);
+            tools->set_layout(new BoxLayout(Orientation::Horizontal,
+                Alignment::Middle, 0, 6));
+            b = new Button(tools, "Open");
+            b->set_callback([&] {
+                std::cout << "File dialog result: " << file_dialog(
+                    { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, false) << std::endl;
+                });
+            b = new Button(tools, "Save");
+            b->set_callback([&] {
+                std::cout << "File dialog result: " << file_dialog(
+                    { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, true) << std::endl;
+                });
 
-    //    Window* MiscWidgetsWindow = new Window(this, "Misc. widgets", true);
-    //    MiscWidgetsWindow->set_position(Vector2i(425, 15));
-    //    GroupLayout* MyGroupLayout = new GroupLayout();
-    //    MiscWidgetsWindow->set_layout(MyGroupLayout);
+            new Label(BasicWidgetsWindow, "Combo box", "sans-bold");
+            new ComboBox(BasicWidgetsWindow, { "Combo box item 1", "Combo box item 2", "Combo box item 3" });
+            new Label(BasicWidgetsWindow, "Check box", "sans-bold");
+            CheckBox* cb = new CheckBox(BasicWidgetsWindow, "Flag 1",
+                [](bool state) { std::cout << "Check box 1 state: " << state << std::endl; }
+            );
+            cb->set_checked(true);
+            cb = new CheckBox(BasicWidgetsWindow, "Flag 2",
+                [](bool state) { std::cout << "Check box 2 state: " << state << std::endl; }
+            );
+            new Label(BasicWidgetsWindow, "Progress bar", "sans-bold");
+            m_progress = new ProgressBar(BasicWidgetsWindow);
 
-    //    TabWidget* tab_widget = MiscWidgetsWindow->add<TabWidget>();
+            new Label(BasicWidgetsWindow, "Slider and text box", "sans-bold");
 
-    //    Widget* layer = new Widget(tab_widget);
-    //    layer->set_layout(new GroupLayout());
-    //    tab_widget->append_tab("Color Wheel", layer);
+            Widget* panel = new Widget(BasicWidgetsWindow);
+            panel->set_layout(new BoxLayout(Orientation::Horizontal,
+                Alignment::Middle, 0, 20));
 
-    //    // Use overloaded variadic add to fill the tab widget with Different tabs.
-    //    layer->add<Label>("Color wheel widget", "sans-bold");
-    //    layer->add<ColorWheel>();
+            Slider* slider = new Slider(panel);
+            slider->set_value(0.5f);
+            slider->set_fixed_width(80);
 
-    //    layer = new Widget(tab_widget);
-    //    layer->set_layout(new GroupLayout());
-    //    tab_widget->append_tab("Function Graph", layer);
+            TextBox* text_box = new TextBox(panel);
+            text_box->set_fixed_size(Vector2i(60, 25));
+            text_box->set_value("50");
+            text_box->set_units("%");
+            slider->set_callback([text_box](float value) {
+                text_box->set_value(std::to_string((int)(value * 100)));
+                });
+            slider->set_final_callback([&](float value) {
+                std::cout << "Final slider value: " << (int)(value * 100) << std::endl;
+                });
+            text_box->set_fixed_size(Vector2i(60, 25));
+            text_box->set_font_size(20);
+            text_box->set_alignment(TextBox::Alignment::Right);
 
-    //    layer->add<Label>("Function graph widget", "sans-bold");
+            Window* MiscWidgetsWindow = new Window(this, "Misc. widgets", true);
+            MiscWidgetsWindow->set_position(Vector2i(425, 15));
+            GroupLayout* MyGroupLayout = new GroupLayout();
+            MiscWidgetsWindow->set_layout(MyGroupLayout);
 
-    //    Graph* graph = layer->add<Graph>("Some Function");
+            TabWidget* tab_widget = MiscWidgetsWindow->add<TabWidget>();
 
-    //    graph->set_header("E = 2.35e-3");
-    //    graph->set_footer("Iteration 89");
-    //    std::vector<float>& func = graph->values();
-    //    func.resize(100);
-    //    for (int i = 0; i < 100; ++i)
-    //        func[i] = 0.5f * (0.5f * std::sin(i / 10.f) +
-    //            0.5f * std::cos(i / 23.f) + 1);
+            Widget* layer = new Widget(tab_widget);
+            layer->set_layout(new GroupLayout());
+            tab_widget->append_tab("Color Wheel", layer);
 
-    //    // Dummy tab used to represent the last tab button.
-    //    Widget* PlusTab = new Widget(tab_widget);
+            // Use overloaded variadic add to fill the tab widget with Different tabs.
+            layer->add<Label>("Color wheel widget", "sans-bold");
+            layer->add<ColorWheel>();
 
-    //    int plus_id = tab_widget->append_tab("+", PlusTab);
-    //    // A simple counter.
-    //    int counter = 1;
-    //    tab_widget->set_callback([tab_widget, this, counter, plus_id](int id) mutable {
-    //        if (id == plus_id) {
-    //            // When the "+" tab has been clicked, simply add a new tab.
-    //            std::string tab_name = "Dynamic " + std::to_string(counter);
-    //            Widget* layer_dyn = new Widget(tab_widget);
-    //            int new_id = tab_widget->insert_tab(tab_widget->tab_count() - 1,
-    //                tab_name, layer_dyn);
-    //            layer_dyn->set_layout(new GroupLayout());
-    //            layer_dyn->add<Label>("Function graph widget", "sans-bold");
-    //            Graph* graph_dyn = layer_dyn->add<Graph>("Dynamic function");
+            layer = new Widget(tab_widget);
+            layer->set_layout(new GroupLayout());
+            tab_widget->append_tab("Function Graph", layer);
 
-    //            graph_dyn->set_header("E = 2.35e-3");
-    //            graph_dyn->set_footer("Iteration " + std::to_string(new_id * counter));
-    //            std::vector<float>& func_dyn = graph_dyn->values();
-    //            func_dyn.resize(100);
-    //            for (int i = 0; i < 100; ++i)
-    //                func_dyn[i] = 0.5f *
-    //                std::abs((0.5f * std::sin(i / 10.f + counter) +
-    //                    0.5f * std::cos(i / 23.f + 1 + counter)));
-    //            ++counter;
-    //            tab_widget->set_selected_id(new_id);
+            layer->add<Label>("Function graph widget", "sans-bold");
 
-    //            // We must invoke the layout manager after adding tabs dynamically
-    //            perform_layout();
-    //        }
-    //        });
+            Graph* graph = layer->add<Graph>("Some Function");
 
-    //    // A button to go back to the first tab and scroll the window.
-    //    panel = MiscWidgetsWindow->add<Widget>();
-    //    panel->add<Label>("Jump to tab: ");
-    //    panel->set_layout(new BoxLayout(Orientation::Horizontal,
-    //        Alignment::Middle, 0, 6));
+            graph->set_header("E = 2.35e-3");
+            graph->set_footer("Iteration 89");
+            std::vector<float>& func = graph->values();
+            func.resize(100);
+            for (int i = 0; i < 100; ++i)
+                func[i] = 0.5f * (0.5f * std::sin(i / 10.f) +
+                    0.5f * std::cos(i / 23.f) + 1);
 
-    //    auto ib = panel->add<IntBox<int>>();
-    //    ib->set_editable(true);
+            // Dummy tab used to represent the last tab button.
+            Widget* PlusTab = new Widget(tab_widget);
 
-    //    b = panel->add<Button>("", FA_FORWARD);
-    //    b->set_fixed_size(Vector2i(22, 22));
-    //    ib->set_fixed_height(22);
-    //    b->set_callback([tab_widget, ib] {
-    //        int value = ib->value();
-    //        if (value >= 0 && value < tab_widget->tab_count())
-    //            tab_widget->set_selected_index(value);
-    //        });
+            int plus_id = tab_widget->append_tab("+", PlusTab);
+            // A simple counter.
+            int counter = 1;
+            tab_widget->set_callback([tab_widget, this, counter, plus_id](int id) mutable {
+                if (id == plus_id) {
+                    // When the "+" tab has been clicked, simply add a new tab.
+                    std::string tab_name = "Dynamic " + std::to_string(counter);
+                    Widget* layer_dyn = new Widget(tab_widget);
+                    int new_id = tab_widget->insert_tab(tab_widget->tab_count() - 1,
+                        tab_name, layer_dyn);
+                    layer_dyn->set_layout(new GroupLayout());
+                    layer_dyn->add<Label>("Function graph widget", "sans-bold");
+                    Graph* graph_dyn = layer_dyn->add<Graph>("Dynamic function");
 
-    //    Window* GridWindow = new Window(this, "Grid of small widgets", true);
-    //    GridWindow->set_position(Vector2i(425, 300));
-    //    layout =
-    //        new GridLayout(Orientation::Horizontal, 2,
-    //            Alignment::Middle, 15, 5);
-    //    layout->set_col_alignment(
-    //        { Alignment::Maximum, Alignment::Fill });
-    //    layout->set_spacing(0, 10);
-    //    GridWindow->set_layout(layout);
+                    graph_dyn->set_header("E = 2.35e-3");
+                    graph_dyn->set_footer("Iteration " + std::to_string(new_id * counter));
+                    std::vector<float>& func_dyn = graph_dyn->values();
+                    func_dyn.resize(100);
+                    for (int i = 0; i < 100; ++i)
+                        func_dyn[i] = 0.5f *
+                        std::abs((0.5f * std::sin(i / 10.f + counter) +
+                            0.5f * std::cos(i / 23.f + 1 + counter)));
+                    ++counter;
+                    tab_widget->set_selected_id(new_id);
 
-    //    /* FP widget */ {
-    //        new Label(GridWindow, "Floating point :", "sans-bold");
-    //        TextBox* text_box = new TextBox(GridWindow);
-    //        text_box->set_editable(true);
-    //        text_box->set_fixed_size(Vector2i(100, 20));
-    //        text_box->set_value("50");
-    //        text_box->set_units("GiB");
-    //        text_box->set_default_value("0.0");
-    //        text_box->set_font_size(16);
-    //        text_box->set_format("[-]?[0-9]*\\.?[0-9]+");
-    //    }
+                    // We must invoke the layout manager after adding tabs dynamically
+                    perform_layout();
+                }
+                });
 
-    //    /* Positive integer widget */ {
-    //        new Label(GridWindow, "Positive integer :", "sans-bold");
-    //        auto int_box = new IntBox<int>(GridWindow);
-    //        int_box->set_editable(true);
-    //        int_box->set_fixed_size(Vector2i(100, 20));
-    //        int_box->set_value(50);
-    //        int_box->set_units("Mhz");
-    //        int_box->set_default_value("0");
-    //        int_box->set_font_size(16);
-    //        int_box->set_format("[1-9][0-9]*");
-    //        int_box->set_spinnable(true);
-    //        int_box->set_min_value(1);
-    //        int_box->set_value_increment(2);
-    //    }
+            // A button to go back to the first tab and scroll the window.
+            panel = MiscWidgetsWindow->add<Widget>();
+            panel->add<Label>("Jump to tab: ");
+            panel->set_layout(new BoxLayout(Orientation::Horizontal,
+                Alignment::Middle, 0, 6));
 
-    //    /* Checkbox widget */ {
-    //        new Label(GridWindow, "Checkbox :", "sans-bold");
+            auto ib = panel->add<IntBox<int>>();
+            ib->set_editable(true);
 
-    //        CheckBox* cb = new CheckBox(GridWindow, "Check me");
-    //        cb->set_font_size(16);
-    //        cb->set_checked(true);
-    //    }
+            b = panel->add<Button>("", FA_FORWARD);
+            b->set_fixed_size(Vector2i(22, 22));
+            ib->set_fixed_height(22);
+            b->set_callback([tab_widget, ib] {
+                int value = ib->value();
+                if (value >= 0 && value < tab_widget->tab_count())
+                    tab_widget->set_selected_index(value);
+                });
 
-    //    new Label(GridWindow, "Combo box :", "sans-bold");
-    //    ComboBox* cobo =
-    //        new ComboBox(GridWindow, { "Item 1", "Item 2", "Item 3" });
-    //    cobo->set_font_size(16);
-    //    cobo->set_fixed_size(Vector2i(100, 20));
+            Window* GridWindow = new Window(this, "Grid of small widgets", true);
+            GridWindow->set_position(Vector2i(425, 300));
+            layout =
+                new GridLayout(Orientation::Horizontal, 2,
+                    Alignment::Middle, 15, 5);
+            layout->set_col_alignment(
+                { Alignment::Maximum, Alignment::Fill });
+            layout->set_spacing(0, 10);
+            GridWindow->set_layout(layout);
 
-    //    new Label(GridWindow, "Color picker :", "sans-bold");
-    //    auto cp = new ColorPicker(GridWindow, { 255, 120, 0, 255 });
-    //    cp->set_fixed_size({ 100, 20 });
-    //    cp->set_final_callback([](const Color& c) {
-    //        std::cout << "ColorPicker final callback: ["
-    //            << c.r() << ", "
-    //            << c.g() << ", "
-    //            << c.b() << ", "
-    //            << c.w() << "]" << std::endl;
-    //        });
-    //    // setup a fast callback for the color picker widget on a new window
-    //    // for demonstrative purposes
-    //    Window* ColorPickerWindow = new Window(this, "Color Picker Fast Callback", true);
-    //    layout = new GridLayout(Orientation::Horizontal, 2,
-    //        Alignment::Middle, 15, 5);
-    //    layout->set_col_alignment(
-    //        { Alignment::Maximum, Alignment::Fill });
-    //    layout->set_spacing(0, 10);
-    //    ColorPickerWindow->set_layout(layout);
-    //    ColorPickerWindow->set_position(Vector2i(425, 500));
-    //    new Label(ColorPickerWindow, "Combined: ");
-    //    b = new Button(ColorPickerWindow, "ColorWheel", FA_INFINITY);
-    //    new Label(ColorPickerWindow, "Red: ");
-    //    auto red_int_box = new IntBox<int>(ColorPickerWindow);
-    //    red_int_box->set_editable(false);
-    //    new Label(ColorPickerWindow, "Green: ");
-    //    auto green_int_box = new IntBox<int>(ColorPickerWindow);
-    //    green_int_box->set_editable(false);
-    //    new Label(ColorPickerWindow, "Blue: ");
-    //    auto blue_int_box = new IntBox<int>(ColorPickerWindow);
-    //    blue_int_box->set_editable(false);
-    //    new Label(ColorPickerWindow, "Alpha: ");
-    //    auto alpha_int_box = new IntBox<int>(ColorPickerWindow);
+            /* FP widget */ {
+                new Label(GridWindow, "Floating point :", "sans-bold");
+                TextBox* text_box = new TextBox(GridWindow);
+                text_box->set_editable(true);
+                text_box->set_fixed_size(Vector2i(100, 20));
+                text_box->set_value("50");
+                text_box->set_units("GiB");
+                text_box->set_default_value("0.0");
+                text_box->set_font_size(16);
+                text_box->set_format("[-]?[0-9]*\\.?[0-9]+");
+            }
 
-    //    cp->set_callback([b, red_int_box, blue_int_box, green_int_box, alpha_int_box](const Color& c) {
-    //        b->set_background_color(c);
-    //        b->set_text_color(c.contrasting_color());
-    //        int red = (int)(c.r() * 255.0f);
-    //        red_int_box->set_value(red);
-    //        int green = (int)(c.g() * 255.0f);
-    //        green_int_box->set_value(green);
-    //        int blue = (int)(c.b() * 255.0f);
-    //        blue_int_box->set_value(blue);
-    //        int alpha = (int)(c.w() * 255.0f);
-    //        alpha_int_box->set_value(alpha);
-    //        });
+            /* Positive integer widget */ {
+                new Label(GridWindow, "Positive integer :", "sans-bold");
+                auto int_box = new IntBox<int>(GridWindow);
+                int_box->set_editable(true);
+                int_box->set_fixed_size(Vector2i(100, 20));
+                int_box->set_value(50);
+                int_box->set_units("Mhz");
+                int_box->set_default_value("0");
+                int_box->set_font_size(16);
+                int_box->set_format("[1-9][0-9]*");
+                int_box->set_spinnable(true);
+                int_box->set_min_value(1);
+                int_box->set_value_increment(2);
+            }
+
+            /* Checkbox widget */ {
+                new Label(GridWindow, "Checkbox :", "sans-bold");
+
+                CheckBox* cb = new CheckBox(GridWindow, "Check me");
+                cb->set_font_size(16);
+                cb->set_checked(true);
+            }
+
+            new Label(GridWindow, "Combo box :", "sans-bold");
+            ComboBox* cobo =
+                new ComboBox(GridWindow, { "Item 1", "Item 2", "Item 3" });
+            cobo->set_font_size(16);
+            cobo->set_fixed_size(Vector2i(100, 20));
+
+            new Label(GridWindow, "Color picker :", "sans-bold");
+            auto cp = new ColorPicker(GridWindow, { 255, 120, 0, 255 });
+            cp->set_fixed_size({ 100, 20 });
+            cp->set_final_callback([](const Color& c) {
+                std::cout << "ColorPicker final callback: ["
+                    << c.r() << ", "
+                    << c.g() << ", "
+                    << c.b() << ", "
+                    << c.w() << "]" << std::endl;
+                });
+            // setup a fast callback for the color picker widget on a new window
+            // for demonstrative purposes
+            Window* ColorPickerWindow = new Window(this, "Color Picker Fast Callback", true);
+            layout = new GridLayout(Orientation::Horizontal, 2,
+                Alignment::Middle, 15, 5);
+            layout->set_col_alignment(
+                { Alignment::Maximum, Alignment::Fill });
+            layout->set_spacing(0, 10);
+            ColorPickerWindow->set_layout(layout);
+            ColorPickerWindow->set_position(Vector2i(425, 500));
+            new Label(ColorPickerWindow, "Combined: ");
+            b = new Button(ColorPickerWindow, "ColorWheel", FA_INFINITY);
+            new Label(ColorPickerWindow, "Red: ");
+            auto red_int_box = new IntBox<int>(ColorPickerWindow);
+            red_int_box->set_editable(false);
+            new Label(ColorPickerWindow, "Green: ");
+            auto green_int_box = new IntBox<int>(ColorPickerWindow);
+            green_int_box->set_editable(false);
+            new Label(ColorPickerWindow, "Blue: ");
+            auto blue_int_box = new IntBox<int>(ColorPickerWindow);
+            blue_int_box->set_editable(false);
+            new Label(ColorPickerWindow, "Alpha: ");
+            auto alpha_int_box = new IntBox<int>(ColorPickerWindow);
+
+            cp->set_callback([b, red_int_box, blue_int_box, green_int_box, alpha_int_box](const Color& c) {
+                b->set_background_color(c);
+                b->set_text_color(c.contrasting_color());
+                int red = (int)(c.r() * 255.0f);
+                red_int_box->set_value(red);
+                int green = (int)(c.g() * 255.0f);
+                green_int_box->set_value(green);
+                int blue = (int)(c.b() * 255.0f);
+                blue_int_box->set_value(blue);
+                int alpha = (int)(c.w() * 255.0f);
+                alpha_int_box->set_value(alpha);
+                });
 
         perform_layout();
 

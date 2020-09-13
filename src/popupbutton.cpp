@@ -16,21 +16,21 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-PopupButton::PopupButton(Widget *parent, const std::string &caption, int button_icon)
+PopupButton::PopupButton(Widget* parent, const std::string& caption, int button_icon)
     : Button(parent, caption, button_icon) {
 
-    m_chevron_icon = m_theme->m_popup_chevron_right_icon;
 
     set_flags(Flags::ToggleButton | Flags::PopupButton);
 
-    m_popup = new Popup(screen(), window());
+    m_popup = new Popup(screen(), window(), this);
     m_popup->set_size(Vector2i(320, 250));
     m_popup->set_visible(false);
+    set_side(Popup::Right);
 
-    m_icon_extra_scale = 0.8f; // widget override
+    m_icon_extra_scale = 0.5f; // widget override
 }
 
-Vector2i PopupButton::preferred_size(NVGcontext *ctx) const {
+Vector2i PopupButton::preferred_size(NVGcontext* ctx) const {
     return Button::preferred_size(ctx) + Vector2i(15, 0);
 }
 
@@ -54,40 +54,29 @@ void PopupButton::draw(NVGcontext* ctx) {
         float iw = nvgTextBounds(ctx, 0, 0, icon.data(), nullptr, nullptr);
         Vector2f icon_pos(0, m_pos.y() + m_size.y() * 0.5f - 1);
 
-        if (m_popup->side() == Popup::Right)
-            icon_pos[0] = m_pos.x() + m_size.x() - iw - 8;
-        else
+        if (m_popup->side() == Popup::Left)
             icon_pos[0] = m_pos.x() + 8;
+        else
+            icon_pos[0] = m_pos.x() + m_size.x() - iw - 8;
 
         nvgText(ctx, icon_pos.x(), icon_pos.y(), icon.data(), nullptr);
     }
 }
 
-void PopupButton::perform_layout(NVGcontext *ctx) {
+void PopupButton::perform_layout(NVGcontext* ctx) {
     Widget::perform_layout(ctx);
 
-    const Window *parent_window = window();
-
-    int anchor_size = m_popup->anchor_size();
-
-    if (parent_window) {
-        int pos_y = absolute_position().y() - parent_window->position().y() + m_size.y() / 2;
-        if (m_popup->side() == Popup::Right)
-            m_popup->set_anchor_pos(Vector2i(parent_window->width() + anchor_size, pos_y));
-        else
-            m_popup->set_anchor_pos(Vector2i(-anchor_size, pos_y));
-    } else {
-        m_popup->set_position(absolute_position() + Vector2i(width() + anchor_size + 1,  m_size.y() / 2 - anchor_size));
-    }
+    m_popup->perform_layout(ctx);
 }
 
 void PopupButton::set_side(Popup::Side side) {
-    if (m_popup->side() == Popup::Right &&
-        m_chevron_icon == m_theme->m_popup_chevron_right_icon)
-        set_chevron_icon(m_theme->m_popup_chevron_left_icon);
-    else if (m_popup->side() == Popup::Left &&
-             m_chevron_icon == m_theme->m_popup_chevron_left_icon)
+    m_popup->set_side(side);
+    if (m_popup->side() == Popup::Side::Right)
         set_chevron_icon(m_theme->m_popup_chevron_right_icon);
+    else if (m_popup->side() == Popup::Side::Left)
+        set_chevron_icon(m_theme->m_popup_chevron_left_icon);
+    else
+        set_chevron_icon(m_theme->m_text_box_down_icon);
     m_popup->set_side(side);
 }
 
