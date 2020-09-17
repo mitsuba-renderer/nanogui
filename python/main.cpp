@@ -80,20 +80,20 @@ public:
         if (!detached)
             return;
 
-        #if defined(__APPLE__) || defined(__linux__)
-            /* Release GIL and disassociate from thread state (which was originally
-               associated with the main Python thread) */
-            py::gil_scoped_release thread_state(true);
+#if defined(__APPLE__) || defined(__linux__)
+        /* Release GIL and disassociate from thread state (which was originally
+           associated with the main Python thread) */
+        py::gil_scoped_release thread_state(true);
 
-            coro_transfer(&ctx_main, &ctx_thread);
-            coro_stack_free(&stack);
+        coro_transfer(&ctx_main, &ctx_thread);
+        coro_stack_free(&stack);
 
-            /* Destroy the thread state that was created in mainloop() */
-            {
-                py::gil_scoped_acquire acquire;
-                acquire.dec_ref();
-            }
-        #endif
+        /* Destroy the thread state that was created in mainloop() */
+        {
+            py::gil_scoped_acquire acquire;
+            acquire.dec_ref();
+        }
+#endif
 
         thread.join();
         detached = false;
