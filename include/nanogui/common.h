@@ -140,7 +140,6 @@ enum class Cursor {
 /* Forward declarations */
 template <typename T> class ref;
 class AdvancedGridLayout;
-struct ArrayBase;
 class BoxLayout;
 class Button;
 class CheckBox;
@@ -156,7 +155,6 @@ class ImagePanel;
 class ImageView;
 class Label;
 class Layout;
-struct MatrixBase;
 class MessageDialog;
 class Object;
 class Popup;
@@ -320,6 +318,6 @@ NAMESPACE_END(nanogui)
 
 NAMESPACE_BEGIN(enoki)
 /// Base class of all Enoki arrays
-template <typename Value_, typename Derived_> struct ArrayBase;
+template <typename Value_, bool IsMask_, typename Derived_> struct ArrayBase;
 NAMESPACE_END(enoki)
 

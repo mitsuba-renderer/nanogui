@@ -18,12 +18,11 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-struct ArrayBase { };
-struct MatrixBase { };
-
-template <typename Value_, size_t Size_> struct Array : ArrayBase {
-    using Value = Value_;
+template <typename Value_, size_t Size_> struct Array {
+    static constexpr bool IsNanoGUI = true;
+    static constexpr bool IsMatrix  = false;
     static constexpr size_t Size = Size_;
+    using Value = Value_;
 
     Array() { }
 
@@ -410,7 +409,10 @@ public:
 };
 
 /// Simple matrix class with column-major storage
-template <typename Value_, size_t Size_> struct Matrix : MatrixBase {
+template <typename Value_, size_t Size_> struct Matrix {
+    static constexpr bool IsNanoGUI = true;
+    static constexpr bool IsMatrix  = true;
+
     using Value = Value_;
     static constexpr size_t Size = Size_;
 
