@@ -504,25 +504,30 @@ endif()
 
 if (NANOGUI_BUILD_PYTHON AND NANOGUI_MASTER_PROJECT)
   # Create documentation for python plugin (optional target for developers)
-  string(REPLACE " " ";" MKDOC_CXX_FLAGS_LIST ${CMAKE_CXX_FLAGS})
+  string(REPLACE " " ";" MKDOC_CXX_FLAGS ${CMAKE_CXX_FLAGS})
   get_property(MKDOC_INCLUDE_DIRECTORIES DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
   get_property(MKDOC_COMPILE_DEFINITIONS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
 
   foreach (value ${MKDOC_INCLUDE_DIRECTORIES})
-    list(APPEND MKDOC_CXX_FLAGS_LIST -I${value})
+    list(APPEND MKDOC_CXX_FLAGS -I${value})
   endforeach()
 
   # Make sure platform specific code gets kept in py_doc.h (specifically __doc_nanogui_chdir_to_bundle_parent)
   list(APPEND MKDOC_COMPILE_DEFINITIONS "DOXYGEN_DOCUMENTATION_BUILD")
   foreach (value ${MKDOC_COMPILE_DEFINITIONS})
-    list(APPEND MKDOC_CXX_FLAGS_LIST -D${value})
+    list(APPEND MKDOC_CXX_FLAGS -D${value})
   endforeach()
 
-  add_custom_target(mkdoc USES_TERMINAL COMMAND
-    python3 ${PROJECT_SOURCE_DIR}/docs/mkdoc_rst.py
-      ${MKDOC_CXX_FLAGS_LIST}
-      ${PROJECT_SOURCE_DIR}/include/nanogui/*.h
-      > ${CMAKE_CURRENT_SOURCE_DIR}/python/py_doc.h)
+  add_custom_target(docstrings USES_TERMINAL COMMAND
+    ${Python_EXECUTABLE} -m pybind11_mkdoc -std=c++17 -stdlib=libc++
+    ${MKDOC_CXXFLAGS}
+    ${NANOGUI_BACKEND_DEFS}
+    -I${PROJECT_SOURCE_DIR}/include
+    -I${PROJECT_SOURCE_DIR}/ext/glfw/include
+    -I${PROJECT_SOURCE_DIR}/ext/nanovg/src
+    ${PROJECT_SOURCE_DIR}/include/nanogui/*.h
+    -o ${CMAKE_CURRENT_SOURCE_DIR}/python/py_doc.h
+  )
 endif()
 
 # vim: set et ts=2 sw=2 ft=cmake nospell:
