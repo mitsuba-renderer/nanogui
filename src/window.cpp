@@ -21,7 +21,7 @@ NAMESPACE_BEGIN(nanogui)
 
 Window::Window(Widget* parent, const std::string& title, bool resizable)
     : Widget(parent), m_title(title), m_button_panel(nullptr), m_modal(false), m_drag(false),
-    m_resize_dir(Vector2i(0, 0)), m_min_size(Vector2i(0, 0)), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true) { }
+    m_resize_dir(Vector2i(0, 0)), m_min_size(Vector2i(0, 0)), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true), m_draw_shadow(true) { }
 
 Vector2i Window::preferred_size(NVGcontext* ctx) const {
     if (m_button_panel)
@@ -85,19 +85,22 @@ void Window::draw(NVGcontext* ctx) {
 
 
     /* Draw a drop shadow */
-    NVGpaint shadow_paint = nvgBoxGradient(
-        ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr * 2, ds * 2,
-        m_theme->m_drop_shadow, m_theme->m_transparent);
+    if (m_draw_shadow)
+    {
+        NVGpaint shadow_paint = nvgBoxGradient(
+            ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr * 2, ds * 2,
+            m_theme->m_drop_shadow, m_theme->m_transparent);
 
-    nvgSave(ctx);
-    nvgResetScissor(ctx);
-    nvgBeginPath(ctx);
-    nvgRect(ctx, m_pos.x() - ds, m_pos.y() - ds, m_size.x() + 2 * ds, m_size.y() + 2 * ds);
-    nvgRoundedRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr);
-    nvgPathWinding(ctx, NVG_HOLE);
-    nvgFillPaint(ctx, shadow_paint);
-    nvgFill(ctx);
-    nvgRestore(ctx);
+        nvgSave(ctx);
+        nvgResetScissor(ctx);
+        nvgBeginPath(ctx);
+        nvgRect(ctx, m_pos.x() - ds, m_pos.y() - ds, m_size.x() + 2 * ds, m_size.y() + 2 * ds);
+        nvgRoundedRect(ctx, m_pos.x(), m_pos.y(), m_size.x(), m_size.y(), cr);
+        nvgPathWinding(ctx, NVG_HOLE);
+        nvgFillPaint(ctx, shadow_paint);
+        nvgFill(ctx);
+        nvgRestore(ctx);
+    }
 
     if (!m_title.empty()) {
         /* Draw header */

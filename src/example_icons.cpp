@@ -25,7 +25,9 @@ using namespace nanogui;
 #define ADD_BUTTON(icon)                                   \
     auto b_##icon = new Button(wrapper, #icon, icon);      \
     b_##icon->set_icon_position(Button::IconPosition::Left); \
-    b_##icon->set_fixed_width(half_width);
+    b_##icon->set_fixed_width(half_width);\
+    b_##icon->set_icon_extra_scale(2);
+
 
 int main(int /* argc */, char ** /* argv */) {
     nanogui::init();

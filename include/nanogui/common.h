@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include <functional>
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <stdexcept>

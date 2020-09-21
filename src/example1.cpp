@@ -36,6 +36,7 @@
 #include <nanogui/texture.h>
 #include <nanogui/shader.h>
 #include <nanogui/renderpass.h>
+#include <nanogui/textarea.h>
 #include <iostream>
 #include <memory>
 
@@ -277,6 +278,15 @@ public:
                     }
                 }
             );
+
+            TextArea* MyTextArea = new TextArea(image_window);
+            MyTextArea->append_line("sdfgsd");
+            MyTextArea->append_line("sdfgsd");
+            MyTextArea->append_line("sdfgsd");
+            MyTextArea->append_line("sdfgsd");
+            MyTextArea->append_line("sdfgsd");
+            MyTextArea->append_line("sdfgsd");
+            MyTextArea->append_line("sdfgsd");
 
             new Label(BasicWidgetsWindow, "File dialog", "sans-bold");
             tools = new Widget(BasicWidgetsWindow);

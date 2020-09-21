@@ -10,10 +10,10 @@
 */
 
 #pragma once
-
+#include <nanogui/widget.h>
 #include <nanogui/common.h>
 #include <nanogui/metal.h>
-#include <nanogui/widget.h>
+
 #include <nanogui/screen.h>
 #include <nanogui/theme.h>
 #include <nanogui/window.h>

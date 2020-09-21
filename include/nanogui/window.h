@@ -35,6 +35,10 @@ NAMESPACE_BEGIN(nanogui)
         bool modal() const { return m_modal; }
         /// Set whether or not this is a modal dialog
         void set_modal(bool modal) { m_modal = modal; }
+        /// Drow size for this window?
+        bool draw_shadow() const { return m_draw_shadow; }
+        /// Set whether or not to draw shadow for this window
+        void set_draw_shadow(bool draw_shadow) { m_draw_shadow = draw_shadow; }
         /// Is this a resizable window?
         bool resizable() const { return m_resizable; }
         /// Set whether or not this window is resizable
@@ -86,6 +90,7 @@ NAMESPACE_BEGIN(nanogui)
         bool m_resize;
         Vector2i m_resize_dir;
         Vector2i m_min_size;
+        bool m_draw_shadow;
         bool m_resizable;
         bool m_can_move;
         bool m_can_snap;
