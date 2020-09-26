@@ -32,7 +32,7 @@
 #include <nanogui/textarea.h>
 #include <nanogui/slider.h>
 #include <nanogui/imagepanel.h>
-#include <nanogui/vscrollpanel.h>
+#include <nanogui/scrollpanel.h>
 #include <nanogui/colorwheel.h>
 #include <nanogui/graph.h>
 #include <nanogui/formhelper.h>

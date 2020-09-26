@@ -11,7 +11,7 @@
 
 #include <nanogui/combobox.h>
 #include <nanogui/layout.h>
-#include <nanogui/vscrollpanel.h>
+#include <nanogui/scrollpanel.h>
 #include <cassert>
 
 NAMESPACE_BEGIN(nanogui)
@@ -51,7 +51,7 @@ void ComboBox::set_items(const std::vector<std::string> &items, const std::vecto
         m_container->remove_child_at(m_container->child_count()-1);
 
     if (m_scroll == nullptr && items.size() > 8) {
-        m_scroll = new VScrollPanel(m_popup);
+        m_scroll = new ScrollPanel(m_popup);
         m_scroll->set_fixed_height(300);
         m_container = new Widget(m_scroll);
         m_popup->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle));

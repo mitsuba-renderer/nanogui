@@ -59,16 +59,13 @@ int Widget::font_size() const {
 }
 
 Vector2i Widget::preferred_size(NVGcontext *ctx) const {
-   // printf("Widget::preferred_size pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     if (m_layout)
         return m_layout->preferred_size(ctx, this);
     else
         return m_size;
-  //  printf("Widget::preferred_size post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
 }
 
 void Widget::perform_layout(NVGcontext *ctx) {
-  //  printf("Widget::perform_layout pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     if (m_layout) {
         m_layout->perform_layout(ctx, this);
     } else {
@@ -81,7 +78,6 @@ void Widget::perform_layout(NVGcontext *ctx) {
             c->perform_layout(ctx);
         }
     }
-  //  printf("Widget::perform_layout post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
 }
 
 Widget *Widget::find_widget(const Vector2i &p) {

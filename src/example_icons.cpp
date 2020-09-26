@@ -44,7 +44,7 @@ int main(int /* argc */, char ** /* argv */) {
         window->set_fixed_size({width, height});
 
         // attach a vertical scroll panel
-        auto vscroll = new VScrollPanel(window);
+        auto vscroll = new ScrollPanel(window);
         vscroll->set_fixed_size({width, height});
 
         // vscroll should only have *ONE* child. this is what `wrapper` is for

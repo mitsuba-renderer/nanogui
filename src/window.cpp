@@ -21,7 +21,7 @@ NAMESPACE_BEGIN(nanogui)
 
 Window::Window(Widget* parent, const std::string& title, bool resizable)
     : Widget(parent), m_title(title), m_button_panel(nullptr), m_modal(false), m_drag(false),
-    m_resize_dir(Vector2i(0, 0)), m_min_size(Vector2i(0, 0)), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true), m_draw_shadow(true) { }
+    m_resize_dir(Vector2i(0, 0)), m_min_size(Vector2i(20, 20)), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true), m_draw_shadow(true) { }
 
 Vector2i Window::preferred_size(NVGcontext* ctx) const {
     if (m_button_panel)
@@ -66,8 +66,8 @@ void Window::perform_layout(NVGcontext* ctx) {
             width() - (m_button_panel->preferred_size(ctx).x() + 5), 3));
         m_button_panel->perform_layout(ctx);
     }
-    if (m_min_size == Vector2i(0, 0))
-        m_min_size = m_size;
+    //if (m_min_size == Vector2i(0, 0))
+    //    m_min_size = m_size;
 }
 
 void Window::draw(NVGcontext* ctx) {

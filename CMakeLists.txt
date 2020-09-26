@@ -360,7 +360,7 @@ add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
   include/nanogui/textbox.h src/textbox.cpp
   include/nanogui/textarea.h src/textarea.cpp
   include/nanogui/imagepanel.h src/imagepanel.cpp
-  include/nanogui/vscrollpanel.h src/vscrollpanel.cpp
+  include/nanogui/scrollpanel.h src/scrollpanel.cpp
   include/nanogui/colorwheel.h src/colorwheel.cpp
   include/nanogui/colorpicker.h src/colorpicker.cpp
   include/nanogui/graph.h src/graph.cpp

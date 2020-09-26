@@ -176,7 +176,7 @@ class TextArea;
 class Texture;
 class Theme;
 class ToolButton;
-class VScrollPanel;
+class ScrollPanel;
 class Widget;
 class Window;
 

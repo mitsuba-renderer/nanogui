@@ -13,7 +13,7 @@
 #include <nanogui/opengl.h>
 #include <nanogui/theme.h>
 #include <nanogui/screen.h>
-#include <nanogui/vscrollpanel.h>
+#include <nanogui/scrollpanel.h>
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -50,7 +50,7 @@ void TextArea::append(const std::string &text) {
         }
     } while (*str++ != 0);
 
-    VScrollPanel *vscroll = dynamic_cast<VScrollPanel *>(m_parent);
+    ScrollPanel *vscroll = dynamic_cast<ScrollPanel *>(m_parent);
     if (vscroll)
         vscroll->perform_layout(ctx);
 }
@@ -103,7 +103,7 @@ Vector2i TextArea::preferred_size(NVGcontext *) const {
 }
 
 void TextArea::draw(NVGcontext *ctx) {
-    VScrollPanel *vscroll = dynamic_cast<VScrollPanel *>(m_parent);
+    ScrollPanel *vscroll = dynamic_cast<ScrollPanel *>(m_parent);
 
     std::vector<Block>::iterator start_it = m_blocks.begin(),
                                  end_it = m_blocks.end();
