@@ -180,20 +180,21 @@ public:
         popup_left->set_layout(new GroupLayout());
         new CheckBox(popup_left, "Another check box");
 
-        int TempWidth = 400;
+        int TempWidth = 100;
         int TempHeight = 200;
         Window* BasicWidgetsWindow = new Window(this, "Basic widgets", true);
         BasicWidgetsWindow->set_position(Vector2i(200, 15));
         BasicWidgetsWindow->set_layout(new BoxLayout(Orientation::Vertical,  Alignment::Middle, 0, 6));
+       // BasicWidgetsWindow->set_fixed_size({ TempWidth/2, TempHeight/2 });
 
        // // attach a vertical scroll panel
        ScrollPanel* vscroll = new ScrollPanel(BasicWidgetsWindow);
-       //vscroll->set_fixed_size({ TempWidth, TempHeight });
+       vscroll->set_scroll_type(ScrollPanel::ScrollTypes::Both);
 
         // vscroll should only have *ONE* child. this is what `wrapper` is for
         auto wrapper = new Widget(vscroll);
         wrapper->set_layout(new GroupLayout());// defaults: 2 columns
-        wrapper->set_fixed_size({ TempWidth, TempHeight });
+        //wrapper->set_fixed_size({ TempWidth, TempHeight });
 
         new Label(wrapper, "Message dialog", "sans-bold");
         tools = new Widget(wrapper);
@@ -232,15 +233,17 @@ public:
         }
     #endif
 
-        new Label(BasicWidgetsWindow, "Image panel & scroll panel", "sans-bold");
-        PopupButton* image_panel_btn = new PopupButton(BasicWidgetsWindow, "Image Panel");
+        new Label(wrapper, "Image panel & scroll panel", "sans-bold");
+        PopupButton* image_panel_btn = new PopupButton(wrapper, "Image Panel");
         image_panel_btn->set_icon(FA_IMAGES);
-        popup = image_panel_btn->popup();
         image_panel_btn->set_side(Popup::Side::Left);
+
+        popup = image_panel_btn->popup();
+        popup->set_fixed_size(Vector2i(245, 150));
+
         vscroll = new ScrollPanel(popup);
         ImagePanel* img_panel = new ImagePanel(vscroll);
         img_panel->set_images(icons);
-        popup->set_fixed_size(Vector2i(245, 150));
 
         auto image_window = new Window(this, "Selected image", true);
         image_window->set_position(Vector2i(710, 15));
@@ -290,8 +293,8 @@ public:
             }
         );
 
-        new Label(BasicWidgetsWindow, "File dialog", "sans-bold");
-        tools = new Widget(BasicWidgetsWindow);
+        new Label(wrapper, "File dialog", "sans-bold");
+        tools = new Widget(wrapper);
         tools->set_layout(new BoxLayout(Orientation::Horizontal,
             Alignment::Middle, 0, 6));
         b = new Button(tools, "Open");
@@ -305,22 +308,22 @@ public:
                 { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, true) << std::endl;
             });
 
-        new Label(BasicWidgetsWindow, "Combo box", "sans-bold");
-        new ComboBox(BasicWidgetsWindow, { "Combo box item 1", "Combo box item 2", "Combo box item 3", "Combo box item 3", "Combo box item 3", "Combo box item 3", "Combo box item 3", "Combo box item 3", "Combo box item 3" });
-        new Label(BasicWidgetsWindow, "Check box", "sans-bold");
-        CheckBox* cb = new CheckBox(BasicWidgetsWindow, "Flag 1",
+        new Label(wrapper, "Combo box", "sans-bold");
+        new ComboBox(wrapper, { "Combo box item 1", "Combo box item 2", "Combo box item 3", "Combo box item 3", "Combo box item 3", "Combo box item 3", "Combo box item 3", "Combo box item 3", "Combo box item 3" });
+        new Label(wrapper, "Check box", "sans-bold");
+        CheckBox* cb = new CheckBox(wrapper, "Flag 1",
             [](bool state) { std::cout << "Check box 1 state: " << state << std::endl; }
         );
         cb->set_checked(true);
-        cb = new CheckBox(BasicWidgetsWindow, "Flag 2",
+        cb = new CheckBox(wrapper, "Flag 2",
             [](bool state) { std::cout << "Check box 2 state: " << state << std::endl; }
         );
-        new Label(BasicWidgetsWindow, "Progress bar", "sans-bold");
-        m_progress = new ProgressBar(BasicWidgetsWindow);
+        new Label(wrapper, "Progress bar", "sans-bold");
+        m_progress = new ProgressBar(wrapper);
 
-        new Label(BasicWidgetsWindow, "Slider and text box", "sans-bold");
+        new Label(wrapper, "Slider and text box", "sans-bold");
 
-        Widget* panel = new Widget(BasicWidgetsWindow);
+        Widget* panel = new Widget(wrapper);
         panel->set_layout(new BoxLayout(Orientation::Horizontal,
             Alignment::Middle, 0, 20));
 

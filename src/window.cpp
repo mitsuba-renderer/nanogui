@@ -15,13 +15,14 @@
 #include <nanogui/screen.h>
 #include <nanogui/layout.h>
 #include <nanogui/popup.h>
+#include <nanogui/scrollpanel.h>
 #include <nanogui/messagedialog.h>
 
 NAMESPACE_BEGIN(nanogui)
 
 Window::Window(Widget* parent, const std::string& title, bool resizable)
     : Widget(parent), m_title(title), m_button_panel(nullptr), m_modal(false), m_drag(false),
-    m_resize_dir(Vector2i(0, 0)), m_min_size(Vector2i(20, 20)), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true), m_draw_shadow(true) { }
+    m_resize_dir(Vector2i(0, 0)), m_first_size(0), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true), m_draw_shadow(true) { }
 
 Vector2i Window::preferred_size(NVGcontext* ctx) const {
     if (m_button_panel)
@@ -51,6 +52,12 @@ Widget* Window::button_panel() {
 
 void Window::perform_layout(NVGcontext* ctx) {
     if (!m_button_panel) {
+
+        if (m_children.size() == 1)
+        {
+            ScrollPanel* CanICastScrollPanel = dynamic_cast<ScrollPanel*>(m_children[0]);
+            if (CanICastScrollPanel != NULL)CanICastScrollPanel->set_fixed_size(m_size - 10 - Vector2i(0, !m_title.empty() ? m_theme->m_window_header_height : 0));
+        }
         Widget::perform_layout(ctx);
     }
     else {
@@ -66,8 +73,28 @@ void Window::perform_layout(NVGcontext* ctx) {
             width() - (m_button_panel->preferred_size(ctx).x() + 5), 3));
         m_button_panel->perform_layout(ctx);
     }
-    //if (m_min_size == Vector2i(0, 0))
-    //    m_min_size = m_size;
+    //// Calclate the minimum size that the window can resize to.
+    if (m_first_size == Vector2i(0, 0))
+        m_first_size = m_size;
+
+    m_min_size = Vector2i(40, 40);
+    bool VScrollable = false;
+    bool HScrollable = false;
+
+    if (m_children.size() == 1)
+    {
+        ScrollPanel* CanICastScrollPanel = dynamic_cast<ScrollPanel*>(m_children[0]);
+        if (CanICastScrollPanel != NULL)
+        {
+            VScrollable = CanICastScrollPanel->VScrollable();
+            HScrollable = CanICastScrollPanel->HScrollable();
+        }
+    }
+    if (!VScrollable)
+        m_min_size.y() = m_first_size.y();
+    if (!HScrollable)
+        m_min_size.x() = m_first_size.x();
+
 }
 
 void Window::draw(NVGcontext* ctx) {
@@ -181,7 +208,7 @@ bool Window::mouse_enter_event(const Vector2i& p, bool enter) {
     return true;
 }
 
-bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button, int /* modifiers */) {
+bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button, int  modifiers) {
     if (m_can_move && m_drag && (button & (1 << GLFW_MOUSE_BUTTON_1)) != 0) {
         if (m_can_snap)
         {
@@ -278,7 +305,7 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
             int Right = position().x() + temp_size.x();
             for (Widget* ChildWindow : screen()->children())
             {
-                // Make sure the child ius a true window and not a hidden popup or a message box (derived classes)
+                // Make sure the child is a true window and not a hidden popup or a message box (derived classes)
                 Window* CanICastWindow = dynamic_cast<Window*>(ChildWindow);
                 Popup* CanICastPopup = dynamic_cast<Popup*>(ChildWindow);
                 MessageDialog* CanICastDialog = dynamic_cast<MessageDialog*>(ChildWindow);
@@ -320,12 +347,16 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
                 m_size.y() = temp_size.y();
         }
 
-
         m_size = max(m_size, m_min_size);
+
         if (resized)
             perform_layout(ctx);
         return true;
     }
+
+    if (Widget::mouse_drag_event(p, rel, button, modifiers))
+        return true;
+
     return false;
 }
 
@@ -346,25 +377,26 @@ bool Window::mouse_motion_event(const Vector2i& p, const Vector2i& rel, int butt
 }
 
 bool Window::mouse_button_event(const Vector2i& p, int button, bool down, int modifiers) {
-    if (Widget::mouse_button_event(p, button, down, modifiers))
-        return true;
     if (button == GLFW_MOUSE_BUTTON_1) {
         m_drag = down && (p.y() - m_pos.y()) < m_theme->m_window_header_height;
-        m_resize = false;
+        m_resize_dir.x() = (m_fixed_size.x() == 0) ? check_horizontal_resize(p) : 0;
+        m_resize_dir.y() = (m_fixed_size.y() == 0) ? check_vertical_resize(p) : 0;
+        m_resize = m_resize_dir.x() != 0 || m_resize_dir.y() != 0;
         if (m_drag)
         {
             m_snap_init = position();
             m_snap_tot_rel = Vector2f(0, 0);
+            return true;
         }
-        else if (m_resizable && down) {
-            m_resize_dir.x() = (m_fixed_size.x() == 0) ? check_horizontal_resize(p) : 0;
-            m_resize_dir.y() = (m_fixed_size.y() == 0) ? check_vertical_resize(p) : 0;
-            m_resize = m_resize_dir.x() != 0 || m_resize_dir.y() != 0;
+        else if (m_resizable && down && m_resize) {
             m_snap_init = size();
             m_snap_tot_rel = Vector2f(0, 0);
+            return true;
         }
-        return true;
     }
+    if (Widget::mouse_button_event(p, button, down, modifiers))
+        return true;
+
     return false;
 }
 
@@ -381,8 +413,8 @@ bool Window::check_horizontal_resize(const Vector2i& mousePos) {
     Vector2i lowerRightCorner = absolute_position() + size();
     int headerLowerLeftCornerY = absolute_position().y() + m_theme->m_window_header_height;
 
-    if (mousePos.y() > headerLowerLeftCornerY && mousePos.x() >= lowerRightCorner.x() - offset &&
-        mousePos.x() <= lowerRightCorner.x()) {
+    if (mousePos.y() > headerLowerLeftCornerY &&
+        mousePos.x() >= lowerRightCorner.x() - offset && mousePos.x() <= lowerRightCorner.x()) {
         return true;
     }
 

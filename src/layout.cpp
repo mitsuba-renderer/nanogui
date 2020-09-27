@@ -58,7 +58,12 @@ Vector2i BoxLayout::preferred_size(NVGcontext* ctx, const Widget* widget) const 
         size[axis2] = std::max(size[axis2], target_size[axis2] + 2 * m_margin);
         first = false;
     }
-    return size + Vector2i(0, y_offset);
+    // fixed size is the preferred size if it exists.
+    Vector2i to_return(size + Vector2i(0, y_offset));
+    if (widget->fixed_size().x() != 0)to_return.x() = widget->fixed_size().x();
+    if (widget->fixed_size().y() != 0)to_return.y() = widget->fixed_size().y();
+
+    return to_return;
 }
 
 void BoxLayout::perform_layout(NVGcontext* ctx, Widget* widget) const {
@@ -125,7 +130,6 @@ void BoxLayout::perform_layout(NVGcontext* ctx, Widget* widget) const {
 }
 
 Vector2i GroupLayout::preferred_size(NVGcontext* ctx, const Widget* widget) const {
-    //  printf("GroupLayout::preferred_size pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     int height = m_margin, width = 2 * m_margin;
 
     const Window* window = dynamic_cast<const Window*>(widget);
@@ -155,7 +159,10 @@ Vector2i GroupLayout::preferred_size(NVGcontext* ctx, const Widget* widget) cons
             indent = !label->caption().empty();
     }
     height += m_margin;
-    //  printf("GroupLayout::preferred_size pot. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
+
+    // fixed size is the preferred size if it exists.
+    if (widget->fixed_size().x() != 0)width = widget->fixed_size().x();
+    if (widget->fixed_size().y() != 0)height = widget->fixed_size().y();
     return Vector2i(width, height);
 }
 
@@ -215,7 +222,12 @@ Vector2i GridLayout::preferred_size(NVGcontext* ctx,
     if (window && !window->title().empty())
         size[1] += widget->theme()->m_window_header_height - m_margin / 2;
 
-    return size;
+    // fixed size is the preferred size if it exists.
+    Vector2i to_return(size);
+    if (widget->fixed_size().x() != 0)to_return.x() = widget->fixed_size().x();
+    if (widget->fixed_size().y() != 0)to_return.y() = widget->fixed_size().y();
+
+    return to_return;
 }
 
 void GridLayout::compute_layout(NVGcontext* ctx, const Widget* widget, std::vector<int>* grid) const {
@@ -365,7 +377,13 @@ Vector2i AdvancedGridLayout::preferred_size(NVGcontext* ctx, const Widget* widge
     if (window && !window->title().empty())
         extra[1] += widget->theme()->m_window_header_height - m_margin / 2;
 
-    return size + extra;
+    // fixed size is the preferred size if it exists.
+    Vector2i to_return(size + extra);
+    if (widget->fixed_size().x() != 0)to_return.x() = widget->fixed_size().x();
+    if (widget->fixed_size().y() != 0)to_return.y() = widget->fixed_size().y();
+
+
+    return to_return;
 }
 
 void AdvancedGridLayout::perform_layout(NVGcontext* ctx, Widget* widget) const {

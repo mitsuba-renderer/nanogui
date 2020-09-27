@@ -90,6 +90,7 @@ NAMESPACE_BEGIN(nanogui)
         bool m_resize;
         Vector2i m_resize_dir;
         Vector2i m_min_size;
+        Vector2i m_first_size;
         bool m_draw_shadow;
         bool m_resizable;
         bool m_can_move;
