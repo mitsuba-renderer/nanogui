@@ -377,21 +377,24 @@ bool Window::mouse_motion_event(const Vector2i& p, const Vector2i& rel, int butt
 }
 
 bool Window::mouse_button_event(const Vector2i& p, int button, bool down, int modifiers) {
+
+
     if (button == GLFW_MOUSE_BUTTON_1) {
         m_drag = down && (p.y() - m_pos.y()) < m_theme->m_window_header_height;
-        m_resize_dir.x() = (m_fixed_size.x() == 0) ? check_horizontal_resize(p) : 0;
-        m_resize_dir.y() = (m_fixed_size.y() == 0) ? check_vertical_resize(p) : 0;
-        m_resize = m_resize_dir.x() != 0 || m_resize_dir.y() != 0;
         if (m_drag)
         {
             m_snap_init = position();
             m_snap_tot_rel = Vector2f(0, 0);
             return true;
         }
-        else if (m_resizable && down && m_resize) {
+        else if (m_resizable && down) {
+            m_resize_dir.x() = (m_fixed_size.x() == 0) ? check_horizontal_resize(p) : 0;
+            m_resize_dir.y() = (m_fixed_size.y() == 0) ? check_vertical_resize(p) : 0;
+            m_resize = m_resize_dir.x() != 0 || m_resize_dir.y() != 0;
             m_snap_init = size();
             m_snap_tot_rel = Vector2f(0, 0);
-            return true;
+            if (m_resize)
+                return true;
         }
     }
     if (Widget::mouse_button_event(p, button, down, modifiers))

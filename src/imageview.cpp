@@ -19,7 +19,7 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-ImageView::ImageView(Widget *parent) : Canvas(parent, 1, false, false, false) {
+ImageView::ImageView(Widget* parent) : Canvas(parent, 1, false, false, false) {
     render_pass()->set_clear_color(0, Color(0.3f, 0.3f, 0.32f, 1.f));
 
     m_image_shader = new Shader(
@@ -37,7 +37,7 @@ ImageView::ImageView(Widget *parent) : Canvas(parent, 1, false, false, false) {
     };
 
     m_image_shader->set_buffer("position", VariableType::Float32, { 6, 2 },
-                               positions);
+        positions);
     m_render_pass->set_cull_mode(RenderPass::CullMode::Disabled);
 
     m_image_border_color = m_theme->m_border_dark;
@@ -45,7 +45,7 @@ ImageView::ImageView(Widget *parent) : Canvas(parent, 1, false, false, false) {
     m_image_background_color = Color(0.f, 0.f, 0.f, 0.f);
 }
 
-void ImageView::set_image(Texture *image) {
+void ImageView::set_image(Texture* image) {
     if (image->mag_interpolation_mode() != Texture::InterpolationMode::Nearest)
         throw std::runtime_error(
             "ImageView::set_image(): interpolation mode must be set to 'Nearest'!");
@@ -72,14 +72,14 @@ void ImageView::reset() {
     center();
 }
 
-Vector2f ImageView::pos_to_pixel(const Vector2f &p) const {
+Vector2f ImageView::pos_to_pixel(const Vector2f& p) const {
     Vector2f p2 = p;
     if (m_draw_border)
         p2 -= 1.f;
     return (p2 * screen()->pixel_ratio() - m_offset) / scale();
 }
 
-Vector2f ImageView::pixel_to_pos(const Vector2f &p) const {
+Vector2f ImageView::pixel_to_pos(const Vector2f& p) const {
     Vector2i pos = (p * scale() + m_offset) / screen()->pixel_ratio();
     if (m_draw_border)
         pos += 1.f;
@@ -99,17 +99,16 @@ bool ImageView::keyboard_event(int key, int /* scancode */, int action, int /* m
     return false;
 }
 
-bool ImageView::mouse_drag_event(const Vector2i & /* p */, const Vector2i &rel,
-                                 int /* button */, int /* modifiers */) {
+bool ImageView::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int  button, int  modifiers) {
     if (!m_enabled || !m_image)
-        return false;
+        return Widget::mouse_drag_event(p, rel, button, modifiers);// if drag was not successfull on this widget, then try the parent
 
     m_offset += rel * screen()->pixel_ratio();
 
     return true;
 }
 
-bool ImageView::scroll_event(const Vector2i &p, const Vector2f &rel) {
+bool ImageView::scroll_event(const Vector2i& p, const Vector2f& rel) {
     if (!m_enabled || !m_image)
         return false;
 
@@ -119,7 +118,7 @@ bool ImageView::scroll_event(const Vector2i &p, const Vector2f &rel) {
     // Restrict scaling to a reasonable range
     m_scale = std::max(
         m_scale, std::min(0.f, std::log2(40.f / std::max(m_image->size().x(),
-                                                         m_image->size().y())) * 5.f));
+            m_image->size().y())) * 5.f));
     m_scale = std::min(m_scale, 45.f);
 
     Vector2f p2 = pos_to_pixel(p - m_pos);
@@ -127,22 +126,22 @@ bool ImageView::scroll_event(const Vector2i &p, const Vector2f &rel) {
     return true;
 }
 
-void ImageView::draw(NVGcontext *ctx) {
+void ImageView::draw(NVGcontext* ctx) {
     if (!m_enabled || !m_image)
         return;
 
     Canvas::draw(ctx);
 
     Vector2i top_left = Vector2i(pixel_to_pos(Vector2f(0.f, 0.f))),
-             size     = Vector2i(pixel_to_pos(Vector2f(m_image->size())) - Vector2f(top_left));
+        size = Vector2i(pixel_to_pos(Vector2f(m_image->size())) - Vector2f(top_left));
 
     if (m_draw_image_border) {
         nvgBeginPath(ctx);
         nvgStrokeWidth(ctx, 1.f);
         nvgStrokeColor(ctx, m_image_border_color);
         nvgRect(ctx, m_pos.x() - .5f + top_left.x(),
-                     m_pos.y() - .5f + top_left.y(),
-                     size.x() + 1.f, size.y() + 1.f);
+            m_pos.y() - .5f + top_left.y(),
+            size.x() + 1.f, size.y() + 1.f);
         nvgStroke(ctx);
     }
 
@@ -157,10 +156,10 @@ void ImageView::draw(NVGcontext *ctx) {
         nvgTextAlign(ctx, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
 
         Vector2i start = max(Vector2i(0), Vector2i(pos_to_pixel(Vector2f(0.f, 0.f))) - 1),
-                 end   = min(Vector2i(pos_to_pixel(Vector2f(m_size))) + 1, m_image->size() - 1);
+            end = min(Vector2i(pos_to_pixel(Vector2f(m_size))) + 1, m_image->size() - 1);
 
         char text_buf[80],
-            *text[4] = { text_buf, text_buf + 20, text_buf + 40, text_buf + 60 };
+            * text[4] = { text_buf, text_buf + 20, text_buf + 40, text_buf + 60 };
 
         for (int y = start.y(); y <= end.y(); ++y) {
             for (int x = start.x(); x <= end.x(); ++x) {
@@ -173,7 +172,7 @@ void ImageView::draw(NVGcontext *ctx) {
                     nvgFillColor(ctx, col);
                     nvgFontBlur(ctx, 2);
                     float xpos = m_pos.x() + pos.x(),
-                          ypos = m_pos.y() + pos.y() + (ch - 1.5f) * font_size;
+                        ypos = m_pos.y() + pos.y() + (ch - 1.5f) * font_size;
                     nvgText(ctx, xpos, ypos, text[ch], nullptr);
                     col = Color(0.3f, 0.3f, 0.3f, alpha);
                     if (ch == 3)
@@ -200,7 +199,7 @@ void ImageView::draw_contents() {
     m_offset = (Vector2f(Vector2i(m_offset / pixel_ratio)) * pixel_ratio);
 
     Vector2f bound1 = Vector2f(m_size) * pixel_ratio,
-             bound2 = -Vector2f(m_image->size()) * scale();
+        bound2 = -Vector2f(m_image->size()) * scale();
 
     if ((m_offset.x() >= bound1.x()) != (m_offset.x() < bound2.x()))
         m_offset.x() = std::max(std::min(m_offset.x(), bound1.x()), bound2.x());
@@ -213,17 +212,17 @@ void ImageView::draw_contents() {
 
     Matrix4f matrix_background =
         Matrix4f::scale(Vector3f(m_image->size().x() * scale / 20.f,
-                                 m_image->size().y() * scale / 20.f, 1.f));
+            m_image->size().y() * scale / 20.f, 1.f));
 
     Matrix4f matrix_image =
         Matrix4f::ortho(0.f, viewport_size.x(), viewport_size.y(), 0.f, -1.f, 1.f) *
-        Matrix4f::translate(Vector3f(m_offset.x(), (int) m_offset.y(), 0.f)) *
+        Matrix4f::translate(Vector3f(m_offset.x(), (int)m_offset.y(), 0.f)) *
         Matrix4f::scale(Vector3f(m_image->size().x() * scale,
-                                 m_image->size().y() * scale, 1.f));
+            m_image->size().y() * scale, 1.f));
 
-    m_image_shader->set_uniform("matrix_image",      Matrix4f(matrix_image));
+    m_image_shader->set_uniform("matrix_image", Matrix4f(matrix_image));
     m_image_shader->set_uniform("matrix_background", Matrix4f(matrix_background));
-    m_image_shader->set_uniform("background_color",  m_image_background_color);
+    m_image_shader->set_uniform("background_color", m_image_background_color);
 
     m_image_shader->begin();
     m_image_shader->draw_array(Shader::PrimitiveType::Triangle, 0, 6, false);

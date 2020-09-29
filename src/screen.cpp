@@ -838,8 +838,7 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
             m_drag_widget = nullptr;
         }
 
-        m_redraw |= mouse_button_event(m_mouse_pos, button,
-                                       action == GLFW_PRESS, m_modifiers);
+        m_redraw |= mouse_button_event(m_mouse_pos, button, action == GLFW_PRESS, m_modifiers);
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }

@@ -100,11 +100,16 @@ const Widget* Widget::find_widget(const Vector2i& p) const {
 }
 
 bool Widget::mouse_button_event(const Vector2i& p, int button, bool down, int modifiers) {
+    Screen* CanICastSreen = dynamic_cast<Screen*>(this);
+    bool screen_widget = CanICastSreen != NULL;
     for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
         Widget* child = *it;
-        if (child->visible() && child->contains(p - m_pos) &&
-            child->mouse_button_event(p - m_pos, button, down, modifiers))
-            return true;
+        if (child->visible() && child->contains(p - m_pos))
+        {
+            if (child->mouse_button_event(p - m_pos, button, down, modifiers))
+                return true;
+            else if (screen_widget)break;// stop the loop if we are on the screen and found the first window the pointer is in
+        }
     }
     if (button == GLFW_MOUSE_BUTTON_1 && down && !m_focused)
         request_focus();
@@ -143,14 +148,12 @@ bool Widget::scroll_event(const Vector2i& p, const Vector2f& rel) {
     return false;
 }
 
-bool Widget::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button, int  modifiers ) {
-    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
-        Widget* child = *it;
-        if (!child->visible())
-            continue;
-        if (child->mouse_drag_event(p, rel, button, modifiers))
-            return true;
-    }
+bool Widget::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button, int  modifiers) {
+    Screen* CanICastSreen = dynamic_cast<Screen*>(this);
+    if (CanICastSreen != NULL)return false;
+
+    if (parent()->mouse_drag_event(p, rel, button, modifiers))
+        return true;
 
     return false;
 }
