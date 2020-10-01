@@ -18,12 +18,12 @@
 NAMESPACE_BEGIN(nanogui)
 
 TreeView::TreeView(Widget* parent)
-    : Widget(parent),  m_selected_index(0) {
+    : Widget(parent), m_selected_index(0) {
     m_items_container = new Widget(this);
     m_items_container->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Middle));
 }
 
-TreeView::TreeView(Widget* parent, const std::vector<TreeNode>& items)
+TreeView::TreeView(Widget* parent, const TreeNode items)
     : Widget(parent), m_selected_index(0) {
     m_items_container = new Widget(this);
     m_items_container->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Middle));
@@ -39,16 +39,15 @@ void TreeView::set_selected_index(int idx) {
     m_selected_index = idx;
 }
 
-void TreeView::set_items(const std::vector<TreeNode>& items) {
+void TreeView::set_items(const TreeNode items) {
 
     m_items = items;
 
-    if (m_selected_index < 0 || m_selected_index >= (int)items.size())
-        m_selected_index = 0;
+    m_selected_index = 0;
     while (m_items_container->child_count() != 0)
         m_items_container->remove_child_at(m_items_container->child_count() - 1);
 
-    if (m_scroll == nullptr && items.size() > 8) {
+    if (m_scroll == nullptr && items.Children.size() > 8) {
         m_scroll = new ScrollPanel(this);
         m_scroll->set_fixed_height(300);
         m_items_container = new Widget(m_scroll);

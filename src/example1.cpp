@@ -52,10 +52,8 @@
 using namespace nanogui;
 
 class ExampleApplication : public Screen {
-public:
-    ExampleApplication() : Screen(Vector2i(1024, 768), "NanoGUI Test") {
-        inc_ref();
-
+    void CreateMovingMenuBar()
+    {
         Window* MenuBar1 = new Window(this, "Try to move this around");
         BoxLayout* MenuLayout = new BoxLayout(Orientation::Horizontal);
         MenuBar1->set_layout(MenuLayout);
@@ -86,13 +84,16 @@ public:
         new Button(HelpBtn->popup(), "About3");
         new Button(HelpBtn->popup(), "About4");
 
+    }
+    void CreateMenuBar()
+    {
         Window* MenuBar2 = new Window(this, "");
-        MenuLayout = new BoxLayout(Orientation::Horizontal);
+        BoxLayout* MenuLayout = new BoxLayout(Orientation::Horizontal);
         MenuBar2->set_layout(MenuLayout);
         MenuBar2->set_can_move(false);
 
-        FileBtn = new PopupButton(MenuBar2, "File");
-        FileBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill));
+        PopupButton* FileBtn = new PopupButton(MenuBar2, "File");
+        FileBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical));
         FileBtn->set_side(Popup::Bottom);
 
         new Button(FileBtn->popup(), "short Stuff 1");
@@ -102,12 +103,12 @@ public:
         new Button(FileBtn->popup(), "short Stuff 4");
         new Button(FileBtn->popup(), "short Stuff 5");
         new Button(FileBtn->popup(), "Do File Stuff 6");
-        EditBtn = new PopupButton(MenuBar2, "Edit");
+        PopupButton* EditBtn = new PopupButton(MenuBar2, "Edit");
         EditBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical));
         EditBtn->set_side(Popup::Bottom);
         new Button(EditBtn->popup(), "This is avery long button that will hit the borders when the popup is opened");
         new Button(EditBtn->popup(), "Do File Stuff 2");
-        HelpBtn = new PopupButton(MenuBar2, "Help");
+        PopupButton* HelpBtn = new PopupButton(MenuBar2, "Help");
         HelpBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical));
         HelpBtn->set_side(Popup::Bottom);
         new Button(HelpBtn->popup(), "Help");
@@ -116,6 +117,9 @@ public:
         new Button(HelpBtn->popup(), "About3");
         new Button(HelpBtn->popup(), "About4");
 
+    }
+    void CreateMainWindow()
+    {
 
         Window* ButtonDemoWindow = new Window(this, "", true);
         ButtonDemoWindow->set_position(Vector2i(15, 40));
@@ -180,16 +184,19 @@ public:
         popup_left->set_layout(new GroupLayout());
         new CheckBox(popup_left, "Another check box");
 
+    }
+    void CreateBasicWindow()
+    {
         int TempWidth = 100;
         int TempHeight = 200;
         Window* BasicWidgetsWindow = new Window(this, "Basic widgets", true);
         BasicWidgetsWindow->set_position(Vector2i(200, 15));
-        BasicWidgetsWindow->set_layout(new BoxLayout(Orientation::Vertical,  Alignment::Middle, 0, 6));
-       // BasicWidgetsWindow->set_fixed_size({ TempWidth/2, TempHeight/2 });
+        BasicWidgetsWindow->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Middle, 0, 6));
+        // BasicWidgetsWindow->set_fixed_size({ TempWidth/2, TempHeight/2 });
 
-       // // attach a vertical scroll panel
-       ScrollPanel* vscroll = new ScrollPanel(BasicWidgetsWindow);
-       vscroll->set_scroll_type(ScrollPanel::ScrollTypes::Both);
+        // // attach a vertical scroll panel
+        ScrollPanel* vscroll = new ScrollPanel(BasicWidgetsWindow);
+        vscroll->set_scroll_type(ScrollPanel::ScrollTypes::Both);
 
         // vscroll should only have *ONE* child. this is what `wrapper` is for
         auto wrapper = new Widget(vscroll);
@@ -197,10 +204,10 @@ public:
         //wrapper->set_fixed_size({ TempWidth, TempHeight });
 
         new Label(wrapper, "Message dialog", "sans-bold");
-        tools = new Widget(wrapper);
+        Widget* tools = new Widget(wrapper);
         tools->set_layout(new BoxLayout(Orientation::Horizontal,
             Alignment::Middle, 0, 6));
-        b = new Button(tools, "Info");
+        Button* b = new Button(tools, "Info");
         b->set_callback([&] {
             auto dlg = new MessageDialog(this, MessageDialog::Type::Information, "Title", "This is an information message");
             dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
@@ -238,7 +245,7 @@ public:
         image_panel_btn->set_icon(FA_IMAGES);
         image_panel_btn->set_side(Popup::Side::Left);
 
-        popup = image_panel_btn->popup();
+        Popup* popup = image_panel_btn->popup();
         popup->set_fixed_size(Vector2i(245, 150));
 
         vscroll = new ScrollPanel(popup);
@@ -345,6 +352,9 @@ public:
         text_box->set_font_size(20);
         text_box->set_alignment(TextBox::Alignment::Right);
 
+    }
+    void CreateMiscWindow()
+    {
         Window* MiscWidgetsWindow = new Window(this, "Misc. widgets", true);
         MiscWidgetsWindow->set_position(Vector2i(425, 15));
         GroupLayout* MyGroupLayout = new GroupLayout();
@@ -410,7 +420,7 @@ public:
             });
 
         // A button to go back to the first tab and scroll the window.
-        panel = MiscWidgetsWindow->add<Widget>();
+        Widget* panel = MiscWidgetsWindow->add<Widget>();
         panel->add<Label>("Jump to tab: ");
         panel->set_layout(new BoxLayout(Orientation::Horizontal,
             Alignment::Middle, 0, 6));
@@ -418,7 +428,7 @@ public:
         auto ib = panel->add<IntBox<int>>();
         ib->set_editable(true);
 
-        b = panel->add<Button>("", FA_FORWARD);
+        Button* b = panel->add<Button>("", FA_FORWARD);
         b->set_fixed_size(Vector2i(22, 22));
         ib->set_fixed_height(22);
         b->set_callback([tab_widget, ib] {
@@ -427,9 +437,12 @@ public:
                 tab_widget->set_selected_index(value);
             });
 
+    }
+    void CreateSmallWindow()
+    {
         Window* GridWindow = new Window(this, "Grid of small widgets", true);
         GridWindow->set_position(Vector2i(425, 300));
-        layout =
+        GridLayout* layout =
             new GridLayout(Orientation::Horizontal, 2,
                 Alignment::Middle, 15, 5);
         layout->set_col_alignment(
@@ -499,7 +512,7 @@ public:
         ColorPickerWindow->set_layout(layout);
         ColorPickerWindow->set_position(Vector2i(425, 500));
         new Label(ColorPickerWindow, "Combined: ");
-        b = new Button(ColorPickerWindow, "ColorWheel", FA_INFINITY);
+        Button* b = new Button(ColorPickerWindow, "ColorWheel", FA_INFINITY);
         new Label(ColorPickerWindow, "Red: ");
         auto red_int_box = new IntBox<int>(ColorPickerWindow);
         red_int_box->set_editable(false);
@@ -524,6 +537,23 @@ public:
             int alpha = (int)(c.w() * 255.0f);
             alpha_int_box->set_value(alpha);
             });
+
+    }
+    void CreateTreeViewWindow()
+    {
+
+    }
+public:
+    ExampleApplication() : Screen(Vector2i(1024, 768), "NanoGUI Test") {
+        inc_ref();
+
+        CreateMenuBar();
+        CreateMovingMenuBar();
+        CreateMainWindow();
+        CreateBasicWindow();
+        CreateMiscWindow();
+        CreateSmallWindow();
+        CreateTreeViewWindow();
 
         perform_layout();
 

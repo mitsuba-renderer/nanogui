@@ -380,7 +380,7 @@ bool Window::mouse_button_event(const Vector2i& p, int button, bool down, int mo
 
 
     if (button == GLFW_MOUSE_BUTTON_1) {
-        m_drag = down && (p.y() - m_pos.y()) < m_theme->m_window_header_height;
+        m_drag = down && !m_title.empty() && (p.y() - m_pos.y()) < m_theme->m_window_header_height;
         if (m_drag)
         {
             m_snap_init = position();
