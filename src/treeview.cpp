@@ -17,6 +17,70 @@
 
 NAMESPACE_BEGIN(nanogui)
 
+NanoTree::NanoTreeErrors NanoTree::MakeBasicChecks(std::string Parent, std::string Child, bool ChildIsNew)
+{
+    if (Parent == Child)return NanoTree::NanoTreeErrors::ParentIsChild;
+    if (Objects.find(Parent) == Objects.end())return NanoTree::NanoTreeErrors::NoSuchParent;
+    if (!ChildIsNew) { if (Objects.find(Child) == Objects.end())return NanoTree::NanoTreeErrors::NoSuchChild; }// child is not new. it should be found
+    else { if (Objects.find(Child) != Objects.end())return NanoTree::NanoTreeErrors::DuplicateName; }
+
+    return NanoTree::NanoTreeErrors::NoError;
+}
+NanoTree::NanoTreeErrors NanoTree::set_root(std::string NewRoot)
+{
+    if (Objects.find(NewRoot) != Objects.end())return NanoTree::NanoTreeErrors::DuplicateName;
+
+    NanoTreeNode* NewNode = new NanoTreeNode;
+    NewNode->KeyString = NewRoot;
+    Objects[NewRoot] = NewNode;
+    if (Root != NULL)NewNode->Children.insert(std::pair<std::string, NanoTreeNode*>(Root->KeyString, Root));
+    Root = NewNode;
+
+    return NanoTree::NanoTreeErrors::NoError;
+}
+NanoTree::NanoTreeErrors NanoTree::add_node(std::string Parent, std::string Child)
+{
+    NanoTree::NanoTreeErrors check_error = MakeBasicChecks(Parent, Child, true);
+    if (check_error != NanoTree::NanoTreeErrors::NoError)
+        return check_error;
+
+    NanoTreeNode* NewNode = new NanoTreeNode;
+    NewNode->KeyString = Child;
+    Objects[Child] = NewNode;
+    NewNode->Parent = Objects[Parent];
+    Objects[Parent]->Children.insert(std::pair<std::string, NanoTreeNode*>(Child, NewNode));
+
+    return NanoTree::NanoTreeErrors::NoError;
+}
+NanoTree::NanoTreeErrors NanoTree::remove_node(std::string ToRemove)
+{
+    if (Objects.find(ToRemove) == Objects.end())return NanoTree::NanoTreeErrors::NoSuchChild;
+    if (Objects[ToRemove] == Root && Objects[ToRemove]->Children.size()!=0)return NanoTree::NanoTreeErrors::CannotRemoveRoot;//cannot remove root if is not the last node.
+
+    if (Objects[ToRemove]->Parent != NULL)
+    {
+        Objects[Objects[ToRemove]->Parent->KeyString]->Children.erase(ToRemove);
+        for (auto child : Objects[ToRemove]->Children)// put all the children of the node to be erased to the parent
+            Objects[Objects[ToRemove]->Parent->KeyString]->Children.insert(std::pair<std::string, NanoTreeNode*>(child.second->KeyString, child.second));
+    }
+    Objects.erase(ToRemove);
+
+    return NanoTree::NanoTreeErrors::NoError;
+}
+NanoTree::NanoTreeErrors NanoTree::change_parent(std::string Parent, std::string Child)
+{
+    NanoTree::NanoTreeErrors check_error = MakeBasicChecks(Parent, Child, false);
+    if (check_error != NanoTree::NanoTreeErrors::NoError)
+        return check_error;
+
+    Objects[Child]->Parent->Children.erase(Child);
+    Objects[Child]->Parent = Objects[Parent];
+    Objects[Parent]->Children.insert(std::pair<std::string, NanoTreeNode*>(Child, Objects[Child]));
+
+    return NanoTree::NanoTreeErrors::NoError;
+}
+
+
 TreeView::TreeView(Widget* parent)
     : Widget(parent), m_selected_index(0) {
     m_items_container = new Widget(this);

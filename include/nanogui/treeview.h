@@ -23,24 +23,46 @@ NAMESPACE_BEGIN(nanogui)
 *
 * \brief Structure used to construct the tree.
 */
-class DataTree
+class NanoTree
 {
-    struct TreeNode
+public:
+    enum class NanoTreeErrors
+    {
+        NoError = 0,
+        DuplicateName,
+        ParentIsChild,
+        NoSuchParent,
+        NoSuchChild,
+        CannotRemoveRoot
+    };
+    struct NanoTreeNode
     {
         std::string Name;
-        TreeNode* Parent;
-        std::vector<TreeNode> Children;
         Button* NodeButton;
         int NodeType;
         int NodeID;
-    };
 
-public:
-    std::map<int, TreeNode> Objects;
-    void add_child(TreeNode* Parent, TreeNode* Child);
-    void remove_child(TreeNode* Parent, TreeNode* Child);
-    void update_IDs();
-}
+        // don't edit by hand
+        std::string KeyString;
+        NanoTreeNode* Parent;
+        std::map<std::string, NanoTreeNode*> Children;
+    };
+    // these are public for simplicity, but is better to set with the methods provided.
+    std::map<std::string, NanoTreeNode*> Objects;
+    NanoTreeNode* Root;
+    // creates a node and puts it in the root. if a root already exists, the the old root becomes a child of the new root.
+    NanoTreeErrors set_root(std::string NewRoot);
+    // Addd a node. All needed tests are done. Error code is returned
+    NanoTreeErrors add_node(std::string Parent, std::string Child);
+    // remove a node. All needed tests are done. Error code is returned
+    NanoTreeErrors remove_node(std::string ToRemove);
+    // change the parent of a given node. All needed tests are done. Error code is returned
+    NanoTreeErrors change_parent(std::string  Parent, std::string  Child);
+protected:
+    // make checks on teh objects of the tree
+    NanoTreeErrors MakeBasicChecks(std::string Parent, std::string Child, bool ChildIsNew);
+
+};
 /**
  * \class TreeView treeview.h nanogui/treeview.h
  *
@@ -63,7 +85,7 @@ public:
     {
         std::string Name;
         TreeNode* Parent;
-        std::set<TreeNode> Children;
+        std::map<std::string, TreeNode> Children;
         Button* NodeButton;
         TreeNodeTypes NodeType;
     };
