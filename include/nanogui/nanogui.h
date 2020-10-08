@@ -33,6 +33,7 @@
 #include <nanogui/slider.h>
 #include <nanogui/imagepanel.h>
 #include <nanogui/scrollpanel.h>
+#include <nanogui/treeview.h>
 #include <nanogui/colorwheel.h>
 #include <nanogui/graph.h>
 #include <nanogui/formhelper.h>

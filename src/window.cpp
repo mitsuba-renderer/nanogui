@@ -56,7 +56,8 @@ void Window::perform_layout(NVGcontext* ctx) {
         if (m_children.size() == 1)
         {
             ScrollPanel* CanICastScrollPanel = dynamic_cast<ScrollPanel*>(m_children[0]);
-            if (CanICastScrollPanel != NULL)CanICastScrollPanel->set_fixed_size(m_size - 10 - Vector2i(0, !m_title.empty() ? m_theme->m_window_header_height : 0));
+            if (CanICastScrollPanel != NULL)
+                CanICastScrollPanel->set_fixed_size(m_size - 10 - Vector2i(0, !m_title.empty() ? m_theme->m_window_header_height : 0));
         }
         Widget::perform_layout(ctx);
     }
@@ -361,8 +362,6 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
 }
 
 bool Window::mouse_motion_event(const Vector2i& p, const Vector2i& rel, int button, int modifiers) {
-    if (Widget::mouse_motion_event(p, rel, button, modifiers))
-        return true;
 
     if (m_resizable && m_fixed_size.x() == 0 && check_horizontal_resize(p) && check_vertical_resize(p))
         m_cursor = Cursor::HVResize;
@@ -371,9 +370,13 @@ bool Window::mouse_motion_event(const Vector2i& p, const Vector2i& rel, int butt
     else if (m_resizable && m_fixed_size.y() == 0 && check_vertical_resize(p))
         m_cursor = Cursor::VResize;
     else
+    {
         m_cursor = Cursor::Arrow;
 
-    return false;
+        return (Widget::mouse_motion_event(p, rel, button, modifiers));
+    }
+    return true;
+
 }
 
 bool Window::mouse_button_event(const Vector2i& p, int button, bool down, int modifiers) {

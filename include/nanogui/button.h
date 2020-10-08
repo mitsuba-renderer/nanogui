@@ -66,6 +66,11 @@ public:
     /// Sets the background color of this Button.
     void set_background_color(const Color &background_color) { m_background_color = background_color; }
 
+    /// Returns the transparency boolean
+    const bool &transparent() const { return m_make_transparent; }
+    /// Sets the transprency boolean. used to override the unfocused color with the window fill.
+    void set_transparent(const bool & make_transparent) { m_make_transparent = make_transparent; }
+
     /// Returns the text color of the caption of this Button.
     const Color &text_color() const { return m_text_color; }
     /// Sets the text color of the caption of this Button.
@@ -141,6 +146,9 @@ protected:
 
     /// The background color of this Button.
     Color m_background_color;
+
+    /// override button color with the window fill
+    bool m_make_transparent;
 
     /// The color of the caption text of this Button.
     Color m_text_color;

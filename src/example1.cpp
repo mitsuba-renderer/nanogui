@@ -33,6 +33,7 @@
 #include <nanogui/colorpicker.h>
 #include <nanogui/graph.h>
 #include <nanogui/tabwidget.h>
+#include <nanogui/treeview.h>
 #include <nanogui/texture.h>
 #include <nanogui/shader.h>
 #include <nanogui/renderpass.h>
@@ -541,7 +542,65 @@ class ExampleApplication : public Screen {
     }
     void CreateTreeViewWindow()
     {
+        Window* TreeViewWindow = new Window(this, "TreeView Example", true);
+        TreeViewWindow->set_position(Vector2i(700, 350));
+        TreeViewWindow->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Middle, 15));
 
+        ScrollPanel* scroll = new ScrollPanel(TreeViewWindow);
+        scroll->set_scroll_type(ScrollPanel::ScrollTypes::Both);
+
+        Widget* Container = new Widget(scroll);
+        Container->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle));
+
+        TreeView* TreeViewWidget = new TreeView(Container);
+        TreeViewWidget->set_fixed_size(Vector2i(100, 200));
+
+        NanoTree* MyTree = new NanoTree();
+        MyTree->set_root("1");
+        MyTree->add_node("1", "1,1");
+        MyTree->add_node("1", "1,2");
+        MyTree->add_node("1,1", "1,1,1");
+        MyTree->add_node("1,2", "1,1,2");
+        MyTree->add_node("1,2", "1,1,3");
+        MyTree->add_node("1,2", "1,1,4");
+        MyTree->add_node("1,1,2", "1,1,2,1");
+        MyTree->add_node("1,1,2", "1,1,2,2");
+        MyTree->add_node("1,1,2", "1,1,2,3");
+        MyTree->add_node("1,1,2", "1,1,2,4");
+        MyTree->add_node("1,1,2", "1,1,2,5");
+        MyTree->add_node("1,1,2", "1,1,2,6");
+        MyTree->Objects["1"]->Name = MyTree->Objects["1"]->KeyString;
+        MyTree->Objects["1,1"]->Name = MyTree->Objects["1,1"]->KeyString;
+        MyTree->Objects["1,2"]->Name = MyTree->Objects["1,2"]->KeyString;
+        MyTree->Objects["1,1,1"]->Name = MyTree->Objects["1,1,1"]->KeyString;
+        MyTree->Objects["1,1,2"]->Name = MyTree->Objects["1,1,2"]->KeyString;
+        MyTree->Objects["1,1,3"]->Name = MyTree->Objects["1,1,3"]->KeyString;
+        MyTree->Objects["1,1,4"]->Name = MyTree->Objects["1,1,4"]->KeyString;
+        MyTree->Objects["1,1,2,1"]->Name = MyTree->Objects["1,1,2,1"]->KeyString;
+        MyTree->Objects["1,1,2,2"]->Name = MyTree->Objects["1,1,2,2"]->KeyString;
+        MyTree->Objects["1,1,2,3"]->Name = MyTree->Objects["1,1,2,3"]->KeyString;
+        MyTree->Objects["1,1,2,4"]->Name = MyTree->Objects["1,1,2,4"]->KeyString;
+        MyTree->Objects["1,1,2,5"]->Name = MyTree->Objects["1,1,2,5"]->KeyString;
+        MyTree->Objects["1,1,2,6"]->Name = MyTree->Objects["1,1,2,6"]->KeyString;
+
+        MyTree->Objects["1"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,2"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,2"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,1"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,1"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,2"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,2"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,3"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,3"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,4"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,4"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,2,1"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,2,1"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,2,2"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,2,2"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,2,3"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,2,3"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,2,4"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,2,4"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,2,5"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,2,5"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+        MyTree->Objects["1,1,2,6"]->CallBack = [=] {TreeButtonSelected->set_caption(MyTree->Objects["1,1,2,6"]->Name); TreeViewWindow->perform_layout(screen()->nvg_context()); };
+
+        TreeViewWidget->set_items(MyTree);
+
+        new Label(Container, "ButtonHit:");
+        TreeButtonSelected = new Label(Container, "");
     }
 public:
     ExampleApplication() : Screen(Vector2i(1024, 768), "NanoGUI Test") {
@@ -642,7 +701,7 @@ public:
         m_shader->set_buffer("indices", VariableType::UInt32, { 3 * 2 }, indices);
         m_shader->set_buffer("position", VariableType::Float32, { 4, 3 }, positions);
         m_shader->set_uniform("intensity", 0.5f);
-        }
+    }
 
     virtual bool keyboard_event(int key, int scancode, int action, int modifiers) {
         if (Screen::keyboard_event(key, scancode, action, modifiers))
@@ -683,10 +742,12 @@ private:
     ref<Shader> m_shader;
     ref<RenderPass> m_render_pass;
 
+    Label* TreeButtonSelected;
+
     using ImageHolder = std::unique_ptr<uint8_t[], void(*)(void*)>;
     std::vector<std::pair<ref<Texture>, ImageHolder>> m_images;
     int m_current_image;
-    };
+};
 
 int main(int /* argc */, char** /* argv */) {
     try {

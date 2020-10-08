@@ -92,7 +92,7 @@ public:
      * size; this is done with a call to \ref set_size or a call to \ref perform_layout()
      * in the parent widget.
      */
-    void set_fixed_size(const Vector2i &fixed_size) { m_fixed_size = fixed_size; }
+    virtual void set_fixed_size(const Vector2i &fixed_size) { m_fixed_size = fixed_size; }
 
     /// Return the fixed size (see \ref set_fixed_size())
     const Vector2i &fixed_size() const { return m_fixed_size; }

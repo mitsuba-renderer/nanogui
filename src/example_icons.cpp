@@ -45,11 +45,11 @@ int main(int /* argc */, char ** /* argv */) {
 
         // attach a vertical scroll panel
         auto vscroll = new ScrollPanel(window);
+        vscroll->set_scroll_type(ScrollPanel::ScrollTypes::Vertical);
         vscroll->set_fixed_size({width, height});
 
         // vscroll should only have *ONE* child. this is what `wrapper` is for
         auto wrapper = new Widget(vscroll);
-        wrapper->set_fixed_size({width, height});
         wrapper->set_layout(new GridLayout());// defaults: 2 columns
 
         ////////////////////////////////////////////////////////////////////////

@@ -10,142 +10,109 @@
 */
 
 #include <nanogui/TreeView.h>
+#include <nanogui/label.h>
 #include <nanogui/layout.h>
 #include <nanogui/scrollpanel.h>
 #include <nanogui/button.h>
+#include <nanogui/screen.h>
+#include <string>
 #include <cassert>
 
 NAMESPACE_BEGIN(nanogui)
 
-NanoTree::NanoTreeErrors NanoTree::MakeBasicChecks(std::string Parent, std::string Child, bool ChildIsNew)
+void TreeView::update_tree_items(std::string KeyString, int Level, bool ParentExpanded, int ChildIdx)
 {
-    if (Parent == Child)return NanoTree::NanoTreeErrors::ParentIsChild;
-    if (Objects.find(Parent) == Objects.end())return NanoTree::NanoTreeErrors::NoSuchParent;
-    if (!ChildIsNew) { if (Objects.find(Child) == Objects.end())return NanoTree::NanoTreeErrors::NoSuchChild; }// child is not new. it should be found
-    else { if (Objects.find(Child) != Objects.end())return NanoTree::NanoTreeErrors::DuplicateName; }
-
-    return NanoTree::NanoTreeErrors::NoError;
-}
-NanoTree::NanoTreeErrors NanoTree::set_root(std::string NewRoot)
-{
-    if (Objects.find(NewRoot) != Objects.end())return NanoTree::NanoTreeErrors::DuplicateName;
-
-    NanoTreeNode* NewNode = new NanoTreeNode;
-    NewNode->KeyString = NewRoot;
-    Objects[NewRoot] = NewNode;
-    if (Root != NULL)NewNode->Children.insert(std::pair<std::string, NanoTreeNode*>(Root->KeyString, Root));
-    Root = NewNode;
-
-    return NanoTree::NanoTreeErrors::NoError;
-}
-NanoTree::NanoTreeErrors NanoTree::add_node(std::string Parent, std::string Child)
-{
-    NanoTree::NanoTreeErrors check_error = MakeBasicChecks(Parent, Child, true);
-    if (check_error != NanoTree::NanoTreeErrors::NoError)
-        return check_error;
-
-    NanoTreeNode* NewNode = new NanoTreeNode;
-    NewNode->KeyString = Child;
-    Objects[Child] = NewNode;
-    NewNode->Parent = Objects[Parent];
-    Objects[Parent]->Children.insert(std::pair<std::string, NanoTreeNode*>(Child, NewNode));
-
-    return NanoTree::NanoTreeErrors::NoError;
-}
-NanoTree::NanoTreeErrors NanoTree::remove_node(std::string ToRemove)
-{
-    if (Objects.find(ToRemove) == Objects.end())return NanoTree::NanoTreeErrors::NoSuchChild;
-    if (Objects[ToRemove] == Root && Objects[ToRemove]->Children.size()!=0)return NanoTree::NanoTreeErrors::CannotRemoveRoot;//cannot remove root if is not the last node.
-
-    if (Objects[ToRemove]->Parent != NULL)
+    m_data_tree->Objects[KeyString]->Level = Level;
+    if (ParentExpanded)
+        create_tree_object(m_data_tree->Objects[KeyString]->KeyString,
+            m_data_tree->Objects[KeyString]->Parent == nullptr ?
+            m_items_container->child_count() :
+            m_items_container->child_index(m_data_tree->Objects[KeyString]->Parent->NodeWidget) + 1 + ChildIdx);
+    else if (m_data_tree->Objects[KeyString]->NodeWidget != nullptr)
     {
-        Objects[Objects[ToRemove]->Parent->KeyString]->Children.erase(ToRemove);
-        for (auto child : Objects[ToRemove]->Children)// put all the children of the node to be erased to the parent
-            Objects[Objects[ToRemove]->Parent->KeyString]->Children.insert(std::pair<std::string, NanoTreeNode*>(child.second->KeyString, child.second));
+        m_items_container->remove_child(m_data_tree->Objects[KeyString]->NodeWidget);
+        m_data_tree->Objects[KeyString]->NodeWidget = nullptr;
     }
-    Objects.erase(ToRemove);
 
-    return NanoTree::NanoTreeErrors::NoError;
+    int ChildrenCnt = 0;
+    for (auto CurrItem : m_data_tree->Objects[KeyString]->Children)
+        update_tree_items(CurrItem.second->KeyString, Level + 1, ParentExpanded && m_data_tree->Objects[KeyString]->Expanded, ChildrenCnt++);
 }
-NanoTree::NanoTreeErrors NanoTree::change_parent(std::string Parent, std::string Child)
+
+void TreeView::create_tree_object(std::string object_name, int Index)
 {
-    NanoTree::NanoTreeErrors check_error = MakeBasicChecks(Parent, Child, false);
-    if (check_error != NanoTree::NanoTreeErrors::NoError)
-        return check_error;
-
-    Objects[Child]->Parent->Children.erase(Child);
-    Objects[Child]->Parent = Objects[Parent];
-    Objects[Parent]->Children.insert(std::pair<std::string, NanoTreeNode*>(Child, Objects[Child]));
-
-    return NanoTree::NanoTreeErrors::NoError;
+    Widget* CurrWidget = new Widget(nullptr);
+    CurrWidget->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Minimum));
+    Label* CurrLabel = new Label(CurrWidget, "");
+    CurrLabel->set_fixed_width(20 * m_data_tree->Objects[object_name]->Level);
+    Button* NewButton = new Button(CurrWidget, "", (m_data_tree->Objects[object_name]->Children.size() == 0 ? NULL : (m_data_tree->Objects[object_name]->Expanded ? FA_CARET_DOWN : FA_CARET_RIGHT)));
+    NewButton->set_transparent(true);
+    NewButton->set_icon_extra_scale(2);
+    NewButton->set_font_size(15);
+    NewButton->set_fixed_width(15);
+    NewButton->set_callback([=] {expand_callback(object_name); });
+    if (m_data_tree->Objects[object_name]->Children.size() == 0)NewButton->set_enabled(false);
+    NewButton = new Button(CurrWidget, m_data_tree->Objects[object_name]->Name,  m_data_tree->Objects[object_name]->Icon);
+    NewButton->set_transparent(true);
+    NewButton->set_icon_extra_scale(2);
+    NewButton->set_font_size(15);
+    NewButton->set_callback(m_data_tree->Objects[object_name]->CallBack);
+    m_items_container->add_child(Index, CurrWidget);
+    m_data_tree->Objects[object_name]->NodeWidget = CurrWidget;
 }
-
 
 TreeView::TreeView(Widget* parent)
     : Widget(parent), m_selected_index(0) {
-    m_items_container = new Widget(this);
-    m_items_container->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Middle));
+
+    set_layout(new BoxLayout(Orientation::Vertical, Alignment::Minimum));
+    m_scrollpanel = new ScrollPanel(this);
+    m_scrollpanel->set_scroll_type(ScrollPanel::ScrollTypes::Both);
+    m_items_container = new Widget(m_scrollpanel);
+    m_items_container->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Minimum));
 }
 
-TreeView::TreeView(Widget* parent, const TreeNode items)
+TreeView::TreeView(Widget* parent, NanoTree* items)
     : Widget(parent), m_selected_index(0) {
-    m_items_container = new Widget(this);
-    m_items_container->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Middle));
+    set_layout(new BoxLayout(Orientation::Vertical, Alignment::Minimum));
+    m_scrollpanel = new ScrollPanel(this);
+    m_scrollpanel->set_scroll_type(ScrollPanel::ScrollTypes::Both);
+    m_items_container = new Widget(m_scrollpanel);
+    m_items_container->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Minimum,15));
 
     set_items(items);
 }
+void TreeView::expand_callback(std::string keystring)
+{
+    m_data_tree->Objects[keystring]->Expanded = !m_data_tree->Objects[keystring]->Expanded;
 
-void TreeView::set_selected_index(int idx) {
+    ((Button*)(m_data_tree->Objects[keystring]->NodeWidget->children()[1]))->set_icon((m_data_tree->Objects[keystring]->Expanded ? FA_CARET_DOWN : FA_CARET_RIGHT));
 
-    const std::vector<Widget*>& children = m_items_container->children();
-    ((Button*)children[m_selected_index])->set_pushed(false);
-    ((Button*)children[idx])->set_pushed(true);
-    m_selected_index = idx;
+    int ChildrenCnt = 0;
+    for (auto CurrItem : m_data_tree->Objects[keystring]->Children)
+        update_tree_items(CurrItem.second->KeyString, m_data_tree->Objects[keystring]->Level + 1, m_data_tree->Objects[keystring]->Expanded, ChildrenCnt++);
+
+    perform_layout(screen()->nvg_context());
 }
 
-void TreeView::set_items(const TreeNode items) {
-
-    m_items = items;
-
-    m_selected_index = 0;
-    while (m_items_container->child_count() != 0)
-        m_items_container->remove_child_at(m_items_container->child_count() - 1);
-
-    if (m_scroll == nullptr && items.Children.size() > 8) {
-        m_scroll = new ScrollPanel(this);
-        m_scroll->set_fixed_height(300);
-        m_items_container = new Widget(m_scroll);
-    }
-
-    m_items_container->set_layout(new GroupLayout(10));
-
-    int index = 0;
-    for (const auto& str : items) {
-        Button* button = new Button(m_items_container, str.Name);
-        button->set_flags(Button::RadioButton);
-        button->set_callback([&, index] {
-            m_selected_index = index;
-            if (m_callback)
-                m_callback(index);
-            });
-        index++;
-    }
-    set_selected_index(m_selected_index);
+void TreeView::set_fixed_size(const Vector2i& fixed_size)
+{
+    m_scrollpanel->set_fixed_size(fixed_size);
+    Widget::set_fixed_size(fixed_size);
 }
 
+void TreeView::set_items(NanoTree* items) {
+
+    m_data_tree = items;
+    while (m_items_container->children().size() > 0)
+        m_items_container->remove_child_at(0);
+
+    update_tree_items(m_data_tree->Root->KeyString, 0, true);
+}
+void TreeView::perform_layout(NVGcontext* ctx)
+{
+    Widget::perform_layout(ctx);
+}
 bool TreeView::scroll_event(const Vector2i& p, const Vector2f& rel) {
-    if (rel.y() < 0) {
-        set_selected_index(std::min(m_selected_index + 1, (int)(items().size() - 1)));
-        if (m_callback)
-            m_callback(m_selected_index);
-        return true;
-    }
-    else if (rel.y() > 0) {
-        set_selected_index(std::max(m_selected_index - 1, 0));
-        if (m_callback)
-            m_callback(m_selected_index);
-        return true;
-    }
     return Widget::scroll_event(p, rel);
 }
 
