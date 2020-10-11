@@ -342,6 +342,19 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
                 }
 
             }
+            {// Do a final check for the screen boarders
+                int RL = abs(Right - screen()->size().x());
+                if (RL < MinRL && RL < m_snap_offset) {
+                    MinRL = RL;
+                    m_size.x() = screen()->size().x() - Left;
+                }
+                int BT = abs(Bottom - screen()->size().y());
+                if (BT < MinBT && BT < m_snap_offset) {
+                    MinBT = BT;
+                    m_size.y() = screen()->size().y() - Top;
+                }
+
+            }
             if (MinRL == INT_MAX)
                 m_size.x() = temp_size.x();
             if (MinBT == INT_MAX)

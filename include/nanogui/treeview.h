@@ -55,7 +55,7 @@ public:
     std::map<std::string, NanoTreeNode*> Objects;
     NanoTreeNode* Root;
     // creates a node and puts it in the root. if a root already exists, the the old root becomes a child of the new root.
-    NanoTreeErrors NanoTree::set_root(std::string NewRoot)
+    NanoTreeErrors set_root(std::string NewRoot)
     {
         if (Objects.find(NewRoot) != Objects.end())return NanoTree::NanoTreeErrors::DuplicateName;
 
@@ -68,7 +68,7 @@ public:
         return NanoTree::NanoTreeErrors::NoError;
     }
     // Addd a node. All needed tests are done. Error code is returned
-    NanoTreeErrors NanoTree::add_node(std::string Parent, std::string Child)
+    NanoTreeErrors add_node(std::string Parent, std::string Child)
     {
         NanoTree::NanoTreeErrors check_error = MakeBasicChecks(Parent, Child, true);
         if (check_error != NanoTree::NanoTreeErrors::NoError)
@@ -83,7 +83,7 @@ public:
         return NanoTree::NanoTreeErrors::NoError;
     }
     // remove a node. All needed tests are done. Error code is returned
-    NanoTreeErrors NanoTree::remove_node(std::string ToRemove)
+    NanoTreeErrors remove_node(std::string ToRemove)
     {
         if (Objects.find(ToRemove) == Objects.end())return NanoTree::NanoTreeErrors::NoSuchChild;
         if (Objects[ToRemove] == Root && Objects[ToRemove]->Children.size() != 0)return NanoTree::NanoTreeErrors::CannotRemoveRoot;//cannot remove root if is not the last node.
@@ -99,7 +99,7 @@ public:
         return NanoTree::NanoTreeErrors::NoError;
     }
     // change the parent of a given node. All needed tests are done. Error code is returned
-    NanoTreeErrors NanoTree::change_parent(std::string Parent, std::string Child)
+    NanoTreeErrors change_parent(std::string Parent, std::string Child)
     {
         NanoTree::NanoTreeErrors check_error = MakeBasicChecks(Parent, Child, false);
         if (check_error != NanoTree::NanoTreeErrors::NoError)
@@ -114,7 +114,7 @@ public:
 
 private:
     // make checks on teh objects of the tree
-    NanoTreeErrors NanoTree::MakeBasicChecks(std::string Parent, std::string Child, bool ChildIsNew)
+    NanoTreeErrors MakeBasicChecks(std::string Parent, std::string Child, bool ChildIsNew)
     {
         if (Parent == Child)return NanoTree::NanoTreeErrors::ParentIsChild;
         if (Objects.find(Parent) == Objects.end())return NanoTree::NanoTreeErrors::NoSuchParent;
