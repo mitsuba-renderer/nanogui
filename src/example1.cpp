@@ -602,6 +602,61 @@ class ExampleApplication : public Screen {
         new Label(Container, "ButtonHit:");
         TreeButtonSelected = new Label(Container, "");
     }
+    void CreateControlsDefault()
+    {
+        Window* CtrConsole_TopWindow = new Window(this, "Console", true);
+        CtrConsole_TopWindow->set_position(Vector2i(200,200));
+        CtrConsole_TopWindow->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill));
+        CtrConsole_TopWindow->set_visible(true);
+
+        ScrollPanel* ScrollWidget = new ScrollPanel(CtrConsole_TopWindow);
+        ScrollWidget->set_scroll_type(ScrollPanel::ScrollTypes::Both);
+        ScrollWidget->DebugName = "Top";
+        // vscroll should only have *ONE* child. this is what `wrapper` is for
+        auto WrapperWidget1 = new Widget(ScrollWidget);
+        WrapperWidget1->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 15));// defaults: 2 columns
+
+
+        ScrollPanel* ScrollConsole = new ScrollPanel(WrapperWidget1);
+        ScrollConsole->set_scroll_type(ScrollPanel::ScrollTypes::Vertical);
+        ScrollConsole->set_fixed_height(250);
+        ScrollConsole->DebugName = "Bottom";
+
+        auto WrapperWidget2 = new Widget(ScrollConsole);
+        WrapperWidget2->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 15));// defaults: 2 columns
+
+
+        TextArea* CtrConsole_TextConsole = new TextArea(WrapperWidget2);
+        CtrConsole_TextConsole->set_padding(10);
+        CtrConsole_TextConsole->set_selectable(false);
+        CtrConsole_TextConsole->set_background_color(Color(0, 255));
+        CtrConsole_TextConsole->set_foreground_color(Color(255, 100, 0, 255));
+        CtrConsole_TextConsole->set_foreground_color(Color(155, 0, 0, 255));
+        CtrConsole_TextConsole->append("                                                                                                          \n ");
+        CtrConsole_TextConsole->append("Example Log... \n "
+            "Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... ");
+        CtrConsole_TextConsole->set_foreground_color(Color(200, 100, 0, 255));
+        CtrConsole_TextConsole->append("Example Log... \n "
+            "Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... ");
+        CtrConsole_TextConsole->set_foreground_color(Color(0, 10, 200, 255));
+        CtrConsole_TextConsole->append("Example Log... \n "
+            "Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... Example Log... Example Log... \n"
+            "Example Log... Example Log... Example Log... Example Log... ");
+    }
+
 public:
     ExampleApplication() : Screen(Vector2i(1024, 768), "NanoGUI Test") {
         inc_ref();
@@ -613,6 +668,7 @@ public:
         CreateMiscWindow();
         CreateSmallWindow();
         CreateTreeViewWindow();
+        //CreateControlsDefault();
 
         perform_layout();
 

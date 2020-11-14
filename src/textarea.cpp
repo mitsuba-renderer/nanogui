@@ -17,21 +17,21 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-TextArea::TextArea(Widget *parent) : Widget(parent),
-  m_foreground_color(Color(0, 0)), m_background_color(Color(0, 0)),
-  m_selection_color(.5f, 1.f), m_font("sans"), m_offset(0),
-  m_max_size(0), m_padding(0), m_selectable(true),
-  m_selection_start(-1), m_selection_end(-1) { }
+TextArea::TextArea(Widget* parent) : Widget(parent),
+m_foreground_color(Color(0, 0)), m_background_color(Color(0, 0)),
+m_selection_color(.5f, 1.f), m_font("sans"), m_offset(0),
+m_max_size(0), m_padding(0), m_selectable(true),
+m_selection_start(-1), m_selection_end(-1) { }
 
-void TextArea::append(const std::string &text) {
-    NVGcontext *ctx = screen()->nvg_context();
+void TextArea::append(const std::string& text) {
+    NVGcontext* ctx = screen()->nvg_context();
 
     nvgFontSize(ctx, font_size());
     nvgFontFace(ctx, m_font.c_str());
 
-    const char *str = text.c_str();
+    const char* str = text.c_str();
     do {
-        const char *begin = str;
+        const char* begin = str;
 
         while (*str != 0 && *str != '\n')
             str++;
@@ -40,7 +40,7 @@ void TextArea::append(const std::string &text) {
         if (line.empty())
             continue;
         int width = nvgTextBounds(ctx, 0, 0, line.c_str(), nullptr, nullptr);
-        m_blocks.push_back(Block { m_offset, width, line, m_foreground_color });
+        m_blocks.push_back(Block{ m_offset, width, line, m_foreground_color });
 
         m_offset.x() += width;
         m_max_size = max(m_max_size, m_offset);
@@ -50,7 +50,7 @@ void TextArea::append(const std::string &text) {
         }
     } while (*str++ != 0);
 
-    ScrollPanel *vscroll = dynamic_cast<ScrollPanel *>(m_parent);
+    ScrollPanel* vscroll = dynamic_cast<ScrollPanel*>(m_parent);
     if (vscroll)
         vscroll->perform_layout(ctx);
 }
@@ -73,13 +73,13 @@ bool TextArea::keyboard_event(int key, int /* scancode */, int action, int modif
             const int max_glyphs = 1024;
             NVGglyphPosition glyphs[max_glyphs + 1];
             for (int i = start.x(); i <= end.x(); ++i) {
-                if (i > start.x() && m_blocks[i].offset.y() != m_blocks[i-1].offset.y())
+                if (i > start.x() && m_blocks[i].offset.y() != m_blocks[i - 1].offset.y())
                     str += '\n';
 
-                const Block &block = m_blocks[i];
-                NVGcontext *ctx = screen()->nvg_context();
+                const Block& block = m_blocks[i];
+                NVGcontext* ctx = screen()->nvg_context();
                 int nglyphs = nvgTextGlyphPositions(ctx, block.offset.x(), block.offset.y(),
-                                                    block.text.c_str(), nullptr, glyphs, max_glyphs);
+                    block.text.c_str(), nullptr, glyphs, max_glyphs);
                 glyphs[nglyphs].str = block.text.c_str() + block.text.length();
 
                 if (i == start.x() && i == end.x())
@@ -98,15 +98,15 @@ bool TextArea::keyboard_event(int key, int /* scancode */, int action, int modif
     return false;
 }
 
-Vector2i TextArea::preferred_size(NVGcontext *) const {
+Vector2i TextArea::preferred_size(NVGcontext*) const {
     return m_max_size + m_padding * 2;
 }
 
-void TextArea::draw(NVGcontext *ctx) {
-    ScrollPanel *vscroll = dynamic_cast<ScrollPanel *>(m_parent);
+void TextArea::draw(NVGcontext* ctx) {
+    ScrollPanel* vscroll = dynamic_cast<ScrollPanel*>(m_parent);
 
     std::vector<Block>::iterator start_it = m_blocks.begin(),
-                                 end_it = m_blocks.end();
+        end_it = m_blocks.end();
     if (vscroll) {
         int window_offset = -position().y(),
             window_size = vscroll->size().y();
@@ -115,7 +115,7 @@ void TextArea::draw(NVGcontext *ctx) {
             m_blocks.begin(),
             m_blocks.end(),
             window_offset,
-            [&](const Block &block, int value) {
+            [&](const Block& block, int value) {
                 return block.offset.y() + font_size() < value;
             }
         );
@@ -124,7 +124,7 @@ void TextArea::draw(NVGcontext *ctx) {
             m_blocks.begin(),
             m_blocks.end(),
             window_offset + window_size,
-            [](int value, const Block &block) {
+            [](int value, const Block& block) {
                 return value < block.offset.y();
             }
         );
@@ -161,15 +161,16 @@ void TextArea::draw(NVGcontext *ctx) {
         nvgFillColor(ctx, m_selection_color);
         if (selection_end.y() == selection_start.y()) {
             nvgRect(ctx, selection_start.x(), selection_start.y(),
-                    selection_end.x() - selection_start.x(),
-                    font_size());
-        } else {
+                selection_end.x() - selection_start.x(),
+                font_size());
+        }
+        else {
             nvgRect(ctx, selection_start.x(), selection_start.y(),
-                    m_blocks[flip ? m_selection_end.x() : m_selection_start.x()].width -
-                    (selection_start.x() - m_pos.x() - m_padding),
-                    font_size());
+                m_blocks[flip ? m_selection_end.x() : m_selection_start.x()].width -
+                (selection_start.x() - m_pos.x() - m_padding),
+                font_size());
             nvgRect(ctx, m_pos.x() + m_padding, selection_end.y(),
-                    selection_end.x() - m_pos.x() - m_padding, font_size());
+                selection_end.x() - m_pos.x() - m_padding, font_size());
         }
         nvgFill(ctx);
     }
@@ -179,7 +180,7 @@ void TextArea::draw(NVGcontext *ctx) {
     nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
 
     for (auto it = start_it; it != end_it; ++it) {
-        const Block &block = *it;
+        const Block& block = *it;
         Color color = block.color;
         if (color == Color(0, 0))
             color = m_theme->m_text_color;
@@ -197,12 +198,11 @@ void TextArea::draw(NVGcontext *ctx) {
 
         nvgFillColor(ctx, color);
         nvgText(ctx, offset.x(), offset.y(),
-                block.text.c_str(), nullptr);
+            block.text.c_str(), nullptr);
     }
 }
 
-bool TextArea::mouse_button_event(const Vector2i &p, int button, bool down,
-                                  int /* modifiers */) {
+bool TextArea::mouse_button_event(const Vector2i& p, int button, bool down, int  modifiers) {
     if (down && button == GLFW_MOUSE_BUTTON_1 && m_selectable) {
         m_selection_start = m_selection_end =
             position_to_block(p - m_pos - m_padding);
@@ -210,25 +210,25 @@ bool TextArea::mouse_button_event(const Vector2i &p, int button, bool down,
         return true;
     }
 
-    return false;
+    return Widget::mouse_button_event(p, button, down, modifiers);
 }
 
-bool TextArea::mouse_drag_event(const Vector2i &p, const Vector2i &/* rel */,
-                                int /* button */, int /* modifiers */) {
+bool TextArea::mouse_drag_event(const Vector2i& p, const Vector2i& rel,
+    int  button, int  modifiers) {
     if (m_selection_start != -1 && m_selectable) {
         m_selection_end = position_to_block(p - m_pos - m_padding);
         return true;
     }
-    return false;
+    return Widget::mouse_drag_event(p, rel, button, modifiers);
 }
 
-Vector2i TextArea::position_to_block(const Vector2i &pos) const {
-    NVGcontext *ctx = screen()->nvg_context();
+Vector2i TextArea::position_to_block(const Vector2i& pos) const {
+    NVGcontext* ctx = screen()->nvg_context();
     auto it = std::lower_bound(
         m_blocks.begin(),
         m_blocks.end(),
         pos.y(),
-        [&](const Block &block, int value) {
+        [&](const Block& block, int value) {
             return block.offset.y() + font_size() < value;
         }
     );
@@ -241,17 +241,18 @@ Vector2i TextArea::position_to_block(const Vector2i &pos) const {
         if (m_blocks.empty())
             return Vector2i(-1, 1);
         it = m_blocks.end() - 1;
-        const Block &block = *it;
+        const Block& block = *it;
         selection = nvgTextGlyphPositions(ctx, block.offset.x(), block.offset.y(),
-                              block.text.c_str(), nullptr, glyphs, max_glyphs);
-    } else {
+            block.text.c_str(), nullptr, glyphs, max_glyphs);
+    }
+    else {
         for (auto it2 = it; it2 != m_blocks.end() && it2->offset.y() == it->offset.y(); ++it2) {
-            const Block &block = *it2;
+            const Block& block = *it2;
             nvgFontSize(ctx, font_size());
             nvgFontFace(ctx, m_font.c_str());
             int nglyphs =
                 nvgTextGlyphPositions(ctx, block.offset.x(), block.offset.y(),
-                                      block.text.c_str(), nullptr, glyphs, max_glyphs);
+                    block.text.c_str(), nullptr, glyphs, max_glyphs);
 
             for (int i = 0; i < nglyphs; ++i) {
                 if (glyphs[i].minx + glyphs[i].maxx < pos.x() * 2)
@@ -266,18 +267,18 @@ Vector2i TextArea::position_to_block(const Vector2i &pos) const {
     );
 }
 
-Vector2i TextArea::block_to_position(const Vector2i &pos) const {
-    if (pos.x() < 0 || pos.x() >= (int) m_blocks.size())
+Vector2i TextArea::block_to_position(const Vector2i& pos) const {
+    if (pos.x() < 0 || pos.x() >= (int)m_blocks.size())
         return Vector2i(-1, -1);
-    NVGcontext *ctx = screen()->nvg_context();
-    const Block &block = m_blocks[pos.x()];
+    NVGcontext* ctx = screen()->nvg_context();
+    const Block& block = m_blocks[pos.x()];
     const int max_glyphs = 1024;
     NVGglyphPosition glyphs[max_glyphs];
     nvgFontSize(ctx, font_size());
     nvgFontFace(ctx, m_font.c_str());
     int nglyphs =
         nvgTextGlyphPositions(ctx, block.offset.x(), block.offset.y(),
-                              block.text.c_str(), nullptr, glyphs, max_glyphs);
+            block.text.c_str(), nullptr, glyphs, max_glyphs);
     if (pos.y() == nglyphs)
         return block.offset + Vector2i(glyphs[pos.y() - 1].maxx + 1, 0);
     else if (pos.y() > nglyphs)

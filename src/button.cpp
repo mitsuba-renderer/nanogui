@@ -68,7 +68,7 @@ bool Button::mouse_button_event(const Vector2i& p, int button, bool down, int mo
                     for (auto widget : parent()->children()) {
                         Button* b = dynamic_cast<Button*>(widget);
                         if (b != this && b && (b->flags() & RadioButton) && b->m_pushed) {
-                            b->m_pushed = false;
+                            b->set_pushed(false);
                             if (b->m_change_callback)
                                 b->m_change_callback(false);
                         }
@@ -77,7 +77,7 @@ bool Button::mouse_button_event(const Vector2i& p, int button, bool down, int mo
                 else {
                     for (auto b : m_button_group) {
                         if (b != this && (b->flags() & RadioButton) && b->m_pushed) {
-                            b->m_pushed = false;
+                            b->set_pushed(false);
                             if (b->m_change_callback)
                                 b->m_change_callback(false);
                         }
@@ -88,7 +88,7 @@ bool Button::mouse_button_event(const Vector2i& p, int button, bool down, int mo
                 for (auto widget : parent()->children()) {
                     Button* b = dynamic_cast<Button*>(widget);
                     if (b != this && b && (b->flags() & PopupButton) && b->m_pushed) {
-                        b->m_pushed = false;
+                        b->set_pushed(false);
                         if (b->m_change_callback)
                             b->m_change_callback(false);
                     }
@@ -96,15 +96,15 @@ bool Button::mouse_button_event(const Vector2i& p, int button, bool down, int mo
                 dynamic_cast<nanogui::PopupButton*>(this)->popup()->request_focus();
             }
             if (m_flags & ToggleButton)
-                m_pushed = !m_pushed;
+                set_pushed(!m_pushed);
             else
-                m_pushed = true;
+                set_pushed(true);
         }
         else if (m_pushed || (m_flags & MenuButton)) {
             if (contains(p) && m_callback)
                 m_callback();
             if (m_flags & NormalButton)
-                m_pushed = false;
+                set_pushed(false);
         }
         if (pushed_backup != m_pushed && m_change_callback)
             m_change_callback(m_pushed);
@@ -134,7 +134,7 @@ void Button::draw(NVGcontext* ctx) {
     nvgRoundedRect(ctx, m_pos.x() + 1, m_pos.y() + 1.0f, m_size.x() - 2,
         m_size.y() - 2, m_theme->m_button_corner_radius - 1);
 
-    if (m_background_color.w()!=0) {
+    if (m_background_color.w() != 0) {
         nvgFillColor(ctx, Color(m_background_color[0], m_background_color[1],
             m_background_color[2], 1.f));
         nvgFill(ctx);

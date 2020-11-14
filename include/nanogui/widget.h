@@ -33,6 +33,7 @@ enum class Cursor; // do not put a docstring, this is already documented
  */
 class NANOGUI_EXPORT Widget : public Object {
 public:
+    std::string DebugName;
     /// Construct a new widget with the given parent widget
     Widget(Widget *parent);
 

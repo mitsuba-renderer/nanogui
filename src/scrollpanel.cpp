@@ -67,7 +67,7 @@ Vector2i ScrollPanel::preferred_size(NVGcontext* ctx) const {
 
 bool ScrollPanel::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button, int modifiers) {
 
-    if (!m_children.empty() && (m_child_preferred_size.y() > m_size.y() || m_child_preferred_size.x() > m_size.x())) {
+    if ((m_scrolling_y || m_scrolling_x) && !m_children.empty() && (m_child_preferred_size.y() > m_size.y() || m_child_preferred_size.x() > m_size.x())) {
         if (m_scrolling_y && m_child_preferred_size.y() > m_size.y() && VScrollable())
         {
             float scrollh = height() * std::min(1.f, height() / (float)m_child_preferred_size.y());
@@ -81,19 +81,21 @@ bool ScrollPanel::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int b
         m_update_layout = true;
         return true;
     }
-    else {
-        return Widget::mouse_drag_event(p, rel, button, modifiers);
-    }
+    return Widget::mouse_drag_event(p, rel, button, modifiers);
 }
 
 bool ScrollPanel::mouse_button_event(const Vector2i& p, int button, bool down, int modifiers) {
 
-    if (down && button == GLFW_MOUSE_BUTTON_1 && !m_children.empty() && VScrollable() &&
-        m_child_preferred_size.y() > m_size.y() &&
+    bool OverVertical = m_child_preferred_size.y() > m_size.y() &&
         p.x() > m_pos.x() + m_size.x() - 13 &&
-        p.x() < m_pos.x() + m_size.x() - 4) {
+        p.x() < m_pos.x() + m_size.x() - 4;
+    bool OverHorizontal = m_child_preferred_size.x() > m_size.x() &&
+        p.y() > m_pos.y() + m_size.y() - 13 &&
+        p.y() < m_pos.y() + m_size.y() - 4;
+    if (down && button == GLFW_MOUSE_BUTTON_1 && !m_children.empty() && VScrollable() && OverVertical) {
 
         m_scrolling_y = true;
+
         int scrollh = (int)(height() *
             std::min(1.f, height() / (float)m_child_preferred_size.y()));
         int start = (int)(m_pos.y() + 4 + 1 + (m_size.y() - 8 - scrollh) * m_scroll.y());
@@ -113,10 +115,7 @@ bool ScrollPanel::mouse_button_event(const Vector2i& p, int button, bool down, i
         return true;
     }
     else m_scrolling_y = false;
-    if (down && button == GLFW_MOUSE_BUTTON_1 && !m_children.empty() && HScrollable() &&
-        m_child_preferred_size.x() > m_size.x() &&
-        p.y() > m_pos.y() + m_size.y() - 13 &&
-        p.y() < m_pos.y() + m_size.y() - 4) {
+    if (down && button == GLFW_MOUSE_BUTTON_1 && !m_children.empty() && HScrollable() && OverHorizontal) {
 
         m_scrolling_x = true;
         int scrollw = (int)(width() *
@@ -138,6 +137,9 @@ bool ScrollPanel::mouse_button_event(const Vector2i& p, int button, bool down, i
         return true;
     }
     else m_scrolling_x = false;
+    if (OverVertical || OverHorizontal)//if mouse is on scrollbar, dont check the other widgets
+
+        return true;
     if (Widget::mouse_button_event(p, button, down, modifiers))
         return true;
 
@@ -161,7 +163,7 @@ bool ScrollPanel::scroll_event(const Vector2i& p, const Vector2f& rel) {
     }
     if (!m_children.empty() && m_child_preferred_size.x() > m_size.x() && HScrollable()) {
         auto child = m_children[0];
-        float scroll_amount = rel.x() * m_size.x() * .25f;
+        float scroll_amount = rel.y() * m_size.x() * .25f;
 
         m_scroll.x() = std::max(0.f, std::min(1.f, m_scroll.x() - scroll_amount / m_child_preferred_size.x()));
 
@@ -170,7 +172,6 @@ bool ScrollPanel::scroll_event(const Vector2i& p, const Vector2f& rel) {
         Vector2i new_pos = child->position();
         m_update_layout = true;
         child->mouse_motion_event(p - m_pos, old_pos - new_pos, 0, 0);
-
         return true;
     }
     return Widget::scroll_event(p, rel);

@@ -231,7 +231,7 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
                 Popup* CanICastPopup = dynamic_cast<Popup*>(ChildWindow);
                 MessageDialog* CanICastDialog = dynamic_cast<MessageDialog*>(ChildWindow);
                 bool IsWindow = (CanICastWindow != NULL && CanICastPopup == NULL && CanICastDialog == NULL);
-                if (ChildWindow == this || !IsWindow)continue;// continue if the window is itself or the widget is not a window
+                if (ChildWindow == this || !IsWindow || !ChildWindow->visible())continue;// continue if the window is itself or the widget is not a window
                 int child_Top = ChildWindow->position().y();
                 int child_Bottom = ChildWindow->position().y() + ChildWindow->size().y();
                 int child_Left = ChildWindow->position().x();
@@ -311,7 +311,7 @@ bool Window::mouse_drag_event(const Vector2i& p, const Vector2i& rel, int button
                 Popup* CanICastPopup = dynamic_cast<Popup*>(ChildWindow);
                 MessageDialog* CanICastDialog = dynamic_cast<MessageDialog*>(ChildWindow);
                 bool IsWindow = (CanICastWindow != NULL && CanICastPopup == NULL && CanICastDialog == NULL);
-                if (ChildWindow == this || !IsWindow)continue;// continue if the window is itself or the widget is not a window
+                if (ChildWindow == this || !IsWindow || !ChildWindow->visible())continue;// continue if the window is itself or the widget is not a window
                 int child_Top = ChildWindow->position().y();
                 int child_Bottom = ChildWindow->position().y() + ChildWindow->size().y();
                 int child_Left = ChildWindow->position().x();

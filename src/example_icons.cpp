@@ -25,17 +25,18 @@ using namespace nanogui;
 #define ADD_BUTTON(icon)                                   \
     auto b_##icon = new Button(wrapper, #icon, icon);      \
     b_##icon->set_icon_position(Button::IconPosition::Left); \
-    b_##icon->set_fixed_width(half_width);\
-    b_##icon->set_icon_extra_scale(2);
+    b_##icon->set_icon_extra_scale(2);\
+    b_##icon->set_fixed_width(250);
+    
 
 
 int main(int /* argc */, char ** /* argv */) {
     nanogui::init();
 
     /* scoped variables */ {
-        static constexpr int width      = 1000;
+        static constexpr int width      = 2000;
         static constexpr int half_width = width / 2;
-        static constexpr int height     = 800;
+        static constexpr int height     = 1200;
 
         // create a fixed size screen with one window
         Screen *screen = new Screen({width, height}, "NanoGUI Icons", false);
@@ -50,7 +51,7 @@ int main(int /* argc */, char ** /* argv */) {
 
         // vscroll should only have *ONE* child. this is what `wrapper` is for
         auto wrapper = new Widget(vscroll);
-        wrapper->set_layout(new GridLayout());// defaults: 2 columns
+        wrapper->set_layout(new GridLayout(Orientation::Horizontal, 8));// defaults: 2 columns
 
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////

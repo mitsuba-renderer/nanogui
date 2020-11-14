@@ -16,6 +16,7 @@
 
 #include <nanogui/widget.h>
 #include <nanogui/texture.h>
+#include <list>
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -75,8 +76,8 @@ public:
      *     targeting OpenGL ES 2 or Metal.
      */
     Screen(
-        const Vector2i &size,
-        const std::string &caption = "Unnamed",
+        const Vector2i& size,
+        const std::string& caption = "Unnamed",
         bool resizable = true,
         bool fullscreen = false,
         bool depth_buffer = true,
@@ -90,16 +91,16 @@ public:
     virtual ~Screen();
 
     /// Get the window title bar caption
-    const std::string &caption() const { return m_caption; }
+    const std::string& caption() const { return m_caption; }
 
     /// Set the window title bar caption
-    void set_caption(const std::string &caption);
+    void set_caption(const std::string& caption);
 
     /// Return the screen's background color
-    const Color &background() const { return m_background; }
+    const Color& background() const { return m_background; }
 
     /// Set the screen's background color
-    void set_background(const Color &background) { m_background = background; }
+    void set_background(const Color& background) { m_background = background; }
 
     /// Set the top-level window visibility (no effect on full-screen windows)
     void set_visible(bool visible);
@@ -108,7 +109,7 @@ public:
     void set_size(const Vector2i& size);
 
     /// Return the framebuffer size (potentially larger than size() on high-DPI screens)
-    const Vector2i &framebuffer_size() const { return m_fbsize; }
+    const Vector2i& framebuffer_size() const { return m_fbsize; }
 
     /// Send an event that will cause the screen to be redrawn at the next event loop iteration
     void redraw();
@@ -161,7 +162,7 @@ public:
     float pixel_ratio() const { return m_pixel_ratio; }
 
     /// Handle a file drop event
-    virtual bool drop_event(const std::vector<std::string> & /* filenames */) {
+    virtual bool drop_event(const std::vector<std::string>& /* filenames */) {
         return false; /* To be overridden */
     }
 
@@ -176,7 +177,7 @@ public:
 
     /// Set the resize callback
     std::function<void(Vector2i)> resize_callback() const { return m_resize_callback; }
-    void set_resize_callback(const std::function<void(Vector2i)> &callback) {
+    void set_resize_callback(const std::function<void(Vector2i)>& callback) {
         m_resize_callback = callback;
     }
 
@@ -184,10 +185,10 @@ public:
     Vector2i mouse_pos() const { return m_mouse_pos; }
 
     /// Return a pointer to the underlying GLFW window data structure
-    GLFWwindow *glfw_window() const { return m_glfw_window; }
+    GLFWwindow* glfw_window() const { return m_glfw_window; }
 
     /// Return a pointer to the underlying NanoVG draw context
-    NVGcontext *nvg_context() const { return m_nvg_context; }
+    NVGcontext* nvg_context() const { return m_nvg_context; }
 
     /// Return the component format underlying the screen
     Texture::ComponentFormat component_format() const;
@@ -206,13 +207,13 @@ public:
 
 #if defined(NANOGUI_USE_METAL)
     /// Return the associated CAMetalLayer object
-    void *metal_layer() const;
+    void* metal_layer() const;
 
     /// Return the texure of the currently active Metal drawable (or NULL)
-    void *metal_texture() const { return m_metal_texture; }
+    void* metal_texture() const { return m_metal_texture; }
 
     /// Return the associated depth/stencil texture
-    Texture *depth_stencil_texture() { return m_depth_stencil_texture; }
+    Texture* depth_stencil_texture() { return m_depth_stencil_texture; }
 #endif
 
     /// Flush all queued up NanoVG rendering commands
@@ -250,36 +251,37 @@ public:
     Screen();
 
     /// Initialize the \ref Screen
-    void initialize(GLFWwindow *window, bool shutdown_glfw);
+    void initialize(GLFWwindow* window, bool shutdown_glfw);
 
     /* Event handlers */
     void cursor_pos_callback_event(double x, double y);
     void mouse_button_callback_event(int button, int action, int modifiers);
     void key_callback_event(int key, int scancode, int action, int mods);
     void char_callback_event(unsigned int codepoint);
-    void drop_callback_event(int count, const char **filenames);
+    void drop_callback_event(int count, const char** filenames);
     void scroll_callback_event(double x, double y);
     void resize_callback_event(int width, int height);
 
     /* Internal helper functions */
-    void update_focus(Widget *widget);
-    void dispose_window(Window *window);
-    void center_window(Window *window);
-    void move_window_to_front(Window *window);
+    void update_focus(Widget* widget);
+    void dispose_window(Window* window);
+    void center_window(Window* window);
+    void move_window_to_front(Window* window);
     void draw_widgets();
-
+    void set_popup_visible(PopupButton* iButton) { m_popup_visible.push_back(iButton); }
 protected:
-    GLFWwindow *m_glfw_window = nullptr;
-    NVGcontext *m_nvg_context = nullptr;
-    GLFWcursor *m_cursors[(size_t) Cursor::CursorCount];
+    GLFWwindow* m_glfw_window = nullptr;
+    NVGcontext* m_nvg_context = nullptr;
+    GLFWcursor* m_cursors[(size_t)Cursor::CursorCount];
+    std::list< PopupButton*> m_popup_visible;
     Cursor m_cursor;
-    std::vector<Widget *> m_focus_path;
+    std::vector<Widget*> m_focus_path;
     Vector2i m_fbsize;
     float m_pixel_ratio;
     int m_mouse_state, m_modifiers;
     Vector2i m_mouse_pos;
     bool m_drag_active;
-    Widget *m_drag_widget = nullptr;
+    Widget* m_drag_widget = nullptr;
     double m_last_interaction;
     bool m_process_events = true;
     Color m_background;
@@ -292,8 +294,8 @@ protected:
     bool m_redraw;
     std::function<void(Vector2i)> m_resize_callback;
 #if defined(NANOGUI_USE_METAL)
-    void *m_metal_texture = nullptr;
-    void *m_metal_drawable = nullptr;
+    void* m_metal_texture = nullptr;
+    void* m_metal_drawable = nullptr;
     ref<Texture> m_depth_stencil_texture;
 #endif
 };

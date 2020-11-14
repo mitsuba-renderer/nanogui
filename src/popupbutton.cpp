@@ -36,7 +36,7 @@ Vector2i PopupButton::preferred_size(NVGcontext* ctx) const {
 
 void PopupButton::draw(NVGcontext* ctx) {
     if (!m_enabled && m_pushed)
-        m_pushed = false;
+        set_pushed(false);
 
     m_popup->set_visible(m_pushed);
     Button::draw(ctx);
