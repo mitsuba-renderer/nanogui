@@ -385,6 +385,19 @@ std::vector<std::string> file_dialog(const std::vector<std::pair<std::string, st
         result.erase(begin(result));
     }
 
+    if (save && ofn.nFilterIndex > 0) {
+        auto ext = filetypes[ofn.nFilterIndex - 1].first;
+        if (ext != "*") {
+            ext.insert(0, ".");
+
+            auto &name = result.front();
+            if (name.size() <= ext.size() ||
+                name.compare(name.size() - ext.size(), ext.size(), ext) != 0) {
+                name.append(ext);
+            }
+        }
+    }
+
     return result;
 #else
     char buffer[FILE_DIALOG_MAX_BUFFER];
