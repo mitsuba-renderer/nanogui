@@ -133,8 +133,6 @@ void Canvas::draw(NVGcontext *ctx) {
 
     float pixel_ratio = scr->pixel_ratio();
 
-    Widget::draw(ctx);
-
     scr->nvg_flush();
 
     Vector2i fbsize = m_size;
@@ -186,6 +184,8 @@ void Canvas::draw(NVGcontext *ctx) {
 #endif
         rp->blit_to(Vector2i(0, 0), fbsize, scr, offset);
     }
+
+    Widget::draw(ctx);
 }
 
 NAMESPACE_END(nanogui)
