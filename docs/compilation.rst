@@ -21,16 +21,12 @@ working directory, the following commands need to be executed:
    # now that you have a Makefile, use that to build
    $ make -j 4
 
-For Windows, the process is nearly the same:
+For Windows, the process is nearly the same (cmake 3.19+):
 
 .. code-block:: bash
 
    # enter the top-level NanoGUI directory
    $ cd nanogui
-
-   # make a build directory and enter that
-   $ mkdir build
-   $ cd build
 
    # Specify VS Version AND 64bit, otherwise it defaults to 32.
    # The version number and year may be different for you, Win64
@@ -38,10 +34,13 @@ For Windows, the process is nearly the same:
    # a listing of the available generators.
    #
    # 32 bit Windows builds are /not/ supported
-   $ cmake -G "Visual Studio 14 2015 Win64" ..
+   #
+   # When using "Visual Studio 16 2019", cmake automatically 
+   # targets x64.
+   $ cmake -Bbuild -S.
 
    # Either open the .sln with Visual Studio, or run
-   $ cmake --build . --config Release
+   $ cmake --build build --config Release
 
 Default Configurations
 ----------------------------------------------------------------------------------------
