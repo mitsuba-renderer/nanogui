@@ -19,6 +19,8 @@
 #include <map>
 
 NAMESPACE_BEGIN(nanogui)
+
+class FolderDialog;
 /**
 * \class  NanoTree
 *
@@ -131,8 +133,10 @@ private:
  * \brief Simple treeview widget .
  */
 class NANOGUI_EXPORT TreeView : public Widget {
-    void update_tree_items(std::string KeyString, int Level, bool ParentExpanded, int ChildIdx = 0);
+    friend class FolderDialog;
+
 public:
+    void update_tree_items(std::string KeyString, int Level, bool ParentExpanded, int ChildIdx = 0);
 
     /// Create an empty treeview
     TreeView(Widget* parent);
@@ -143,11 +147,10 @@ public:
     /// Override of the Widget set_size
     virtual void set_fixed_size(const Vector2i& fixed_size) override;
 
-    /// The callback to execute for this Treeview.
-    std::function<void(int)> callback() const { return m_callback; }
-
+    /// The callback to execute When arrow is pressed.
+    std::function<void(std::string)> expand_callback() const { return m_expand_callback; }
     /// Sets the callback to execute for this Treeview.
-    void set_callback(const std::function<void(int)>& callback) { m_callback = callback; }
+    void set_expand_callback(const std::function<void(std::string)>& expand_callback) { m_expand_callback = expand_callback; }
 
     /// Sets the items for this Treeview. Execute this every time you ake a change to the NanoTree tructure
     void set_items(NanoTree* items);
@@ -159,19 +162,23 @@ public:
     virtual bool scroll_event(const Vector2i& p, const Vector2f& rel) override;
 protected:
 
+    // function to create control item
     void create_tree_object(std::string obbject_name, int Index);
+    
+    // function called when the arrow button is clicked
+    void arrow_callback(std::string keystring);
 
-    void expand_callback(std::string keystring);
+
     /// scroll panell containing everything else
     ScrollPanel* m_scrollpanel = nullptr;
     /// Container containing the buttons
     Widget* m_items_container = nullptr;
 
-    /// The items associated with this ComboBox.
+    /// The items associated with this TreeView.
     NanoTree* m_data_tree = nullptr;
 
-    /// The callback for this ComboBox.
-    std::function<void(int)> m_callback;
+    /// The expand_callback for this TreeView.
+    std::function<void(std::string)> m_expand_callback;
 
     /// The current index this ComboBox has selected.
     int m_selected_index;

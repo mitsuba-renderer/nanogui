@@ -269,13 +269,14 @@ public:
     void move_window_to_front(Window* window);
     void draw_widgets();
     void set_popup_visible(PopupButton* iButton) { m_popup_visible.push_back(iButton); }
+    std::vector<Widget*> m_focus_path;
+
 protected:
     GLFWwindow* m_glfw_window = nullptr;
     NVGcontext* m_nvg_context = nullptr;
     GLFWcursor* m_cursors[(size_t)Cursor::CursorCount];
     std::list< PopupButton*> m_popup_visible;
     Cursor m_cursor;
-    std::vector<Widget*> m_focus_path;
     Vector2i m_fbsize;
     float m_pixel_ratio;
     int m_mouse_state, m_modifiers;

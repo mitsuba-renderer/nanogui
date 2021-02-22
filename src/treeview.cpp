@@ -30,6 +30,7 @@ void TreeView::update_tree_items(std::string KeyString, int Level, bool ParentEx
             m_items_container->child_index(m_data_tree->Objects[KeyString]->Parent->NodeWidget) + 1 + ChildIdx);
     else if (m_data_tree->Objects[KeyString]->NodeWidget != nullptr)
     {
+        screen()->m_focus_path.erase(std::remove(screen()->m_focus_path.begin(), screen()->m_focus_path.end(), m_data_tree->Objects[KeyString]->NodeWidget), screen()->m_focus_path.end());
         m_items_container->remove_child(m_data_tree->Objects[KeyString]->NodeWidget);
         m_data_tree->Objects[KeyString]->NodeWidget = nullptr;
     }
@@ -50,14 +51,17 @@ void TreeView::create_tree_object(std::string object_name, int Index)
     NewButton->set_icon_extra_scale(2);
     NewButton->set_font_size(15);
     NewButton->set_fixed_width(15);
-    NewButton->set_callback([=] {expand_callback(object_name); });
+    NewButton->set_callback([=] {arrow_callback(object_name); });
+    NewButton->DebugName = "arrow_" + object_name;
     if (m_data_tree->Objects[object_name]->Children.size() == 0)NewButton->set_enabled(false);
-    NewButton = new Button(CurrWidget, m_data_tree->Objects[object_name]->Name,  m_data_tree->Objects[object_name]->Icon);
+    NewButton = new Button(CurrWidget, m_data_tree->Objects[object_name]->Name, m_data_tree->Objects[object_name]->Icon);
     NewButton->set_transparent(true);
     NewButton->set_icon_extra_scale(2);
     NewButton->set_font_size(15);
     NewButton->set_callback(m_data_tree->Objects[object_name]->CallBack);
+    NewButton->DebugName = object_name;
     m_items_container->add_child(Index, CurrWidget);
+
     m_data_tree->Objects[object_name]->NodeWidget = CurrWidget;
 }
 
@@ -77,15 +81,17 @@ TreeView::TreeView(Widget* parent, NanoTree* items)
     m_scrollpanel = new ScrollPanel(this);
     m_scrollpanel->set_scroll_type(ScrollPanel::ScrollTypes::Both);
     m_items_container = new Widget(m_scrollpanel);
-    m_items_container->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Minimum,15));
+    m_items_container->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 15));
 
     set_items(items);
 }
-void TreeView::expand_callback(std::string keystring)
+void TreeView::arrow_callback(std::string keystring)
 {
     m_data_tree->Objects[keystring]->Expanded = !m_data_tree->Objects[keystring]->Expanded;
 
     ((Button*)(m_data_tree->Objects[keystring]->NodeWidget->children()[1]))->set_icon((m_data_tree->Objects[keystring]->Expanded ? FA_CARET_DOWN : FA_CARET_RIGHT));
+    
+    if (m_expand_callback && m_data_tree->Objects[keystring]->Expanded)m_expand_callback(keystring);
 
     int ChildrenCnt = 0;
     for (auto CurrItem : m_data_tree->Objects[keystring]->Children)
@@ -101,10 +107,15 @@ void TreeView::set_fixed_size(const Vector2i& fixed_size)
 }
 
 void TreeView::set_items(NanoTree* items) {
-
+    if (m_data_tree != items)free(m_data_tree);
     m_data_tree = items;
+    Screen* My_Screen = screen();
     while (m_items_container->children().size() > 0)
+    {
+        screen()->m_focus_path.erase(std::remove(screen()->m_focus_path.begin(), screen()->m_focus_path.end(), m_items_container->child_at(0)), screen()->m_focus_path.end());
         m_items_container->remove_child_at(0);
+    }
+    if (m_data_tree->Objects.size() == 0)return;
 
     update_tree_items(m_data_tree->Root->KeyString, 0, true);
 }

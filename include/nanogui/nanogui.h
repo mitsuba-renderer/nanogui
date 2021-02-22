@@ -28,6 +28,7 @@
 #include <nanogui/progressbar.h>
 #include <nanogui/icons.h>
 #include <nanogui/messagedialog.h>
+#include <nanogui/folderdialog.h>
 #include <nanogui/textbox.h>
 #include <nanogui/textarea.h>
 #include <nanogui/slider.h>

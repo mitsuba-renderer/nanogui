@@ -808,7 +808,7 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
             const Window* window =
                 dynamic_cast<Window*>(m_focus_path[m_focus_path.size() - 2]);
             if (window && window->modal()) {
-                if (!window->contains(m_mouse_pos))
+                if (!window->contains(m_mouse_pos) && !m_drag_active)
                     return;
             }
         }

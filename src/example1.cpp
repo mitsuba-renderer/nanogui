@@ -38,6 +38,7 @@
 #include <nanogui/shader.h>
 #include <nanogui/renderpass.h>
 #include <nanogui/textarea.h>
+#include <nanogui/folderdialog.h>
 #include <iostream>
 #include <memory>
 
@@ -58,13 +59,18 @@ class ExampleApplication : public Screen {
         Window* MenuBar1 = new Window(this, "Try to move this around");
         BoxLayout* MenuLayout = new BoxLayout(Orientation::Horizontal);
         MenuBar1->set_layout(MenuLayout);
-        MenuBar1->set_position(Vector2i(40, 600));
+        MenuBar1->set_position(Vector2i(15, 600));
 
         PopupButton* FileBtn = new PopupButton(MenuBar1, "File");
         FileBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill));
         FileBtn->set_side(Popup::Left);
 
-        new Button(FileBtn->popup(), "short Stuff 1");
+        Button * FolderDialogButt = new Button(FileBtn->popup(), "Folder Dialog");
+        std::string getBackValue;
+        FolderDialogButt->set_callback([&] {
+            auto dlg = new FolderDialog(this, "Select Folder");
+            dlg->set_callback([&](std::string result) {std::cout << "Folder Selected: " << result << std::endl; });
+            });
         new Button(FileBtn->popup(), "Do File Stuff 2");
         new Button(FileBtn->popup(), "Do File Stuff 3");
         new Label(FileBtn->popup(), "-------------");
@@ -97,7 +103,11 @@ class ExampleApplication : public Screen {
         FileBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical));
         FileBtn->set_side(Popup::Bottom);
 
-        new Button(FileBtn->popup(), "short Stuff 1");
+        Button* FolderDialogButt = new Button(FileBtn->popup(), "Folder Dialog");
+        FolderDialogButt->set_callback([&] {
+            auto dlg = new FolderDialog(this, "Select Folder");
+            dlg->set_callback([&](std::string result) {std::cout << "Folder Selected: " << result << std::endl; });
+            });
         new Button(FileBtn->popup(), "Do File Stuff 2");
         new Button(FileBtn->popup(), "Do File Stuff 3");
         new Label(FileBtn->popup(), "-------------");
@@ -442,7 +452,7 @@ class ExampleApplication : public Screen {
     void CreateSmallWindow()
     {
         Window* GridWindow = new Window(this, "Grid of small widgets", true);
-        GridWindow->set_position(Vector2i(425, 300));
+        GridWindow->set_position(Vector2i(200, 520));
         GridLayout* layout =
             new GridLayout(Orientation::Horizontal, 2,
                 Alignment::Middle, 15, 5);
