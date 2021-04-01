@@ -193,6 +193,15 @@ void Widget::remove_child_at(int index) {
     widget->dec_ref();
 }
 
+void Widget::remove_all_children()
+{
+    for (auto child : m_children) {
+        if (child)
+            child->dec_ref();
+    }
+    m_children.clear();
+}
+
 int Widget::child_index(Widget *widget) const {
     auto it = std::find(m_children.begin(), m_children.end(), widget);
     if (it == m_children.end())
