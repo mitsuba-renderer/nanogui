@@ -101,4 +101,32 @@ void Popup::draw(NVGcontext* ctx) {
     Widget::draw(ctx);
 }
 
+void Popup::update_anchor(const Widget * ref)
+{
+    const Window *parent_window = ref->window();
+
+    int anchor_size = this->anchor_size();
+
+    if (parent_window) {
+        int pos_x = ref->absolute_position().x() - parent_window->position().x();
+        int pos_y = ref->absolute_position().y() - parent_window->position().y() + ref->height() / 2;
+        if (side() == Popup::Right)
+            set_anchor_pos(Vector2i(parent_window->width() + anchor_size, pos_y));
+        else if (side() == Popup::RightInside)
+            set_anchor_pos(Vector2i(pos_x + ref->width() + anchor_size, pos_y));
+        else if (side() == Popup::Left)
+            set_anchor_pos(Vector2i(-anchor_size, pos_y));
+        else
+            set_anchor_pos(Vector2i(pos_x - anchor_size, pos_y));
+    } else {
+        set_position(ref->absolute_position() + Vector2i(ref->width() + anchor_size + 1,  ref->height() / 2 - anchor_size));
+    }
+}
+
+void Popup::update_anchor(const Vector2i &p)
+{
+    set_anchor_pos(p);
+    refresh_relative_placement();
+}
+
 NAMESPACE_END(nanogui)

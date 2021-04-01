@@ -65,25 +65,7 @@ void PopupButton::draw(NVGcontext* ctx) {
 
 void PopupButton::perform_layout(NVGcontext *ctx) {
     Widget::perform_layout(ctx);
-
-    const Window *parent_window = window();
-
-    int anchor_size = m_popup->anchor_size();
-
-    if (parent_window) {
-        int pos_x = absolute_position().x() - parent_window->position().x();
-        int pos_y = absolute_position().y() - parent_window->position().y() + m_size.y() / 2;
-        if (m_popup->side() == Popup::Right)
-            m_popup->set_anchor_pos(Vector2i(parent_window->width() + anchor_size, pos_y));
-        else if (m_popup->side() == Popup::RightInside)
-            m_popup->set_anchor_pos(Vector2i(pos_x + m_size.x() + anchor_size, pos_y));
-        else if (m_popup->side() == Popup::Left)
-            m_popup->set_anchor_pos(Vector2i(-anchor_size, pos_y));
-        else
-            m_popup->set_anchor_pos(Vector2i(pos_x - anchor_size, pos_y));
-    } else {
-        m_popup->set_position(absolute_position() + Vector2i(width() + anchor_size + 1,  m_size.y() / 2 - anchor_size));
-    }
+    m_popup->update_anchor(this);
 }
 
 void PopupButton::set_side(Popup::Side side) {

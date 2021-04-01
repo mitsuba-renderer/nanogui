@@ -62,6 +62,11 @@ public:
 
     /// Draw the popup window
     virtual void draw(NVGcontext* ctx) override;
+
+    /// Recomputes the anchor position (given a reference widget)
+    void update_anchor(const Widget * ref);
+    /// Recomputes the anchor position (given a reference point)
+    void update_anchor(const Vector2i &p);
 protected:
     /// Internal helper function to maintain nested window position values
     virtual void refresh_relative_placement() override;
