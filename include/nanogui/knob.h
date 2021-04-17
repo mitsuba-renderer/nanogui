@@ -3,10 +3,6 @@
 
 #include <nanogui/widget.h>
 
-/* Ottimizzazione funzioni trigonometriche
-   https://github.com/kthohr/gcem
- */
-
 NAMESPACE_BEGIN(nanogui)
 
 class NANOGUI_EXPORT Knob : public Widget {
