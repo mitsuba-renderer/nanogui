@@ -6,6 +6,7 @@
     All rights reserved. Use of this source code is governed by a
     BSD-style license that can be found in the LICENSE.txt file.
 */
+
 /**
  * \file nanogui/common.h
  *
@@ -19,6 +20,17 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+
+#define NANOGUI_VERSION_MAJOR 0
+#define NANOGUI_VERSION_MINOR 1
+#define NANOGUI_VERSION_PATCH 0
+
+#define NANOGUI_STRINGIFY(x) #x
+#define NANOGUI_TOSTRING(x)  NANOGUI_STRINGIFY(x)
+#define NANOGUI_VERSION                                                          \
+    (NANOGUI_TOSTRING(NANOGUI_VERSION_MAJOR) "."                                 \
+     NANOGUI_TOSTRING(NANOGUI_VERSION_MINOR) "."                                 \
+     NANOGUI_TOSTRING(NANOGUI_VERSION_PATCH))
 
 /* Set to 1 to draw boxes around widgets */
 //#define NANOGUI_SHOW_WIDGET_BOUNDS 1

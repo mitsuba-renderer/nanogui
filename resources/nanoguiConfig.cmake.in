@@ -1,0 +1,14 @@
+@PACKAGE_INIT@
+
+set(nanogui_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@")
+set(nanogui_VERSION_TYPE "@ENOKI_VERSION_TYPE@")
+set(nanogui_LIBRARY "")
+
+check_required_components(nanogui)
+
+include("${CMAKE_CURRENT_LIST_DIR}/nanoguiTargets.cmake")
+
+if(NOT nanogui_FIND_QUIETLY)
+  message(STATUS "Found nanogui: ${nanogui_INCLUDE_DIR} (found version \"${nanogui_VERSION}\" ${nanogui_VERSION_TYPE})")
+endif()
+

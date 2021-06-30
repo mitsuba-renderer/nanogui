@@ -1,10 +1,33 @@
 cmake_minimum_required (VERSION 3.13..3.18)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+
+# Extract project version from source
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/include/nanogui/common.h"
+  nanogui_version_defines REGEX "#define NANOGUI_VERSION_(MAJOR|MINOR|PATCH) ")
+
+foreach(ver ${nanogui_version_defines})
+  if(ver MATCHES [[#define NANOGUI_VERSION_(MAJOR|MINOR|PATCH) +([^ ]+)$]])
+      set(NANOGUI_VERSION_${CMAKE_MATCH_1} "${CMAKE_MATCH_2}")
+  endif()
+endforeach()
+
+if(NANOGUI_VERSION_PATCH MATCHES [[\.([a-zA-Z0-9]+)$]])
+  set(NANOGUI_VERSION_TYPE "${CMAKE_MATCH_1}")
+endif()
+
+string(REGEX MATCH "^[0-9]+" NANOGUI_VERSION_PATCH "${NANOGUI_VERSION_PATCH}")
+
+set(NANOGUI_VERSION "${NANOGUI_VERSION_MAJOR}.${NANOGUI_VERSION_MINOR}.${NANOGUI_VERSION_PATCH}")
+
+message(STATUS "NanoGUI v${NANOGUI_VERSION} ${NANOGUI_VERSION_TYPE}")
 
 project(nanogui
   DESCRIPTION
     "NanoGUI"
   LANGUAGES
     CXX C
+  VERSION
+    ${NANOGUI_VERSION}
 )
 
 if (NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/src")
@@ -223,6 +246,13 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "BSD")
   endif()
 endif()
 
+# Adapt to variations in rpath handling on Linux and macOS
+if (APPLE)
+  set(NANOGUI_ORIGIN "@loader_path")
+elseif(UNIX)
+  set(NANOGUI_ORIGIN "$ORIGIN")
+endif()
+
 # Required core libraries on various platforms
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Emscripten")
   # No dependencies
@@ -332,7 +362,7 @@ if (NANOGUI_BUILD_GLFW)
 endif()
 
 # Compile main NanoGUI library
-add_library(nanogui ${NANOGUI_LIBRARY_TYPE} 
+add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
   # Merge NanoVG into the NanoGUI library
   ext/nanovg/src/nanovg.c
   ext/nanovg/src/stb_image.h
@@ -389,7 +419,8 @@ target_compile_definitions(nanogui
 
 target_include_directories(nanogui
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 
   PRIVATE
     ext/nanovg/src
@@ -419,17 +450,19 @@ if (NANOGUI_BUILD_SHARED)
 endif()
 
 target_include_directories(nanogui PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg/src")
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg/src>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nanovg>
+)
 
 if (NANOGUI_BUILD_GLAD)
   target_compile_definitions(nanogui PUBLIC -DNANOGUI_GLAD)
   target_include_directories(nanogui
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include")
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include>)
 endif()
 
 if (NANOGUI_BUILD_GLFW)
   target_include_directories(nanogui
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/include")
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/include>)
 endif()
 
 if (NANOGUI_BUILD_SHARED)
@@ -447,11 +480,37 @@ endif()
 
 if (NANOGUI_INSTALL)
   install(TARGETS nanogui
-          LIBRARY DESTINATION lib
-          ARCHIVE DESTINATION lib)
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-  install(DIRECTORY include/nanogui DESTINATION include
+  install(DIRECTORY include/nanogui DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
           FILES_MATCHING PATTERN "*.h")
+
+  install(DIRECTORY ext/nanovg/src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nanovg
+          FILES_MATCHING PATTERN "*.h")
+
+  install(TARGETS nanogui EXPORT nanoguiTargets)
+
+  set(NANOGUI_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/cmake/nanogui")
+
+  configure_package_config_file(
+    resources/nanoguiConfig.cmake.in nanoguiConfig.cmake
+    INSTALL_DESTINATION ${NANOGUI_CMAKECONFIG_INSTALL_DIR})
+
+  write_basic_package_version_file(
+    nanoguiConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion ARCH_INDEPENDENT)
+
+  install(
+    EXPORT nanoguiTargets
+    DESTINATION ${NANOGUI_CMAKECONFIG_INSTALL_DIR})
+
+  install(
+    FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/nanoguiConfigVersion.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/nanoguiConfig.cmake
+    DESTINATION ${NANOGUI_CMAKECONFIG_INSTALL_DIR})
 endif()
 
 # Quench warnings while compiling NanoVG
@@ -482,21 +541,29 @@ endif()
 if (NANOGUI_BUILD_PYTHON)
   message(STATUS "NanoGUI: building the Python plugin.")
   if (NOT TARGET pybind11::module)
-    find_package(Python COMPONENTS Interpreter Development REQUIRED)
+    if (SKBUILD)
+      execute_process(
+        COMMAND
+        "${PYTHON_EXECUTABLE}" -c
+        "import pybind11; print(pybind11.get_cmake_dir())"
+        OUTPUT_VARIABLE _tmp_dir
+        OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ECHO STDOUT)
+        list(APPEND CMAKE_PREFIX_PATH "${_tmp_dir}")
+      find_package(pybind11 CONFIG REQUIRED)
+    else()
+      find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
-    # Allow overriding the pybind11 library used to compile NanoGUI
-    set(NANOGUI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11"
-      CACHE STRING "Path containing the 'pybind11' library used to compile nanogui.")
+      # Allow overriding the pybind11 library used to compile NanoGUI
+      set(NANOGUI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11"
+        CACHE STRING "Path containing the 'pybind11' library used to compile nanogui.")
 
-    add_subdirectory(${NANOGUI_PYBIND11_DIR} ext/pybind11)
-
-    mark_as_advanced(
-      USE_PYTHON_INCLUDE_DIR PYBIND11_INSTALL PYBIND11_TEST PYBIND11_NOPYTHON
-      PYBIND11_FINDPYTHON PYBIND11_PYTHON_VERSION PYBIND11_WERROR
-      NANOGUI_PYBIND11_DIR
-    )
+      add_subdirectory(${NANOGUI_PYBIND11_DIR} ext/pybind11)
+      mark_as_advanced(
+        USE_PYTHON_INCLUDE_DIR PYBIND11_INSTALL PYBIND11_TEST PYBIND11_NOPYTHON
+        PYBIND11_FINDPYTHON PYBIND11_PYTHON_VERSION PYBIND11_WERROR
+        NANOGUI_PYBIND11_DIR)
+    endif()
   endif()
-
   add_subdirectory(python)
 else()
   message(STATUS "NanoGUI: not building the Python plugin.")

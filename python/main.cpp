@@ -114,7 +114,9 @@ static void sigint_handler(int sig) {
 }
 #endif
 
-PYBIND11_MODULE(nanogui, m) {
+PYBIND11_MODULE(nanogui_ext, m_) {
+    (void) m_;
+    py::module_ m = py::module::import("nanogui");
     m.attr("__doc__") = "NanoGUI plugin";
 
 #if defined(NANOGUI_USE_OPENGL)

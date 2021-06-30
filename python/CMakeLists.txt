@@ -39,7 +39,7 @@ pybind11_add_module(nanogui-python MODULE THIN_LTO OPT_SIZE
   py_doc.h
   ${NANOGUI_PYTHON_EXTRA})
 
-set_target_properties(nanogui-python PROPERTIES OUTPUT_NAME nanogui)
+set_target_properties(nanogui-python PROPERTIES OUTPUT_NAME nanogui_ext)
 target_link_libraries(nanogui-python PRIVATE nanogui)
 
 if (CMAKE_COMPILER_IS_GNUCC)
@@ -49,6 +49,7 @@ endif()
 
 if (NANOGUI_INSTALL)
   install(TARGETS nanogui-python
-          LIBRARY DESTINATION lib
-          ARCHIVE DESTINATION lib)
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} 
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  set_target_properties(nanogui-python PROPERTIES INSTALL_RPATH "${NANOGUI_ORIGIN}")
 endif()
