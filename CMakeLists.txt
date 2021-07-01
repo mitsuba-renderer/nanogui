@@ -451,18 +451,18 @@ endif()
 
 target_include_directories(nanogui PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/nanovg/src>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nanovg>
-)
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nanovg>)
 
 if (NANOGUI_BUILD_GLAD)
   target_compile_definitions(nanogui PUBLIC -DNANOGUI_GLAD)
-  target_include_directories(nanogui
-    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include>)
+  target_include_directories(nanogui PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/glad>)
 endif()
 
 if (NANOGUI_BUILD_GLFW)
-  target_include_directories(nanogui
-    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/include>)
+  target_include_directories(nanogui PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/glfw/include>)
 endif()
 
 if (NANOGUI_BUILD_SHARED)
@@ -488,6 +488,16 @@ if (NANOGUI_INSTALL)
 
   install(DIRECTORY ext/nanovg/src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nanovg
           FILES_MATCHING PATTERN "*.h")
+
+  if (NANOGUI_BUILD_GLFW)
+    install(DIRECTORY ext/glfw/include/GLFW DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            FILES_MATCHING PATTERN "*.h")
+  endif()
+
+  if (NANOGUI_BUILD_GLAD)
+    install(DIRECTORY ext/glad/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/glad
+            FILES_MATCHING PATTERN "*.h")
+  endif()
 
   install(TARGETS nanogui EXPORT nanoguiTargets)
 
@@ -564,7 +574,7 @@ if (NANOGUI_BUILD_PYTHON)
         NANOGUI_PYBIND11_DIR)
     endif()
   endif()
-  add_subdirectory(python)
+  add_subdirectory(src/python)
 else()
   message(STATUS "NanoGUI: not building the Python plugin.")
 endif()

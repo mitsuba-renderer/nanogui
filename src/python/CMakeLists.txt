@@ -10,8 +10,8 @@ endif()
 if (NANOGUI_BUILD_PYTHON AND (APPLE OR CMAKE_SYSTEM MATCHES "Linux"))
   # Include coroutine support for running the mainloop in detached mode
   add_definitions(-DCORO_SJLJ)
-  include_directories(../ext/coro)
-  set(NANOGUI_PYTHON_EXTRA ../ext/coro/coro.c)
+  include_directories(../../ext/coro)
+  set(NANOGUI_PYTHON_EXTRA ../../ext/coro/coro.c)
 endif()
 
 add_definitions(-DNANOGUI_PYTHON)
