@@ -94,7 +94,7 @@ option(NANOGUI_BUILD_GLAD                "Build GLAD OpenGL loader library? (nee
 option(NANOGUI_BUILD_GLFW                "Build GLFW?" ${NANOGUI_BUILD_GLFW_DEFAULT})
 option(NANOGUI_INSTALL                   "Install NanoGUI on `make install`?" ON)
 
-set(ENOKI_NATIVE_FLAGS ${ENOKI_NATIVE_FLAGS_DEFAULT} CACHE STRING
+set(NANOGUI_NATIVE_FLAGS ${NANOGUI_NATIVE_FLAGS_DEFAULT} CACHE STRING
     "Compilation flags used to target the host processor architecture.")
 
 if (NOT NANOGUI_BACKEND)
@@ -165,6 +165,8 @@ if (NANOGUI_BUILD_SHARED)
 else()
   message(STATUS "NanoGUI: building static library.")
 endif()
+
+add_compile_options(${NANOGUI_NATIVE_FLAGS})
 
 if (MSVC)
   # Disable annoying MSVC warnings (all targets)
