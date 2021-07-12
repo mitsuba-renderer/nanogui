@@ -74,12 +74,28 @@ if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
   endif()
 endif()
 
+# Compile for a sufficiently recent processor. Assumes Nehalem+ (with SSE4.2) by
+# default. You may want to set MTS_NATIVE_FLAGS to "-march=native" to use all
+# instructions available on a particular machine.
+
+if (MSVC)
+  set(NANOGUI_NATIVE_FLAGS_DEFAULT "")
+elseif (APPLE AND CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
+  # Apple M1 compatibility
+  set(NANOGUI_NATIVE_FLAGS_DEFAULT "-mcpu=apple-a12")
+else()
+  set(NANOGUI_NATIVE_FLAGS_DEFAULT "-march=nehalem")
+endif()
+
 option(NANOGUI_BUILD_EXAMPLES            "Build NanoGUI example application?" ON)
 option(NANOGUI_BUILD_SHARED              "Build NanoGUI as a shared library?" ${NANOGUI_BUILD_SHARED_DEFAULT})
 option(NANOGUI_BUILD_PYTHON              "Build a Python plugin for NanoGUI?" ${NANOGUI_BUILD_PYTHON_DEFAULT})
 option(NANOGUI_BUILD_GLAD                "Build GLAD OpenGL loader library? (needed on Windows)" ${NANOGUI_BUILD_GLAD_DEFAULT})
 option(NANOGUI_BUILD_GLFW                "Build GLFW?" ${NANOGUI_BUILD_GLFW_DEFAULT})
 option(NANOGUI_INSTALL                   "Install NanoGUI on `make install`?" ON)
+
+set(ENOKI_NATIVE_FLAGS ${ENOKI_NATIVE_FLAGS_DEFAULT} CACHE STRING
+    "Compilation flags used to target the host processor architecture.")
 
 if (NOT NANOGUI_BACKEND)
   if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv7" OR
@@ -176,7 +192,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 # Prefer libc++ in conjunction with Clang
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT CMAKE_CXX_FLAGS MATCHES "-stdlib=libc\\+\\+")
   CHECK_CXX_COMPILER_AND_LINKER_FLAGS(HAS_LIBCPP "-stdlib=libc++" "-stdlib=libc++")
-  if (HAS_LIBCPP)
+  if (APPLE OR HAS_LIBCPP)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -D_LIBCPP_VERSION")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
