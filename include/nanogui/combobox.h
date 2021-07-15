@@ -63,7 +63,7 @@ public:
     virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
 protected:
     /// Scroll panel used to store the combo box contents
-    VScrollPanel *m_scroll = nullptr;
+    ScrollPanel *m_scroll = nullptr;
 
     /// Container containing the buttons
     Widget *m_container = nullptr;

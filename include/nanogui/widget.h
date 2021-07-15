@@ -14,8 +14,9 @@
 
 #include <nanogui/object.h>
 #include <nanogui/theme.h>
-#include <vector>
 #include <algorithm>
+#include <vector>
+
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -32,6 +33,7 @@ enum class Cursor; // do not put a docstring, this is already documented
  */
 class NANOGUI_EXPORT Widget : public Object {
 public:
+    std::string DebugName;
     /// Construct a new widget with the given parent widget
     Widget(Widget *parent);
 
@@ -68,7 +70,7 @@ public:
     }
 
     /// Return the size of the widget
-    const Vector2i &size() const { return m_size; }
+    const Vector2i& size() const { if (this == NULL) return 0; else  return m_size; }
     /// set the size of the widget
     void set_size(const Vector2i &size) { m_size = size; }
 
@@ -91,7 +93,7 @@ public:
      * size; this is done with a call to \ref set_size or a call to \ref perform_layout()
      * in the parent widget.
      */
-    void set_fixed_size(const Vector2i &fixed_size) { m_fixed_size = fixed_size; }
+    virtual void set_fixed_size(const Vector2i &fixed_size) { m_fixed_size = fixed_size; }
 
     /// Return the fixed size (see \ref set_fixed_size())
     const Vector2i &fixed_size() const { return m_fixed_size; }
