@@ -90,9 +90,9 @@ Note that the dependency library NanoVG already includes some basic example code
 good-looking static widgets; what NanoGUI does is to flesh it out into a complete GUI
 toolkit with event handling, layout generation, etc.
 
-NanoGUI currently works on Mac OS X (Clang) Linux (GCC or Clang) and Windows (Visual
-Studio ≥ 2017); it requires a recent C++17 capable compiler. All dependencies are
-jointly built using a CMake-based build system.
+NanoGUI currently works on Mac OS X (Clang), Linux (GCC or Clang), FreeBSD (Clang), and
+Windows (Visual Studio ≥ 2017); it requires a recent C++17 capable compiler. All
+dependencies are jointly built using a CMake-based build system.
 
 .. _GLFW: http://www.glfw.org/
 .. _GLAD: https://github.com/Dav1dde/glad
