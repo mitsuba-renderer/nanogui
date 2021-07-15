@@ -260,6 +260,19 @@ extern NANOGUI_EXPORT bool active();
 extern NANOGUI_EXPORT void async(const std::function<void()> &func);
 
 /**
+ * \brief Schedule a function to be executed periodically when
+ * the application is being redrawn roughly each second by default.
+ * Interval can be changed by ``set_recurring_execution_interval`` function.
+ */
+extern NANOGUI_EXPORT void recurring(const std::function<void()> &func);
+
+/**
+ * \brief Sets interval in which recurring functions should be executed.
+ * Value of 1.0 roughly equals to 1 second.
+ */
+extern NANOGUI_EXPORT void set_recurring_execution_interval(double interval);
+
+/**
  * \brief Open a native file open/save dialog.
  *
  * \param filetypes
