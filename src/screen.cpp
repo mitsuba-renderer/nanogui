@@ -259,17 +259,6 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
         }
     }
 
-#if defined(NANOGUI_USE_OPENGL)
-    if (m_float_buffer) {
-        GLboolean float_mode;
-        CHK(glGetBooleanv(GL_RGBA_FLOAT_MODE, &float_mode));
-        if (!float_mode) {
-            fprintf(stderr, "Could not allocate floating point framebuffer.\n");
-            m_float_buffer = false;
-        }
-    }
-#endif
-
     if (!m_glfw_window) {
         (void) gl_major; (void) gl_minor;
 #if defined(NANOGUI_USE_OPENGL)
@@ -296,6 +285,17 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
             throw std::runtime_error("Could not initialize GLAD!");
         glGetError(); // pull and ignore unhandled errors like GL_INVALID_ENUM
+    }
+#endif
+
+#if defined(NANOGUI_USE_OPENGL)
+    if (m_float_buffer) {
+      GLboolean float_mode;
+      CHK(glGetBooleanv(GL_RGBA_FLOAT_MODE, &float_mode));
+      if (!float_mode) {
+        fprintf(stderr, "Could not allocate floating point framebuffer.\n");
+        m_float_buffer = false;
+      }
     }
 #endif
 
