@@ -427,6 +427,8 @@ static const char *__doc_nanogui_Canvas_m_draw_border = R"doc()doc";
 
 static const char *__doc_nanogui_Canvas_m_render_pass = R"doc()doc";
 
+static const char *__doc_nanogui_Canvas_m_render_pass_resolved = R"doc()doc";
+
 static const char *__doc_nanogui_Canvas_m_render_to_texture = R"doc()doc";
 
 static const char *__doc_nanogui_Canvas_render_pass = R"doc(Return the render pass associated with the canvas object)doc";
@@ -1718,17 +1720,17 @@ static const char *__doc_nanogui_RenderPass_clear_depth = R"doc(Return the clear
 
 static const char *__doc_nanogui_RenderPass_clear_stencil = R"doc(Return the clear stencil for the stencil attachment)doc";
 
+static const char *__doc_nanogui_RenderPass_command_buffer = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_command_encoder = R"doc()doc";
+
 static const char *__doc_nanogui_RenderPass_cull_mode = R"doc(Return the culling mode associated with the render pass)doc";
 
 static const char *__doc_nanogui_RenderPass_depth_test = R"doc(Return the depth test and depth write mask of this render pass)doc";
 
 static const char *__doc_nanogui_RenderPass_end = R"doc(Finish the render pass)doc";
 
-static const char *__doc_nanogui_RenderPass_framebuffer_handle = R"doc()doc";
-
 static const char *__doc_nanogui_RenderPass_m_active = R"doc()doc";
-
-static const char *__doc_nanogui_RenderPass_m_blend_backup = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_blit_target = R"doc()doc";
 
@@ -1738,31 +1740,25 @@ static const char *__doc_nanogui_RenderPass_m_clear_color = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_clear_depth = R"doc()doc";
 
+static const char *__doc_nanogui_RenderPass_m_clear_shader = R"doc()doc";
+
 static const char *__doc_nanogui_RenderPass_m_clear_stencil = R"doc()doc";
 
-static const char *__doc_nanogui_RenderPass_m_cull_face_backup = R"doc()doc";
+static const char *__doc_nanogui_RenderPass_m_command_buffer = R"doc()doc";
+
+static const char *__doc_nanogui_RenderPass_m_command_encoder = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_cull_mode = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_depth_test = R"doc()doc";
 
-static const char *__doc_nanogui_RenderPass_m_depth_test_backup = R"doc()doc";
-
 static const char *__doc_nanogui_RenderPass_m_depth_write = R"doc()doc";
-
-static const char *__doc_nanogui_RenderPass_m_depth_write_backup = R"doc()doc";
-
-static const char *__doc_nanogui_RenderPass_m_framebuffer_handle = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_framebuffer_size = R"doc()doc";
 
-static const char *__doc_nanogui_RenderPass_m_scissor_backup = R"doc()doc";
-
-static const char *__doc_nanogui_RenderPass_m_scissor_test_backup = R"doc()doc";
+static const char *__doc_nanogui_RenderPass_m_pass_descriptor = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_targets = R"doc()doc";
-
-static const char *__doc_nanogui_RenderPass_m_viewport_backup = R"doc()doc";
 
 static const char *__doc_nanogui_RenderPass_m_viewport_offset = R"doc()doc";
 
@@ -1872,6 +1868,8 @@ static const char *__doc_nanogui_Screen_component_format = R"doc(Return the comp
 
 static const char *__doc_nanogui_Screen_cursor_pos_callback_event = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_depth_stencil_texture = R"doc(Return the associated depth/stencil texture)doc";
+
 static const char *__doc_nanogui_Screen_dispose_window = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_draw_all =
@@ -1942,6 +1940,8 @@ static const char *__doc_nanogui_Screen_m_cursors = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_depth_buffer = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_m_depth_stencil_texture = R"doc()doc";
+
 static const char *__doc_nanogui_Screen_m_drag_active = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_drag_widget = R"doc()doc";
@@ -1957,6 +1957,10 @@ static const char *__doc_nanogui_Screen_m_fullscreen = R"doc()doc";
 static const char *__doc_nanogui_Screen_m_glfw_window = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_last_interaction = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_metal_drawable = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_metal_texture = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_modifiers = R"doc()doc";
 
@@ -1977,6 +1981,10 @@ static const char *__doc_nanogui_Screen_m_resize_callback = R"doc()doc";
 static const char *__doc_nanogui_Screen_m_shutdown_glfw = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_stencil_buffer = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_metal_layer = R"doc(Return the associated CAMetalLayer object)doc";
+
+static const char *__doc_nanogui_Screen_metal_texture = R"doc(Return the texure of the currently active Metal drawable (or NULL))doc";
 
 static const char *__doc_nanogui_Screen_mouse_button_callback_event = R"doc()doc";
 
@@ -2144,15 +2152,13 @@ static const char *__doc_nanogui_Shader_m_buffers = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_m_name = R"doc()doc";
 
+static const char *__doc_nanogui_Shader_m_pipeline_state = R"doc()doc";
+
 static const char *__doc_nanogui_Shader_m_render_pass = R"doc()doc";
 
-static const char *__doc_nanogui_Shader_m_shader_handle = R"doc()doc";
-
-static const char *__doc_nanogui_Shader_m_uses_point_size = R"doc()doc";
-
-static const char *__doc_nanogui_Shader_m_vertex_array_handle = R"doc()doc";
-
 static const char *__doc_nanogui_Shader_name = R"doc(Return the name of this shader)doc";
+
+static const char *__doc_nanogui_Shader_pipeline_state = R"doc()doc";
 
 static const char *__doc_nanogui_Shader_render_pass = R"doc(Return the render pass associated with this shader)doc";
 
@@ -2177,10 +2183,6 @@ The association will be replaced if it is already present.)doc";
 static const char *__doc_nanogui_Shader_set_uniform =
 R"doc(Upload a uniform variable (e.g. a vector or matrix) that will be
 associated with a named shader parameter.)doc";
-
-static const char *__doc_nanogui_Shader_shader_handle = R"doc()doc";
-
-static const char *__doc_nanogui_Shader_vertex_array_handle = R"doc()doc";
 
 static const char *__doc_nanogui_Slider = R"doc()doc";
 
@@ -2775,7 +2777,7 @@ static const char *__doc_nanogui_Texture_m_min_interpolation_mode = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_pixel_format = R"doc()doc";
 
-static const char *__doc_nanogui_Texture_m_renderbuffer_handle = R"doc()doc";
+static const char *__doc_nanogui_Texture_m_sampler_state_handle = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_samples = R"doc()doc";
 
@@ -2791,9 +2793,9 @@ static const char *__doc_nanogui_Texture_min_interpolation_mode = R"doc(Return t
 
 static const char *__doc_nanogui_Texture_pixel_format = R"doc(Return the pixel format)doc";
 
-static const char *__doc_nanogui_Texture_renderbuffer_handle = R"doc()doc";
-
 static const char *__doc_nanogui_Texture_resize = R"doc(Resize the texture (discards the current contents))doc";
+
+static const char *__doc_nanogui_Texture_sampler_state_handle = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_samples = R"doc(Return the number of samples (MSAA))doc";
 
@@ -3408,6 +3410,12 @@ redrawn the next time.
 NanoGUI is not thread-safe, and async() provides a mechanism for
 queuing up UI-related state changes from other threads.)doc";
 
+static const char *__doc_nanogui_chdir_to_bundle_parent =
+R"doc(Move to the application bundle's parent directory
+
+This is function is convenient when deploying .app bundles on OSX. It
+adjusts the file path to the parent directory containing the bundle.)doc";
+
 static const char *__doc_nanogui_cross = R"doc()doc";
 
 static const char *__doc_nanogui_detail_FormWidget =
@@ -3582,6 +3590,34 @@ Remark:
 
 static const char *__doc_nanogui_max = R"doc()doc";
 
+static const char *__doc_nanogui_metal_10bit_edr_support = R"doc(Check whether any connected display supports 10-bit or EDR mode)doc";
+
+static const char *__doc_nanogui_metal_command_queue =
+R"doc(Return a pointer to the underlying Metal command queue
+(id<MTLCommandQueue>))doc";
+
+static const char *__doc_nanogui_metal_device = R"doc(Return a pointer to the underlying Metal device (id<MTLDevice>))doc";
+
+static const char *__doc_nanogui_metal_drawable_texture = R"doc(Return the id<MTLTexture> associated with an id<MTLDrawable>)doc";
+
+static const char *__doc_nanogui_metal_init = R"doc(Initialize the Metal backend)doc";
+
+static const char *__doc_nanogui_metal_layer =
+R"doc(Return a pointer to the underlying Metal command queue (CAMetalLayer
+*))doc";
+
+static const char *__doc_nanogui_metal_present_and_release_drawable = R"doc(Release a drawable back to the pool)doc";
+
+static const char *__doc_nanogui_metal_shutdown = R"doc(Shut down the Metal backend)doc";
+
+static const char *__doc_nanogui_metal_window_init = R"doc(Associate a metal layer with a NSWindow created by GLEW)doc";
+
+static const char *__doc_nanogui_metal_window_layer = R"doc(Return the CAMetalLayer associated with a given NSWindow)doc";
+
+static const char *__doc_nanogui_metal_window_next_drawable = R"doc(Acquire the next id<MTLDrawable> from the Metal layer)doc";
+
+static const char *__doc_nanogui_metal_window_set_size = R"doc(Set size of the drawable underlying an NSWindow)doc";
+
 static const char *__doc_nanogui_min = R"doc()doc";
 
 static const char *__doc_nanogui_nanogui_check_glerror =
@@ -3689,6 +3725,20 @@ static const char *__doc_nanogui_ref_ref_4 = R"doc(Move constructor)doc";
 static const char *__doc_nanogui_shutdown = R"doc(Static shutdown; should be called before the application terminates.)doc";
 
 static const char *__doc_nanogui_squared_norm = R"doc()doc";
+
+static const char *__doc_nanogui_test_10bit_edr_support =
+R"doc(Check for the availability of displays with 10-bit color and/or
+extended dynamic range (EDR), i.e. the ability to reproduce
+intensities exceeding the standard dynamic range from 0.0-1.0.
+
+To leverage either of these features, you will need to create a Screen
+with ``float_buffer=True``. Only the macOS Metal backend of NanoGUI
+implements this function right now. All other platforms return
+``(false, false)``.
+
+Returns:
+    A ``std::pair`` with two boolean values. The first indicates
+    10-bit color support, and the second indicates EDR support.)doc";
 
 static const char *__doc_nanogui_type_name =
 R"doc(Return the name (e.g. "uint8") associated with a specific variable

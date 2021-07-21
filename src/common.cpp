@@ -206,6 +206,15 @@ bool active() {
     return mainloop_active;
 }
 
+std::pair<bool, bool> test_10bit_edr_support() {
+#if defined(NANOGUI_USE_METAL)
+    return metal_10bit_edr_support();
+#else
+    return { false, false };
+#endif
+}
+
+
 void shutdown() {
     glfwTerminate();
 

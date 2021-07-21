@@ -42,6 +42,9 @@ pybind11_add_module(nanogui-python MODULE THIN_LTO OPT_SIZE
 set_target_properties(nanogui-python PROPERTIES OUTPUT_NAME nanogui_ext)
 target_link_libraries(nanogui-python PRIVATE nanogui)
 
+set_target_properties(nanogui-python PROPERTIES
+  LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui)
+
 if (CMAKE_COMPILER_IS_GNUCC)
   # Quench warnings on GCC
   target_compile_options(nanogui-python PRIVATE -Wno-unused-variable)

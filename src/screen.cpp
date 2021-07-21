@@ -128,7 +128,7 @@ static float get_pixel_ratio(GLFWwindow *window) {
     Vector2i fb_size, size;
     glfwGetFramebufferSize(window, &fb_size[0], &fb_size[1]);
     glfwGetWindowSize(window, &size[0], &size[1]);
-    return (float)fb_size[0] / (float)size[0];
+    return (float) fb_size[0] / (float) size[0];
 #endif
 }
 

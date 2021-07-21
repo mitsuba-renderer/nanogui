@@ -274,6 +274,22 @@ extern NANOGUI_EXPORT std::string
 file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
             bool save);
 
+
+/**
+ * \brief Check for the availability of displays with 10-bit color and/or
+ * extended dynamic range (EDR), i.e. the ability to reproduce intensities
+ * exceeding the standard dynamic range from 0.0-1.0.
+ *
+ * To leverage either of these features, you will need to create a \ref Screen
+ * with <tt>float_buffer=True</tt>. Only the macOS Metal backend of NanoGUI
+ * implements this function right now. All other platforms return <tt>(false,
+ * false)</tt>.
+ *
+ * \return A <tt>std::pair</tt> with two boolean values. The first indicates
+ * 10-bit color support, and the second indicates EDR support.
+ */
+extern NANOGUI_EXPORT std::pair<bool, bool> test_10bit_edr_support();
+
 /**
  * \brief Open a native file open dialog, which allows multiple selection.
  *

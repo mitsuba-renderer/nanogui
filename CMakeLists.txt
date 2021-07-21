@@ -621,7 +621,7 @@ if (NANOGUI_BUILD_PYTHON AND NANOGUI_MASTER_PROJECT)
     -I${PROJECT_SOURCE_DIR}/ext/glfw/include
     -I${PROJECT_SOURCE_DIR}/ext/nanovg/src
     ${PROJECT_SOURCE_DIR}/include/nanogui/*.h
-    -o ${CMAKE_CURRENT_SOURCE_DIR}/python/py_doc.h
+    -o ${CMAKE_CURRENT_SOURCE_DIR}/src/python/py_doc.h
   )
 endif()
 

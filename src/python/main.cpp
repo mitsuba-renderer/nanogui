@@ -224,6 +224,7 @@ PYBIND11_MODULE(nanogui_ext, m_) {
 
     m.def("async", &nanogui::async, D(async));
     m.def("leave", &nanogui::leave, D(leave));
+    m.def("test_10bit_edr_support", &test_10bit_edr_support, D(test_10bit_edr_support));
     m.def("active", &nanogui::active, D(active));
     m.def("file_dialog", (std::string(*)(const std::vector<std::pair<std::string, std::string>> &, bool)) &nanogui::file_dialog, D(file_dialog));
     m.def("file_dialog", (std::vector<std::string>(*)(const std::vector<std::pair<std::string, std::string>> &, bool, bool)) &nanogui::file_dialog, D(file_dialog, 2));

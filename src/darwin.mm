@@ -6,6 +6,14 @@
 #  import <QuartzCore/CAMetalLayer.h>
 #endif
 
+#if !defined(MAC_OS_X_VERSION_10_15) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_15
+@interface NSScreen (ForwardDeclare)
+@property(readonly)
+    CGFloat maximumPotentialExtendedDynamicRangeColorComponentValue;
+@end
+#endif
+
 NAMESPACE_BEGIN(nanogui)
 
 std::vector<std::string>
@@ -109,11 +117,34 @@ void metal_window_init(void *nswin_, bool float_buffer) {
     layer.framebufferOnly = NO;
 }
 
+std::pair<bool, bool> metal_10bit_edr_support() {
+    NSArray<NSScreen *> * screens = [NSScreen screens];
+    bool buffer_10bit = false,
+         buffer_ext = false;
+
+    for (NSScreen * screen in screens) {
+        if ([screen canRepresentDisplayGamut: NSDisplayGamutP3]) {
+            buffer_10bit = true; // on macOS, P3 gamut is equivalent to 10 bit color depth
+        }
+
+        if ([screen respondsToSelector:@selector
+                      (maximumPotentialExtendedDynamicRangeColorComponentValue)]) {
+            if ([screen maximumPotentialExtendedDynamicRangeColorComponentValue] >= 2.f) {
+                buffer_10bit = true;
+                buffer_ext = true;
+            }
+        }
+    }
+
+    return { buffer_10bit, buffer_ext };
+}
+
 void* metal_layer(void *nswin_) {
     NSWindow *nswin = (__bridge NSWindow *) nswin_;
     CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
     return (__bridge void *) layer;
 }
+
 
 void metal_window_set_size(void *nswin_, const Vector2i &size) {
     NSWindow *nswin = (__bridge NSWindow *) nswin_;
