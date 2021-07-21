@@ -94,14 +94,15 @@ void metal_window_init(void *nswin_, bool float_buffer) {
     nswin.contentView.wantsLayer = YES;
     nswin.contentView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
     layer.device = (__bridge id<MTLDevice>) s_metal_device;
-    layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     layer.contentsScale = nswin.backingScaleFactor;
     if (float_buffer) {
         layer.wantsExtendedDynamicRangeContent = YES;
         layer.pixelFormat = MTLPixelFormatRGBA16Float;
+        layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB);
     } else {
         layer.wantsExtendedDynamicRangeContent = NO;
         layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+        layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     }
     layer.displaySyncEnabled = NO;
     layer.allowsNextDrawableTimeout = NO;
