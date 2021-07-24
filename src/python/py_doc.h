@@ -2805,6 +2805,10 @@ static const char *__doc_nanogui_Texture_texture_handle = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_upload = R"doc(Upload packed pixel data from the CPU to the GPU)doc";
 
+static const char *__doc_nanogui_Texture_upload_origin = R"doc(Upload packed pixel data to a rectangular sub-region of the texture from the CPU to the GPU)doc";
+
+static const char *__doc_nanogui_Texture_generate_mipmap = R"doc(Generates the mipmap. Done automatically upon upload if manual mipmapping is disabled)doc";
+
 static const char *__doc_nanogui_Texture_wrap_mode = R"doc(Return the wrap mode)doc";
 
 static const char *__doc_nanogui_Theme = R"doc()doc";
