@@ -42,7 +42,6 @@ public:
     const Popup *popup() const { return m_popup; }
 
     virtual void draw(NVGcontext* ctx) override;
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual void perform_layout(NVGcontext *ctx) override;
 protected:
     Popup *m_popup;

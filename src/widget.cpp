@@ -182,7 +182,7 @@ void Widget::remove_child(const Widget *widget) {
 
 void Widget::remove_child_at(int index) {
     assert(index >= 0);
-    assert(index < childCount());
+    assert(index < child_count());
     remove_child_helper(m_children.begin() + index);
 }
 
