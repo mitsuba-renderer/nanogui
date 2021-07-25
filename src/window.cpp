@@ -147,7 +147,7 @@ void Window::dispose() {
     Widget *widget = this;
     while (widget->parent())
         widget = widget->parent();
-    ((Screen *) widget)->dispose_window(this);
+    ((Screen *) widget)->remove_child(this);
 }
 
 void Window::center() {

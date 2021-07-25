@@ -944,12 +944,17 @@ void Screen::update_focus(Widget *widget) {
         move_window_to_front((Window *) window);
 }
 
-void Screen::dispose_window(Window *window) {
-    if (std::find(m_focus_path.begin(), m_focus_path.end(), window) != m_focus_path.end())
+void Screen::dispose_widget(Widget *widget) {
+    if (std::find(m_focus_path.begin(), m_focus_path.end(), widget) != m_focus_path.end())
         m_focus_path.clear();
-    if (m_drag_widget == window)
+
+    if (m_drag_widget == widget) {
         m_drag_widget = nullptr;
-    remove_child(window);
+        m_drag_active = false;
+    }
+
+    for (auto child : widget->children())
+        dispose_widget(child);
 }
 
 void Screen::center_window(Window *window) {

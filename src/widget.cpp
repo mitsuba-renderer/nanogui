@@ -177,19 +177,23 @@ void Widget::add_child(Widget * widget) {
 }
 
 void Widget::remove_child(const Widget *widget) {
-    size_t child_count = m_children.size();
-    m_children.erase(std::remove(m_children.begin(), m_children.end(), widget),
-                     m_children.end());
-    if (m_children.size() == child_count)
-        throw std::runtime_error("Widget::remove_child(): widget not found!");
-    widget->dec_ref();
+    remove_child_helper(std::find(m_children.begin(), m_children.end(), widget));
 }
 
 void Widget::remove_child_at(int index) {
-    if (index < 0 || index >= (int) m_children.size())
-        throw std::runtime_error("Widget::remove_child_at(): out of bounds!");
-    Widget *widget = m_children[index];
-    m_children.erase(m_children.begin() + index);
+    assert(index >= 0);
+    assert(index < childCount());
+    remove_child_helper(m_children.begin() + index);
+}
+
+void Widget::remove_child_helper(const std::vector<Widget *>::iterator& child_it) {
+    if (child_it == m_children.end())
+        return;
+    Widget *widget = *child_it;
+
+    screen()->dispose_widget(widget);
+    m_children.erase(child_it);
+
     widget->dec_ref();
 }
 
