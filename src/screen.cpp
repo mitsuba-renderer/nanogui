@@ -653,11 +653,15 @@ void Screen::draw_widgets() {
 
     double elapsed = glfwGetTime() - m_last_interaction;
 
-    if (elapsed > 0.5f) {
+    if (elapsed > 0.2f) {
         /* Draw tooltips */
         const Widget *widget = find_widget(m_mouse_pos);
+        while (widget && widget->tooltip().empty()) {
+            widget = widget->parent();
+        }
+
         if (widget && !widget->tooltip().empty()) {
-            int tooltip_width = 150;
+            int tooltip_width = 180;
 
             float bounds[4];
             nvgFontFace(m_nvg_context, "sans");
@@ -688,8 +692,7 @@ void Screen::draw_widgets() {
                 bounds[2] -= shift;
             }
 
-            nvgGlobalAlpha(m_nvg_context,
-                           std::min(1.0, 2 * (elapsed - 0.5f)) * 0.8);
+            nvgGlobalAlpha(m_nvg_context, 0.8);
 
             nvgBeginPath(m_nvg_context);
             nvgFillColor(m_nvg_context, Color(0, 255));
