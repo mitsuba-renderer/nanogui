@@ -46,6 +46,12 @@ bool Slider::mouse_button_event(const Vector2i &p, int /* button */, bool down, 
     if (!m_enabled)
         return false;
 
+    if (!down) {
+        if (m_final_callback)
+            m_final_callback(m_value);
+        return false;
+    }
+
     const float kr = (int) (m_size.y() * 0.4f), kshadow = 3;
     const float start_x = kr + kshadow + m_pos.x() - 1;
     const float width_x = m_size.x() - 2 * (kr + kshadow);
@@ -55,8 +61,6 @@ bool Slider::mouse_button_event(const Vector2i &p, int /* button */, bool down, 
     m_value = std::min(std::max(value, m_range.first), m_range.second);
     if (m_callback && m_value != old_value)
         m_callback(m_value);
-    if (m_final_callback && !down)
-        m_final_callback(m_value);
     return true;
 }
 
