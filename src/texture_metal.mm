@@ -78,12 +78,51 @@ void Texture::upload(const uint8_t *data) {
                 destinationLevel: 0
                destinationOrigin: MTLOriginMake(0, 0, 0)];
 
-    if (m_min_interpolation_mode == InterpolationMode::Trilinear)
-        [command_encoder generateMipmapsForTexture: texture];
+    [command_encoder endEncoding];
+    [command_buffer commit];
+    [command_buffer waitUntilCompleted];
+
+    if (!m_mipmap_manual && m_min_interpolation_mode == InterpolationMode::Trilinear)
+        generate_mipmap();
+}
+
+void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, const Vector2i& size) {
+    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
+
+    MTLTextureDescriptor *texture_desc =
+        [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: texture.pixelFormat
+                                                           width: (NSUInteger) size.x()
+                                                          height: (NSUInteger) size.y()
+                                                       mipmapped: NO];
+
+    id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
+    id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) metal_command_queue();
+    id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
+    id<MTLBlitCommandEncoder> command_encoder = [command_buffer blitCommandEncoder];
+    id<MTLTexture> temp_texture = [device newTextureWithDescriptor:texture_desc];
+
+    [temp_texture replaceRegion: MTLRegionMake2D(0, 0, (NSUInteger) size.x(), (NSUInteger) size.y())
+                  mipmapLevel: 0
+                  withBytes: data
+                  bytesPerRow: (NSUInteger) (bytes_per_pixel() * size.x())];
+
+    [command_encoder
+                 copyFromTexture: temp_texture
+                     sourceSlice: 0
+                     sourceLevel: 0
+                    sourceOrigin: MTLOriginMake(0, 0, 0)
+                      sourceSize: MTLSizeMake((NSUInteger) size.x(), (NSUInteger) size.y(), 1)
+                       toTexture: texture
+                destinationSlice: 0
+                destinationLevel: 0
+               destinationOrigin: MTLOriginMake((NSUInteger) origin.x(), (NSUInteger) origin.y(), 0)];
 
     [command_encoder endEncoding];
     [command_buffer commit];
     [command_buffer waitUntilCompleted];
+
+    if (!m_mipmap_manual && m_min_interpolation_mode == InterpolationMode::Trilinear)
+        generate_mipmap();
 }
 
 void Texture::download(uint8_t *data) {
@@ -260,6 +299,18 @@ void Texture::resize(const Vector2i &size) {
 
     id<MTLTexture> texture = [device newTextureWithDescriptor:texture_desc];
     m_texture_handle = (__bridge_retained void *) texture;
+}
+
+void Texture::generate_mipmap() {
+    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
+    id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) metal_command_queue();
+    id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
+    id<MTLBlitCommandEncoder> command_encoder = [command_buffer blitCommandEncoder];
+
+    [command_encoder generateMipmapsForTexture: texture];
+    [command_encoder endEncoding];
+    [command_buffer commit];
+    [command_buffer waitUntilCompleted];
 }
 
 NAMESPACE_END(nanogui)

@@ -117,7 +117,8 @@ public:
             InterpolationMode mag_interpolation_mode = InterpolationMode::Bilinear,
             WrapMode wrap_mode = WrapMode::ClampToEdge,
             uint8_t samples = 1,
-            uint8_t flags = (uint8_t) TextureFlags::ShaderRead);
+            uint8_t flags = (uint8_t) TextureFlags::ShaderRead,
+            bool mipmap_manual = false);
 
     /// Load an image from the given file using stb-image
     Texture(const std::string &filename,
@@ -158,11 +159,17 @@ public:
     /// Upload packed pixel data from the CPU to the GPU
     void upload(const uint8_t *data);
 
+    /// Upload packed pixel data to a rectangular sub-region of the texture from the CPU to the GPU
+    void upload_sub_region(const uint8_t *data, const Vector2i& origin, const Vector2i& size);
+
     /// Download packed pixel data from the GPU to the CPU
     void download(uint8_t *data);
 
     /// Resize the texture (discards the current contents)
     void resize(const Vector2i &size);
+
+    /// Generates the mipmap. Done automatically upon upload if manual mipmapping is disabled.
+    void generate_mipmap();
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     uint32_t texture_handle() const { return m_texture_handle; }
@@ -188,6 +195,7 @@ protected:
     uint8_t m_samples;
     uint8_t m_flags;
     Vector2i m_size;
+    bool m_mipmap_manual;
 
     #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         uint32_t m_texture_handle = 0;

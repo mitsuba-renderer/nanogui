@@ -110,6 +110,30 @@ static void texture_upload(Texture &texture, py::array array) {
     texture.upload((const uint8_t *) array.data());
 }
 
+static void texture_upload_sub_region(Texture &texture, py::array array, const Vector2i &origin) {
+    size_t n_channels = array.ndim() == 3 ? array.shape(2) : 1;
+    VariableType dtype         = dtype_to_enoki(array.dtype()),
+                 dtype_texture = (VariableType) texture.component_format();
+
+    if (array.ndim() != 2 && array.ndim() != 3)
+        throw std::runtime_error("Texture::upload_sub_region(): expected a 2 or 3-dimensional array!");
+    else if (array.shape(0) + origin.x() > texture.size().y() ||
+             array.shape(1) + origin.y() > texture.size().x())
+        throw std::runtime_error("Texture::upload_sub_region(): bounds exceed the size of the texture!");
+    else if (n_channels != texture.channels())
+        throw std::runtime_error(
+            std::string("Texture::upload_sub_region(): number of color channels in array (") +
+            std::to_string(n_channels) + ") does not match the texture (" +
+            std::to_string(texture.channels()) + ")!");
+    else if (dtype != dtype_texture)
+        throw std::runtime_error(
+            std::string("Texture::upload_sub_region(): dtype of array (") +
+            type_name(dtype) + ") does not match the texture (" +
+            type_name(dtype_texture) + ")!");
+
+    texture.upload_sub_region((const uint8_t *) array.data(), origin, {(int32_t) array.shape(0), (int32_t) array.shape(1)});
+}
+
 void register_render(py::module &m) {
     using PixelFormat       = Texture::PixelFormat;
     using ComponentFormat   = Texture::ComponentFormat;
@@ -159,12 +183,13 @@ void register_render(py::module &m) {
 
     texture
         .def(py::init<PixelFormat, ComponentFormat, const Vector2i &,
-                      InterpolationMode, InterpolationMode, WrapMode, uint8_t, uint8_t>(),
+                      InterpolationMode, InterpolationMode, WrapMode, uint8_t, uint8_t, bool>(),
              D(Texture, Texture), "pixel_format"_a, "component_format"_a, "size"_a,
              "min_interpolation_mode"_a = InterpolationMode::Bilinear,
              "mag_interpolation_mode"_a = InterpolationMode::Bilinear,
              "wrap_mode"_a = WrapMode::ClampToEdge, "samples"_a = 1,
-             "flags"_a = (uint8_t) TextureFlags::ShaderRead)
+             "flags"_a = (uint8_t) TextureFlags::ShaderRead,
+             "mipmap_manual"_a = false)
         .def(py::init<const std::string &, InterpolationMode, InterpolationMode, WrapMode>(),
              D(Texture, Texture, 2), "filename"_a,
              "min_interpolation_mode"_a = InterpolationMode::Bilinear,
@@ -182,6 +207,8 @@ void register_render(py::module &m) {
         .def("channels", &Texture::channels, D(Texture, channels))
         .def("download", &texture_download, D(Texture, download))
         .def("upload", &texture_upload, D(Texture, upload))
+        .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload, origin))
+        .def("generate_mipmap", &Texture::generate_mipmap, D(Texture, generate_mipmap))
         .def("resize", &Texture::resize, D(Texture, resize))
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         .def("texture_handle", &Texture::texture_handle)

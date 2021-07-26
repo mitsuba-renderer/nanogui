@@ -177,9 +177,9 @@ void Texture::upload(const uint8_t *data) {
                          (GLsizei) m_size.y(), 0, pixel_format_gl, component_format_gl, data));
 #endif
 
-        if (m_min_interpolation_mode == InterpolationMode::Trilinear ||
-            m_mag_interpolation_mode == InterpolationMode::Trilinear)
-            CHK(glGenerateMipmap(tex_mode));
+        if (!m_mipmap_manual && (m_min_interpolation_mode == InterpolationMode::Trilinear ||
+            m_mag_interpolation_mode == InterpolationMode::Trilinear))
+            generate_mipmap();
     } else {
 #if defined(NANOGUI_USE_OPENGL)
         CHK(glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer_handle));
@@ -194,6 +194,48 @@ void Texture::upload(const uint8_t *data) {
                                   (GLsizei) m_size.x(), (GLsizei) m_size.y()));
 #endif
     }
+}
+
+void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, const Vector2i& size) {
+    if (m_samples > 1 && data != nullptr)
+        throw std::runtime_error("Texture::upload_sub_region(): only implemented for samples=1!");
+
+    GLenum pixel_format_gl,
+           component_format_gl,
+           internal_format_gl;
+
+    gl_map_texture_format(m_pixel_format,
+                          m_component_format,
+                          pixel_format_gl,
+                          component_format_gl,
+                          internal_format_gl);
+
+    if (m_texture_handle == 0)
+        throw std::runtime_error("Texture::upload_sub_region(): not implemented for render targets!");
+
+    if (origin.x() + size.x() > m_size.x() || origin.y() + size.y() > m_size.y())
+        throw std::runtime_error("Texture::upload_sub_region(): out of bounds!");
+
+    GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+    CHK(glBindTexture(tex_mode, m_texture_handle));
+
+    if (data)
+        CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+
+#if defined(NANOGUI_USE_OPENGL)
+    if (data) {
+        CHK(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
+        CHK(glPixelStorei(GL_UNPACK_SKIP_ROWS, 0));
+        CHK(glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0));
+    }
+#endif
+
+    CHK(glTexSubImage2D(tex_mode, 0, (GLsizei) origin.x(), (GLsizei) origin.y(), (GLsizei) size.x(),
+                        (GLsizei) size.y(), pixel_format_gl, component_format_gl, data));
+
+    if (!m_mipmap_manual && (m_min_interpolation_mode == InterpolationMode::Trilinear ||
+        m_mag_interpolation_mode == InterpolationMode::Trilinear))
+        generate_mipmap();
 }
 
 void Texture::download(uint8_t *data) {
@@ -241,6 +283,12 @@ void Texture::resize(const Vector2i &size) {
         return;
     m_size = size;
     upload(nullptr);
+}
+
+void Texture::generate_mipmap() {
+    GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+    CHK(glBindTexture(tex_mode, m_texture_handle));
+    CHK(glGenerateMipmap(tex_mode));
 }
 
 static void gl_map_texture_format(Texture::PixelFormat &pixel_format,
