@@ -691,7 +691,7 @@ void Screen::draw_widgets() {
                 bounds[2] -= shift;
             }
 
-            nvgGlobalAlpha(m_nvg_context, 0.8);
+            nvgGlobalAlpha(m_nvg_context, 0.8f);
 
             nvgBeginPath(m_nvg_context);
             nvgFillColor(m_nvg_context, Color(0, 255));
