@@ -177,7 +177,7 @@ void Texture::upload(const uint8_t *data) {
                          (GLsizei) m_size.y(), 0, pixel_format_gl, component_format_gl, data));
 #endif
 
-        if (!m_manual_mipmapping && (m_min_interpolation_mode == InterpolationMode::Trilinear ||
+        if (!m_mipmap_manual && (m_min_interpolation_mode == InterpolationMode::Trilinear ||
             m_mag_interpolation_mode == InterpolationMode::Trilinear))
             generate_mipmap();
     } else {
@@ -233,7 +233,7 @@ void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, con
     CHK(glTexSubImage2D(tex_mode, 0, (GLsizei) origin.x(), (GLsizei) origin.y(), (GLsizei) size.x(),
                         (GLsizei) size.y(), pixel_format_gl, component_format_gl, data));
 
-    if (!m_manual_mipmapping && (m_min_interpolation_mode == InterpolationMode::Trilinear ||
+    if (!m_mipmap_manual && (m_min_interpolation_mode == InterpolationMode::Trilinear ||
         m_mag_interpolation_mode == InterpolationMode::Trilinear))
         generate_mipmap();
 }

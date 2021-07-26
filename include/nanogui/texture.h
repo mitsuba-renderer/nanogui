@@ -118,7 +118,7 @@ public:
             WrapMode wrap_mode = WrapMode::ClampToEdge,
             uint8_t samples = 1,
             uint8_t flags = (uint8_t) TextureFlags::ShaderRead,
-            bool manual_mipmapping = false);
+            bool mipmap_manual = false);
 
     /// Load an image from the given file using stb-image
     Texture(const std::string &filename,
@@ -195,7 +195,7 @@ protected:
     uint8_t m_samples;
     uint8_t m_flags;
     Vector2i m_size;
-    bool m_manual_mipmapping;
+    bool m_mipmap_manual;
 
     #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         uint32_t m_texture_handle = 0;

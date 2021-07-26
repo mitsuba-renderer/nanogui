@@ -189,7 +189,7 @@ void register_render(py::module &m) {
              "mag_interpolation_mode"_a = InterpolationMode::Bilinear,
              "wrap_mode"_a = WrapMode::ClampToEdge, "samples"_a = 1,
              "flags"_a = (uint8_t) TextureFlags::ShaderRead,
-             "manual_mipmapping"_a = false)
+             "mipmap_manual"_a = false)
         .def(py::init<const std::string &, InterpolationMode, InterpolationMode, WrapMode>(),
              D(Texture, Texture, 2), "filename"_a,
              "min_interpolation_mode"_a = InterpolationMode::Bilinear,

@@ -82,7 +82,7 @@ void Texture::upload(const uint8_t *data) {
     [command_buffer commit];
     [command_buffer waitUntilCompleted];
 
-    if (!m_manual_mipmapping && m_min_interpolation_mode == InterpolationMode::Trilinear)
+    if (!m_mipmap_manual && m_min_interpolation_mode == InterpolationMode::Trilinear)
         generate_mipmap();
 }
 
@@ -121,7 +121,7 @@ void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, con
     [command_buffer commit];
     [command_buffer waitUntilCompleted];
 
-    if (!m_manual_mipmapping && m_min_interpolation_mode == InterpolationMode::Trilinear)
+    if (!m_mipmap_manual && m_min_interpolation_mode == InterpolationMode::Trilinear)
         generate_mipmap();
 }
 
