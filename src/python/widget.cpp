@@ -200,10 +200,10 @@ void register_widget(nb::module_ &m) {
         .def("center", &Window::center, D(Window, center));
 
     nb::class_<Screen, Widget, PyScreen>(m, "Screen", D(Screen))
-        .def(nb::init<const Vector2i &, const std::string &, bool, bool, bool,
+        .def(nb::init<const Vector2i &, const std::string &, bool, bool, bool, bool,
                       bool, bool, unsigned int, unsigned int>(),
-            "size"_a, "caption"_a = "Unnamed", "resizable"_a = true, "fullscreen"_a = false,
-            "depth_buffer"_a = true, "stencil_buffer"_a = true,
+            "size"_a, "caption"_a = "Unnamed", "resizable"_a = true, "maximized"_a = false,
+             "fullscreen"_a = false, "depth_buffer"_a = true, "stencil_buffer"_a = true,
             "float_buffer"_a = false, "gl_major"_a = 3, "gl_minor"_a = 2, D(Screen, Screen))
         .def("caption", &Screen::caption, D(Screen, caption))
         .def("set_caption", &Screen::set_caption, D(Screen, set_caption))
@@ -219,6 +219,7 @@ void register_widget(nb::module_ &m) {
         .def("draw_contents", &Screen::draw_contents, D(Screen, draw_contents))
         .def("resize_event", &Screen::resize_event, "size"_a, D(Screen, resize_event))
         .def("resize_callback", &Screen::resize_callback)
+        .def("maximize_event", &Screen::maximize_event, D(Screen, maximize_event))
         .def("set_resize_callback", &Screen::set_resize_callback)
         .def("drop_event", &Screen::drop_event, D(Screen, drop_event))
         .def("mouse_pos", &Screen::mouse_pos, D(Screen, mouse_pos))

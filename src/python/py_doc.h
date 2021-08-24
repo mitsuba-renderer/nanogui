@@ -2014,6 +2014,8 @@ static const char *__doc_nanogui_Screen_resize_callback_event = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_resize_event = R"doc(Window resize event handler)doc";
 
+static const char *__doc_nanogui_Screen_maximize_event = R"doc(Window maximize event handler)doc";
+
 static const char *__doc_nanogui_Screen_scroll_callback_event = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_set_background = R"doc(Set the screen's background color)doc";

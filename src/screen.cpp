@@ -130,7 +130,7 @@ Screen::Screen()
 }
 
 Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
-               bool fullscreen, bool depth_buffer, bool stencil_buffer,
+               bool maximized, bool fullscreen, bool depth_buffer, bool stencil_buffer,
                bool float_buffer, unsigned int gl_major, unsigned int gl_minor)
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f), m_caption(caption),
@@ -191,6 +191,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
+    glfwWindowHint(GLFW_MAXIMIZED, maximized ? GL_TRUE : GL_FALSE);
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
     for (int i = 0; i < 2; ++i) {
@@ -388,6 +389,19 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 
             s->m_pixel_ratio = get_pixel_ratio(w);
             s->resize_callback_event(s->m_size.x(), s->m_size.y());
+        }
+    );
+
+    // notify when the screen was maximized or restored
+    glfwSetWindowMaximizeCallback(m_glfw_window,
+        [](GLFWwindow *w, int maximized) {
+            auto it = __nanogui_screens.find(w);
+            if (it == __nanogui_screens.end())
+                return;
+
+            Screen *s = it->second;
+            // maximize_event: 0 when false, 1 when true
+            s->maximize_event(maximized != 0);
         }
     );
 
@@ -949,6 +963,10 @@ void Screen::update_focus(Widget *widget) {
 
     if (window)
         move_window_to_front((Window *) window);
+}
+
+bool Screen::maximize_event(bool /*maximized*/) {
+    return false;
 }
 
 void Screen::dispose_widget(Widget *widget) {
