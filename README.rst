@@ -20,7 +20,8 @@ NanoGUI is a minimalistic cross-platform widget library for OpenGL 3+, GLES
 2/3, and Metal. It supports automatic layout generation, stateful C++ lambdas
 callbacks, a variety of useful widget types and Retina-capable rendering on
 Apple devices thanks to NanoVG_ by Mikko Mononen. Python bindings of all
-functionality are provided using pybind11_.
+functionality are provided using pybind11_. Binary wheels of NanoGUI are
+available on PyPI_.
 
 **Note**: This repository contains an improved port of the original NanoGUI_.
 The most visible change to developers is that it no longer relies on Eigen or
@@ -57,6 +58,7 @@ the the repository here incorporates the following changes:
 
 .. _NanoVG: https://github.com/memononen/NanoVG
 .. _pybind11: https://github.com/wjakob/pybind11
+.. _PyPi: https://pypi.org/project/nanogui
 .. _NanoGUI: https://github.com/wjakob/nanogui
 .. _Tekari: https://rgl.epfl.ch/tekari?url=%2F%2Frgl.s3.eu-central-1.amazonaws.com%2Fmedia%2Fuploads%2Fwjakob%2F2018%2F08%2F27%2Firidescent-paper.txt&log=1
 .. _Entypo: http://www.entypo.com
