@@ -82,6 +82,16 @@
  * 2015-12-05 experimental asm be for arm7, based on a patch by Nick Zavaritsky.
  *            use __name__ for predefined symbols, as in libecb.
  *            enable guard pages on arm, aarch64 and mips.
+ * 2016-08-27 try to disable _FORTIFY_SOURCE with CORO_SJLJ, as it
+ *            breaks setjmp/longjmp. Also disable CORO_ASM for asm by default,
+ *            as it was reported to crash.
+ * 2016-11-18 disable cfi_undefined again - backtraces might be worse, but
+ *            compile compatibility is improved.
+ * 2018-08-14 use a completely different pthread strategy that should allow
+ *            sharing of coroutines among different threads. this would
+ *            undefined behaviour before as mutexes would be unlocked on
+ *            a different thread. overall, this might be slower than
+ *            using a pipe for synchronisation, but pipes eat fd's...
  */
 
 #ifndef CORO_H
@@ -302,11 +312,11 @@ void coro_stack_free (struct coro_stack *stack);
     && !defined CORO_SJLJ    && !defined CORO_LINUX \
     && !defined CORO_IRIX    && !defined CORO_ASM \
     && !defined CORO_PTHREAD && !defined CORO_FIBER
-# if defined WINDOWS && (defined __i386__ || (__x86_64__ || defined _M_IX86 || defined _M_AMD64))
+# if defined WINDOWS && (defined __i386__ || (__x86_64__ || defined _M_IX86 || defined _M_AMD64)
 #  define CORO_ASM 1
 # elif defined WINDOWS || defined _WIN32
 #  define CORO_LOSER 1 /* you don't win with windoze */
-# elif __linux && (__i386__ || (__x86_64__ && !__ILP32__) || (__arm__ && __ARCH_ARCH == 7))
+# elif __linux && (__i386__ || (__x86_64__ && !__ILP32__) /*|| (__arm__ && __ARM_ARCH == 7)), not working */
 #  define CORO_ASM 1
 # elif defined HAVE_UCONTEXT_H
 #  define CORO_UCONTEXT 1
@@ -335,6 +345,12 @@ struct coro_context
 
 # if defined(CORO_LINUX) && !defined(_GNU_SOURCE)
 #  define _GNU_SOURCE /* for glibc */
+# endif
+
+/* try to disable well-meant but buggy checks in some libcs */
+# ifdef _FORTIFY_SOURCE
+#  undef _FORTIFY_SOURCE
+#  undef __USE_FORTIFY_LEVEL /* helps some more when too much has been included already */
 # endif
 
 # if !CORO_LOSER
@@ -395,8 +411,8 @@ extern pthread_mutex_t coro_mutex;
 
 struct coro_context
 {
+  int flags;
   pthread_cond_t cv;
-  pthread_t id;
 };
 
 void coro_transfer (coro_context *prev, coro_context *next);
