@@ -35,6 +35,7 @@ Theme::Theme(NVGcontext *ctx) {
     m_tab_control_width                  = 20;
     m_tab_button_horizontal_padding      = 10;
     m_tab_button_vertical_padding        = 2;
+    m_resize_area_offset                 = 10;
 
     m_drop_shadow                        = Color(0, 128);
     m_transparent                        = Color(0, 0);
@@ -64,7 +65,7 @@ Theme::Theme(NVGcontext *ctx) {
     m_window_header_sep_top              = m_border_light;
     m_window_header_sep_bot              = m_border_dark;
 
-    m_window_popup                       = Color(50, 255);
+    m_window_popup                       = Color(20, 180);
     m_window_popup_transparent           = Color(50, 0);
 
     m_check_box_icon                    = FA_CHECK;

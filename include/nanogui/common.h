@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 #include <functional>
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -143,6 +144,7 @@ enum class Cursor {
     Hand,       ///< The hand cursor.
     HResize,    ///< The horizontal resize cursor.
     VResize,    ///< The vertical resize cursor.
+    HVResize,    ///< The horizontal-vertical resize cursor.
     CursorCount ///< Not a cursor --- should always be last: enables a loop over the cursor types.
 };
 
@@ -184,7 +186,7 @@ class TextArea;
 class Texture;
 class Theme;
 class ToolButton;
-class VScrollPanel;
+class ScrollPanel;
 class Widget;
 class Window;
 

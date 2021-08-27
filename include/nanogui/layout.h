@@ -43,6 +43,7 @@ enum class Orientation {
  */
 class NANOGUI_EXPORT Layout : public Object {
 public:
+    Widget* SizeDebugPointer;
     /**
      * Performs applies all layout computations for the given widget.
      *
@@ -68,6 +69,7 @@ public:
      *     for icons, etc.
      */
     virtual Vector2i preferred_size(NVGcontext *ctx, const Widget *widget) const = 0;
+
 protected:
     /// Default destructor (exists for inheritance).
     virtual ~Layout() { }

@@ -16,6 +16,7 @@
 #include <nanogui/opengl.h>
 #include <nanogui/window.h>
 #include <nanogui/popup.h>
+#include <nanogui/popupbutton.h>
 #include <nanogui/metal.h>
 #include <map>
 #include <iostream>
@@ -66,27 +67,27 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-std::map<GLFWwindow *, Screen *> __nanogui_screens;
+std::map<GLFWwindow*, Screen*> __nanogui_screens;
 
 #if defined(NANOGUI_GLAD)
 static bool glad_initialized = false;
 #endif
 
 /* Calculate pixel ratio for hi-dpi devices. */
-static float get_pixel_ratio(GLFWwindow *window) {
+static float get_pixel_ratio(GLFWwindow* window) {
 #if defined(EMSCRIPTEN)
     return emscripten_get_device_pixel_ratio();
 #elif defined(_WIN32)
     HWND hwnd = glfwGetWin32Window(window);
     HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
     /* The following function only exists on Windows 8.1+, but we don't want to make that a dependency */
-    static HRESULT (WINAPI *GetDpiForMonitor_)(HMONITOR, UINT, UINT*, UINT*) = nullptr;
+    static HRESULT(WINAPI * GetDpiForMonitor_)(HMONITOR, UINT, UINT*, UINT*) = nullptr;
     static bool GetDpiForMonitor_tried = false;
 
     if (!GetDpiForMonitor_tried) {
         auto shcore = LoadLibrary(TEXT("shcore"));
         if (shcore)
-            GetDpiForMonitor_ = (decltype(GetDpiForMonitor_)) GetProcAddress(shcore, "GetDpiForMonitor");
+            GetDpiForMonitor_ = (decltype(GetDpiForMonitor_))GetProcAddress(shcore, "GetDpiForMonitor");
         GetDpiForMonitor_tried = true;
     }
 
@@ -97,10 +98,10 @@ static float get_pixel_ratio(GLFWwindow *window) {
     }
     return 1.f;
 #elif defined(__linux__)
-    (void) window;
+    (void)window;
 
     float ratio = 1.0f;
-    FILE *fp;
+    FILE* fp;
     /* Try to read the pixel ratio from KDEs config */
     auto currentDesktop = std::getenv("XDG_CURRENT_DESKTOP");
     if (currentDesktop && currentDesktop == std::string("KDE")) {
@@ -110,7 +111,8 @@ static float get_pixel_ratio(GLFWwindow *window) {
 
         if (fscanf(fp, "%f", &ratio) != 1)
             return 1;
-    } else {
+    }
+    else {
         /* Try to read the pixel ratio from GTK */
         fp = popen("gsettings get org.gnome.desktop.interface scaling-factor", "r");
         if (!fp)
@@ -133,7 +135,7 @@ static float get_pixel_ratio(GLFWwindow *window) {
 }
 
 #if defined(EMSCRIPTEN)
-static EM_BOOL nanogui_emscripten_resize_callback(int eventType, const EmscriptenUiEvent *, void *) {
+static EM_BOOL nanogui_emscripten_resize_callback(int eventType, const EmscriptenUiEvent*, void*) {
     double ratio = emscripten_get_device_pixel_ratio();
 
     int w1, h1;
@@ -144,12 +146,12 @@ static EM_BOOL nanogui_emscripten_resize_callback(int eventType, const Emscripte
 
     double w3 = w2 * ratio, h3 = h2 * ratio;
 
-    if (w1 != (int) w3 || h1 != (int) h3)
+    if (w1 != (int)w3 || h1 != (int)h3)
         emscripten_set_canvas_element_size("#canvas", w3, h3);
 
-    for (auto it: __nanogui_screens) {
-        Screen *screen = it.second;
-        screen->resize_event(Vector2i((int) w2, (int) h2));
+    for (auto it : __nanogui_screens) {
+        Screen* screen = it.second;
+        screen->resize_event(Vector2i((int)w2, (int)h2));
         screen->redraw();
     }
 
@@ -159,10 +161,10 @@ static EM_BOOL nanogui_emscripten_resize_callback(int eventType, const Emscripte
 
 Screen::Screen()
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
-      m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
-      m_shutdown_glfw(false), m_fullscreen(false), m_depth_buffer(false),
-      m_stencil_buffer(false), m_float_buffer(false), m_redraw(false) {
-    memset(m_cursors, 0, sizeof(GLFWcursor *) * (size_t) Cursor::CursorCount);
+    m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
+    m_shutdown_glfw(false), m_fullscreen(false), m_depth_buffer(false),
+    m_stencil_buffer(false), m_float_buffer(false), m_redraw(false) {
+    memset(m_cursors, 0, sizeof(GLFWcursor*) * (size_t)Cursor::CursorCount);
 #if defined(NANOGUI_USE_OPENGL)
     GLint n_stencil_bits = 0, n_depth_bits = 0;
     GLboolean float_mode;
@@ -173,18 +175,18 @@ Screen::Screen()
     CHK(glGetBooleanv(GL_RGBA_FLOAT_MODE, &float_mode));
     m_depth_buffer = n_depth_bits > 0;
     m_stencil_buffer = n_stencil_bits > 0;
-    m_float_buffer = (bool) float_mode;
+    m_float_buffer = (bool)float_mode;
 #endif
 }
 
-Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
-               bool fullscreen, bool depth_buffer, bool stencil_buffer,
-               bool float_buffer, unsigned int gl_major, unsigned int gl_minor)
+Screen::Screen(const Vector2i& size, const std::string& caption, bool resizable,
+    bool fullscreen, bool depth_buffer, bool stencil_buffer,
+    bool float_buffer, unsigned int gl_major, unsigned int gl_minor)
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
-      m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f), m_caption(caption),
-      m_shutdown_glfw(false), m_fullscreen(fullscreen), m_depth_buffer(depth_buffer),
-      m_stencil_buffer(stencil_buffer), m_float_buffer(float_buffer), m_redraw(false) {
-    memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
+    m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f), m_caption(caption),
+    m_shutdown_glfw(false), m_fullscreen(fullscreen), m_depth_buffer(depth_buffer),
+    m_stencil_buffer(stencil_buffer), m_float_buffer(float_buffer), m_redraw(false) {
+    memset(m_cursors, 0, sizeof(GLFWcursor*) * (int)Cursor::CursorCount);
 
 #if defined(NANOGUI_USE_OPENGL)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
@@ -239,38 +241,40 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 
     for (int i = 0; i < 2; ++i) {
         if (fullscreen) {
-            GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+            GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
             m_glfw_window = glfwCreateWindow(mode->width, mode->height,
-                                             caption.c_str(), monitor, nullptr);
-        } else {
+                caption.c_str(), monitor, nullptr);
+        }
+        else {
             m_glfw_window = glfwCreateWindow(size.x(), size.y(),
-                                             caption.c_str(), nullptr, nullptr);
+                caption.c_str(), nullptr, nullptr);
         }
 
         if (m_glfw_window == nullptr && m_float_buffer) {
             m_float_buffer = false;
-#if defined(GLFW_FLOATBUFFER)
+        #if defined(GLFW_FLOATBUFFER)
             glfwWindowHint(GLFW_FLOATBUFFER, GL_FALSE);
-#endif
+        #endif
             fprintf(stderr, "Could not allocate floating point framebuffer, retrying without..\n");
-        } else {
+        }
+        else {
             break;
         }
     }
 
     if (!m_glfw_window) {
-        (void) gl_major; (void) gl_minor;
-#if defined(NANOGUI_USE_OPENGL)
+        (void)gl_major; (void)gl_minor;
+    #if defined(NANOGUI_USE_OPENGL)
         throw std::runtime_error("Could not create an OpenGL " +
-                                 std::to_string(gl_major) + "." +
-                                 std::to_string(gl_minor) + " context!");
-#elif defined(NANOGUI_USE_GLES)
+            std::to_string(gl_major) + "." +
+            std::to_string(gl_minor) + " context!");
+    #elif defined(NANOGUI_USE_GLES)
         throw std::runtime_error("Could not create a GLES 2 context!");
-#elif defined(NANOGUI_USE_METAL)
+    #elif defined(NANOGUI_USE_METAL)
         throw std::runtime_error(
             "Could not create a GLFW window for rendering using Metal!");
-#endif
+    #endif
     }
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
@@ -282,7 +286,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 #if defined(NANOGUI_GLAD)
     if (!glad_initialized) {
         glad_initialized = true;
-        if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
             throw std::runtime_error("Could not initialize GLAD!");
         glGetError(); // pull and ignore unhandled errors like GL_INVALID_ENUM
     }
@@ -304,9 +308,9 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     CHK(glViewport(0, 0, m_fbsize[0], m_fbsize[1]));
     CHK(glClearColor(m_background[0], m_background[1],
-                     m_background[2], m_background[3]));
+        m_background[2], m_background[3]));
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-                GL_STENCIL_BUFFER_BIT));
+        GL_STENCIL_BUFFER_BIT));
 
     glfwSwapInterval(0);
     glfwSwapBuffers(m_glfw_window);
@@ -323,11 +327,11 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 
     /* Propagate GLFW events to the appropriate Screen instance */
     glfwSetCursorPosCallback(m_glfw_window,
-        [](GLFWwindow *w, double x, double y) {
+        [](GLFWwindow* w, double x, double y) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
-            Screen *s = it->second;
+            Screen* s = it->second;
             if (!s->m_process_events)
                 return;
             s->cursor_pos_callback_event(x, y);
@@ -335,11 +339,11 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     );
 
     glfwSetMouseButtonCallback(m_glfw_window,
-        [](GLFWwindow *w, int button, int action, int modifiers) {
+        [](GLFWwindow* w, int button, int action, int modifiers) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
-            Screen *s = it->second;
+            Screen* s = it->second;
             if (!s->m_process_events)
                 return;
             s->mouse_button_callback_event(button, action, modifiers);
@@ -347,11 +351,11 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     );
 
     glfwSetKeyCallback(m_glfw_window,
-        [](GLFWwindow *w, int key, int scancode, int action, int mods) {
+        [](GLFWwindow* w, int key, int scancode, int action, int mods) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
-            Screen *s = it->second;
+            Screen* s = it->second;
             if (!s->m_process_events)
                 return;
             s->key_callback_event(key, scancode, action, mods);
@@ -359,11 +363,11 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     );
 
     glfwSetCharCallback(m_glfw_window,
-        [](GLFWwindow *w, unsigned int codepoint) {
+        [](GLFWwindow* w, unsigned int codepoint) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
-            Screen *s = it->second;
+            Screen* s = it->second;
             if (!s->m_process_events)
                 return;
             s->char_callback_event(codepoint);
@@ -371,11 +375,11 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     );
 
     glfwSetDropCallback(m_glfw_window,
-        [](GLFWwindow *w, int count, const char **filenames) {
+        [](GLFWwindow* w, int count, const char** filenames) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
-            Screen *s = it->second;
+            Screen* s = it->second;
             if (!s->m_process_events)
                 return;
             s->drop_callback_event(count, filenames);
@@ -383,11 +387,11 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     );
 
     glfwSetScrollCallback(m_glfw_window,
-        [](GLFWwindow *w, double x, double y) {
+        [](GLFWwindow* w, double x, double y) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
-            Screen *s = it->second;
+            Screen* s = it->second;
             if (!s->m_process_events)
                 return;
             s->scroll_callback_event(x, y);
@@ -403,7 +407,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
-            Screen *s = it->second;
+            Screen* s = it->second;
 
             if (!s->m_process_events)
                 return;
@@ -414,12 +418,12 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 
     // notify when the screen has lost focus (e.g. application switch)
     glfwSetWindowFocusCallback(m_glfw_window,
-        [](GLFWwindow *w, int focused) {
+        [](GLFWwindow* w, int focused) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
 
-            Screen *s = it->second;
+            Screen* s = it->second;
             // focus_event: 0 when false, 1 when true
             s->focus_event(focused != 0);
         }
@@ -430,7 +434,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     if (depth_buffer) {
         m_depth_stencil_texture = new Texture(
             stencil_buffer ? Texture::PixelFormat::DepthStencil
-                           : Texture::PixelFormat::Depth,
+            : Texture::PixelFormat::Depth,
             Texture::ComponentFormat::Float32,
             framebuffer_size(),
             Texture::InterpolationMode::Bilinear,
@@ -443,7 +447,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 #endif
 }
 
-void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
+void Screen::initialize(GLFWwindow* window, bool shutdown_glfw) {
     m_glfw_window = window;
     m_shutdown_glfw = shutdown_glfw;
     glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
@@ -455,25 +459,26 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     double w, h;
     emscripten_get_element_css_size("#canvas", &w, &h);
     double ratio = emscripten_get_device_pixel_ratio(),
-           w2 = w * ratio, h2 = h * ratio;
+        w2 = w * ratio, h2 = h * ratio;
 
     if (w != m_size[0] || h != m_size[1]) {
         /* The canvas element is configured as width/height: auto, expand to
            the available space instead of using the specified window resolution */
         nanogui_emscripten_resize_callback(0, nullptr, nullptr);
         emscripten_set_resize_callback(nullptr, nullptr, false,
-                                       nanogui_emscripten_resize_callback);
-    } else if (w != w2 || h != h2) {
+            nanogui_emscripten_resize_callback);
+    }
+    else if (w != w2 || h != h2) {
         /* Configure for rendering on a high-DPI display */
-        emscripten_set_canvas_element_size("#canvas", (int) w2, (int) h2);
+        emscripten_set_canvas_element_size("#canvas", (int)w2, (int)h2);
         emscripten_set_element_css_size("#canvas", w, h);
     }
-    m_fbsize = Vector2i((int) w2, (int) h2);
-    m_size = Vector2i((int) w, (int) h);
+    m_fbsize = Vector2i((int)w2, (int)h2);
+    m_size = Vector2i((int)w, (int)h);
 #elif defined(_WIN32) || defined(__linux__)
     if (m_pixel_ratio != 1 && !m_fullscreen)
         glfwSetWindowSize(window, m_size.x() * m_pixel_ratio,
-                                  m_size.y() * m_pixel_ratio);
+            m_size.y() * m_pixel_ratio);
 #endif
 
 #if defined(NANOGUI_GLAD)
@@ -487,7 +492,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 
     int flags = NVG_ANTIALIAS;
     if (m_stencil_buffer)
-       flags |= NVG_STENCIL_STROKES;
+        flags |= NVG_STENCIL_STROKES;
 #if !defined(NDEBUG)
     flags |= NVG_DEBUG;
 #endif
@@ -497,12 +502,12 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 #elif defined(NANOGUI_USE_GLES)
     m_nvg_context = nvgCreateGLES2(flags);
 #elif defined(NANOGUI_USE_METAL)
-    void *nswin = glfwGetCocoaWindow(window);
+    void* nswin = glfwGetCocoaWindow(window);
     metal_window_init(nswin, m_float_buffer);
     metal_window_set_size(nswin, m_fbsize);
     m_nvg_context = nvgCreateMTL(metal_layer(),
-                                 metal_command_queue(),
-                                 flags | NVG_TRIPLE_BUFFER);
+        metal_command_queue(),
+        flags | NVG_TRIPLE_BUFFER);
 #endif
 
     if (!m_nvg_context)
@@ -518,8 +523,8 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     m_redraw = true;
     __nanogui_screens[m_glfw_window] = this;
 
-    for (size_t i = 0; i < (size_t) Cursor::CursorCount; ++i)
-        m_cursors[i] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR + (int) i);
+    for (size_t i = 0; i < (size_t)Cursor::CursorCount; ++i)
+        m_cursors[i] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR + (int)i);
 
     /// Fixes retina display-related font rendering issue (#185)
     nvgBeginFrame(m_nvg_context, m_size[0], m_size[1], m_pixel_ratio);
@@ -528,19 +533,19 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 
 Screen::~Screen() {
     __nanogui_screens.erase(m_glfw_window);
-    for (size_t i = 0; i < (size_t) Cursor::CursorCount; ++i) {
+    for (size_t i = 0; i < (size_t)Cursor::CursorCount; ++i) {
         if (m_cursors[i])
             glfwDestroyCursor(m_cursors[i]);
     }
 
     if (m_nvg_context) {
-#if defined(NANOGUI_USE_OPENGL)
+    #if defined(NANOGUI_USE_OPENGL)
         nvgDeleteGL3(m_nvg_context);
-#elif defined(NANOGUI_USE_GLES)
+    #elif defined(NANOGUI_USE_GLES)
         nvgDeleteGLES2(m_nvg_context);
-#elif defined(NANOGUI_USE_METAL)
+    #elif defined(NANOGUI_USE_METAL)
         nvgDeleteMTL(m_nvg_context);
-#endif
+    #endif
     }
 
     if (m_glfw_window && m_shutdown_glfw)
@@ -558,19 +563,19 @@ void Screen::set_visible(bool visible) {
     }
 }
 
-void Screen::set_caption(const std::string &caption) {
+void Screen::set_caption(const std::string& caption) {
     if (caption != m_caption) {
         glfwSetWindowTitle(m_glfw_window, caption.c_str());
         m_caption = caption;
     }
 }
 
-void Screen::set_size(const Vector2i &size) {
+void Screen::set_size(const Vector2i& size) {
     Widget::set_size(size);
 
 #if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
     glfwSetWindowSize(m_glfw_window, size.x() * m_pixel_ratio,
-                                     size.y() * m_pixel_ratio);
+        size.y() * m_pixel_ratio);
 #else
     glfwSetWindowSize(m_glfw_window, size.x(), size.y());
 #endif
@@ -589,7 +594,7 @@ void Screen::draw_setup() {
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     glfwMakeContextCurrent(m_glfw_window);
 #elif defined(NANOGUI_USE_METAL)
-    void *nswin = glfwGetCocoaWindow(m_glfw_window);
+    void* nswin = glfwGetCocoaWindow(m_glfw_window);
     metal_window_set_size(nswin, m_fbsize);
     m_metal_drawable = metal_window_next_drawable(nswin);
     m_metal_texture = metal_drawable_texture(m_metal_drawable);
@@ -610,7 +615,7 @@ void Screen::draw_setup() {
 #else
     /* Recompute pixel ratio on OSX */
     if (m_size[0])
-        m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
+        m_pixel_ratio = (float)m_fbsize[0] / (float)m_size[0];
 #endif
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
@@ -645,7 +650,7 @@ void Screen::draw_contents() {
 }
 
 void Screen::nvg_flush() {
-    NVGparams *params = nvgInternalParams(m_nvg_context);
+    NVGparams* params = nvgInternalParams(m_nvg_context);
     params->renderFlush(params->userPtr);
     params->renderViewport(params->userPtr, m_size[0], m_size[1], m_pixel_ratio);
 }
@@ -659,7 +664,7 @@ void Screen::draw_widgets() {
 
     if (elapsed > 0.5f) {
         /* Draw tooltips */
-        const Widget *widget = find_widget(m_mouse_pos);
+        const Widget* widget = find_widget(m_mouse_pos);
         if (widget && !widget->tooltip().empty()) {
             int tooltip_width = 150;
 
@@ -669,16 +674,16 @@ void Screen::draw_widgets() {
             nvgTextAlign(m_nvg_context, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
             nvgTextLineHeight(m_nvg_context, 1.1f);
             Vector2i pos = widget->absolute_position() +
-                           Vector2i(widget->width() / 2, widget->height() + 10);
+                Vector2i(widget->width() / 2, widget->height() + 10);
 
             nvgTextBounds(m_nvg_context, pos.x(), pos.y(),
-                          widget->tooltip().c_str(), nullptr, bounds);
+                widget->tooltip().c_str(), nullptr, bounds);
 
             int h = (bounds[2] - bounds[0]) / 2;
             if (h > tooltip_width / 2) {
                 nvgTextAlign(m_nvg_context, NVG_ALIGN_CENTER | NVG_ALIGN_TOP);
                 nvgTextBoxBounds(m_nvg_context, pos.x(), pos.y(), tooltip_width,
-                                widget->tooltip().c_str(), nullptr, bounds);
+                    widget->tooltip().c_str(), nullptr, bounds);
 
                 h = (bounds[2] - bounds[0]) / 2;
             }
@@ -693,15 +698,15 @@ void Screen::draw_widgets() {
             }
 
             nvgGlobalAlpha(m_nvg_context,
-                           std::min(1.0, 2 * (elapsed - 0.5f)) * 0.8);
+                std::min(1.0, 2 * (elapsed - 0.5f)) * 0.8);
 
             nvgBeginPath(m_nvg_context);
             nvgFillColor(m_nvg_context, Color(0, 255));
             nvgRoundedRect(m_nvg_context, bounds[0] - 4 - h, bounds[1] - 4,
-                           (int) (bounds[2] - bounds[0]) + 8,
-                           (int) (bounds[3] - bounds[1]) + 8, 3);
+                (int)(bounds[2] - bounds[0]) + 8,
+                (int)(bounds[3] - bounds[1]) + 8, 3);
 
-            int px = (int) ((bounds[2] + bounds[0]) / 2) - h + shift;
+            int px = (int)((bounds[2] + bounds[0]) / 2) - h + shift;
             nvgMoveTo(m_nvg_context, px, bounds[1] - 10);
             nvgLineTo(m_nvg_context, px + 7, bounds[1] + 1);
             nvgLineTo(m_nvg_context, px - 7, bounds[1] + 1);
@@ -710,7 +715,7 @@ void Screen::draw_widgets() {
             nvgFillColor(m_nvg_context, Color(255, 255));
             nvgFontBlur(m_nvg_context, 0.0f);
             nvgTextBox(m_nvg_context, pos.x() - h, pos.y(), tooltip_width,
-                       widget->tooltip().c_str(), nullptr);
+                widget->tooltip().c_str(), nullptr);
         }
     }
 
@@ -747,14 +752,14 @@ bool Screen::resize_event(const Vector2i& size) {
 void Screen::redraw() {
     if (!m_redraw) {
         m_redraw = true;
-        #if !defined(EMSCRIPTEN)
-            glfwPostEmptyEvent();
-        #endif
+    #if !defined(EMSCRIPTEN)
+        glfwPostEmptyEvent();
+    #endif
     }
 }
 
 void Screen::cursor_pos_callback_event(double x, double y) {
-    Vector2i p((int) x, (int) y);
+    Vector2i p((int)x, (int)y);
 
 #if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
     p = Vector2i(Vector2f(p) / m_pixel_ratio);
@@ -766,12 +771,13 @@ void Screen::cursor_pos_callback_event(double x, double y) {
 
         bool ret = false;
         if (!m_drag_active) {
-            Widget *widget = find_widget(p);
+            Widget* widget = find_widget(p);
             if (widget != nullptr && widget->cursor() != m_cursor) {
                 m_cursor = widget->cursor();
-                glfwSetCursor(m_glfw_window, m_cursors[(int) m_cursor]);
+                glfwSetCursor(m_glfw_window, m_cursors[(int)m_cursor]);
             }
-        } else {
+        }
+        else {
             ret = m_drag_widget->mouse_drag_event(
                 p - m_drag_widget->parent()->absolute_position(), p - m_mouse_pos,
                 m_mouse_state, m_modifiers);
@@ -782,7 +788,8 @@ void Screen::cursor_pos_callback_event(double x, double y) {
 
         m_mouse_pos = p;
         m_redraw |= ret;
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception& e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
 }
@@ -791,17 +798,17 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
     m_modifiers = modifiers;
     m_last_interaction = glfwGetTime();
 
-    #if defined(__APPLE__)
-        if (button == GLFW_MOUSE_BUTTON_1 && modifiers == GLFW_MOD_CONTROL)
-            button = GLFW_MOUSE_BUTTON_2;
-    #endif
+#if defined(__APPLE__)
+    if (button == GLFW_MOUSE_BUTTON_1 && modifiers == GLFW_MOD_CONTROL)
+        button = GLFW_MOUSE_BUTTON_2;
+#endif
 
     try {
         if (m_focus_path.size() > 1) {
-            const Window *window =
-                dynamic_cast<Window *>(m_focus_path[m_focus_path.size() - 2]);
+            const Window* window =
+                dynamic_cast<Window*>(m_focus_path[m_focus_path.size() - 2]);
             if (window && window->modal()) {
-                if (!window->contains(m_mouse_pos))
+                if (!window->contains(m_mouse_pos) && !m_drag_active)
                     return;
             }
         }
@@ -821,7 +828,7 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
 
         if (drop_widget != nullptr && drop_widget->cursor() != m_cursor) {
             m_cursor = drop_widget->cursor();
-            glfwSetCursor(m_glfw_window, m_cursors[(int) m_cursor]);
+            glfwSetCursor(m_glfw_window, m_cursors[(int)m_cursor]);
         }
 
         bool btn12 = button == GLFW_MOUSE_BUTTON_1 || button == GLFW_MOUSE_BUTTON_2;
@@ -833,14 +840,23 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
             m_drag_active = m_drag_widget != nullptr;
             if (!m_drag_active)
                 update_focus(nullptr);
-        } else if (m_drag_active && action == GLFW_RELEASE && btn12) {
+        }
+        else if (m_drag_active && action == GLFW_RELEASE && btn12) {
             m_drag_active = false;
             m_drag_widget = nullptr;
         }
-
-        m_redraw |= mouse_button_event(m_mouse_pos, button,
-                                       action == GLFW_PRESS, m_modifiers);
-    } catch (const std::exception &e) {
+        m_redraw |= mouse_button_event(m_mouse_pos, button, action == GLFW_PRESS, m_modifiers);
+        if (!m_redraw && m_popup_visible.size() != 0) {//close all opened popu window
+            int Size = m_popup_visible.size();
+            for (int Cnt = 0; Cnt < Size; Cnt++)
+            {
+                m_popup_visible.front()->set_pushed(false);
+                m_popup_visible.pop_front();
+            }
+            m_redraw = true;
+        }
+    }
+    catch (const std::exception& e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
 }
@@ -849,7 +865,8 @@ void Screen::key_callback_event(int key, int scancode, int action, int mods) {
     m_last_interaction = glfwGetTime();
     try {
         m_redraw |= keyboard_event(key, scancode, action, mods);
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception& e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
 }
@@ -858,12 +875,13 @@ void Screen::char_callback_event(unsigned int codepoint) {
     m_last_interaction = glfwGetTime();
     try {
         m_redraw |= keyboard_character_event(codepoint);
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception& e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
 }
 
-void Screen::drop_callback_event(int count, const char **filenames) {
+void Screen::drop_callback_event(int count, const char** filenames) {
     std::vector<std::string> arg(count);
     for (int i = 0; i < count; ++i)
         arg[i] = filenames[i];
@@ -874,15 +892,16 @@ void Screen::scroll_callback_event(double x, double y) {
     m_last_interaction = glfwGetTime();
     try {
         if (m_focus_path.size() > 1) {
-            const Window *window =
-                dynamic_cast<Window *>(m_focus_path[m_focus_path.size() - 2]);
+            const Window* window =
+                dynamic_cast<Window*>(m_focus_path[m_focus_path.size() - 2]);
             if (window && window->modal()) {
                 if (!window->contains(m_mouse_pos))
                     return;
             }
         }
         m_redraw |= scroll_event(m_mouse_pos, Vector2f(x, y));
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception& e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
 }
@@ -911,23 +930,24 @@ void Screen::resize_callback_event(int, int) {
 
     try {
         resize_event(m_size);
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception& e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
     redraw();
 }
 
-void Screen::update_focus(Widget *widget) {
-    for (auto w: m_focus_path) {
+void Screen::update_focus(Widget* widget) {
+    for (auto w : m_focus_path) {
         if (!w->focused())
             continue;
         w->focus_event(false);
     }
     m_focus_path.clear();
-    Widget *window = nullptr;
+    Widget* window = nullptr;
     while (widget) {
         m_focus_path.push_back(widget);
-        if (dynamic_cast<Window *>(widget))
+        if (dynamic_cast<Window*>(widget))
             window = widget;
         widget = widget->parent();
     }
@@ -935,10 +955,10 @@ void Screen::update_focus(Widget *widget) {
         (*it)->focus_event(true);
 
     if (window)
-        move_window_to_front((Window *) window);
+        move_window_to_front((Window*)window);
 }
 
-void Screen::dispose_window(Window *window) {
+void Screen::dispose_window(Window* window) {
     if (std::find(m_focus_path.begin(), m_focus_path.end(), window) != m_focus_path.end())
         m_focus_path.clear();
     if (m_drag_widget == window)
@@ -946,7 +966,7 @@ void Screen::dispose_window(Window *window) {
     remove_child(window);
 }
 
-void Screen::center_window(Window *window) {
+void Screen::center_window(Window* window) {
     if (window->size() == 0) {
         window->set_size(window->preferred_size(m_nvg_context));
         window->perform_layout(m_nvg_context);
@@ -954,7 +974,7 @@ void Screen::center_window(Window *window) {
     window->set_position((m_size - window->size()) / 2);
 }
 
-void Screen::move_window_to_front(Window *window) {
+void Screen::move_window_to_front(Window* window) {
     m_children.erase(std::remove(m_children.begin(), m_children.end(), window), m_children.end());
     m_children.push_back(window);
     /* Brute force topological sort (no problem for a few windows..) */
@@ -966,7 +986,7 @@ void Screen::move_window_to_front(Window *window) {
                 base_index = index;
         changed = false;
         for (size_t index = 0; index < m_children.size(); ++index) {
-            Popup *pw = dynamic_cast<Popup *>(m_children[index]);
+            Popup* pw = dynamic_cast<Popup*>(m_children[index]);
             if (pw && pw->parent_window() == window && index < base_index) {
                 move_window_to_front(pw);
                 changed = true;
@@ -981,7 +1001,7 @@ bool Screen::tooltip_fade_in_progress() const {
     if (elapsed < 0.25f || elapsed > 1.25f)
         return false;
     /* Temporarily increase the frame rate to fade in the tooltip */
-    const Widget *widget = find_widget(m_mouse_pos);
+    const Widget* widget = find_widget(m_mouse_pos);
     return widget && !widget->tooltip().empty();
 }
 
@@ -1001,7 +1021,7 @@ Texture::ComponentFormat Screen::component_format() const {
 }
 
 #if defined(NANOGUI_USE_METAL)
-void *Screen::metal_layer() const {
+void* Screen::metal_layer() const {
     return metal_window_layer(glfwGetCocoaWindow(m_glfw_window));
 }
 #endif
