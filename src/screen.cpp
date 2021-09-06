@@ -236,6 +236,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
     for (int i = 0; i < 2; ++i) {
         if (fullscreen) {
@@ -424,6 +425,19 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
             s->focus_event(focused != 0);
         }
     );
+
+    glfwSetWindowContentScaleCallback(m_glfw_window,
+        [](GLFWwindow* w, float x_scale, float y_scale) {
+            auto it = __nanogui_screens.find(w);
+            if (it == __nanogui_screens.end())
+                return;
+            Screen* s = it->second;
+
+            s->m_pixel_ratio = get_pixel_ratio(w);
+            s->resize_callback_event(s->m_size.x(), s->m_size.y());
+        }
+    );
+
     initialize(m_glfw_window, true);
 
 #if defined(NANOGUI_USE_METAL)
