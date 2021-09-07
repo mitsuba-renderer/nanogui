@@ -40,6 +40,9 @@ extern NANOGUI_EXPORT void metal_window_init(void *nswin, bool float_buffer);
 /// Set size of the drawable underlying an NSWindow
 extern NANOGUI_EXPORT void metal_window_set_size(void *nswin, const Vector2i &size);
 
+/// Set content scale of the drawable underlying an NSWindow
+extern NANOGUI_EXPORT void metal_window_set_content_scale(void *nswin, float scale);
+
 /// Return the CAMetalLayer associated with a given NSWindow
 extern NANOGUI_EXPORT void *metal_window_layer(void *nswin);
 
