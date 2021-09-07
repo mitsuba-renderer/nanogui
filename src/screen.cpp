@@ -76,54 +76,10 @@ static bool glad_initialized = false;
 static float get_pixel_ratio(GLFWwindow *window) {
 #if defined(EMSCRIPTEN)
     return emscripten_get_device_pixel_ratio();
-#elif defined(_WIN32)
-    HWND hwnd = glfwGetWin32Window(window);
-    HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-    /* The following function only exists on Windows 8.1+, but we don't want to make that a dependency */
-    static HRESULT (WINAPI *GetDpiForMonitor_)(HMONITOR, UINT, UINT*, UINT*) = nullptr;
-    static bool GetDpiForMonitor_tried = false;
-
-    if (!GetDpiForMonitor_tried) {
-        auto shcore = LoadLibrary(TEXT("shcore"));
-        if (shcore)
-            GetDpiForMonitor_ = (decltype(GetDpiForMonitor_)) GetProcAddress(shcore, "GetDpiForMonitor");
-        GetDpiForMonitor_tried = true;
-    }
-
-    if (GetDpiForMonitor_) {
-        uint32_t dpi_x, dpi_y;
-        if (GetDpiForMonitor_(monitor, 0 /* effective DPI */, &dpi_x, &dpi_y) == S_OK)
-            return dpi_x / 96.0;
-    }
-    return 1.f;
-#elif defined(__linux__)
-    (void) window;
-
-    float ratio = 1.0f;
-    FILE *fp;
-    /* Try to read the pixel ratio from KDEs config */
-    auto currentDesktop = std::getenv("XDG_CURRENT_DESKTOP");
-    if (currentDesktop && currentDesktop == std::string("KDE")) {
-        fp = popen("kreadconfig5 --group KScreen --key ScaleFactor", "r");
-        if (!fp)
-            return 1;
-
-        if (fscanf(fp, "%f", &ratio) != 1)
-            return 1;
-    } else {
-        /* Try to read the pixel ratio from GTK */
-        fp = popen("gsettings get org.gnome.desktop.interface scaling-factor", "r");
-        if (!fp)
-            return 1;
-
-        int ratioInt = 1;
-        if (fscanf(fp, "uint32 %i", &ratioInt) != 1)
-            return 1;
-        ratio = ratioInt;
-    }
-    if (pclose(fp) != 0)
-        return 1;
-    return ratio >= 1 ? ratio : 1;
+#elif defined(_WIN32) or defined(__linux__)
+    float xscale, yscale;
+    glfwGetWindowContentScale(window, &xscale, &yscale);
+    return xscale;
 #else
     Vector2i fb_size, size;
     glfwGetFramebufferSize(window, &fb_size[0], &fb_size[1]);
@@ -427,7 +383,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     );
 
     glfwSetWindowContentScaleCallback(m_glfw_window,
-        [](GLFWwindow* w, float x_scale, float y_scale) {
+        [](GLFWwindow* w, float, float) {
             auto it = __nanogui_screens.find(w);
             if (it == __nanogui_screens.end())
                 return;
