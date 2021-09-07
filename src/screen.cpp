@@ -76,15 +76,10 @@ static bool glad_initialized = false;
 static float get_pixel_ratio(GLFWwindow *window) {
 #if defined(EMSCRIPTEN)
     return emscripten_get_device_pixel_ratio();
-#elif defined(_WIN32) or defined(__linux__)
+#else
     float xscale, yscale;
     glfwGetWindowContentScale(window, &xscale, &yscale);
     return xscale;
-#else
-    Vector2i fb_size, size;
-    glfwGetFramebufferSize(window, &fb_size[0], &fb_size[1]);
-    glfwGetWindowSize(window, &size[0], &size[1]);
-    return (float) fb_size[0] / (float) size[0];
 #endif
 }
 
@@ -581,6 +576,9 @@ void Screen::draw_setup() {
     /* Recompute pixel ratio on OSX */
     if (m_size[0])
         m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
+#if defined(NANOGUI_USE_METAL)
+    metal_window_set_content_scale(nswin, m_pixel_ratio);
+#endif
 #endif
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
@@ -861,6 +859,7 @@ void Screen::resize_callback_event(int, int) {
 #if defined(EMSCRIPTEN)
     return;
 #endif
+
     Vector2i fb_size, size;
     glfwGetFramebufferSize(m_glfw_window, &fb_size[0], &fb_size[1]);
     glfwGetWindowSize(m_glfw_window, &size[0], &size[1]);

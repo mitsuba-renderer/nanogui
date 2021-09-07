@@ -4,6 +4,7 @@
 #if defined(NANOGUI_USE_METAL)
 #  import <Metal/Metal.h>
 #  import <QuartzCore/CAMetalLayer.h>
+#  import <QuartzCore/CATransaction.h>
 #endif
 
 #if !defined(MAC_OS_X_VERSION_10_15) || \
@@ -150,6 +151,20 @@ void metal_window_set_size(void *nswin_, const Vector2i &size) {
     NSWindow *nswin = (__bridge NSWindow *) nswin_;
     CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
     layer.drawableSize = CGSizeMake(size.x(), size.y());
+}
+
+void metal_window_set_content_scale(void *nswin_, float scale) {
+    NSWindow *nswin = (__bridge NSWindow *) nswin_;
+    CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
+
+    float old_scale = layer.contentsScale;
+    if (old_scale != scale) {
+        [CATransaction begin];
+        [CATransaction setValue:(id)kCFBooleanTrue
+                        forKey:kCATransactionDisableActions];
+        layer.contentsScale = scale;
+        [CATransaction commit];
+    }
 }
 
 void* metal_window_layer(void *nswin_) {
