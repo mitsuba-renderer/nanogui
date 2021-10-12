@@ -52,6 +52,7 @@ void init() {
 
     #if defined(__APPLE__)
         disable_saved_application_state_osx();
+        glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GLFW_FALSE);
     #endif
 
     glfwSetErrorCallback(
