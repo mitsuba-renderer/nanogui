@@ -25,20 +25,24 @@ Window::Window(Widget* parent, const std::string& title, bool resizable)
     m_resize_dir(Vector2i(0, 0)), m_first_size(0), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true), m_draw_shadow(true) { }
 
 Vector2i Window::preferred_size(NVGcontext* ctx) const {
-    if (m_button_panel)
-        m_button_panel->set_visible(false);
-    Vector2i result = Widget::preferred_size(ctx);
-    if (m_button_panel)
-        m_button_panel->set_visible(true);
+    if (!m_resizable || m_size == 0)// calculate prefered size only if not resizable. else keep curr size
+    {
+        if (m_button_panel)
+            m_button_panel->set_visible(false);
+        Vector2i result = Widget::preferred_size(ctx);
+        if (m_button_panel)
+            m_button_panel->set_visible(true);
 
-    nvgFontSize(ctx, 18.0f);
-    nvgFontFace(ctx, "sans-bold");
-    float bounds[4];
-    nvgTextBounds(ctx, 0, 0, m_title.c_str(), nullptr, bounds);
-    return Vector2i(
-        std::max(result.x(), (int)(bounds[2] - bounds[0] + 20)),
-        std::max(result.y(), (int)(bounds[3] - bounds[1]))
-    );
+        nvgFontSize(ctx, 18.0f);
+        nvgFontFace(ctx, "sans-bold");
+        float bounds[4];
+        nvgTextBounds(ctx, 0, 0, m_title.c_str(), nullptr, bounds);
+        return Vector2i(
+            std::max(result.x(), (int)(bounds[2] - bounds[0] + 20)),
+            std::max(result.y(), (int)(bounds[3] - bounds[1]))
+        );
+    }
+    else return m_size;
 }
 
 Widget* Window::button_panel() {
@@ -57,11 +61,18 @@ void Window::perform_layout(NVGcontext* ctx) {
         {
             ScrollPanel* CanICastScrollPanel = dynamic_cast<ScrollPanel*>(m_children[0]);
             if (CanICastScrollPanel != NULL)
-                CanICastScrollPanel->set_fixed_size(m_size - 10 - Vector2i(0, !m_title.empty() ? m_theme->m_window_header_height : 0));
+            {
+                int TempX = m_size.x() - 10;
+                int  TempY = m_size.y() - 10 - (!m_title.empty() ? m_theme->m_window_header_height : 0);
+                if (TempX < 0)TempX = 0;
+                if (TempY < 0)TempY = 0;
+                CanICastScrollPanel->set_fixed_size(Vector2i(TempX, TempY));
+            }
         }
         Widget::perform_layout(ctx);
     }
-    else {
+    else
+    {
         m_button_panel->set_visible(false);
         Widget::perform_layout(ctx);
         for (auto w : m_button_panel->children()) {

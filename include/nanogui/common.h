@@ -264,7 +264,7 @@ extern NANOGUI_EXPORT void async(const std::function<void()> &func);
  */
 extern NANOGUI_EXPORT std::string
 file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
-            bool save);
+            bool save, std::string initial_folder);
 
 /**
  * \brief Open a native file open dialog, which allows multiple selection.
@@ -283,7 +283,7 @@ file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
  */
 extern NANOGUI_EXPORT std::vector<std::string>
 file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
-            bool save, bool multiple);
+            bool save, bool multiple, std::string initial_folder);
 
 #if defined(__APPLE__) || defined(DOXYGEN_DOCUMENTATION_BUILD)
 /**

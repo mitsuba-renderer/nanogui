@@ -65,7 +65,7 @@ class ExampleApplication : public Screen {
         FileBtn->popup()->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill));
         FileBtn->set_side(Popup::Left);
 
-        Button * FolderDialogButt = new Button(FileBtn->popup(), "Folder Dialog");
+        Button* FolderDialogButt = new Button(FileBtn->popup(), "Folder Dialog");
         std::string getBackValue;
         FolderDialogButt->set_callback([&] {
             auto dlg = new FolderDialog(this, "Select Folder");
@@ -234,22 +234,22 @@ class ExampleApplication : public Screen {
             dlg->set_callback([](int result) { std::cout << "Dialog result: " << result << std::endl; });
             });
 
-    #if defined(_WIN32)
+#if defined(_WIN32)
         /// Executable is in the Debug/Release/.. subdirectory
         std::string resources_folder_path("./icons");
-    #else
+#else
         std::string resources_folder_path("./icons");
-    #endif
+#endif
         std::vector<std::pair<int, std::string>> icons;
 
-    #if !defined(EMSCRIPTEN)
+#if !defined(EMSCRIPTEN)
         try {
             icons = load_image_directory(m_nvg_context, resources_folder_path);
         }
         catch (const std::exception& e) {
             std::cerr << "Warning: " << e.what() << std::endl;
         }
-    #endif
+#endif
 
         new Label(wrapper, "Image panel & scroll panel", "sans-bold");
         PopupButton* image_panel_btn = new PopupButton(wrapper, "Image Panel");
@@ -318,12 +318,12 @@ class ExampleApplication : public Screen {
         b = new Button(tools, "Open");
         b->set_callback([&] {
             std::cout << "File dialog result: " << file_dialog(
-                { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, false) << std::endl;
+                { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, false, "c:") << std::endl;
             });
         b = new Button(tools, "Save");
         b->set_callback([&] {
             std::cout << "File dialog result: " << file_dialog(
-                { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, true) << std::endl;
+                { {"png", "Portable Network Graphics"}, {"txt", "Text file"} }, true, "c:") << std::endl;
             });
 
         new Label(wrapper, "Combo box", "sans-bold");
@@ -611,11 +611,43 @@ class ExampleApplication : public Screen {
 
         new Label(Container, "ButtonHit:");
         TreeButtonSelected = new Label(Container, "");
+
+        Widget* AdvWid = new Widget(Container);
+        AdvancedGridLayout* layout = new AdvancedGridLayout();
+        AdvWid->set_layout(layout);
+
+        layout->append_row(5, 1);
+        layout->append_row(100, 0);
+        layout->append_row(30, 1);
+        layout->append_col(20, 1);
+        layout->append_col(50, 1);
+        layout->append_col(70, 1);
+        layout->append_col(100, 1);
+
+        Button* w1 = new Button(AdvWid,"b0");
+        layout->set_anchor(w1, AdvancedGridLayout::Anchor(0, 0));
+
+        Button* b1 = new Button(AdvWid, "b1");
+        layout->set_anchor(b1, AdvancedGridLayout::Anchor(0, 1));
+
+        b1 = new Button(AdvWid, "c0");
+        layout->set_anchor(b1, AdvancedGridLayout::Anchor(1, 0));
+
+        b1 = new Button(AdvWid, "c0");
+        layout->set_anchor(b1, AdvancedGridLayout::Anchor(0, 2));
+
+        b1 = new Button(AdvWid, "c0");
+        layout->set_anchor(b1, AdvancedGridLayout::Anchor(1, 2));
+        
+        b1 = new Button(AdvWid, "c0");
+        layout->set_anchor(b1, AdvancedGridLayout::Anchor(1, 1,2,2));
+
+
     }
     void CreateControlsDefault()
     {
         Window* CtrConsole_TopWindow = new Window(this, "Console", true);
-        CtrConsole_TopWindow->set_position(Vector2i(200,200));
+        CtrConsole_TopWindow->set_position(Vector2i(200, 200));
         CtrConsole_TopWindow->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill));
         CtrConsole_TopWindow->set_visible(true);
 
@@ -699,7 +731,7 @@ public:
             /* An identifying name */
             "a_simple_shader",
 
-        #if defined(NANOGUI_USE_OPENGL)
+#if defined(NANOGUI_USE_OPENGL)
             R"(/* Vertex shader */
             #version 330
             uniform mat4 mvp;
@@ -715,7 +747,7 @@ public:
             void main() {
                 color = vec4(vec3(intensity), 1.0);
             })"
-        #elif defined(NANOGUI_USE_GLES)
+#elif defined(NANOGUI_USE_GLES)
             R"(/* Vertex shader */
             precision highp float;
             uniform mat4 mvp;
@@ -730,7 +762,7 @@ public:
             void main() {
                 gl_FragColor = vec4(vec3(intensity), 1.0);
             })"
-        #elif defined(NANOGUI_USE_METAL)
+#elif defined(NANOGUI_USE_METAL)
             R"(using namespace metal;
             struct VertexOut {
                 float4 position [[position]];
@@ -749,7 +781,7 @@ public:
             fragment float4 fragment_main(const constant float &intensity) {
                 return float4(intensity);
             })"
-        #endif
+#endif
         );
 
         uint32_t indices[3 * 2] = {
@@ -831,11 +863,11 @@ int main(int /* argc */, char** /* argv */) {
     }
     catch (const std::exception& e) {
         std::string error_msg = std::string("Caught a fatal error: ") + std::string(e.what());
-    #if defined(_WIN32)
+#if defined(_WIN32)
         MessageBoxA(nullptr, error_msg.c_str(), NULL, MB_ICONERROR | MB_OK);
-    #else
+#else
         std::cerr << error_msg << std::endl;
-    #endif
+#endif
         return -1;
     }
     catch (...) {

@@ -22,27 +22,27 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-TextBox::TextBox(Widget *parent, const std::string &value)
+TextBox::TextBox(Widget* parent, const std::string& value)
     : Widget(parent),
-      m_editable(false),
-      m_spinnable(false),
-      m_committed(true),
-      m_value(value),
-      m_default_value(""),
-      m_alignment(Alignment::Center),
-      m_units(""),
-      m_format(""),
-      m_units_image(-1),
-      m_valid_format(true),
-      m_value_temp(value),
-      m_cursor_pos(-1),
-      m_selection_pos(-1),
-      m_mouse_pos(Vector2i(-1,-1)),
-      m_mouse_down_pos(Vector2i(-1,-1)),
-      m_mouse_drag_pos(Vector2i(-1,-1)),
-      m_mouse_down_modifier(0),
-      m_text_offset(0),
-      m_last_click(0) {
+    m_editable(false),
+    m_spinnable(false),
+    m_committed(true),
+    m_value(value),
+    m_default_value(""),
+    m_alignment(Alignment::Center),
+    m_units(""),
+    m_format(""),
+    m_units_image(-1),
+    m_valid_format(true),
+    m_value_temp(value),
+    m_cursor_pos(-1),
+    m_selection_pos(-1),
+    m_mouse_pos(Vector2i(-1, -1)),
+    m_mouse_down_pos(Vector2i(-1, -1)),
+    m_mouse_drag_pos(Vector2i(-1, -1)),
+    m_mouse_down_modifier(0),
+    m_text_offset(0),
+    m_last_click(0) {
     if (m_theme) m_font_size = m_theme->m_text_box_font_size;
     m_icon_extra_scale = .8f;
 }
@@ -52,13 +52,13 @@ void TextBox::set_editable(bool editable) {
     set_cursor(editable ? Cursor::IBeam : Cursor::Arrow);
 }
 
-void TextBox::set_theme(Theme *theme) {
+void TextBox::set_theme(Theme* theme) {
     Widget::set_theme(theme);
     if (m_theme)
         m_font_size = m_theme->m_text_box_font_size;
 }
 
-Vector2i TextBox::preferred_size(NVGcontext *ctx) const {
+Vector2i TextBox::preferred_size(NVGcontext* ctx) const {
     Vector2i size(0, font_size() * 1.4f);
 
     float uw = 0;
@@ -67,7 +67,8 @@ Vector2i TextBox::preferred_size(NVGcontext *ctx) const {
         nvgImageSize(ctx, m_units_image, &w, &h);
         float uh = size[1] * 0.4f;
         uw = w * uh / h;
-    } else if (!m_units.empty()) {
+    }
+    else if (!m_units.empty()) {
         uw = nvgTextBounds(ctx, 0, 0, m_units.c_str(), nullptr, nullptr);
     }
     float sw = 0;
@@ -95,7 +96,7 @@ void TextBox::draw(NVGcontext* ctx) {
 
     nvgBeginPath(ctx);
     nvgRoundedRect(ctx, m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2,
-                   m_size.y() - 2, 3);
+        m_size.y() - 2, 3);
 
     if (m_editable && focused())
         m_valid_format ? nvgFillPaint(ctx, fg1) : nvgFillPaint(ctx, fg2);
@@ -108,7 +109,7 @@ void TextBox::draw(NVGcontext* ctx) {
 
     nvgBeginPath(ctx);
     nvgRoundedRect(ctx, m_pos.x() + 0.5f, m_pos.y() + 0.5f, m_size.x() - 1,
-                   m_size.y() - 1, 2.5f);
+        m_size.y() - 1, 2.5f);
     nvgStrokeColor(ctx, Color(0, 48));
     nvgStroke(ctx);
 
@@ -131,16 +132,17 @@ void TextBox::draw(NVGcontext* ctx) {
             m_units_image, m_enabled ? 0.7f : 0.35f);
         nvgBeginPath(ctx);
         nvgRect(ctx, m_pos.x() + m_size.x() - x_spacing - unit_width,
-                draw_pos.y() - unit_height * 0.5f, unit_width, unit_height);
+            draw_pos.y() - unit_height * 0.5f, unit_width, unit_height);
         nvgFillPaint(ctx, img_paint);
         nvgFill(ctx);
         unit_width += 2;
-    } else if (!m_units.empty()) {
+    }
+    else if (!m_units.empty()) {
         unit_width = nvgTextBounds(ctx, 0, 0, m_units.c_str(), nullptr, nullptr);
         nvgFillColor(ctx, Color(255, m_enabled ? 64 : 32));
         nvgTextAlign(ctx, NVG_ALIGN_RIGHT | NVG_ALIGN_MIDDLE);
         nvgText(ctx, m_pos.x() + m_size.x() - x_spacing, draw_pos.y(),
-                m_units.c_str(), nullptr);
+            m_units.c_str(), nullptr);
         unit_width += 2;
     }
 
@@ -160,7 +162,7 @@ void TextBox::draw(NVGcontext* ctx) {
             auto icon = utf8(m_theme->m_text_box_up_icon);
             nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
             Vector2f icon_pos(m_pos.x() + 4.f,
-                             m_pos.y() + m_size.y()/2.f - x_spacing/2.f);
+                m_pos.y() + m_size.y() / 2.f - x_spacing / 2.f);
             nvgText(ctx, icon_pos.x(), icon_pos.y(), icon.data(), nullptr);
         }
 
@@ -170,7 +172,7 @@ void TextBox::draw(NVGcontext* ctx) {
             auto icon = utf8(m_theme->m_text_box_down_icon);
             nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
             Vector2f icon_pos(m_pos.x() + 4.f,
-                             m_pos.y() + m_size.y()/2.f + x_spacing/2.f + 1.5f);
+                m_pos.y() + m_size.y() / 2.f + x_spacing / 2.f + 1.5f);
             nvgText(ctx, icon_pos.x(), icon_pos.y(), icon.data(), nullptr);
         }
 
@@ -179,18 +181,18 @@ void TextBox::draw(NVGcontext* ctx) {
     }
 
     switch (m_alignment) {
-        case Alignment::Left:
-            nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-            draw_pos.x() += x_spacing + spin_arrows_width;
-            break;
-        case Alignment::Right:
-            nvgTextAlign(ctx, NVG_ALIGN_RIGHT | NVG_ALIGN_MIDDLE);
-            draw_pos.x() += m_size.x() - unit_width - x_spacing;
-            break;
-        case Alignment::Center:
-            nvgTextAlign(ctx, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
-            draw_pos.x() += m_size.x() * 0.5f;
-            break;
+    case Alignment::Left:
+        nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+        draw_pos.x() += x_spacing + spin_arrows_width;
+        break;
+    case Alignment::Right:
+        nvgTextAlign(ctx, NVG_ALIGN_RIGHT | NVG_ALIGN_MIDDLE);
+        draw_pos.x() += m_size.x() - unit_width - x_spacing;
+        break;
+    case Alignment::Center:
+        nvgTextAlign(ctx, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+        draw_pos.x() += m_size.x() * 0.5f;
+        break;
     }
 
     nvgFontSize(ctx, font_size());
@@ -212,18 +214,19 @@ void TextBox::draw(NVGcontext* ctx) {
 
     if (m_committed) {
         nvgText(ctx, draw_pos.x(), draw_pos.y(), m_value.empty() ? m_placeholder.c_str() : m_value.c_str(), nullptr);
-    } else {
+    }
+    else {
         const int max_glyphs = 1024;
         NVGglyphPosition glyphs[max_glyphs];
         float text_bound[4];
         nvgTextBounds(ctx, draw_pos.x(), draw_pos.y(), m_value_temp.c_str(),
-                      nullptr, text_bound);
+            nullptr, text_bound);
         float lineh = text_bound[3] - text_bound[1];
 
         // find cursor positions
         int nglyphs =
             nvgTextGlyphPositions(ctx, draw_pos.x(), draw_pos.y(),
-                                  m_value_temp.c_str(), nullptr, glyphs, max_glyphs);
+                m_value_temp.c_str(), nullptr, glyphs, max_glyphs);
         update_cursor(ctx, text_bound[2], glyphs, nglyphs);
 
         // compute text offset
@@ -242,18 +245,18 @@ void TextBox::draw(NVGcontext* ctx) {
         // draw text with offset
         nvgText(ctx, draw_pos.x(), draw_pos.y(), m_value_temp.c_str(), nullptr);
         nvgTextBounds(ctx, draw_pos.x(), draw_pos.y(), m_value_temp.c_str(),
-                      nullptr, text_bound);
+            nullptr, text_bound);
 
         // recompute cursor positions
         nglyphs = nvgTextGlyphPositions(ctx, draw_pos.x(), draw_pos.y(),
-                m_value_temp.c_str(), nullptr, glyphs, max_glyphs);
+            m_value_temp.c_str(), nullptr, glyphs, max_glyphs);
 
         if (m_cursor_pos > -1) {
             if (m_selection_pos > -1) {
                 float caretx = cursor_index_to_position(m_cursor_pos, text_bound[2],
-                                                    glyphs, nglyphs);
+                    glyphs, nglyphs);
                 float selx = cursor_index_to_position(m_selection_pos, text_bound[2],
-                                                  glyphs, nglyphs);
+                    glyphs, nglyphs);
 
                 if (caretx > selx)
                     std::swap(caretx, selx);
@@ -262,7 +265,7 @@ void TextBox::draw(NVGcontext* ctx) {
                 nvgBeginPath(ctx);
                 nvgFillColor(ctx, nvgRGBA(255, 255, 255, 80));
                 nvgRect(ctx, caretx, draw_pos.y() - lineh * 0.5f, selx - caretx,
-                        lineh);
+                    lineh);
                 nvgFill(ctx);
             }
 
@@ -280,14 +283,14 @@ void TextBox::draw(NVGcontext* ctx) {
     nvgRestore(ctx);
 }
 
-bool TextBox::mouse_enter_event(const Vector2i &p, bool enter) {
+bool TextBox::mouse_enter_event(const Vector2i& p, bool enter) {
     Widget::mouse_enter_event(p, enter);
     return true;
 }
 
-bool TextBox::mouse_button_event(const Vector2i &p, int button, bool down,
-                                 int modifiers) {
-
+bool TextBox::mouse_button_event(const Vector2i& p, int button, bool down,
+    int modifiers) {
+    if (!m_enabled)return false;
     if (button == GLFW_MOUSE_BUTTON_1 && down && !m_focused) {
         if (!m_spinnable || spin_area(p) == SpinArea::None) /* not on scrolling arrows */
             request_focus();
@@ -302,16 +305,18 @@ bool TextBox::mouse_button_event(const Vector2i &p, int button, bool down,
             if (time - m_last_click < 0.25) {
                 /* Double-click: select all text */
                 m_selection_pos = 0;
-                m_cursor_pos = (int) m_value_temp.size();
+                m_cursor_pos = (int)m_value_temp.size();
                 m_mouse_down_pos = Vector2i(-1, -1);
             }
             m_last_click = time;
-        } else {
+        }
+        else {
             m_mouse_down_pos = Vector2i(-1, -1);
             m_mouse_drag_pos = Vector2i(-1, -1);
         }
         return true;
-    } else if (m_spinnable && !focused()) {
+    }
+    else if (m_spinnable && !focused()) {
         if (down) {
             if (spin_area(p) == SpinArea::None) {
                 m_mouse_down_pos = p;
@@ -327,11 +332,13 @@ bool TextBox::mouse_button_event(const Vector2i &p, int button, bool down,
                     m_mouse_down_pos = Vector2i(-1, -1);
                 }
                 m_last_click = time;
-            } else {
+            }
+            else {
                 m_mouse_down_pos = Vector2i(-1, -1);
                 m_mouse_drag_pos = Vector2i(-1, -1);
             }
-        } else {
+        }
+        else {
             m_mouse_down_pos = Vector2i(-1, -1);
             m_mouse_drag_pos = Vector2i(-1, -1);
         }
@@ -341,8 +348,8 @@ bool TextBox::mouse_button_event(const Vector2i &p, int button, bool down,
     return false;
 }
 
-bool TextBox::mouse_motion_event(const Vector2i &p, const Vector2i & /* rel */,
-                                 int /* button */, int /* modifiers */) {
+bool TextBox::mouse_motion_event(const Vector2i& p, const Vector2i& /* rel */,
+    int /* button */, int /* modifiers */) {
     m_mouse_pos = p;
 
     if (!m_editable)
@@ -355,8 +362,8 @@ bool TextBox::mouse_motion_event(const Vector2i &p, const Vector2i & /* rel */,
     return m_editable;
 }
 
-bool TextBox::mouse_drag_event(const Vector2i &p, const Vector2i &/* rel */,
-                               int /* button */, int /* modifiers */) {
+bool TextBox::mouse_drag_event(const Vector2i& p, const Vector2i&/* rel */,
+    int /* button */, int /* modifiers */) {
     m_mouse_pos = p;
     m_mouse_drag_pos = p;
 
@@ -375,7 +382,8 @@ bool TextBox::focus_event(bool focused) {
             m_value_temp = m_value;
             m_committed = false;
             m_cursor_pos = 0;
-        } else {
+        }
+        else {
             if (m_valid_format) {
                 if (m_value_temp == "")
                     m_value = m_default_value;
@@ -406,64 +414,78 @@ bool TextBox::keyboard_event(int key, int /* scancode */, int action, int modifi
                 if (modifiers == GLFW_MOD_SHIFT) {
                     if (m_selection_pos == -1)
                         m_selection_pos = m_cursor_pos;
-                } else {
+                }
+                else {
                     m_selection_pos = -1;
                 }
 
                 if (m_cursor_pos > 0)
                     m_cursor_pos--;
-            } else if (key == GLFW_KEY_RIGHT) {
+            }
+            else if (key == GLFW_KEY_RIGHT) {
                 if (modifiers == GLFW_MOD_SHIFT) {
                     if (m_selection_pos == -1)
                         m_selection_pos = m_cursor_pos;
-                } else {
+                }
+                else {
                     m_selection_pos = -1;
                 }
 
-                if (m_cursor_pos < (int) m_value_temp.length())
+                if (m_cursor_pos < (int)m_value_temp.length())
                     m_cursor_pos++;
-            } else if (key == GLFW_KEY_HOME) {
+            }
+            else if (key == GLFW_KEY_HOME) {
                 if (modifiers == GLFW_MOD_SHIFT) {
                     if (m_selection_pos == -1)
                         m_selection_pos = m_cursor_pos;
-                } else {
+                }
+                else {
                     m_selection_pos = -1;
                 }
 
                 m_cursor_pos = 0;
-            } else if (key == GLFW_KEY_END) {
+            }
+            else if (key == GLFW_KEY_END) {
                 if (modifiers == GLFW_MOD_SHIFT) {
                     if (m_selection_pos == -1)
                         m_selection_pos = m_cursor_pos;
-                } else {
+                }
+                else {
                     m_selection_pos = -1;
                 }
 
-                m_cursor_pos = (int) m_value_temp.size();
-            } else if (key == GLFW_KEY_BACKSPACE) {
+                m_cursor_pos = (int)m_value_temp.size();
+            }
+            else if (key == GLFW_KEY_BACKSPACE) {
                 if (!delete_selection()) {
                     if (m_cursor_pos > 0) {
                         m_value_temp.erase(m_value_temp.begin() + m_cursor_pos - 1);
                         m_cursor_pos--;
                     }
                 }
-            } else if (key == GLFW_KEY_DELETE) {
+            }
+            else if (key == GLFW_KEY_DELETE) {
                 if (!delete_selection()) {
-                    if (m_cursor_pos < (int) m_value_temp.length())
+                    if (m_cursor_pos < (int)m_value_temp.length())
                         m_value_temp.erase(m_value_temp.begin() + m_cursor_pos);
                 }
-            } else if (key == GLFW_KEY_ENTER) {
+            }
+            else if (key == GLFW_KEY_ENTER) {
                 if (!m_committed)
                     focus_event(false);
-            } else if (key == GLFW_KEY_A && modifiers == SYSTEM_COMMAND_MOD) {
-                m_cursor_pos = (int) m_value_temp.length();
+            }
+            else if (key == GLFW_KEY_A && modifiers == SYSTEM_COMMAND_MOD) {
+                m_cursor_pos = (int)m_value_temp.length();
                 m_selection_pos = 0;
-            } else if (key == GLFW_KEY_X && modifiers == SYSTEM_COMMAND_MOD) {
+            }
+            else if (key == GLFW_KEY_X && modifiers == SYSTEM_COMMAND_MOD) {
                 copy_selection();
                 delete_selection();
-            } else if (key == GLFW_KEY_C && modifiers == SYSTEM_COMMAND_MOD) {
+            }
+            else if (key == GLFW_KEY_C && modifiers == SYSTEM_COMMAND_MOD) {
                 copy_selection();
-            } else if (key == GLFW_KEY_V && modifiers == SYSTEM_COMMAND_MOD) {
+            }
+            else if (key == GLFW_KEY_V && modifiers == SYSTEM_COMMAND_MOD) {
                 delete_selection();
                 paste_from_clipboard();
             }
@@ -481,7 +503,7 @@ bool TextBox::keyboard_event(int key, int /* scancode */, int action, int modifi
 bool TextBox::keyboard_character_event(unsigned int codepoint) {
     if (m_editable && focused()) {
         std::ostringstream convert;
-        convert << (char) codepoint;
+        convert << (char)codepoint;
 
         delete_selection();
         m_value_temp.insert(m_cursor_pos, convert.str());
@@ -495,13 +517,14 @@ bool TextBox::keyboard_character_event(unsigned int codepoint) {
     return false;
 }
 
-bool TextBox::check_format(const std::string &input, const std::string &format) {
+bool TextBox::check_format(const std::string& input, const std::string& format) {
     if (format.empty())
         return true;
     try {
         std::regex regex(format);
         return regex_match(input, regex);
-    } catch (const std::regex_error &) {
+    }
+    catch (const std::regex_error&) {
 #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
         std::cerr << "Warning: cannot validate text field due to lacking regular expression support. please compile with GCC >= 4.9" << std::endl;
         return true;
@@ -513,7 +536,7 @@ bool TextBox::check_format(const std::string &input, const std::string &format) 
 
 bool TextBox::copy_selection() {
     if (m_selection_pos > -1) {
-        Screen *sc = screen();
+        Screen* sc = screen();
         if (!sc)
             return false;
 
@@ -524,7 +547,7 @@ bool TextBox::copy_selection() {
             std::swap(begin, end);
 
         glfwSetClipboardString(sc->glfw_window(),
-                               m_value_temp.substr(begin, end).c_str());
+            m_value_temp.substr(begin, end).c_str());
         return true;
     }
 
@@ -532,7 +555,7 @@ bool TextBox::copy_selection() {
 }
 
 void TextBox::paste_from_clipboard() {
-    Screen *sc = screen();
+    Screen* sc = screen();
     if (!sc)
         return;
     const char* cbstr = glfwGetClipboardString(sc->glfw_window());
@@ -552,7 +575,7 @@ bool TextBox::delete_selection() {
             m_value_temp.erase(m_value_temp.begin() + begin);
         else
             m_value_temp.erase(m_value_temp.begin() + begin,
-                               m_value_temp.begin() + end);
+                m_value_temp.begin() + end);
 
         m_cursor_pos = begin;
         m_selection_pos = -1;
@@ -562,27 +585,30 @@ bool TextBox::delete_selection() {
     return false;
 }
 
-void TextBox::update_cursor(NVGcontext *, float lastx,
-                           const NVGglyphPosition *glyphs, int size) {
+void TextBox::update_cursor(NVGcontext*, float lastx,
+    const NVGglyphPosition* glyphs, int size) {
     // handle mouse cursor events
     if (m_mouse_down_pos.x() != -1) {
         if (m_mouse_down_modifier == GLFW_MOD_SHIFT) {
             if (m_selection_pos == -1)
                 m_selection_pos = m_cursor_pos;
-        } else
+        }
+        else
             m_selection_pos = -1;
 
         m_cursor_pos =
             position_to_cursor_index(m_mouse_down_pos.x(), lastx, glyphs, size);
 
         m_mouse_down_pos = Vector2i(-1, -1);
-    } else if (m_mouse_drag_pos.x() != -1) {
+    }
+    else if (m_mouse_drag_pos.x() != -1) {
         if (m_selection_pos == -1)
             m_selection_pos = m_cursor_pos;
 
         m_cursor_pos =
             position_to_cursor_index(m_mouse_drag_pos.x(), lastx, glyphs, size);
-    } else {
+    }
+    else {
         // set cursor to last character
         if (m_cursor_pos == -2)
             m_cursor_pos = size;
@@ -593,7 +619,7 @@ void TextBox::update_cursor(NVGcontext *, float lastx,
 }
 
 float TextBox::cursor_index_to_position(int index, float lastx,
-                                        const NVGglyphPosition *glyphs, int size) {
+    const NVGglyphPosition* glyphs, int size) {
     float pos = 0;
     if (index == size)
         pos = lastx; // last character
@@ -604,7 +630,7 @@ float TextBox::cursor_index_to_position(int index, float lastx,
 }
 
 int TextBox::position_to_cursor_index(float posx, float lastx,
-                                      const NVGglyphPosition *glyphs, int size) {
+    const NVGglyphPosition* glyphs, int size) {
     int m_cursor_id = 0;
     float caretx = glyphs[m_cursor_id].x;
     for (int j = 1; j < size; j++) {
@@ -619,11 +645,12 @@ int TextBox::position_to_cursor_index(float posx, float lastx,
     return m_cursor_id;
 }
 
-TextBox::SpinArea TextBox::spin_area(const Vector2i & pos) {
+TextBox::SpinArea TextBox::spin_area(const Vector2i& pos) {
     if (0 <= pos.x() - m_pos.x() && pos.x() - m_pos.x() < 14.f) { /* on scrolling arrows */
         if (m_size.y() >= pos.y() - m_pos.y() && pos.y() - m_pos.y() <= m_size.y() / 2.f) { /* top part */
             return SpinArea::Top;
-        } else if (0.f <= pos.y() - m_pos.y() && pos.y() - m_pos.y() > m_size.y() / 2.f) { /* bottom part */
+        }
+        else if (0.f <= pos.y() - m_pos.y() && pos.y() - m_pos.y() > m_size.y() / 2.f) { /* bottom part */
             return SpinArea::Bottom;
         }
     }

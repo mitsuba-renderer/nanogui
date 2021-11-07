@@ -292,13 +292,13 @@ load_image_directory(NVGcontext *ctx, const std::string &path) {
     return result;
 }
 
-std::string file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes, bool save) {
-    auto result = file_dialog(filetypes, save, false);
+std::string file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes, bool save, std::string initial_folder) {
+    auto result = file_dialog(filetypes, save, false, initial_folder);
     return result.empty() ? "" : result.front();
 }
 
 #if !defined(__APPLE__)
-std::vector<std::string> file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes, bool save, bool multiple) {
+std::vector<std::string> file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes, bool save, bool multiple, std::string initial_folder) {
     static const int FILE_DIALOG_MAX_BUFFER = 16384;
     if (save && multiple) {
         throw std::invalid_argument("save and multiple must not both be true.");
@@ -310,6 +310,7 @@ std::vector<std::string> file_dialog(const std::vector<std::pair<std::string, st
     OPENFILENAME ofn;
     ZeroMemory(&ofn, sizeof(OPENFILENAME));
     ofn.lStructSize = sizeof(OPENFILENAME);
+    ofn.lpstrInitialDir = initial_folder.c_str();
     char tmp[FILE_DIALOG_MAX_BUFFER];
     ofn.lpstrFile = tmp;
     ZeroMemory(tmp, FILE_DIALOG_MAX_BUFFER);

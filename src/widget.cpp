@@ -19,7 +19,7 @@
 /* Uncomment the following definition to draw red bounding
    boxes around widgets (useful for debugging drawing code) */
 
-   // #define NANOGUI_SHOW_WIDGET_BOUNDS 1
+    #define NANOGUI_SHOW_WIDGET_BOUNDS 1
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -260,6 +260,8 @@ void Widget::draw(NVGcontext* ctx) {
         return;
 
     nvgTranslate(ctx, m_pos.x(), m_pos.y());
+
+    int NumChild = m_children.size();
 
     for (auto child : m_children) {
         if (!child->visible())
