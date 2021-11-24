@@ -58,5 +58,11 @@ extern NANOGUI_EXPORT void metal_present_and_release_drawable(void *drawable);
 /// Check whether any connected display supports 10-bit or EDR mode
 extern NANOGUI_EXPORT std::pair<bool, bool> metal_10bit_edr_support();
 
+// Create a new autorelease pool
+extern NANOGUI_EXPORT void *autorelease_init();
+
+// Drawin an autorelease pool
+extern NANOGUI_EXPORT void autorelease_release(void *pool_);
+
 NAMESPACE_END(nanogui)
 #endif

@@ -601,10 +601,18 @@ void Screen::draw_all() {
     if (m_redraw) {
         m_redraw = false;
 
+#if defined(NANOGUI_USE_METAL)
+        void *pool = autorelease_init();
+#endif
+
         draw_setup();
         draw_contents();
         draw_widgets();
         draw_teardown();
+
+#if defined(NANOGUI_USE_METAL)
+        autorelease_release(pool);
+#endif
     }
 }
 
