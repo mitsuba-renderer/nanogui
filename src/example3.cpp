@@ -183,12 +183,21 @@ int main(int /* argc */, char ** /* argv */) {
         // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
 
+#if defined(NANOGUI_USE_METAL)
+        // Important to periodically free memory used up by Metal command queues, etc.
+        void *pool = autorelease_init();
+#endif
+
         // Draw nanogui
         screen->draw_setup();
         screen->clear(); // glClear
         screen->draw_contents();
         screen->draw_widgets();
         screen->draw_teardown();
+
+#if defined(NANOGUI_USE_METAL)
+        autorelease_release(pool);
+#endif
 
         glfwSwapBuffers(window);
     }
