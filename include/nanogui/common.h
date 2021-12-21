@@ -117,7 +117,7 @@ extern "C" {
     /* Opaque handle types */
     typedef struct NVGcontext NVGcontext;
     typedef struct GLFWwindow GLFWwindow;
-};
+}
 
 struct NVGcolor;
 struct NVGglyphPosition;
