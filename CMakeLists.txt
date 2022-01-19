@@ -497,7 +497,14 @@ if (EXISTS /opt/vc/include)
   target_include_directories(nanogui PUBLIC /opt/vc/include)
 endif()
 
+# Find glfw if nanogui is not compiling it internally.
+if (NOT NANOGUI_BUILD_GLFW)
+  find_package(glfw3 CONFIG REQUIRED)
+  target_link_libraries(nanogui PUBLIC glfw)
+endif()
+
 if (NANOGUI_INSTALL)
+  include(GNUInstallDirs)
   install(TARGETS nanogui
           LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
@@ -522,6 +529,7 @@ if (NANOGUI_INSTALL)
 
   set(NANOGUI_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/cmake/nanogui")
 
+  include(CMakePackageConfigHelpers)
   configure_package_config_file(
     resources/nanoguiConfig.cmake.in nanoguiConfig.cmake
     INSTALL_DESTINATION ${NANOGUI_CMAKECONFIG_INSTALL_DIR})

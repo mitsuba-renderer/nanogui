@@ -8,6 +8,13 @@ check_required_components(nanogui)
 
 include("${CMAKE_CURRENT_LIST_DIR}/nanoguiTargets.cmake")
 
+# Find glfw if nanogui did not compile it internally.
+if (NOT @NANOGUI_BUILD_GLFW@)
+  include(CMakeFindDependencyMacro)
+  find_dependency(glfw3 CONFIG)
+  target_link_libraries(nanogui INTERFACE glfw)
+endif()
+
 if(NOT nanogui_FIND_QUIETLY)
   message(STATUS "Found nanogui: ${nanogui_INCLUDE_DIR} (found version \"${nanogui_VERSION}\" ${nanogui_VERSION_TYPE})")
 endif()
