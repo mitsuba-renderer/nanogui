@@ -427,6 +427,11 @@ add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
   include/nanogui/nanogui.h
 )
 
+# Defines various CMAKE_INSTALL_* variables used below in $<INSTALL_INTERFACE>.
+if (NANOGUI_INSTALL)
+  include(GNUInstallDirs)
+endif()
+
 target_compile_definitions(nanogui
   PUBLIC
     ${NANOGUI_BACKEND_DEFS}
@@ -504,7 +509,6 @@ if (NOT NANOGUI_BUILD_GLFW)
 endif()
 
 if (NANOGUI_INSTALL)
-  include(GNUInstallDirs)
   install(TARGETS nanogui
           LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
