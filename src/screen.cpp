@@ -432,7 +432,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
            the available space instead of using the specified window resolution */
         nanogui_emscripten_resize_callback(0, nullptr, nullptr);
         emscripten_set_resize_callback(nullptr, nullptr, false,
-                                       nanogui_emscripten_resize_callback);
+        //                                nanogui_emscripten_resize_callback);
     } else if (w != w2 || h != h2) {
         /* Configure for rendering on a high-DPI display */
         emscripten_set_canvas_element_size("#canvas", (int) w2, (int) h2);
