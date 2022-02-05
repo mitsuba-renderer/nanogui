@@ -80,7 +80,7 @@ endif()
 
 if (MSVC)
   set(NANOGUI_NATIVE_FLAGS_DEFAULT "")
-elseif (APPLE AND CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
+elseif (APPLE AND CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
   # Apple M1 compatibility
   set(NANOGUI_NATIVE_FLAGS_DEFAULT "-mcpu=apple-a12")
 else()
