@@ -497,8 +497,6 @@ bool TextBox::keyboard_event(int key, int /* scancode */, int action, int modifi
 }
 
 bool TextBox::keyboard_character_event(unsigned int codepoint) {
-    std::cout << "KCE: codepoint(int)" << codepoint << std::endl;  // XXX
-    std::cout << "KCE: codepoint(utf-8)" << utf8(codepoint) << std::endl;  // XXX
     if (m_editable && focused()) {
         std::string input = utf8(codepoint);
 
