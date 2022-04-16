@@ -331,6 +331,9 @@ extern NANOGUI_EXPORT void chdir_to_bundle_parent();
  *     The UTF32 character to be converted.
  */
 extern NANOGUI_EXPORT std::string utf8(uint32_t c);
+extern NANOGUI_EXPORT size_t utf8_charcount(char c);
+extern NANOGUI_EXPORT size_t utf8_glyphlen(const std::string& str);
+extern NANOGUI_EXPORT size_t utf8_strpos(const std::string& str, size_t glyph_pos);
 
 /// Load a directory of PNG images and upload them to the GPU (suitable for use with ImagePanel)
 extern NANOGUI_EXPORT std::vector<std::pair<int, std::string>>
