@@ -367,11 +367,12 @@ bool TextBox::mouse_drag_event(const Vector2i &p, const Vector2i &/* rel */,
 
 bool TextBox::focus_event(bool focused) {
     /*
-     * Workaround to allow input from input method (when using Japanese, etc.)
-     * When using IM, an application switch between nanogui application and
-     * IM occurs. When back from IM, focus_event() is invoked without mouse
-     * being pressed on the Screen. When such event is detected, leave focuses
-     * as it was before the application switch to the IM.
+     * Workaround to allow input from an input method (when using Japanese,
+     * etc.) When using an IM, an application switch between the nanogui
+     * application and the IM occurs. When back from the IM, focus_event()
+     * is invoked without mouse being pressed on the Screen. When such
+     * event is detected, leave focus as it was before the application
+     * switch to the IM.
      */
     Widget* p = this;
     while(p->parent() != nullptr)

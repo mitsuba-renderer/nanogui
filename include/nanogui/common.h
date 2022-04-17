@@ -323,7 +323,7 @@ extern NANOGUI_EXPORT void chdir_to_bundle_parent();
  * \brief Convert a single UTF32 character code to UTF8.
  *
  * \rst
- * NanoGUI uses this to convert the icon character codes
+ * NanoGUI uses this to convert the input and the icon character codes
  * defined in :ref:`file_nanogui_entypo.h`.
  * \endrst
  *
@@ -331,8 +331,35 @@ extern NANOGUI_EXPORT void chdir_to_bundle_parent();
  *     The UTF32 character to be converted.
  */
 extern NANOGUI_EXPORT std::string utf8(uint32_t c);
+
+/**
+ * \brief Return the number of bytes which consist an UTF8 character.
+ *
+ * \param c
+ *     The first byte of a UTF8 character.
+ */
 extern NANOGUI_EXPORT size_t utf8_charcount(char c);
+
+/**
+ * \brief Count the number of characters in an UTF8 string.
+ *
+ * \param str
+ *     The UTF8 string.
+ */
 extern NANOGUI_EXPORT size_t utf8_glyphlen(const std::string& str);
+
+/**
+ * \brief Convert the character position to the position in an UTF8 string.
+ *
+ * A character position is the position counted by character,
+ * which corresponds to one to four bytes in UTF8.
+ *
+ * \param str
+ *     The UTF8 string to find the position in.
+ *
+ * \param glyph_pos
+ *     The character position.
+ */
 extern NANOGUI_EXPORT size_t utf8_strpos(const std::string& str, size_t glyph_pos);
 
 /// Load a directory of PNG images and upload them to the GPU (suitable for use with ImagePanel)
