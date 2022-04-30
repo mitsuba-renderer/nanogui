@@ -26,6 +26,9 @@ template <typename Value_, size_t Size_> struct Array {
 
     Array() { }
 
+    Array(const Array &) = default;
+    Array& operator=(const Array &) = default;
+
     template <typename T,
               std::enable_if_t<T::Size == Size &&
                                std::is_same_v<typename T::Value, Value>, int> = 0>
