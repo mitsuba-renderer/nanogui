@@ -359,7 +359,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
         target_id = 0;
         what = GL_COLOR_BUFFER_BIT;
         if (screen->has_depth_buffer() && m_targets[0])
-            what |= GL_STENCIL_BUFFER_BIT;
+            what |= GL_DEPTH_BUFFER_BIT;
         if (screen->has_stencil_buffer() && m_targets[1])
             what |= GL_STENCIL_BUFFER_BIT;
     } else if (rp) {
