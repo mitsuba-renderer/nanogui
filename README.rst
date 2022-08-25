@@ -181,7 +181,7 @@ application.
 
 .. code-block:: cpp
 
-   /// dvar, bar, strvar, etc. are double/bool/string/.. variables
+   /// dvar, bvar, strvar, etc. are double/bool/string/.. variables
 
    FormHelper *gui = new FormHelper(screen);
    ref<Window> window = gui->add_window(Vector2i(10, 10), "Form helper example");
