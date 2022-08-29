@@ -38,7 +38,7 @@ jobs:
 
       - name: Prepare compiler environment for Windows
         if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1.10.0
+        uses: ilammy/msvc-dev-cmd@v1.11.0
         with:
           arch: x64
 
