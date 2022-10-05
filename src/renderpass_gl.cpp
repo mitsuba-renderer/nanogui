@@ -358,9 +358,13 @@ void RenderPass::blit_to(const Vector2i &src_offset,
     if (screen) {
         target_id = 0;
         what = GL_COLOR_BUFFER_BIT;
-        if (screen->has_depth_buffer() && m_targets[0])
+        // blit the depth buffer (only possible if number of samples is equal)
+        const Texture* depth_buffer = dynamic_cast<Texture*>(m_targets[0]);
+        if (screen->has_depth_buffer() && depth_buffer && depth_buffer->samples() == 1)
             what |= GL_DEPTH_BUFFER_BIT;
-        if (screen->has_stencil_buffer() && m_targets[1])
+        // blit the stencil buffer (only possible if number of samples is equal)
+        const Texture* stencil_buffer = dynamic_cast<Texture*>(m_targets[1]);
+        if (screen->has_stencil_buffer() && stencil_buffer && stencil_buffer->samples() == 1)
             what |= GL_STENCIL_BUFFER_BIT;
     } else if (rp) {
         target_id = rp->framebuffer_handle();
