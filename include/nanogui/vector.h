@@ -26,8 +26,6 @@ template <typename Value_, size_t Size_> struct Array {
 
     Array() { }
 
-    Array(const Array &) = default;
-
     template <typename T,
               std::enable_if_t<T::Size == Size &&
                                std::is_same_v<typename T::Value, Value>, int> = 0>
@@ -142,6 +140,9 @@ template <typename Value_, size_t Size_> struct Array {
         assert(i < Size);
         return v[i];
     }
+
+    Value *data() { return v; }
+    const Value *data() const { return v; }
 
     template <size_t S = Size, std::enable_if_t<(S >= 1), int> = 0>
     const Value &x() const { return v[0]; }
@@ -435,6 +436,14 @@ template <typename Value_, size_t Size_> struct Matrix {
             }
         }
         return c;
+    }
+
+    Matrix T() const {
+        Matrix result;
+        for (size_t i = 0; i < Size; ++i)
+            for (size_t j = 0; j < Size; ++j)
+                result.m[j][i] = m[i][j];
+        return result;
     }
 
     static Matrix scale(const Array<Value, Size - 1> &v) {

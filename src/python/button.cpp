@@ -7,10 +7,10 @@ DECLARE_WIDGET(ToolButton);
 DECLARE_WIDGET(PopupButton);
 DECLARE_WIDGET(CheckBox);
 
-void register_button(py::module &m) {
-    py::class_<Button, Widget, ref<Button>, PyButton> button(m, "Button", D(Button));
+void register_button(nb::module_ &m) {
+    nb::class_<Button, Widget, PyButton> button(m, "Button", D(Button));
     button
-        .def(py::init<Widget *, const std::string &, int>(),
+        .def(nb::init<Widget *, const std::string &, int>(),
              "parent"_a, "caption"_a = std::string("Untitled"), "icon"_a = 0, D(Button, Button))
         .def("caption", &Button::caption, D(Button, caption))
         .def("set_caption", &Button::set_caption, D(Button, set_caption))
@@ -33,27 +33,27 @@ void register_button(py::module &m) {
         .def("button_group", &Button::button_group, D(Button, button_group))
         .def("set_button_group", &Button::set_button_group, D(Button, set_button_group));
 
-    py::enum_<Button::IconPosition>(button, "IconPosition", D(Button, IconPosition))
+    nb::enum_<Button::IconPosition>(button, "IconPosition", D(Button, IconPosition))
         .value("Left", Button::IconPosition::Left)
         .value("LeftCentered", Button::IconPosition::LeftCentered)
         .value("RightCentered", Button::IconPosition::RightCentered)
         .value("Right", Button::IconPosition::Right);
 
-    py::enum_<Button::Flags>(button, "Flags", D(Button, Flags))
+    nb::enum_<Button::Flags>(button, "Flags", D(Button, Flags))
         .value("NormalButton", Button::Flags::NormalButton)
         .value("RadioButton", Button::Flags::RadioButton)
         .value("ToggleButton", Button::Flags::ToggleButton)
         .value("PopupButton", Button::Flags::PopupButton)
         .value("MenuButton", Button::Flags::MenuButton);
 
-    py::class_<ToolButton, Button, ref<ToolButton>, PyToolButton>(m, "ToolButton", D(ToolButton))
-        .def(py::init<Widget *,int, const std::string &>(),
+    nb::class_<ToolButton, Button, PyToolButton>(m, "ToolButton", D(ToolButton))
+        .def(nb::init<Widget *,int, const std::string &>(),
              "parent"_a, "icon"_a, "caption"_a = std::string(""),
              D(ToolButton, ToolButton));
 
-    py::class_<PopupButton, Button, ref<PopupButton>, PyPopupButton> popup_btn(m, "PopupButton", D(PopupButton));
+    nb::class_<PopupButton, Button, PyPopupButton> popup_btn(m, "PopupButton", D(PopupButton));
     popup_btn
-        .def(py::init<Widget *, const std::string&, int>(),
+        .def(nb::init<Widget *, const std::string&, int>(),
                 "parent"_a, "caption"_a = std::string("Untitled"),
                 "button_icon"_a = 0, D(PopupButton, PopupButton))
         .def("popup", (Popup*(PopupButton::*)(void)) &PopupButton::popup, D(PopupButton, popup))
@@ -62,11 +62,11 @@ void register_button(py::module &m) {
         .def("side", &PopupButton::side, D(PopupButton, side))
         .def("set_side", &PopupButton::set_side, D(PopupButton, set_side));
 
-    py::class_<CheckBox, Widget, ref<CheckBox>, PyCheckBox>(m, "CheckBox", D(CheckBox))
-        .def(py::init<Widget *, const std::string &>(), "parent"_a,
+    nb::class_<CheckBox, Widget, PyCheckBox>(m, "CheckBox", D(CheckBox))
+        .def(nb::init<Widget *, const std::string &>(), "parent"_a,
              "caption"_a = std::string("Untitled"),
              D(CheckBox, CheckBox))
-        .def(py::init<Widget *, const std::string &, const std::function<void(bool)>&>(),
+        .def(nb::init<Widget *, const std::string &, const std::function<void(bool)>&>(),
              "parent"_a, "caption"_a, "callback"_a,
              D(CheckBox, CheckBox))
         .def("caption", &CheckBox::caption, D(CheckBox, caption))

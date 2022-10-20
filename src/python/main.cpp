@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <nanobind/stl/pair.h>
 
 #if defined(__APPLE__) || defined(__linux__)
 #  include <coro.h>
@@ -37,23 +38,23 @@ namespace {
 }
 #endif
 
-extern void register_vector(py::module &m);
-extern void register_glfw(py::module &m);
-extern void register_entypo(py::module &m);
-extern void register_eigen(py::module &m);
-extern void register_widget(py::module &m);
-extern void register_layout(py::module &m);
-extern void register_basics(py::module &m);
-extern void register_button(py::module &m);
-extern void register_tabs(py::module &m);
-extern void register_textbox(py::module &m);
-extern void register_textarea(py::module &m);
-extern void register_theme(py::module &m);
-extern void register_canvas(py::module &m);
-extern void register_formhelper(py::module &m);
-extern void register_misc(py::module &m);
-extern void register_nanovg(py::module &m);
-extern void register_render(py::module &m);
+extern void register_vector(nb::module_ &m);
+extern void register_glfw(nb::module_ &m);
+extern void register_entypo(nb::module_ &m);
+extern void register_eigen(nb::module_ &m);
+extern void register_widget(nb::module_ &m);
+extern void register_layout(nb::module_ &m);
+extern void register_basics(nb::module_ &m);
+extern void register_button(nb::module_ &m);
+extern void register_tabs(nb::module_ &m);
+extern void register_textbox(nb::module_ &m);
+extern void register_textarea(nb::module_ &m);
+extern void register_theme(nb::module_ &m);
+extern void register_canvas(nb::module_ &m);
+extern void register_formhelper(nb::module_ &m);
+extern void register_misc(nb::module_ &m);
+extern void register_nanovg(nb::module_ &m);
+extern void register_render(nb::module_ &m);
 
 class MainloopHandle;
 static MainloopHandle *handle = nullptr;
@@ -83,15 +84,16 @@ public:
 #if defined(__APPLE__) || defined(__linux__)
         /* Release GIL and disassociate from thread state (which was originally
            associated with the main Python thread) */
-        py::gil_scoped_release thread_state(true);
+        // nb::gil_scoped_release thread_state(true);
+        nb::gil_scoped_release thread_state;
 
         coro_transfer(&ctx_main, &ctx_thread);
         coro_stack_free(&stack);
 
         /* Destroy the thread state that was created in mainloop() */
         {
-            py::gil_scoped_acquire acquire;
-            acquire.dec_ref();
+            nb::gil_scoped_acquire acquire;
+            // acquire.dec_ref();
         }
 #endif
 
@@ -114,9 +116,9 @@ static void sigint_handler(int sig) {
 }
 #endif
 
-PYBIND11_MODULE(nanogui_ext, m_) {
+NB_MODULE(nanogui_ext, m_) {
     (void) m_;
-    py::module_ m = py::module::import("nanogui");
+    nb::module_ m = nb::module_::import_("nanogui");
     m.attr("__doc__") = "NanoGUI plugin";
 
 #if defined(NANOGUI_USE_OPENGL)
@@ -129,14 +131,14 @@ PYBIND11_MODULE(nanogui_ext, m_) {
     m.attr("api") = "metal";
 #endif
 
-    py::class_<MainloopHandle>(m, "MainloopHandle")
+    nb::class_<MainloopHandle>(m, "MainloopHandle")
         .def("join", &MainloopHandle::join);
 
     m.def("init", &nanogui::init, D(init));
     m.def("shutdown", &nanogui::shutdown, D(shutdown));
 
-    m.def("mainloop", [](float refresh, py::object detach) -> MainloopHandle* {
-        if (!detach.is(py::none())) {
+    m.def("mainloop", [](float refresh, nb::object detach) -> MainloopHandle* {
+        if (!detach.is(nb::none())) {
             if (handle)
                 throw std::runtime_error("Main loop is already running!");
 
@@ -147,14 +149,15 @@ PYBIND11_MODULE(nanogui_ext, m_) {
             #if defined(__APPLE__) || defined(__linux__)
                 /* Release GIL and completely disassociate the calling thread
                    from its associated Python thread state data structure */
-                py::gil_scoped_release thread_state(true);
+                // nb::gil_scoped_release thread_state(true);
+                nb::gil_scoped_release thread_state;
 
                 /* Create a new thread state for the nanogui main loop
                    and reference it once (to keep it from being constructed and
                    destructed at every callback invocation) */
                 {
-                    py::gil_scoped_acquire acquire;
-                    acquire.inc_ref();
+                    nb::gil_scoped_acquire acquire;
+                    // acquire.inc_ref();
                 }
 
                 handle->thread = std::thread([]{
@@ -205,7 +208,7 @@ PYBIND11_MODULE(nanogui_ext, m_) {
 
             return handle;
         } else {
-            py::gil_scoped_release release;
+            nb::gil_scoped_release release;
 
             #if defined(__APPLE__) || defined(__linux__)
                 sigint_handler_prev = signal(SIGINT, sigint_handler);
@@ -219,8 +222,8 @@ PYBIND11_MODULE(nanogui_ext, m_) {
 
             return nullptr;
         }
-    }, "refresh"_a = -1, "detach"_a = py::none(),
-       D(mainloop), py::keep_alive<0, 2>());
+    }, "refresh"_a = -1, "detach"_a = nb::none(),
+       D(mainloop), nb::keep_alive<0, 2>());
 
     m.def("async", &nanogui::async, D(async));
     m.def("leave", &nanogui::leave, D(leave));
@@ -234,7 +237,7 @@ PYBIND11_MODULE(nanogui_ext, m_) {
     m.def("utf8", [](int c) { return std::string(utf8(c).data()); }, D(utf8));
     m.def("load_image_directory", &nanogui::load_image_directory, D(load_image_directory));
 
-    py::enum_<Cursor>(m, "Cursor", D(Cursor))
+    nb::enum_<Cursor>(m, "Cursor", D(Cursor))
         .value("Arrow", Cursor::Arrow)
         .value("IBeam", Cursor::IBeam)
         .value("Crosshair", Cursor::Crosshair)
@@ -242,13 +245,13 @@ PYBIND11_MODULE(nanogui_ext, m_) {
         .value("HResize", Cursor::HResize)
         .value("VResize", Cursor::VResize);
 
-    py::enum_<Alignment>(m, "Alignment", D(Alignment))
+    nb::enum_<Alignment>(m, "Alignment", D(Alignment))
         .value("Minimum", Alignment::Minimum)
         .value("Middle", Alignment::Middle)
         .value("Maximum", Alignment::Maximum)
         .value("Fill", Alignment::Fill);
 
-    py::enum_<Orientation>(m, "Orientation", D(Orientation))
+    nb::enum_<Orientation>(m, "Orientation", D(Orientation))
         .value("Horizontal", Orientation::Horizontal)
         .value("Vertical", Orientation::Vertical);
 

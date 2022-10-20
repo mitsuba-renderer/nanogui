@@ -2,12 +2,12 @@
 
 #include "python.h"
 
-void register_eigen(py::module &m) {
-    py::class_<Color>(m, "Color", D(Color))
-        .def(py::init<int, int, int, int>(), D(Color, Color, 7))
-        .def(py::init<int, int>(), D(Color, Color, 5))
-        .def(py::init<float, float, float, float>(), D(Color, Color, 7))
-        .def(py::init<float, float>(), D(Color, Color, 5))
+void register_eigen(nb::module_ &m) {
+    nb::class_<Color>(m, "Color", D(Color))
+        .def(nb::init<int, int, int, int>(), D(Color, Color, 7))
+        .def(nb::init<int, int>(), D(Color, Color, 5))
+        .def(nb::init<float, float, float, float>(), D(Color, Color, 7))
+        .def(nb::init<float, float>(), D(Color, Color, 5))
         .def("contrasting_color", &Color::contrasting_color,
              D(Color, contrasting_color))
         .def_property("r", [](const Color &c) { return c.r(); },

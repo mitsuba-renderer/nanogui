@@ -9,10 +9,10 @@ DECLARE_WIDGET(TextBox);
 DECLARE_WIDGET(DoubleBox);
 DECLARE_WIDGET(Int64Box);
 
-void register_textbox(py::module &m) {
-    py::class_<TextBox, Widget, ref<TextBox>, PyTextBox> tbox(m, "TextBox", D(TextBox));
+void register_textbox(nb::module_ &m) {
+    nb::class_<TextBox, Widget, PyTextBox> tbox(m, "TextBox", D(TextBox));
     tbox
-        .def(py::init<Widget *, const std::string &>(), "parent"_a,
+        .def(nb::init<Widget *, const std::string &>(), "parent"_a,
             "value"_a = std::string("Untitled"), D(TextBox, TextBox))
         .def("editable", &TextBox::editable, D(TextBox, editable))
         .def("set_editable", &TextBox::set_editable, D(TextBox, set_editable))
@@ -35,13 +35,13 @@ void register_textbox(py::module &m) {
         .def("callback", &TextBox::callback, D(TextBox, callback))
         .def("set_callback", &TextBox::set_callback, D(TextBox, set_callback));
 
-    py::enum_<TextBox::Alignment>(tbox, "Alignment", D(TextBox, Alignment))
+    nb::enum_<TextBox::Alignment>(tbox, "Alignment", D(TextBox, Alignment))
         .value("Left", TextBox::Alignment::Left)
         .value("Center", TextBox::Alignment::Center)
         .value("Right", TextBox::Alignment::Right);
 
-    py::class_<Int64Box, TextBox, ref<Int64Box>, PyInt64Box>(m, "IntBox", D(IntBox))
-        .def(py::init<Widget *, int64_t>(), "parent"_a, "value"_a = (int64_t) 0, D(IntBox, IntBox))
+    nb::class_<Int64Box, TextBox, PyInt64Box>(m, "IntBox", D(IntBox))
+        .def(nb::init<Widget *, int64_t>(), "parent"_a, "value"_a = (int64_t) 0, D(IntBox, IntBox))
         .def("value", &Int64Box::value, D(IntBox, value))
         .def("set_value", (void (Int64Box::*)(int64_t)) &Int64Box::set_value, D(IntBox, set_value))
         .def("set_callback", (void (Int64Box::*)(const std::function<void(int64_t)>&))
@@ -51,8 +51,8 @@ void register_textbox(py::module &m) {
         .def("set_max_value", &Int64Box::set_max_value, D(IntBox, set_max_value))
         .def("set_min_value", &Int64Box::set_min_max_values, D(IntBox, set_min_max_values));
 
-    py::class_<DoubleBox, TextBox, ref<DoubleBox>, PyDoubleBox>(m, "FloatBox", D(FloatBox))
-        .def(py::init<Widget *, double>(), "parent"_a, "value"_a = 0.0)
+    nb::class_<DoubleBox, TextBox, PyDoubleBox>(m, "FloatBox", D(FloatBox))
+        .def(nb::init<Widget *, double>(), "parent"_a, "value"_a = 0.0)
         .def("value", &DoubleBox::value, D(FloatBox, value))
         .def("set_value", (void (DoubleBox::*)(double)) &DoubleBox::set_value, D(FloatBox, set_value))
         .def("set_callback", (void (DoubleBox::*)(const std::function<void(double)>&))

@@ -6,7 +6,7 @@ import sys, re, os
 
 try:
     from skbuild import setup
-    import pybind11
+    import nanobind
 except ImportError:
     print("The preferred way to invoke 'setup.py' is via pip, as in 'pip "
           "install .'. If you wish to run the setup script directly, you must "
@@ -28,7 +28,7 @@ long_description = \
 2/3, and Metal. It supports automatic layout generation, stateful C++ lambdas
 callbacks, a variety of useful widget types and Retina-capable rendering on
 Apple devices thanks to NanoVG by Mikko Mononen. Python bindings of all
-functionality are provided using pybind11.'''
+functionality are provided using nanobind.'''
 
 setup(
     name="nanogui",

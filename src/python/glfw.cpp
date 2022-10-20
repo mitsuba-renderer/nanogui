@@ -2,11 +2,11 @@
 
 #include "python.h"
 
-void register_glfw(py::module &m) {
+void register_glfw(nb::module_ &m) {
     /* GLFW constants + functions */
     {
-        #define C(name) g.attr(#name) = py::int_(GLFW_##name);
-        py::module g = m.def_submodule("glfw");
+        #define C(name) g.attr(#name) = nb::int_(GLFW_##name);
+        nb::module_ g = m.def_submodule("glfw");
         C(KEY_UNKNOWN); C(KEY_SPACE); C(KEY_APOSTROPHE); C(KEY_COMMA);
         C(KEY_MINUS); C(KEY_PERIOD); C(KEY_SLASH); C(KEY_0); C(KEY_1);
         C(KEY_2); C(KEY_3); C(KEY_4); C(KEY_5); C(KEY_6); C(KEY_7); C(KEY_8);

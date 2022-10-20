@@ -16,7 +16,8 @@ endif()
 
 add_definitions(-DNANOGUI_PYTHON)
 
-pybind11_add_module(nanogui-python MODULE THIN_LTO OPT_SIZE
+nanobind_add_module(nanogui-python MODULE
+  NB_STATIC
   main.cpp
   glfw.cpp
   icons.cpp

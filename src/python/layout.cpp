@@ -8,14 +8,14 @@ DECLARE_LAYOUT(BoxLayout);
 DECLARE_LAYOUT(GridLayout);
 DECLARE_LAYOUT(AdvancedGridLayout);
 
-void register_layout(py::module &m) {
-    py::class_<Layout, ref<Layout>, PyLayout> layout(m, "Layout", D(Layout));
+void register_layout(nb::module_ &m) {
+    nb::class_<Layout, Object, PyLayout> layout(m, "Layout", D(Layout));
     layout
         .def("preferred_size", &Layout::preferred_size, D(Layout, preferred_size))
         .def("perform_layout", &Layout::perform_layout, D(Layout, perform_layout));
 
-    py::class_<BoxLayout, Layout, ref<BoxLayout>, PyBoxLayout>(m, "BoxLayout", D(BoxLayout))
-        .def(py::init<Orientation, Alignment, int, int>(),
+    nb::class_<BoxLayout, Layout, PyBoxLayout>(m, "BoxLayout", D(BoxLayout))
+        .def(nb::init<Orientation, Alignment, int, int>(),
              "orientation"_a, "alignment"_a = Alignment::Middle,
              "margin"_a = 0, "spacing"_a = 0, D(BoxLayout, BoxLayout))
         .def("orientation", &BoxLayout::orientation, D(BoxLayout, orientation))
@@ -27,8 +27,8 @@ void register_layout(py::module &m) {
         .def("spacing", &BoxLayout::spacing, D(BoxLayout, spacing))
         .def("set_spacing", &BoxLayout::set_spacing, D(BoxLayout, set_spacing));
 
-    py::class_<GroupLayout, Layout, ref<GroupLayout>, PyGroupLayout>(m, "GroupLayout", D(GroupLayout))
-        .def(py::init<int, int, int, int>(),
+    nb::class_<GroupLayout, Layout, PyGroupLayout>(m, "GroupLayout", D(GroupLayout))
+        .def(nb::init<int, int, int, int>(),
              "margin"_a = 15, "spacing"_a = 6,
              "group_spacing"_a = 14, "group_indent"_a = 20,
              D(GroupLayout, GroupLayout))
@@ -41,8 +41,8 @@ void register_layout(py::module &m) {
         .def("group_spacing", &GroupLayout::group_spacing, D(GroupLayout, group_spacing))
         .def("set_group_spacing", &GroupLayout::set_group_spacing, D(GroupLayout, set_group_spacing));
 
-    py::class_<GridLayout, Layout, ref<GridLayout>, PyGridLayout>(m, "GridLayout", D(GridLayout))
-        .def(py::init<Orientation, int, Alignment, int, int>(),
+    nb::class_<GridLayout, Layout, PyGridLayout>(m, "GridLayout", D(GridLayout))
+        .def(nb::init<Orientation, int, Alignment, int, int>(),
              "orientation"_a = Orientation::Horizontal,
              "resolution"_a = 2, "alignment"_a = Alignment::Middle,
              "margin"_a = 0, "spacing"_a = 0,
@@ -62,11 +62,11 @@ void register_layout(py::module &m) {
         .def("set_col_alignment", (void(GridLayout::*)(const std::vector<Alignment>&)) &GridLayout::set_col_alignment/*, D(GridLayout, set_col_alignment, 2)*/)
         .def("set_row_alignment", (void(GridLayout::*)(const std::vector<Alignment>&)) &GridLayout::set_row_alignment/*, D(GridLayout, set_row_alignment, 2)*/);
 
-    py::class_<AdvancedGridLayout, Layout, ref<AdvancedGridLayout>, PyAdvancedGridLayout> adv_grid_layout(
+    nb::class_<AdvancedGridLayout, Layout, PyAdvancedGridLayout> adv_grid_layout(
         m, "AdvancedGridLayout", D(AdvancedGridLayout));
 
     adv_grid_layout
-        .def(py::init<const std::vector<int> &, const std::vector<int> &>(),
+        .def(nb::init<const std::vector<int> &, const std::vector<int> &>(),
              "widths"_a, "heights"_a,
              D(AdvancedGridLayout, AdvancedGridLayout))
         .def("row_count", &AdvancedGridLayout::row_count, D(AdvancedGridLayout, row_count))
@@ -82,13 +82,13 @@ void register_layout(py::module &m) {
         .def("set_anchor", &AdvancedGridLayout::set_anchor, D(AdvancedGridLayout, set_anchor))
         .def("anchor", &AdvancedGridLayout::anchor, D(AdvancedGridLayout, anchor));
 
-    py::class_<AdvancedGridLayout::Anchor>(adv_grid_layout, "Anchor")
-        .def(py::init<int, int, Alignment, Alignment>(),
+    nb::class_<AdvancedGridLayout::Anchor>(adv_grid_layout, "Anchor")
+        .def(nb::init<int, int, Alignment, Alignment>(),
              "x"_a, "y"_a,
              "horiz"_a = Alignment::Fill,
              "vert"_a = Alignment::Fill,
              D(AdvancedGridLayout, Anchor, Anchor, 2))
-        .def(py::init<int, int, int, int, Alignment, Alignment>(),
+        .def(nb::init<int, int, int, int, Alignment, Alignment>(),
              "x"_a, "y"_a, "w"_a, "h"_a,
              "horiz"_a = Alignment::Fill,
              "vert"_a = Alignment::Fill,

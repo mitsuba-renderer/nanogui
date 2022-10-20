@@ -7,12 +7,11 @@
 #include <nanogui/nanogui.h>
 #include <nanogui/opengl.h>
 
-#include <pybind11/stl.h>
-#include <pybind11/functional.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
+#include <nanobind/stl/function.h>
 #include <nanogui/python.h>
 #include "py_doc.h"
-
-PYBIND11_MAKE_OPAQUE(nanogui::Color)
 
 #define D(...) DOC(nanogui, __VA_ARGS__ )
 
@@ -40,8 +39,5 @@ PYBIND11_MAKE_OPAQUE(nanogui::Color)
 
 using namespace nanogui;
 
-namespace py = pybind11;
-using namespace py::literals;
-
-/// Make pybind aware of the ref-counted wrapper type
-PYBIND11_DECLARE_HOLDER_TYPE(T, ref<T>);
+namespace nb = nanobind;
+using namespace nanobind::literals;

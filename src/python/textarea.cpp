@@ -4,9 +4,9 @@
 
 DECLARE_WIDGET(TextArea);
 
-void register_textarea(py::module &m) {
-    py::class_<TextArea, Widget, ref<TextArea>, PyTextArea>(m, "TextArea", D(TextArea))
-        .def(py::init<Widget *>(), D(TextArea, TextArea))
+void register_textarea(nb::module_ &m) {
+    nb::class_<TextArea, Widget, PyTextArea>(m, "TextArea", D(TextArea))
+        .def(nb::init<Widget *>(), D(TextArea, TextArea))
         .def("set_font", &TextArea::set_font, D(TextArea, set_font))
         .def("font", &TextArea::font, D(TextArea, font))
         .def("set_foreground_color", &TextArea::set_foreground_color, D(TextArea, set_foreground_color))

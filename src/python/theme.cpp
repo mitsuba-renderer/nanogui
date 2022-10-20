@@ -5,9 +5,9 @@ public:
     using Theme::Theme;
 };
 
-void register_theme(py::module &m) {
-    py::class_<Theme, ref<Theme>, PyTheme> theme(m, "Theme", D(Theme));
-    theme.def(py::init<NVGcontext *>(), D(Theme, Theme))
+void register_theme(nb::module_ &m) {
+    nb::class_<Theme, Object, PyTheme> theme(m, "Theme", D(Theme));
+    theme.def(nb::init<NVGcontext *>(), D(Theme, Theme))
          .def_readwrite("m_font_sans_regular", &Theme::m_font_sans_regular, D(Theme, m_font_sans_regular))
          .def_readwrite("m_font_sans_bold", &Theme::m_font_sans_bold, D(Theme, m_font_sans_bold))
          .def_readwrite("m_font_icons", &Theme::m_font_icons, D(Theme, m_font_icons))

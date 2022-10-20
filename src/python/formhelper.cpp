@@ -4,11 +4,11 @@
 
 typedef IntBox<int64_t> Int64Box;
 
-void register_formhelper(py::module &m) {
+void register_formhelper(nb::module_ &m) {
     enum DummyEnum { };
 
-    py::class_<FormHelper>(m, "FormHelper", D(FormHelper))
-        .def(py::init<Screen *>(), D(FormHelper, FormHelper))
+    nb::class_<FormHelper>(m, "FormHelper", D(FormHelper))
+        .def(nb::init<Screen *>(), D(FormHelper, FormHelper))
         .def("add_window", &FormHelper::add_window, "pos"_a,
              "title"_a = std::string("Untitled"),
              D(FormHelper, add_window))

@@ -465,7 +465,7 @@ class TestApp(Screen):
         with self.render_pass:
             mvp = Matrix4f.scale([s[1] / float(s[0]) * 0.25, 0.25, 0.25]) @ \
                   Matrix4f.rotate([0, 0, 1], glfw.getTime())
-            self.shader.set_buffer("mvp", np.float32(mvp).T)
+            self.shader.set_buffer("mvp", mvp.T)
             with self.shader:
                 self.shader.draw_array(Shader.PrimitiveType.Triangle, 0, 6, True)
 

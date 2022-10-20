@@ -1,7 +1,10 @@
 #ifdef NANOGUI_PYTHON
 
 #include "python.h"
-#include <pybind11/operators.h>
+#include <nanobind/operators.h>
+#include <nanobind/tensor.h>
+#include <nanobind/stl/array.h>
+#include <nanobind/stl/pair.h>
 
 #if defined(__clang__)
 #  pragma clang diagnostic push
@@ -10,57 +13,51 @@
 #endif
 
 template <typename Array>
-auto register_vector_type(py::module &m, const char *name) {
+auto register_vector_type(nb::module_ &m, const char *name) {
     constexpr size_t Size = Array::Size;
     using Value = typename Array::Value;
 
-    auto array = py::class_<Array>(m, name, py::buffer_protocol());
+    auto array = nb::class_<Array>(m, name);
 
-    array.def(py::init<Value>())
-         .def(py::init<const Array &>())
-         .def(py::init([Size](const std::array<Value, Size> &arr) {
-            Array a;
+    array.def(nb::init<Value>())
+         .def(nb::init<const Array &>())
+         .def("__init__", [](Array &a, const std::array<Value, Size> &arr) {
+            new (&a) Array();
             for (size_t i = 0; i < Size; ++i)
                 a[i] = arr[i];
-            return a;
-         }))
-         .def(py::self == py::self)
-         .def(py::self != py::self)
-         .def(py::self + py::self)
-         .def(py::self - py::self)
-         .def(py::self * py::self)
-         .def(Value() + py::self)
-         .def(Value() - py::self)
-         .def(Value() * py::self)
-         .def(Value() / py::self)
-         .def(py::self / py::self)
-         .def(py::self += py::self)
-         .def(py::self -= py::self)
-         .def(py::self *= py::self)
-         .def(py::self /= py::self)
+         })
+         .def(nb::self == nb::self)
+         .def(nb::self != nb::self)
+         .def(nb::self + nb::self)
+         .def(nb::self - nb::self)
+         .def(nb::self * nb::self)
+         .def(Value() + nb::self)
+         .def(Value() - nb::self)
+         .def(Value() * nb::self)
+         .def(Value() / nb::self)
+         .def(nb::self / nb::self)
+         .def(nb::self += nb::self)
+         .def(nb::self -= nb::self)
+         .def(nb::self *= nb::self)
+         .def(nb::self /= nb::self)
          .def("__getitem__", [Size](const Array &a, size_t index) -> Value {
              if (index >= Size)
-                 throw py::index_error();
+                 throw nb::index_error();
              return a[index];
          }, "index"_a)
          .def("__setitem__", [Size](Array &a, size_t index, Value value) {
              if (index >= Size)
-                 throw py::index_error();
+                 throw nb::index_error();
              a[index] = value;
          }, "index"_a, "value"_a)
          .def_property("x", [](const Array &a) { return a.x(); },
                             [](Array &a, const Value &v) { a.x() = v; })
          .def_property("y", [](const Array &a) { return a.y(); },
                             [](Array &a, const Value &v) { a.y() = v; })
-         .def_buffer([Size](Array &m) -> py::buffer_info {
-              return py::buffer_info(
-                  m.v,                                    // Pointer to buffer
-                  sizeof(Value),                          // Size of one scalar
-                  py::format_descriptor<Value>::format(), // Python struct-style format descriptor
-                  1,                                      // Number of dimensions
-                  { Size },                               // Buffer dimensions
-                  { sizeof(Value) }
-              );
+        .def("__dlpack__", [](nb::handle_t<Array> self) {
+            const Array &a = nb::cast<const Array &>(self);
+            const size_t shape[1] = { Size };
+            return nb::tensor<float>((void *) a.data(), 1, shape, self);
          })
          .def("__repr__", [](const Array &a) {
              std::ostringstream oss;
@@ -70,16 +67,21 @@ auto register_vector_type(py::module &m, const char *name) {
 
 
     if constexpr (Size == 2)
-        array.def(py::init<Value, Value>());
+        array.def(nb::init<Value, Value>());
 
     if constexpr (Size == 3) {
-        array.def(py::init<Value, Value, Value>());
+        array.def(nb::init<Value, Value, Value>());
         array.def_property("z", [](const Array &a) { return a.z(); },
                                 [](Array &a, const Value &v) { a.z() = v; });
     }
 
-    py::implicitly_convertible<py::sequence, Array>();
-    py::implicitly_convertible<Value, Array>();
+    nb::detail::implicitly_convertible(
+        [](PyTypeObject *, PyObject *src,
+           nb::detail::cleanup_list *) noexcept -> bool {
+            return PySequence_Check(src) || PyNumber_Check(src);
+        },
+        &typeid(Array));
+
     return array;
 }
 
@@ -87,26 +89,27 @@ auto register_vector_type(py::module &m, const char *name) {
 #  pragma clang diagnostic pop
 #endif
 
-void register_vector(py::module &m) {
+void register_vector(nb::module_ &m) {
     register_vector_type<Vector2i>(m, "Vector2i");
     register_vector_type<Vector2f>(m, "Vector2f");
     register_vector_type<Vector3f>(m, "Vector3f");
 
-    py::class_<Matrix4f>(m, "Matrix4f", py::buffer_protocol())
-        .def(py::init<>())
-        .def(py::init<float>())
-        .def("__matmul__", [](const Matrix4f &a, const Matrix4f &b) { return a * b; }, py::is_operator())
+    nb::class_<Matrix4f>(m, "Matrix4f")
+        .def(nb::init<>())
+        .def(nb::init<float>())
+        .def_property_readonly("T", &Matrix4f::T)
+        .def("__matmul__", [](const Matrix4f &a, const Matrix4f &b) { return a * b; }, nb::is_operator())
         .def("__getitem__",
              [](const Matrix4f &m, std::pair<size_t, size_t> index) -> float {
                  if (index.first >= 4 || index.second >= 4)
-                     throw py::index_error();
+                     throw nb::index_error();
                  return m.m[index.second][index.first];
              },
              "index"_a)
         .def("__setitem__",
              [](Matrix4f &m, std::pair<size_t, size_t> index, float value) {
                  if (index.first >= 4 || index.second >= 4)
-                     throw py::index_error();
+                     throw nb::index_error();
                  m.m[index.second][index.first] = value;
              },
              "index"_a, "value"_a)
@@ -142,16 +145,16 @@ void register_vector(py::module &m) {
                 return Matrix4f::look_at(origin, target, up);
             },
             "origin"_a, "target"_a, "up"_a)
-        .def_buffer([](Matrix4f &m) -> py::buffer_info {
-            return py::buffer_info(
-                m.m,                                    // Pointer to buffer
-                sizeof(float),                          // Size of one scalar
-                py::format_descriptor<float>::format(), // Python struct-style
-                                                        // format descriptor
-                2,                                      // Number of dimensions
-                { 4, 4 },                               // Buffer dimensions
-                { sizeof(float), sizeof(float) * 4 });
-        })
+        .def("__dlpack__", [](const Matrix4f &m) {
+            Matrix4f *t = new Matrix4f(m.T());
+            const size_t shape[2] = { 4, 4 };
+
+            nb::capsule owner(t, [](void *p) noexcept {
+               delete (Matrix4f *) p;
+            });
+
+            return nb::tensor<float>(&t->m, 2, shape, owner);
+         })
         .def("__repr__", [](const Matrix4f &m) {
             std::ostringstream oss;
             oss << m;

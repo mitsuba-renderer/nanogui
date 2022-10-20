@@ -1,6 +1,7 @@
 #ifdef NANOGUI_PYTHON
 
 #include "python.h"
+#include <nanobind/stl/array.h>
 
 class PyCanvas : public Canvas {
 public:
@@ -8,7 +9,7 @@ public:
     NANOGUI_WIDGET_OVERLOADS(Canvas);
 
     void draw_contents() override {
-        PYBIND11_OVERLOAD(void, Canvas, draw_contents);
+        NB_OVERRIDE(void, Canvas, draw_contents);
     }
 };
 
@@ -18,13 +19,13 @@ public:
     NANOGUI_WIDGET_OVERLOADS(ImageView);
 
     void draw_contents() override {
-        PYBIND11_OVERLOAD(void, ImageView, draw_contents);
+        NB_OVERRIDE(void, ImageView, draw_contents);
     }
 };
 
-void register_canvas(py::module &m) {
-    py::class_<Canvas, Widget, ref<Canvas>, PyCanvas>(m, "Canvas", D(Canvas))
-        .def(py::init<Widget *, uint8_t, bool, bool, bool>(),
+void register_canvas(nb::module_ &m) {
+    nb::class_<Canvas, Widget, PyCanvas>(m, "Canvas", D(Canvas))
+        .def(nb::init<Widget *, uint8_t, bool, bool, bool>(),
              "parent"_a, "samples"_a = 4, "has_depth_buffer"_a = true,
              "has_stencil_buffer"_a = false,
              "clear"_a = true, D(Canvas, Canvas))
@@ -37,9 +38,9 @@ void register_canvas(py::module &m) {
         .def("set_background_color", &Canvas::set_background_color, D(Canvas, set_background_color))
         .def("draw_contents", &Canvas::draw_contents, D(Canvas, draw_contents));
 
-    py::class_<ImageView, Canvas, ref<ImageView>, PyImageView>(m, "ImageView", D(ImageView))
-        .def(py::init<Widget *>(), D(ImageView, ImageView))
-        .def("image", py::overload_cast<>(&ImageView::image, py::const_), D(ImageView, image))
+    nb::class_<ImageView, Canvas, PyImageView>(m, "ImageView", D(ImageView))
+        .def(nb::init<Widget *>(), D(ImageView, ImageView))
+        .def("image", nb::overload_cast<>(&ImageView::image, nb::const_), D(ImageView, image))
         .def("set_image", &ImageView::set_image, D(ImageView, set_image))
         .def("reset", &ImageView::reset, D(ImageView, reset))
         .def("center", &ImageView::center, D(ImageView, center))

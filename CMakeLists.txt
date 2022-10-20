@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.13..3.18)
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
 
 # Extract project version from source
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/include/nanogui/common.h"
@@ -575,28 +575,28 @@ endif()
 
 if (NANOGUI_BUILD_PYTHON)
   message(STATUS "NanoGUI: building the Python plugin.")
-  if (NOT TARGET pybind11::module)
+  if (NOT TARGET nanobind::module)
     if (SKBUILD)
       execute_process(
         COMMAND
         "${PYTHON_EXECUTABLE}" -c
-        "import pybind11; print(pybind11.get_cmake_dir())"
+        "import nanobind; print(nanobind.get_cmake_dir())"
         OUTPUT_VARIABLE _tmp_dir
         OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ECHO STDOUT)
         list(APPEND CMAKE_PREFIX_PATH "${_tmp_dir}")
-      find_package(pybind11 CONFIG REQUIRED)
+      find_package(nanobind CONFIG REQUIRED)
     else()
       find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
-      # Allow overriding the pybind11 library used to compile NanoGUI
-      set(NANOGUI_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11"
-        CACHE STRING "Path containing the 'pybind11' library used to compile nanogui.")
+      # Allow overriding the nanobind library used to compile NanoGUI
+      set(NANOGUI_NANOBIND_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanobind"
+        CACHE STRING "Path containing the 'nanobind' library used to compile nanogui.")
 
-      add_subdirectory(${NANOGUI_PYBIND11_DIR} ext/pybind11)
+      add_subdirectory(${NANOGUI_NANOBIND_DIR} ext/nanobind)
       mark_as_advanced(
-        USE_PYTHON_INCLUDE_DIR PYBIND11_INSTALL PYBIND11_TEST PYBIND11_NOPYTHON
-        PYBIND11_FINDPYTHON PYBIND11_PYTHON_VERSION PYBIND11_WERROR
-        NANOGUI_PYBIND11_DIR)
+        USE_PYTHON_INCLUDE_DIR NANOBIND_INSTALL NANOBIND_TEST NANOBIND_NOPYTHON
+        NANOBIND_FINDPYTHON NANOBIND_PYTHON_VERSION NANOBIND_WERROR
+        NANOGUI_NANOBIND_DIR)
     endif()
   endif()
   add_subdirectory(src/python)

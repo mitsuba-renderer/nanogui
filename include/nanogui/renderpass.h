@@ -78,6 +78,9 @@ public:
                Object *blit_target = nullptr,
                bool clear = true);
 
+    // Polymorphic destructor
+    virtual ~RenderPass();
+
     /**
      * \brief Begin the render pass
      *
@@ -159,9 +162,6 @@ public:
     void *command_encoder() const { return m_command_encoder; }
     void *command_buffer() const { return m_command_buffer; }
 #endif
-
-protected:
-    virtual ~RenderPass();
 
 protected:
     std::vector<Object *> m_targets;

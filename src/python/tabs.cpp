@@ -5,9 +5,9 @@
 DECLARE_WIDGET(TabWidgetBase);
 DECLARE_WIDGET(TabWidget);
 
-void register_tabs(py::module &m) {
-    py::class_<TabWidgetBase, Widget, ref<TabWidgetBase>, PyTabWidgetBase>(m, "TabWidgetBase", D(TabWidgetBase))
-        .def(py::init<Widget *>(), D(TabWidgetBase, TabWidgetBase))
+void register_tabs(nb::module_ &m) {
+    nb::class_<TabWidgetBase, Widget, PyTabWidgetBase>(m, "TabWidgetBase", D(TabWidgetBase))
+        .def(nb::init<Widget *>(), D(TabWidgetBase, TabWidgetBase))
         .def("tab_count", &TabWidgetBase::tab_count, D(TabWidgetBase, tab_count))
         .def("tab_id", &TabWidgetBase::tab_id, D(TabWidgetBase, tab_id))
         .def("tab_index", &TabWidgetBase::tab_index, D(TabWidgetBase, tab_index))
@@ -35,8 +35,8 @@ void register_tabs(py::module &m) {
         .def("popup_callback", &TabWidgetBase::popup_callback, D(TabWidgetBase, popup_callback))
         .def("set_popup_callback", &TabWidgetBase::set_popup_callback, D(TabWidgetBase, set_popup_callback));
 
-    py::class_<TabWidget, TabWidgetBase, ref<TabWidget>, PyTabWidget>(m, "TabWidget", D(TabWidget))
-        .def(py::init<Widget *>(), D(TabWidget, TabWidget))
+    nb::class_<TabWidget, TabWidgetBase, PyTabWidget>(m, "TabWidget", D(TabWidget))
+        .def(nb::init<Widget *>(), D(TabWidget, TabWidget))
         .def("insert_tab", &TabWidget::insert_tab, D(TabWidget, insert_tab), "index"_a, "caption"_a, "widget"_a)
         .def("append_tab", &TabWidget::append_tab, D(TabWidget, append_tab), "caption"_a, "widget"_a)
         .def("remove_children", &TabWidget::remove_children, D(TabWidget, remove_children))

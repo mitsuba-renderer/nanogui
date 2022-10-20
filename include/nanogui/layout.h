@@ -68,9 +68,6 @@ public:
      *     for icons, etc.
      */
     virtual Vector2i preferred_size(NVGcontext *ctx, const Widget *widget) const = 0;
-protected:
-    /// Default destructor (exists for inheritance).
-    virtual ~Layout() { }
 };
 
 /**

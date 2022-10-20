@@ -1,25 +1,25 @@
 #include "python.h"
 
-using namespace pybind11::literals;
+using namespace nanobind::literals;
 
-void register_nanovg(py::module &m) {
+void register_nanovg(nb::module_ &m) {
     /* NanoVG */
 
     /* To be done: docstrings, functions taking memory arguments (fonts, images) */
 
-    py::module nvg = m.def_submodule("nanovg", "NanoVG bindings");
+    nb::module_ nvg = m.def_submodule("nanovg", "NanoVG bindings");
 
-    py::enum_<NVGwinding>(nvg, "NVGwinding")
+    nb::enum_<NVGwinding>(nvg, "NVGwinding")
         .value("CCW", NVG_CCW)
         .value("CW", NVG_CW)
         .export_values();
 
-    py::enum_<NVGsolidity>(nvg, "NVGsolidity")
+    nb::enum_<NVGsolidity>(nvg, "NVGsolidity")
         .value("SOLID", NVG_SOLID)
         .value("HOLE", NVG_HOLE)
         .export_values();
 
-    py::enum_<NVGlineCap>(nvg, "NVGlineCap")
+    nb::enum_<NVGlineCap>(nvg, "NVGlineCap")
         .value("BUTT", NVG_BUTT)
         .value("ROUND", NVG_ROUND)
         .value("SQUARE", NVG_SQUARE)
@@ -27,7 +27,7 @@ void register_nanovg(py::module &m) {
         .value("MITER", NVG_MITER)
         .export_values();
 
-    py::enum_<NVGalign>(nvg, "NVGalign")
+    nb::enum_<NVGalign>(nvg, "NVGalign")
         .value("ALIGN_LEFT", NVG_ALIGN_LEFT)
         .value("ALIGN_CENTER", NVG_ALIGN_CENTER)
         .value("ALIGN_RIGHT", NVG_ALIGN_RIGHT)
@@ -37,7 +37,7 @@ void register_nanovg(py::module &m) {
         .value("ALIGN_BASELINE", NVG_ALIGN_BASELINE)
         .export_values();
 
-    py::enum_<NVGblendFactor>(nvg, "NVGblendFactor")
+    nb::enum_<NVGblendFactor>(nvg, "NVGblendFactor")
         .value("ZERO", NVG_ZERO)
         .value("ONE", NVG_ONE)
         .value("SRC_COLOR", NVG_SRC_COLOR)
@@ -51,7 +51,7 @@ void register_nanovg(py::module &m) {
         .value("SRC_ALPHA_SATURATE", NVG_SRC_ALPHA_SATURATE)
         .export_values();
 
-    py::enum_<NVGcompositeOperation>(nvg, "NVGcompositeOperation")
+    nb::enum_<NVGcompositeOperation>(nvg, "NVGcompositeOperation")
         .value("SOURCE_OVER", NVG_SOURCE_OVER)
         .value("SOURCE_IN", NVG_SOURCE_IN)
         .value("SOURCE_OUT", NVG_SOURCE_OUT)
@@ -65,12 +65,10 @@ void register_nanovg(py::module &m) {
         .value("XOR", NVG_XOR)
         .export_values();
 
-    py::class_<NVGpaint>(nvg, "NVGpaint");
+    nb::class_<NVGpaint>(nvg, "NVGpaint");
 
-    py::class_<NVGcolor>(nvg, "NVGcolor")
-        .def(py::init([](const Color &c) { return new NVGcolor(c); }));
-
-    py::implicitly_convertible<Color, NVGcolor>();
+    nb::class_<NVGcolor>(nvg, "NVGcolor");
+        // .def(nb::init_implicit<const Color &>()); XXX
 
     nvg.def("RGB", &nvgRGB);
     nvg.def("RGBf", &nvgRGBf);
@@ -88,7 +86,7 @@ void register_nanovg(py::module &m) {
     //nvg.def("TextGlyphMetrics", &nvgTextBounds);
     //nvg.def("TextTextBreakLines", &nvgTextBounds);
 
-    py::class_<NVGcontext>(nvg, "NVGcontext")
+    nb::class_<NVGcontext>(nvg, "NVGcontext")
         .def("GlobalCompositeOperation", &nvgGlobalCompositeOperation,
              "factor"_a)
         .def("GlobalCompositeBlendFunc", &nvgGlobalCompositeBlendFunc,

@@ -179,12 +179,12 @@ public:
     void *sampler_state_handle() const { return m_sampler_state_handle; }
 #endif
 
+    /// Release all resources
+    virtual ~Texture();
+
 protected:
     /// Initialize the texture handle
     void init();
-
-    /// Release all resources
-    virtual ~Texture();
 
 protected:
     PixelFormat m_pixel_format;

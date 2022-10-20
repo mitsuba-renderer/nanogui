@@ -173,7 +173,7 @@ class MyCanvas(Canvas):
 
         mvp = proj @ view @ model @ model2
 
-        self.shader.set_buffer("mvp", np.float32(mvp).T)
+        self.shader.set_buffer("mvp", mvp.T)
         with self.shader:
             self.shader.draw_array(Shader.PrimitiveType.Triangle,
                                    0, 36, indexed=True)
