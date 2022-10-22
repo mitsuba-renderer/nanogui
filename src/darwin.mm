@@ -113,7 +113,7 @@ void metal_window_init(void *nswin_, bool float_buffer) {
         layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
         layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     }
-    layer.displaySyncEnabled = NO;
+    layer.displaySyncEnabled = YES;
     layer.allowsNextDrawableTimeout = NO;
     layer.framebufferOnly = NO;
 }
