@@ -7,13 +7,6 @@ if (NOT NANOGUI_BUILD_SHARED)
   endif()
 endif()
 
-if (NANOGUI_BUILD_PYTHON AND (APPLE OR CMAKE_SYSTEM MATCHES "Linux"))
-  # Include coroutine support for running the mainloop in detached mode
-  add_definitions(-DCORO_SJLJ)
-  include_directories(../../ext/coro)
-  set(NANOGUI_PYTHON_EXTRA ../../ext/coro/coro.c)
-endif()
-
 add_definitions(-DNANOGUI_PYTHON)
 
 nanobind_add_module(nanogui-python MODULE
@@ -37,8 +30,7 @@ nanobind_add_module(nanogui-python MODULE
   render.cpp
   vector.cpp
   python.h
-  py_doc.h
-  ${NANOGUI_PYTHON_EXTRA})
+  py_doc.h)
 
 set_target_properties(nanogui-python PROPERTIES OUTPUT_NAME nanogui_ext)
 target_link_libraries(nanogui-python PRIVATE nanogui)

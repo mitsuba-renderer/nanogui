@@ -7,7 +7,6 @@
 #include <nanobind/stl/pair.h>
 
 #if defined(__APPLE__) || defined(__linux__)
-#  include <coro.h>
 #  include <signal.h>
 #endif
 
@@ -56,57 +55,6 @@ extern void register_misc(nb::module_ &m);
 extern void register_nanovg(nb::module_ &m);
 extern void register_render(nb::module_ &m);
 
-class MainloopHandle;
-static MainloopHandle *handle = nullptr;
-
-class MainloopHandle {
-public:
-    bool active = false;
-    bool detached = false;
-    float refresh = 0;
-    std::thread thread;
-
-    #if defined(__APPLE__) || defined(__linux__)
-        coro_context ctx_helper, ctx_main, ctx_thread;
-        coro_stack stack;
-        semaphore sema;
-    #endif
-
-    ~MainloopHandle() {
-        join();
-        handle = nullptr;
-    }
-
-    void join() {
-        if (!detached)
-            return;
-
-#if defined(__APPLE__) || defined(__linux__)
-        /* Release GIL and disassociate from thread state (which was originally
-           associated with the main Python thread) */
-        // nb::gil_scoped_release thread_state(true);
-        nb::gil_scoped_release thread_state;
-
-        coro_transfer(&ctx_main, &ctx_thread);
-        coro_stack_free(&stack);
-
-        /* Destroy the thread state that was created in mainloop() */
-        {
-            nb::gil_scoped_acquire acquire;
-            // acquire.dec_ref();
-        }
-#endif
-
-        thread.join();
-        detached = false;
-
-        #if defined(__APPLE__) || defined(__linux__)
-            /* Reacquire GIL and reassociate with thread state
-               [via RAII destructor in 'thread_state'] */
-        #endif
-    }
-};
-
 #if defined(__APPLE__) || defined(__linux__)
 static void (*sigint_handler_prev)(int) = nullptr;
 static void sigint_handler(int sig) {
@@ -131,107 +79,39 @@ NB_MODULE(nanogui_ext, m_) {
     m.attr("api") = "metal";
 #endif
 
-    nb::class_<MainloopHandle>(m, "MainloopHandle")
-        .def("join", &MainloopHandle::join);
-
     m.def("init", &nanogui::init, D(init));
     m.def("shutdown", &nanogui::shutdown, D(shutdown));
 
-    m.def("mainloop", [](float refresh, nb::object detach) -> MainloopHandle* {
-        if (!detach.is(nb::none())) {
-            if (handle)
-                throw std::runtime_error("Main loop is already running!");
+    m.def("mainloop", [](float refresh) {
+        nb::gil_scoped_release release;
 
-            handle = new MainloopHandle();
-            handle->detached = true;
-            handle->refresh = refresh;
+        #if defined(__APPLE__) || defined(__linux__)
+            sigint_handler_prev = signal(SIGINT, sigint_handler);
+        #endif
 
-            #if defined(__APPLE__) || defined(__linux__)
-                /* Release GIL and completely disassociate the calling thread
-                   from its associated Python thread state data structure */
-                // nb::gil_scoped_release thread_state(true);
-                nb::gil_scoped_release thread_state;
+        mainloop(refresh);
 
-                /* Create a new thread state for the nanogui main loop
-                   and reference it once (to keep it from being constructed and
-                   destructed at every callback invocation) */
-                {
-                    nb::gil_scoped_acquire acquire;
-                    // acquire.inc_ref();
-                }
-
-                handle->thread = std::thread([]{
-                    /* Handshake 1: wait for signal from detach_helper */
-                    handle->sema.wait();
-
-                    /* Swap context with main thread */
-                    coro_transfer(&handle->ctx_thread, &handle->ctx_main);
-
-                    /* Handshake 2: wait for signal from detach_helper */
-                    handle->sema.notify();
-                });
-
-                void (*detach_helper)(void *) = [](void *ptr) -> void {
-                    MainloopHandle *handle = (MainloopHandle *) ptr;
-
-                    /* Handshake 1: Send signal to new thread  */
-                    handle->sema.notify();
-
-                    /* Enter main loop */
-                    sigint_handler_prev = signal(SIGINT, sigint_handler);
-                    mainloop(handle->refresh);
-                    signal(SIGINT, sigint_handler_prev);
-
-                    /* Handshake 2: Wait for signal from new thread */
-                    handle->sema.wait();
-
-                    /* Return back to Python */
-                    coro_transfer(&handle->ctx_helper, &handle->ctx_main);
-                };
-
-                /* Allocate an 8MB stack and transfer context to the
-                   detach_helper function */
-                coro_stack_alloc(&handle->stack, 8 * 1024 * 1024);
-                coro_create(&handle->ctx_helper, detach_helper, handle,
-                            handle->stack.sptr, handle->stack.ssze);
-                coro_transfer(&handle->ctx_main, &handle->ctx_helper);
-            #else
-                handle->thread = std::thread([]{
-                    mainloop(handle->refresh);
-                });
-            #endif
-
-            #if defined(__APPLE__) || defined(__linux__)
-                /* Reacquire GIL and reassociate with thread state on newly
-                   created thread [via RAII destructor in 'thread_state'] */
-            #endif
-
-            return handle;
-        } else {
-            nb::gil_scoped_release release;
-
-            #if defined(__APPLE__) || defined(__linux__)
-                sigint_handler_prev = signal(SIGINT, sigint_handler);
-            #endif
-
-            mainloop(refresh);
-
-            #if defined(__APPLE__) || defined(__linux__)
-                signal(SIGINT, sigint_handler_prev);
-            #endif
-
-            return nullptr;
-        }
-    }, "refresh"_a = -1, "detach"_a = nb::none(),
-       D(mainloop), nb::keep_alive<0, 2>());
+        #if defined(__APPLE__) || defined(__linux__)
+            signal(SIGINT, sigint_handler_prev);
+        #endif
+    }, "refresh"_a = -1, D(mainloop));
 
     m.def("async", &nanogui::async, D(async));
     m.def("leave", &nanogui::leave, D(leave));
     m.def("test_10bit_edr_support", &test_10bit_edr_support, D(test_10bit_edr_support));
     m.def("active", &nanogui::active, D(active));
-    m.def("file_dialog", (std::string(*)(const std::vector<std::pair<std::string, std::string>> &, bool)) &nanogui::file_dialog, D(file_dialog));
-    m.def("file_dialog", (std::vector<std::string>(*)(const std::vector<std::pair<std::string, std::string>> &, bool, bool)) &nanogui::file_dialog, D(file_dialog, 2));
-    #if defined(__APPLE__)
+    m.def("file_dialog",
+          (std::string(*)(
+              const std::vector<std::pair<std::string, std::string>> &, bool)) &
+              nanogui::file_dialog,
+          D(file_dialog));
+    m.def("file_dialog",
+          (std::vector<std::string>(*)(
+              const std::vector<std::pair<std::string, std::string>> &, bool,
+              bool)) &
+              nanogui::file_dialog,
+          D(file_dialog, 2));
+#if defined(__APPLE__)
         m.def("chdir_to_bundle_parent", &nanogui::chdir_to_bundle_parent);
     #endif
     m.def("utf8", [](int c) { return std::string(utf8(c).data()); }, D(utf8));

@@ -27,6 +27,7 @@ icons
 *~
 nanogui*.so
 nanogui*.pyd
+libnanobind-static.a
 libnanogui.so
 libnanogui.a
 libnanogui.bc
