@@ -76,7 +76,7 @@ class MyScreen(Screen):
             component_format=self.component_format(),
             size=self.framebuffer_size(),
             flags=Texture.TextureFlags.RenderTarget,
-            samples=8
+            samples=4
         )
 
         self.depth_target = Texture(
@@ -84,7 +84,7 @@ class MyScreen(Screen):
             component_format=Texture.ComponentFormat.Float32,
             size=self.framebuffer_size(),
             flags=Texture.TextureFlags.RenderTarget,
-            samples=8
+            samples=4
         )
 
         self.render_pass = RenderPass(
@@ -152,7 +152,7 @@ class MyScreen(Screen):
             )
 
             mvp = proj @ view @ model
-            self.shader.set_buffer("mvp", np.float32(mvp).T)
+            self.shader.set_buffer("mvp", mvp.T)
             with self.shader:
                 self.shader.draw_array(Shader.PrimitiveType.Triangle,
                                        0, 36, indexed=True)

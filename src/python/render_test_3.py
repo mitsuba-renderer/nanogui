@@ -142,7 +142,7 @@ class MyScreen(Screen):
             )
 
             mvp = proj @ view @ model
-            self.shader.set_buffer("mvp", np.float32(mvp).T)
+            self.shader.set_buffer("mvp", mvp.T)
             with self.shader:
                 self.shader.draw_array(Shader.PrimitiveType.Triangle,
                                        0, 6, indexed=True)
