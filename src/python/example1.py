@@ -122,7 +122,7 @@ class TestApp(Screen):
         b = Button(tools, "Ask")
 
         def cb():
-            dlg = MessageDialog(self, MessageDialog.Type.Warning, "Title",
+            dlg = MessageDialog(self, MessageDialog.Type.Question, "Title",
                                 "This is a question message", "Yes", "No",
                                 True)
             dlg.set_callback(cb2)
