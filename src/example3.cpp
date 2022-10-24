@@ -183,6 +183,9 @@ int main(int /* argc */, char ** /* argv */) {
         // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
 
+        /* Alternatively call 'screen->draw_all();' that subsumes all of the above steps,
+           including setting up an autorelease pool on macOS / Metal targets */
+
 #if defined(NANOGUI_USE_METAL)
         // Important to periodically free memory used up by Metal command queues, etc.
         void *pool = autorelease_init();
