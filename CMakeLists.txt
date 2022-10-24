@@ -499,6 +499,7 @@ endif()
 
 if (NANOGUI_INSTALL)
   include(GNUInstallDirs)
+  include(CMakePackageConfigHelpers)
 
   install(TARGETS nanogui
           LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
