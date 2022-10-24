@@ -36,7 +36,7 @@ int main(int /* argc */, char ** /* argv */) {
 
     /* scoped variables */ {
         bool use_gl_4_1 = false;// Set to true to create an OpenGL 4.1 context.
-        Screen *screen = nullptr;
+        ref<Screen> screen;
 
         if (use_gl_4_1) {
             // NanoGUI presents many options for you to utilize at your discretion.
@@ -76,6 +76,7 @@ int main(int /* argc */, char ** /* argv */) {
         window->center();
 
         nanogui::mainloop(-1);
+        delete gui;
     }
 
     nanogui::shutdown();

@@ -50,7 +50,7 @@ std::string strval = "A string";
 test_enum enumval = Item2;
 Color colval(0.5f, 0.5f, 0.7f, 1.f);
 
-Screen *screen = nullptr;
+ref<Screen> screen;
 
 int main(int /* argc */, char ** /* argv */) {
     glfwInit();
@@ -204,6 +204,9 @@ int main(int /* argc */, char ** /* argv */) {
 
         glfwSwapBuffers(window);
     }
+
+    delete gui;
+    screen.reset();
 
     // Terminate GLFW, clearing any resources allocated by GLFW.
     glfwTerminate();

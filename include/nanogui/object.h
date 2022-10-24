@@ -129,6 +129,14 @@ public:
         return *this;
     }
 
+    /// Clear the reference
+    void reset() {
+        if (m_ptr) {
+            ((Object *) m_ptr)->dec_ref();
+            m_ptr = nullptr;
+        }
+    }
+
     /// Compare this reference with another reference
     bool operator==(const ref &r) const { return m_ptr == r.m_ptr; }
 
