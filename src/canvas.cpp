@@ -49,6 +49,7 @@ Canvas::Canvas(Widget *parent, uint8_t samples,
 
     if (!m_render_to_texture) {
         color_texture = scr;
+
         if (has_depth_buffer) {
 #if defined(NANOGUI_USE_METAL)
             depth_texture = scr->depth_stencil_texture();

@@ -6,16 +6,16 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-RenderPass::RenderPass(std::vector<Object *> color_targets,
-                       Object *depth_target,
-                       Object *stencil_target,
-                       Object *blit_target,
-                       bool clear)
-    : m_targets(color_targets.size() + 2), m_clear(clear),
-      m_clear_color(color_targets.size()), m_viewport_offset(0),
-      m_viewport_size(0), m_framebuffer_size(0), m_depth_test(DepthTest::Less),
-      m_depth_write(true), m_cull_mode(CullMode::Back), m_blit_target(blit_target),
-      m_active(false), m_framebuffer_handle(0) {
+RenderPass::RenderPass(const std::vector<Object *> &color_targets,
+                       Object *depth_target, Object *stencil_target,
+                       Object *blit_target, bool clear)
+    : m_targets(color_targets.size() + 2),
+      m_targets_ref(color_targets.size() + 2),
+      m_clear_color(color_targets.size()), m_clear(clear), m_clear_stencil(0),
+      m_clear_depth(1.f), m_viewport_offset(0), m_viewport_size(0),
+      m_framebuffer_size(0), m_depth_test(DepthTest::Less), m_depth_write(true),
+      m_cull_mode(CullMode::Back), m_blit_target(blit_target), m_active(false),
+      m_framebuffer_handle(0) {
 
     m_targets[0] = depth_target;
     m_targets[1] = stencil_target;
@@ -23,10 +23,18 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         m_targets[i + 2] = color_targets[i];
         m_clear_color[i] = Color(0, 0, 0, 0);
     }
-    m_clear_stencil = 0;
-    m_clear_depth = 1.f;
 
-    if (!m_targets[0].get()) {
+    // Avoid a potential reference cycle involving 'RenderPass' and 'Screen'
+    for (size_t i = 0; i < m_targets.size(); ++i) {
+        Object *o = m_targets[i];
+
+        bool inc_ref = o && dynamic_cast<Screen *>(o) == nullptr;
+        m_targets_ref[i] = inc_ref;
+        if (inc_ref)
+            o->inc_ref();
+    }
+
+    if (!m_targets[0]) {
         m_depth_write = false;
         m_depth_test = DepthTest::Always;
     }
@@ -50,8 +58,8 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         else
             attachment_id = (GLenum) (GL_COLOR_ATTACHMENT0 + i - 2);
 
-        Screen *screen = dynamic_cast<Screen *>(m_targets[i].get());
-        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
+        Screen *screen = dynamic_cast<Screen *>(m_targets[i]);
+        Texture *texture = dynamic_cast<Texture *>(m_targets[i]);
         if (screen) {
             m_framebuffer_size = max(m_framebuffer_size, screen->framebuffer_size());
 #if defined(NANOGUI_USE_OPENGL)
@@ -137,6 +145,11 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
 }
 
 RenderPass::~RenderPass() {
+    for (size_t i = 0; i < m_targets.size(); ++i) {
+        if (m_targets_ref[i])
+            m_targets[i]->dec_ref();
+    }
+
     CHK(glDeleteFramebuffers(1, &m_framebuffer_handle));
 }
 
@@ -243,7 +256,7 @@ void RenderPass::end() {
 
 void RenderPass::resize(const Vector2i &size) {
     for (size_t i = 0; i < m_targets.size(); ++i) {
-        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
+        Texture *texture = dynamic_cast<Texture *>(m_targets[i]);
         if (texture)
             texture->resize(size);
     }
