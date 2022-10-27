@@ -65,7 +65,7 @@ public:
     void set_pushed(const bool &pushed) { m_pushed = pushed; }
 
     /// Returns the current callback of this CheckBox.
-    std::function<void(bool)> callback() const { return m_callback; }
+    const std::function<void(bool)> &callback() const { return m_callback; }
 
     /// Sets the callback to be executed when this CheckBox is checked / unchecked.
     void set_callback(const std::function<void(bool)> &callback) { m_callback = callback; }

@@ -34,7 +34,7 @@ public:
     ColorPicker(Widget *parent, const Color& color = Color(1.f, 0.f, 0.f, 1.f));
 
     /// The callback executed when the ColorWheel changes.
-    std::function<void(const Color &)> callback() const { return m_callback; }
+    const std::function<void(const Color &)> &callback() const { return m_callback; }
 
     /**
      * Sets the callback is executed as the ColorWheel itself is changed.  Set
@@ -52,7 +52,7 @@ public:
      * **and** the user clicks the \ref nanogui::ColorPicker::m_pick_button or
      * \ref nanogui::ColorPicker::m_reset_button.
      */
-    std::function<void(const Color &)> final_callback() const { return m_final_callback; }
+    const std::function<void(const Color &)> &final_callback() const { return m_final_callback; }
 
     /**
      * The callback to execute when a new Color is selected on the ColorWheel

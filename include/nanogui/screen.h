@@ -174,8 +174,12 @@ public:
     /// Window resize event handler
     virtual bool resize_event(const Vector2i& size);
 
+    /// Retrieve the resize callback
+    const std::function<void(Vector2i)> &resize_callback() const {
+        return m_resize_callback;
+    }
+
     /// Set the resize callback
-    std::function<void(Vector2i)> resize_callback() const { return m_resize_callback; }
     void set_resize_callback(const std::function<void(Vector2i)> &callback) {
         m_resize_callback = callback;
     }

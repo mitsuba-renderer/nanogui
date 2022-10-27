@@ -31,7 +31,7 @@ public:
     void set_images(const Images &data) { m_images = data; }
     const Images& images() const { return m_images; }
 
-    std::function<void(int)> callback() const { return m_callback; }
+    const std::function<void(int)> &callback() const { return m_callback; }
     void set_callback(const std::function<void(int)> &callback) { m_callback = callback; }
 
     virtual bool mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button,

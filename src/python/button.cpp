@@ -9,6 +9,7 @@ DECLARE_WIDGET(CheckBox);
 
 void register_button(nb::module_ &m) {
     nb::class_<Button, Widget, PyButton> button(m, "Button", D(Button));
+
     button
         .def(nb::init<Widget *, const std::string &, int>(),
              "parent"_a, "caption"_a = std::string("Untitled"), "icon"_a = 0, D(Button, Button))

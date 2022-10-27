@@ -276,6 +276,7 @@ protected:
     ref<Layout> m_layout;
     Vector2i m_pos, m_size, m_fixed_size;
     std::vector<Widget *> m_children;
+
     /**
      * Whether or not this Widget is currently visible.  When a Widget is not
      * currently visible, no time is wasted executing its drawing method.

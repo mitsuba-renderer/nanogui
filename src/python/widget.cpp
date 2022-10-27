@@ -7,6 +7,79 @@ DECLARE_WIDGET(Widget);
 DECLARE_SCREEN(Screen);
 DECLARE_WIDGET(Window);
 
+/// Cyclic GC support: find all callback getter functions and traverse them recursively
+int widget_tp_traverse_base(PyObject *self, visitproc visit, void *arg, PyTypeObject *tp) {
+    PyObject *dict = tp->tp_dict;
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+
+    const char *suffix = "callback";
+    size_t suffix_len = strlen(suffix);
+
+    while (PyDict_Next(dict, &pos, &key, &value)) {
+        if (!PyUnicode_Check(key))
+            continue;
+
+        const char *name = PyUnicode_AsUTF8AndSize(key, nullptr);
+        size_t name_len = strlen(name);
+
+        if (suffix_len > name_len)
+            continue;
+
+        if (strncmp(name, "set_", 4) == 0 ||
+            strcmp(name + name_len - suffix_len, suffix) != 0)
+            continue;
+
+        PyObject *args[] = { self };
+        PyObject *value = PyObject_VectorcallMethod(
+            key, args, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, nullptr);
+
+        if (!value) {
+            PyErr_Clear();
+            continue;
+        }
+
+        Py_VISIT(value);
+        Py_DECREF(value);
+    }
+
+    if (strcmp(tp->tp_name, "nanogui.Widget") != 0) {
+        PyTypeObject *base = (PyTypeObject *) PyType_GetSlot(tp, Py_tp_base);
+        if (base) {
+            int rv = widget_tp_traverse_base(self, visit, arg, base);
+            if (rv)
+                return rv;
+        }
+    }
+
+    return 0;
+}
+
+// Main widget traversal method that may be invoked by Python's cyclic GC
+int widget_tp_traverse(PyObject *self, visitproc visit, void *arg) {
+
+    Widget *w = nb::inst_ptr<Widget>(self);
+
+    // Visit nested children
+    for (Widget *wc : w->children()) {
+        PyObject *o = wc->self_py();
+        Py_VISIT(o);
+    }
+
+    // Visit callback functions (which can also produce reference cycles)
+    return widget_tp_traverse_base(self, visit, arg, Py_TYPE(self));
+}
+
+int widget_tp_clear(PyObject *self) {
+    Widget *w = nb::inst_ptr<Widget>(self);
+
+    size_t count = w->child_count();
+    for (size_t i = 0; i < count; ++i)
+        w->remove_child_at(count - 1 - i);
+
+    return 0;
+}
+
 void register_widget(nb::module_ &m) {
     object_init_py(
         [](PyObject *o) noexcept {
@@ -23,7 +96,14 @@ void register_widget(nb::module_ &m) {
         nb::intrusive_ptr<Object>(
             [](Object *o, PyObject *po) noexcept { o->set_self_py(po); }));
 
-    nb::class_<Widget, Object, PyWidget>(m, "Widget", D(Widget))
+    PyType_Slot widget_type_slots[] = {
+        { Py_tp_traverse, (void *) widget_tp_traverse },
+        { Py_tp_clear, (void *) widget_tp_clear },
+        { 0, nullptr }
+    };
+
+    nb::class_<Widget, Object, PyWidget>(
+        m, "Widget", D(Widget), nb::type_slots(widget_type_slots))
         .def(nb::init<Widget *>(), D(Widget, Widget))
         .def("parent", (Widget *(Widget::*)(void)) &Widget::parent, D(Widget, parent))
         .def("set_parent", &Widget::set_parent, D(Widget, set_parent))

@@ -77,7 +77,7 @@ public:
     virtual void set_theme(Theme *theme) override;
 
     /// The callback to execute when the value of this TextBox has changed.
-    std::function<bool(const std::string& str)> callback() const { return m_callback; }
+    const std::function<bool(const std::string& str)> &callback() const { return m_callback; }
 
     /// Sets the callback to execute when the value of this TextBox has changed.
     void set_callback(const std::function<bool(const std::string& str)> &callback) { m_callback = callback; }
