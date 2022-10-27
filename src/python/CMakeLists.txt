@@ -11,6 +11,7 @@ add_definitions(-DNANOGUI_PYTHON)
 
 nanobind_add_module(nanogui-python MODULE
   NB_STATIC
+  LTO
   main.cpp
   glfw.cpp
   icons.cpp
