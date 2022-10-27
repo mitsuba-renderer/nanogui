@@ -320,6 +320,18 @@ extern NANOGUI_EXPORT void chdir_to_bundle_parent();
 #endif
 
 /**
+* \brief Open a native directory dialog.
+*
+*
+* \param saved_path
+*     Optional parameter to specify a directory that the dialog should start in.
+*/
+#if !defined(__APPLE__)
+    extern NANOGUI_EXPORT std::string
+    directory_dialog(std::string saved_path = "");
+#endif
+
+/**
  * \brief Convert a single UTF32 character code to UTF8.
  *
  * \rst
