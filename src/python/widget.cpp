@@ -30,9 +30,19 @@ int widget_tp_traverse_base(PyObject *self, visitproc visit, void *arg, PyTypeOb
             strcmp(name + name_len - suffix_len, suffix) != 0)
             continue;
 
+
+#if PY_VERSION_HEX < 0x03090000
+        PyObject *func = PyObject_GetAttr(self, key),
+                 *result = nullptr;
+        if (func) {
+            result = _PyObject_Vectorcall(func, nullptr, 0, nullptr);
+            Py_DECREF(func);
+        }
+#else
         PyObject *args[] = { self };
         PyObject *result = PyObject_VectorcallMethod(
             key, args, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, nullptr);
+#endif
 
         if (!result) {
             PyErr_Clear();

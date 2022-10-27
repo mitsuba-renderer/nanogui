@@ -9,7 +9,7 @@ on:
         default: '0'
 
 env:
-  CIBW_SKIP: pp* cp27-* cp35-* cp36-* cp37-* cp38-macosx_arm64
+  CIBW_SKIP: pp* *-musllinux* cp27-* cp35-* cp36-* cp37-* cp38-macosx_arm64
   CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
   CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
   CIBW_ARCHS_WINDOWS: auto64

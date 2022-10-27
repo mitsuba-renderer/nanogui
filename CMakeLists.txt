@@ -80,7 +80,7 @@ endif()
 
 if (MSVC)
   set(NANOGUI_NATIVE_FLAGS_DEFAULT "")
-elseif (APPLE AND CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+elseif (APPLE AND (CMAKE_OSX_ARCHITECTURES MATCHES "arm64"))
   # Apple M1 compatibility
   set(NANOGUI_NATIVE_FLAGS_DEFAULT "-mcpu=apple-a12")
 else()
@@ -578,16 +578,21 @@ if (NANOGUI_BUILD_PYTHON)
   message(STATUS "NanoGUI: building the Python plugin.")
   if (NOT TARGET nanobind::module)
     if (SKBUILD)
+      # Constrain FindPython to find the Python version used by scikit-build
+      set(Python_VERSION "${PYTHON_VERSION_STRING}")
+
+      find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+
       execute_process(
         COMMAND
-        "${PYTHON_EXECUTABLE}" -c
-        "import nanobind; print(nanobind.get_cmake_dir())"
+        "${PYTHON_EXECUTABLE}" -c "import nanobind; print(nanobind.cmake_dir())"
         OUTPUT_VARIABLE _tmp_dir
-        OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ECHO STDOUT)
-        list(APPEND CMAKE_PREFIX_PATH "${_tmp_dir}")
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+      list(APPEND CMAKE_PREFIX_PATH "${_tmp_dir}")
+
       find_package(nanobind CONFIG REQUIRED)
     else()
-      find_package(Python COMPONENTS Interpreter Development REQUIRED)
+      find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 
       # Allow overriding the nanobind library used to compile NanoGUI
       set(NANOGUI_NANOBIND_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanobind"

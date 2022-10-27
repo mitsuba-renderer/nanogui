@@ -1,18 +1,14 @@
 NanoGUI
 ========================================================================================
-|docs| |travis| |appveyor|
+|docs| |gha|
 
 .. |docs| image:: https://readthedocs.org/projects/nanogui/badge/?version=latest
     :target: http://nanogui.readthedocs.org/en/latest/?badge=latest
     :alt: Docs
 
-.. |travis| image:: https://travis-ci.org/wjakob/nanogui.svg?branch=master
-   :target: https://travis-ci.org/wjakob/nanogui
-   :alt: Travis Build Status
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/m8h3uyvdb4ej2i02/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/wjakob/nanogui/branch/master
-   :alt: Appveyor Build Status
+.. |gha| image:: https://github.com/mitsuba-renderer/nanogui/actions/workflows/build.yml/badge.svg
+   :target: https://github.com/mitsuba-renderer/nanogui/actions/workflows/build.yml
+   :alt: GitHub Actions Build Status
 
 .. begin_brief_description
 
@@ -20,7 +16,7 @@ NanoGUI is a minimalistic cross-platform widget library for OpenGL 3+, GLES
 2/3, and Metal. It supports automatic layout generation, stateful C++ lambdas
 callbacks, a variety of useful widget types and Retina-capable rendering on
 Apple devices thanks to NanoVG_ by Mikko Mononen. Python bindings of all
-functionality are provided using pybind11_. Binary wheels of NanoGUI are
+functionality are provided using nanobind_. Binary wheels of NanoGUI are
 available on PyPI_.
 
 **Note**: This repository contains an improved port of the original NanoGUI_.
@@ -57,7 +53,7 @@ the the repository here incorporates the following changes:
 7. The Entypo_ icon font has been replaced by FontAwesome_ (v5.10.1).
 
 .. _NanoVG: https://github.com/memononen/NanoVG
-.. _pybind11: https://github.com/wjakob/pybind11
+.. _nanobind: https://github.com/wjakob/nanobind
 .. _PyPi: https://pypi.org/project/nanogui
 .. _NanoGUI: https://github.com/wjakob/nanogui
 .. _Tekari: https://rgl.epfl.ch/tekari?url=%2F%2Frgl.s3.eu-central-1.amazonaws.com%2Fmedia%2Fuploads%2Fwjakob%2F2018%2F08%2F27%2Firidescent-paper.txt&log=1
