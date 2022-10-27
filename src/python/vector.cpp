@@ -23,7 +23,7 @@ auto register_vector_type(nb::module_ &m, const char *name) {
          .def(nb::init<const Array &>())
          .def("__init__", [](Array &a, const std::array<Value, Size> &arr) {
             new (&a) Array();
-            for (size_t i = 0; i < Size; ++i)
+            for (size_t i = 0; i < Array::Size; ++i)
                 a[i] = arr[i];
          })
          .def(nb::self == nb::self)
@@ -40,13 +40,13 @@ auto register_vector_type(nb::module_ &m, const char *name) {
          .def(nb::self -= nb::self)
          .def(nb::self *= nb::self)
          .def(nb::self /= nb::self)
-         .def("__getitem__", [Size](const Array &a, size_t index) -> Value {
-             if (index >= Size)
+         .def("__getitem__", [](const Array &a, size_t index) -> Value {
+             if (index >= Array::Size)
                  throw nb::index_error();
              return a[index];
          }, "index"_a)
-         .def("__setitem__", [Size](Array &a, size_t index, Value value) {
-             if (index >= Size)
+         .def("__setitem__", [](Array &a, size_t index, Value value) {
+             if (index >= Array::Size)
                  throw nb::index_error();
              a[index] = value;
          }, "index"_a, "value"_a)
@@ -56,7 +56,7 @@ auto register_vector_type(nb::module_ &m, const char *name) {
                             [](Array &a, const Value &v) { a.y() = v; })
         .def("__dlpack__", [](nb::handle_t<Array> self) {
             const Array &a = nb::cast<const Array &>(self);
-            const size_t shape[1] = { Size };
+            const size_t shape[1] = { Array::Size };
             return nb::tensor<float>((void *) a.data(), 1, shape, self);
          })
          .def("__repr__", [](const Array &a) {

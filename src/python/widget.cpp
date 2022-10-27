@@ -31,16 +31,16 @@ int widget_tp_traverse_base(PyObject *self, visitproc visit, void *arg, PyTypeOb
             continue;
 
         PyObject *args[] = { self };
-        PyObject *value = PyObject_VectorcallMethod(
+        PyObject *result = PyObject_VectorcallMethod(
             key, args, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, nullptr);
 
-        if (!value) {
+        if (!result) {
             PyErr_Clear();
             continue;
         }
 
-        Py_VISIT(value);
-        Py_DECREF(value);
+        Py_VISIT(result);
+        Py_DECREF(result);
     }
 
     if (strcmp(tp->tp_name, "nanogui.Widget") != 0) {
@@ -73,8 +73,8 @@ int widget_tp_traverse(PyObject *self, visitproc visit, void *arg) {
 int widget_tp_clear(PyObject *self) {
     Widget *w = nb::inst_ptr<Widget>(self);
 
-    size_t count = w->child_count();
-    for (size_t i = 0; i < count; ++i)
+    int count = w->child_count();
+    for (int i = 0; i < count; ++i)
         w->remove_child_at(count - 1 - i);
 
     return 0;
