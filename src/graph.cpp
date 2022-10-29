@@ -17,6 +17,7 @@ NAMESPACE_BEGIN(nanogui)
 
 Graph::Graph(Widget *parent, const std::string &caption)
     : Widget(parent), m_caption(caption) {
+    DebugName = m_parent->DebugName + ",Grph";
     m_background_color = Color(20, 128);
     m_fill_color = Color(255, 192, 0, 128);
     m_stroke_color = Color(100, 255);

@@ -42,14 +42,21 @@ NAMESPACE_BEGIN(nanogui)
 
         TextBox(Widget* parent, const std::string& value = "Untitled");
 
-        bool editable() const { return m_editable; }
-        void set_editable(bool editable);
-
         bool spinnable() const { return m_spinnable; }
         void set_spinnable(bool spinnable) { m_spinnable = spinnable; }
 
-        const std::string& value() const { return m_value; }
-        void set_value(const std::string& value) { m_value = value; }
+        const std::string& value() const {
+            return m_value;
+        }
+        const std::string& value_temp() const {
+            return m_value_temp;
+        }
+        void set_value(const std::string& value, bool set_position = true)
+        {
+            m_value = value;
+            m_value_temp = m_value;
+            if (set_position)m_cursor_pos = (int)m_value_temp.size();
+        }
 
         const std::string& default_value() const { return m_default_value; }
         void set_default_value(const std::string& default_value) { m_default_value = default_value; }
@@ -110,7 +117,6 @@ NAMESPACE_BEGIN(nanogui)
         SpinArea spin_area(const Vector2i& pos);
 
     protected:
-        bool m_editable;
         bool m_spinnable;
         bool m_committed;
         std::string m_value;
@@ -197,7 +203,7 @@ public:
     virtual bool mouse_button_event(const Vector2i& p, int button, bool down,
         int modifiers) override {
         if (!m_enabled)return false;
-        if ((m_editable || m_spinnable) && down)
+        if (m_spinnable && down)
             m_mouse_down_value = value();
 
         SpinArea area = spin_area(p);
@@ -318,7 +324,7 @@ public:
     virtual bool mouse_button_event(const Vector2i& p, int button, bool down,
         int modifiers) override {
         if (!m_enabled)return false;
-        if ((m_editable || m_spinnable) && down)
+        if (m_spinnable && down)
             m_mouse_down_value = value();
 
         SpinArea area = spin_area(p);

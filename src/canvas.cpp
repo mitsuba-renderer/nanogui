@@ -26,6 +26,7 @@ Canvas::Canvas(Widget *parent, uint8_t samples,
                bool has_depth_buffer, bool has_stencil_buffer,
                bool clear)
     : Widget(parent), m_draw_border(true) {
+    DebugName = m_parent->DebugName + ",Canv";
     m_size = Vector2i(250, 250);
     m_border_color = m_theme->m_border_light;
 

@@ -121,6 +121,13 @@ public:
     Color m_text_color_shadow;
     /// The icon color (default: \ref nanogui::Theme::m_text_color).
     Color m_icon_color;
+    /// The icon color (default: \ref nanogui::Theme::m_text_color).
+    Color m_disabled_icon_color;
+    /////// Intention Colors
+    Color m_success_color;
+    Color m_fail_color;
+    Color m_proceed_color;
+    Color m_warning_color;
 
     /* Button colors */
     /**

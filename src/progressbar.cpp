@@ -15,7 +15,9 @@
 NAMESPACE_BEGIN(nanogui)
 
 ProgressBar::ProgressBar(Widget *parent)
-    : Widget(parent), m_value(0.0f) {}
+    : Widget(parent), m_value(0.0f) {
+    DebugName = m_parent->DebugName + ",PrgBar";
+}
 
 Vector2i ProgressBar::preferred_size(NVGcontext *) const {
     return Vector2i(70, 12);

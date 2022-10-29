@@ -17,6 +17,7 @@ NAMESPACE_BEGIN(nanogui)
 
 Label::Label(Widget *parent, const std::string &caption, const std::string &font, int font_size)
     : Widget(parent), m_caption(caption), m_font(font) {
+    DebugName = m_parent->DebugName + ",Labl";
     if (m_theme) {
         m_font_size = m_theme->m_standard_font_size;
         m_color = m_theme->m_text_color;

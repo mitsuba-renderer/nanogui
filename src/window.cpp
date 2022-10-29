@@ -22,7 +22,9 @@ NAMESPACE_BEGIN(nanogui)
 
 Window::Window(Widget* parent, const std::string& title, bool resizable)
     : Widget(parent), m_title(title), m_button_panel(nullptr), m_modal(false), m_drag(false),
-    m_resize_dir(Vector2i(0, 0)), m_first_size(0), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true), m_draw_shadow(true) { }
+    m_resize_dir(Vector2i(0, 0)), m_first_size(0), m_resizable(resizable), m_can_move(true), m_snap_offset(20), m_can_snap(true), m_draw_shadow(true) {
+    DebugName = m_parent->DebugName + ",Window";
+}
 
 Vector2i Window::preferred_size(NVGcontext* ctx) const {
     if (!m_resizable || m_size == 0)// calculate prefered size only if not resizable. else keep curr size
@@ -408,6 +410,7 @@ bool Window::mouse_button_event(const Vector2i& p, int button, bool down, int mo
 
     if (button == GLFW_MOUSE_BUTTON_1) {
         m_drag = down && !m_title.empty() && (p.y() - m_pos.y()) < m_theme->m_window_header_height;
+        if(down)request_focus();
         if (m_drag)
         {
             m_snap_init = position();
@@ -423,6 +426,7 @@ bool Window::mouse_button_event(const Vector2i& p, int button, bool down, int mo
             if (m_resize)
                 return true;
         }
+        
     }
     if (Widget::mouse_button_event(p, button, down, modifiers))
         return true;

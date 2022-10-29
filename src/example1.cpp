@@ -437,7 +437,7 @@ class ExampleApplication : public Screen {
             Alignment::Middle, 0, 6));
 
         auto ib = panel->add<IntBox<int>>();
-        ib->set_editable(true);
+        ib->set_enabled(true);
 
         Button* b = panel->add<Button>("", FA_FORWARD);
         b->set_fixed_size(Vector2i(22, 22));
@@ -464,7 +464,7 @@ class ExampleApplication : public Screen {
         /* FP widget */ {
             new Label(GridWindow, "Floating point :", "sans-bold");
             TextBox* text_box = new TextBox(GridWindow);
-            text_box->set_editable(true);
+            text_box->set_enabled(true);
             text_box->set_fixed_size(Vector2i(100, 20));
             text_box->set_value("50");
             text_box->set_units("GiB");
@@ -476,7 +476,7 @@ class ExampleApplication : public Screen {
         /* Positive integer widget */ {
             new Label(GridWindow, "Positive integer :", "sans-bold");
             auto int_box = new IntBox<int>(GridWindow);
-            int_box->set_editable(true);
+            int_box->set_enabled(true);
             int_box->set_fixed_size(Vector2i(100, 20));
             int_box->set_value(50);
             int_box->set_units("Mhz");
@@ -526,13 +526,13 @@ class ExampleApplication : public Screen {
         Button* b = new Button(ColorPickerWindow, "ColorWheel", FA_INFINITY);
         new Label(ColorPickerWindow, "Red: ");
         auto red_int_box = new IntBox<int>(ColorPickerWindow);
-        red_int_box->set_editable(false);
+        red_int_box->set_enabled(false);
         new Label(ColorPickerWindow, "Green: ");
         auto green_int_box = new IntBox<int>(ColorPickerWindow);
-        green_int_box->set_editable(false);
+        green_int_box->set_enabled(false);
         new Label(ColorPickerWindow, "Blue: ");
         auto blue_int_box = new IntBox<int>(ColorPickerWindow);
-        blue_int_box->set_editable(false);
+        blue_int_box->set_enabled(false);
         new Label(ColorPickerWindow, "Alpha: ");
         auto alpha_int_box = new IntBox<int>(ColorPickerWindow);
 
@@ -702,6 +702,10 @@ class ExampleApplication : public Screen {
 public:
     ExampleApplication() : Screen(Vector2i(1024, 768), "NanoGUI Test") {
         inc_ref();
+
+        Theme* MainTheme = new Theme(m_nvg_context);
+        MainTheme->m_disabled_text_color = Color(0, 153, 230, 230);
+        set_theme(MainTheme);
 
         CreateMenuBar();
         CreateMovingMenuBar();

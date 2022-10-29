@@ -18,11 +18,15 @@ NAMESPACE_BEGIN(nanogui)
 
 ScrollPanel::ScrollPanel(Widget* parent)
     : Widget(parent), m_child_preferred_size(Vector2i(0, 0)),
-    m_scroll(0.f, 0.f), m_update_layout(false), m_scroll_type(ScrollTypes::Vertical) { }
+    m_scroll(0.f, 0.f), m_update_layout(false), m_scroll_type(ScrollTypes::Vertical) {
+    DebugName = m_parent->DebugName + ",ScrlPnl";
+}
 
 ScrollPanel::ScrollPanel(Widget* parent, ScrollTypes scroll_type)
     : Widget(parent), m_child_preferred_size(Vector2i(0, 0)),
-    m_scroll(0.f, 0.f), m_update_layout(false), m_scroll_type(scroll_type) { }
+    m_scroll(0.f, 0.f), m_update_layout(false), m_scroll_type(scroll_type) {
+    DebugName = m_parent->DebugName + ",ScrlPnl";
+}
 
 void ScrollPanel::perform_layout(NVGcontext* ctx) {
     Widget::perform_layout(ctx);

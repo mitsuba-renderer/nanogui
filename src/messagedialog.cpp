@@ -22,7 +22,7 @@ MessageDialog::MessageDialog(Widget *parent, Type type, const std::string &title
               const std::string &alt_button_text, bool alt_button) : Window(parent, title) {
     set_layout(new BoxLayout(Orientation::Vertical,
                             Alignment::Middle, 10, 10));
-    set_modal(true);
+    set_modal(false);
 
     Widget *panel1 = new Widget(this);
     panel1->set_layout(new BoxLayout(Orientation::Horizontal,
@@ -40,7 +40,7 @@ MessageDialog::MessageDialog(Widget *parent, Type type, const std::string &title
     Widget *panel2 = new Widget(this);
     panel2->set_layout(new BoxLayout(Orientation::Horizontal,
                                      Alignment::Middle, 0, 15));
-
+   
     if (alt_button) {
         Button *button = new Button(panel2, alt_button_text, m_theme->m_message_alt_button_icon);
         button->set_callback([&] { if (m_callback) m_callback(1); dispose(); });

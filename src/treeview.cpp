@@ -67,7 +67,7 @@ void TreeView::create_tree_object(std::string object_name, int Index)
 
 TreeView::TreeView(Widget* parent)
     : Widget(parent), m_selected_index(0) {
-
+    DebugName = m_parent->DebugName + ",TreeV";
     set_layout(new BoxLayout(Orientation::Vertical, Alignment::Minimum));
     m_scrollpanel = new ScrollPanel(this);
     m_scrollpanel->set_scroll_type(ScrollPanel::ScrollTypes::Both);
@@ -77,6 +77,7 @@ TreeView::TreeView(Widget* parent)
 
 TreeView::TreeView(Widget* parent, NanoTree* items)
     : Widget(parent), m_selected_index(0) {
+    DebugName = m_parent->DebugName + ",TreeV";
     set_layout(new BoxLayout(Orientation::Vertical, Alignment::Minimum));
     m_scrollpanel = new ScrollPanel(this);
     m_scrollpanel->set_scroll_type(ScrollPanel::ScrollTypes::Both);

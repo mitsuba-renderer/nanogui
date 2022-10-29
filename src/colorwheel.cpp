@@ -19,6 +19,7 @@ NAMESPACE_BEGIN(nanogui)
 
 ColorWheel::ColorWheel(Widget* parent, const Color& rgb)
     : Widget(parent), m_drag_region(None) {
+    DebugName = m_parent->DebugName + ",ColW";
     set_color(rgb);
 }
 

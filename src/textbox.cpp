@@ -24,7 +24,6 @@ NAMESPACE_BEGIN(nanogui)
 
 TextBox::TextBox(Widget* parent, const std::string& value)
     : Widget(parent),
-    m_editable(false),
     m_spinnable(false),
     m_committed(true),
     m_value(value),
@@ -43,14 +42,11 @@ TextBox::TextBox(Widget* parent, const std::string& value)
     m_mouse_down_modifier(0),
     m_text_offset(0),
     m_last_click(0) {
+    DebugName = m_parent->DebugName + ",TxtBox";
     if (m_theme) m_font_size = m_theme->m_text_box_font_size;
     m_icon_extra_scale = .8f;
 }
 
-void TextBox::set_editable(bool editable) {
-    m_editable = editable;
-    set_cursor(editable ? Cursor::IBeam : Cursor::Arrow);
-}
 
 void TextBox::set_theme(Theme* theme) {
     Widget::set_theme(theme);
@@ -84,21 +80,17 @@ Vector2i TextBox::preferred_size(NVGcontext* ctx) const {
 void TextBox::draw(NVGcontext* ctx) {
     Widget::draw(ctx);
 
-    NVGpaint bg = nvgBoxGradient(ctx,
-        m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2,
-        3, 4, Color(255, 32), Color(32, 32));
-    NVGpaint fg1 = nvgBoxGradient(ctx,
-        m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2,
-        3, 4, Color(150, 32), Color(32, 32));
-    NVGpaint fg2 = nvgBoxGradient(ctx,
-        m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2,
-        3, 4, nvgRGBA(255, 0, 0, 100), nvgRGBA(255, 0, 0, 50));
+    NVGpaint bg = nvgBoxGradient(ctx, m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2, 3, 4, Color(255, 32), Color(32, 32));
+    NVGpaint fg1 = nvgBoxGradient(ctx, m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2, 3, 4, Color(150, 32), Color(32, 32));
+    NVGpaint fg2 = nvgBoxGradient(ctx, m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2, 3, 4, nvgRGBA(255, 0, 0, 100), nvgRGBA(255, 0, 0, 50));
+    NVGpaint Dis = nvgBoxGradient(ctx, m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2, 3, 4, m_theme->m_window_header_sep_top, m_theme->m_window_header_sep_top);
 
     nvgBeginPath(ctx);
     nvgRoundedRect(ctx, m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2,
         m_size.y() - 2, 3);
-
-    if (m_editable && focused())
+    /*if (!m_enabled)
+        nvgFillPaint(ctx, Dis);
+    else */if (m_enabled && focused())
         m_valid_format ? nvgFillPaint(ctx, fg1) : nvgFillPaint(ctx, fg2);
     else if (m_spinnable && m_mouse_down_pos.x() != -1)
         nvgFillPaint(ctx, fg1);
@@ -158,7 +150,7 @@ void TextBox::draw(NVGcontext* ctx) {
 
         /* up button */ {
             bool hover = m_mouse_focus && spin_area(m_mouse_pos) == SpinArea::Top;
-            nvgFillColor(ctx, (m_enabled && (hover || spinning)) ? m_theme->m_text_color : m_theme->m_disabled_text_color);
+            nvgFillColor(ctx, (m_enabled && (hover || spinning)) ?  m_theme->m_proceed_color : m_theme->m_text_color );
             auto icon = utf8(m_theme->m_text_box_up_icon);
             nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
             Vector2f icon_pos(m_pos.x() + 4.f,
@@ -168,7 +160,7 @@ void TextBox::draw(NVGcontext* ctx) {
 
         /* down button */ {
             bool hover = m_mouse_focus && spin_area(m_mouse_pos) == SpinArea::Bottom;
-            nvgFillColor(ctx, (m_enabled && (hover || spinning)) ? m_theme->m_text_color : m_theme->m_disabled_text_color);
+            nvgFillColor(ctx, (m_enabled && (hover || spinning)) ? m_theme->m_proceed_color : m_theme->m_text_color);
             auto icon = utf8(m_theme->m_text_box_down_icon);
             nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
             Vector2f icon_pos(m_pos.x() + 4.f,
@@ -296,7 +288,7 @@ bool TextBox::mouse_button_event(const Vector2i& p, int button, bool down,
             request_focus();
     }
 
-    if (m_editable && focused()) {
+    if (m_enabled && focused()) {
         if (down) {
             m_mouse_down_pos = p;
             m_mouse_down_modifier = modifiers;
@@ -352,14 +344,14 @@ bool TextBox::mouse_motion_event(const Vector2i& p, const Vector2i& /* rel */,
     int /* button */, int /* modifiers */) {
     m_mouse_pos = p;
 
-    if (!m_editable)
+    if (!m_enabled)
         set_cursor(Cursor::Arrow);
     else if (m_spinnable && !focused() && spin_area(m_mouse_pos) != SpinArea::None) /* scrolling arrows */
         set_cursor(Cursor::Hand);
     else
         set_cursor(Cursor::IBeam);
 
-    return m_editable;
+    return m_enabled;
 }
 
 bool TextBox::mouse_drag_event(const Vector2i& p, const Vector2i&/* rel */,
@@ -367,7 +359,7 @@ bool TextBox::mouse_drag_event(const Vector2i& p, const Vector2i&/* rel */,
     m_mouse_pos = p;
     m_mouse_drag_pos = p;
 
-    if (m_editable && focused())
+    if (m_enabled && focused())
         return true;
     return false;
 }
@@ -377,7 +369,7 @@ bool TextBox::focus_event(bool focused) {
 
     std::string backup = m_value;
 
-    if (m_editable) {
+    if (m_enabled) {
         if (focused) {
             m_value_temp = m_value;
             m_committed = false;
@@ -408,7 +400,7 @@ bool TextBox::focus_event(bool focused) {
 }
 
 bool TextBox::keyboard_event(int key, int /* scancode */, int action, int modifiers) {
-    if (m_editable && focused()) {
+    if (m_enabled && focused()) {
         if (action == GLFW_PRESS || action == GLFW_REPEAT) {
             if (key == GLFW_KEY_LEFT) {
                 if (modifiers == GLFW_MOD_SHIFT) {
@@ -470,10 +462,12 @@ bool TextBox::keyboard_event(int key, int /* scancode */, int action, int modifi
                         m_value_temp.erase(m_value_temp.begin() + m_cursor_pos);
                 }
             }
-            else if (key == GLFW_KEY_ENTER) {
-                if (!m_committed)
-                    focus_event(false);
-            }
+            //   Commented out because of an issue when setting values programmatically.
+            //  Is it actually usefull anywhere?
+           //    else if (key == GLFW_KEY_ENTER) {
+           //        if (!m_committed)
+           //            focus_event(false);
+           //    }
             else if (key == GLFW_KEY_A && modifiers == SYSTEM_COMMAND_MOD) {
                 m_cursor_pos = (int)m_value_temp.length();
                 m_selection_pos = 0;
@@ -501,7 +495,7 @@ bool TextBox::keyboard_event(int key, int /* scancode */, int action, int modifi
 }
 
 bool TextBox::keyboard_character_event(unsigned int codepoint) {
-    if (m_editable && focused()) {
+    if (m_enabled && focused()) {
         std::ostringstream convert;
         convert << (char)codepoint;
 

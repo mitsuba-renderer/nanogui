@@ -270,6 +270,7 @@ public:
     void draw_widgets();
     void set_popup_visible(PopupButton* iButton) { m_popup_visible.push_back(iButton); }
     std::vector<Widget*> m_focus_path;
+    bool m_close_popups = false;
 
 protected:
     GLFWwindow* m_glfw_window = nullptr;

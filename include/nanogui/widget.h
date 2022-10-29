@@ -61,8 +61,7 @@ public:
     /// Return the position relative to the parent widget
     const Vector2i& position() const { return m_pos; }
     /// Set the position relative to the parent widget
-    void set_position(const Vector2i& pos) 
-    {m_pos = pos; }
+    void set_position(const Vector2i& pos)  {m_pos = pos; }
 
     /// Return the absolute position on screen
     Vector2i absolute_position() const {
@@ -95,12 +94,7 @@ public:
      * size; this is done with a call to \ref set_size or a call to \ref perform_layout()
      * in the parent widget.
      */
-    virtual void set_fixed_size(const Vector2i& fixed_size) { 
-        if (fixed_size.x() < 0)
-        {
-            int adfg = 0;
-        }
-        m_fixed_size = fixed_size; }
+    virtual void set_fixed_size(const Vector2i& fixed_size) {  m_fixed_size = fixed_size; }
 
     /// Return the fixed size (see \ref set_fixed_size())
     const Vector2i& fixed_size() const { return m_fixed_size; }

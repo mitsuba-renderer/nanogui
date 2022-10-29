@@ -23,6 +23,7 @@ NAMESPACE_BEGIN(nanogui)
 
 TabWidgetBase::TabWidgetBase(Widget* parent, const std::string& font)
     : Widget(parent), m_font(font), m_background_color(Color(0.f, 0.f)) {
+    DebugName = m_parent->DebugName + ",Tab";
     m_tab_offsets.push_back(0);
 }
 
@@ -72,7 +73,7 @@ int TabWidgetBase::tab_index(int id) const {
 void TabWidgetBase::update_visibility() { /* No-op */ }
 
 void TabWidgetBase::perform_layout(NVGcontext* ctx) {
-  //  printf("TabWidgetBase::perform_layout pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
+    //  printf("TabWidgetBase::perform_layout pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     m_tab_offsets.clear();
     nvgFontFace(ctx, m_font.c_str());
     nvgFontSize(ctx, font_size());
@@ -93,11 +94,11 @@ void TabWidgetBase::perform_layout(NVGcontext* ctx) {
     nvgFontFace(ctx, "icons");
     m_close_width =
         nvgTextBounds(ctx, 0, 0, utf8(FA_TIMES_CIRCLE).data(), nullptr, unused);
-  //  printf("TabWidgetBase::perform_layout post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
+    //  printf("TabWidgetBase::perform_layout post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
 }
 
 Vector2i TabWidgetBase::preferred_size(NVGcontext* ctx) const {
- //   printf("TabWidgetBase::preferred_size pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
+    //   printf("TabWidgetBase::preferred_size pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     nvgFontFace(ctx, m_font.c_str());
     nvgFontSize(ctx, font_size());
     nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
@@ -110,7 +111,7 @@ Vector2i TabWidgetBase::preferred_size(NVGcontext* ctx) const {
         if (m_tabs_closeable)
             width += m_close_width;
     }
- //   printf("TabWidgetBase::preferred_size post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
+    //   printf("TabWidgetBase::preferred_size post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     return Vector2i(width + 1,
         font_size() + 2 * m_theme->m_tab_button_vertical_padding + 2 * m_padding);
 }
@@ -306,10 +307,8 @@ bool TabWidgetBase::mouse_button_event(const Vector2i& p, int button, bool down,
                     m_tab_drag_min = m_tab_offsets[index];
                     m_tab_drag_max = m_tab_offsets[index + 1];
                     m_close_index_pushed = -1;
-                    if (tab_changed && m_callback) {
-                        m_callback(selected_id());
-                        update_visibility();
-                    }
+                    if (tab_changed && m_callback) m_callback(selected_id());
+                    if (tab_changed)update_visibility();
                 }
                 else if (m_tab_drag_index != -1) {
                     m_tab_drag_index = -1;
@@ -380,7 +379,7 @@ TabWidget::TabWidget(Widget* parent, const std::string& font)
     : TabWidgetBase(parent, font) { }
 
 void TabWidget::perform_layout(NVGcontext* ctx) {
-  //  printf("TabWidget::perform_layout pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
+    //  printf("TabWidget::perform_layout pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     TabWidgetBase::perform_layout(ctx);
 
     int tab_height = font_size() + 2 * m_theme->m_tab_button_vertical_padding;
@@ -390,7 +389,7 @@ void TabWidget::perform_layout(NVGcontext* ctx) {
         child->set_size(m_size - Vector2i(2 * m_padding, 2 * m_padding + tab_height + 1));
         child->perform_layout(ctx);
     }
-  //  printf("TabWidget::perform_layout post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
+    //  printf("TabWidget::perform_layout post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
 }
 
 void TabWidget::update_visibility() {
@@ -404,12 +403,12 @@ void TabWidget::update_visibility() {
 }
 
 Vector2i TabWidget::preferred_size(NVGcontext* ctx) const {
-   // printf("TabWidget::preferred_size pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
+    // printf("TabWidget::preferred_size pre. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     Vector2i base_size = TabWidgetBase::preferred_size(ctx),
         content_size = Vector2i(0);
     for (Widget* child : m_children)
         content_size = max(content_size, child->preferred_size(ctx));
-  //  printf("TabWidget::preferred_size post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
+    //  printf("TabWidget::preferred_size post. SIze = (%d, %d)\n", SizeDebugPointer->size().x(), SizeDebugPointer->size().y());
     return Vector2i(
         std::max(base_size.x(), content_size.x() + 2 * m_padding),
         std::max(base_size.y(), content_size.y() + 2 * m_padding)

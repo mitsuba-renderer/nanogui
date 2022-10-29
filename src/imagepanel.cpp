@@ -17,7 +17,9 @@ NAMESPACE_BEGIN(nanogui)
 
 ImagePanel::ImagePanel(Widget *parent)
     : Widget(parent), m_thumb_size(64), m_spacing(10), m_margin(10),
-      m_mouse_index(-1) {}
+      m_mouse_index(-1) {
+    DebugName = m_parent->DebugName + ",ImPan";
+}
 
 Vector2i ImagePanel::grid_size() const {
     int n_cols = 1 + std::max(0,

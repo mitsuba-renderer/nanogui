@@ -154,7 +154,7 @@ public:
     /// Add a new data widget controlled using custom getter/setter functions
     template <typename Type> detail::FormWidget<Type> *
     add_variable(const std::string &label, const std::function<void(const Type &)> &setter,
-                const std::function<Type()> &getter, bool editable = true) {
+                const std::function<Type()> &getter) {
         Label *label_w = new Label(m_window, label, m_label_font_name, m_label_font_size);
         auto widget = new detail::FormWidget<Type>(m_window);
         auto refresh = [widget, getter] {
@@ -164,7 +164,6 @@ public:
         };
         refresh();
         widget->set_callback(setter);
-        widget->set_editable(editable);
         widget->set_font_size(m_widget_font_size);
         Vector2i fs = widget->fixed_size();
         widget->set_fixed_size(Vector2i(fs.x() != 0 ? fs.x() : m_fixed_size.x(),
@@ -180,11 +179,10 @@ public:
 
     /// Add a new data widget that exposes a raw variable in memory
     template <typename Type> detail::FormWidget<Type> *
-    add_variable(const std::string &label, Type &value, bool editable = true) {
+    add_variable(const std::string &label, Type &value) {
         return add_variable<Type>(label,
             [&](const Type & v) { value = v; },
-            [&]() -> Type { return value; },
-            editable
+            [&]() -> Type { return value; }
         );
     }
 
@@ -309,7 +307,7 @@ public:
     void set_value(bool v) { set_checked(v); }
 
     /// Pass-through function for \ref nanogui::Widget::set-enabled.
-    void set_editable(bool e) { set_enabled(e); }
+   // void set_editable(bool e) { set_enabled(e); }
 
     /// Returns the value of \ref nanogui::CheckBox::checked.
     bool value() const { return checked(); }
@@ -338,7 +336,6 @@ public:
     }
 
     /// Pass-through function for \ref nanogui::Widget::set_enabled.
-    void set_editable(bool e) { set_enabled(e); }
 };
 
 /**
@@ -391,7 +388,6 @@ public:
     void set_value(const Color &c) { set_color(c); }
 
     /// Pass-through function for \ref nanogui::Widget::set_enabled.
-    void set_editable(bool e) { set_enabled(e); }
 
     /// Returns the value of \ref nanogui::ColorPicker::color.
     Color value() const { return color(); }

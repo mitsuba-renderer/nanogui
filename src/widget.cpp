@@ -29,7 +29,10 @@ Widget::Widget(Widget* parent)
     m_focused(false), m_mouse_focus(false), m_tooltip(""), m_font_size(-1.f),
     m_icon_extra_scale(1.f), m_cursor(Cursor::Arrow) {
     if (parent)
+    {
+        DebugName = parent->DebugName;
         parent->add_child(this);
+    }
 }
 
 Widget::~Widget() {

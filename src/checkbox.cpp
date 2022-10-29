@@ -19,6 +19,7 @@ CheckBox::CheckBox(Widget *parent, const std::string &caption,
                    const std::function<void(bool) > &callback)
     : Widget(parent), m_caption(caption), m_pushed(false), m_checked(false),
       m_callback(callback) {
+    DebugName = m_parent->DebugName + ",Check";
     m_icon_extra_scale = 1.2f; // widget override
 }
 

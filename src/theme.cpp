@@ -68,6 +68,14 @@ Theme::Theme(NVGcontext *ctx) {
     m_window_popup                       = Color(20, 180);
     m_window_popup_transparent           = Color(50, 0);
 
+    // Added
+    m_success_color                     = Color(250, 85, 121, 230);
+    m_fail_color                        = Color(250, 85, 167,230);
+    m_proceed_color                     = Color(85, 198, 250, 230);
+    m_warning_color                     = Color(245, 239, 71, 230);
+    m_disabled_text_color               = Color(250, 102, 135, 230);
+    m_disabled_icon_color               = Color(102, 75, 82, 230);
+
     m_check_box_icon                    = FA_CHECK;
     m_message_information_icon          = FA_INFO_CIRCLE;
     m_message_question_icon             = FA_QUESTION_CIRCLE;

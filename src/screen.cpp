@@ -164,6 +164,7 @@ Screen::Screen()
     m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
     m_shutdown_glfw(false), m_fullscreen(false), m_depth_buffer(false),
     m_stencil_buffer(false), m_float_buffer(false), m_redraw(false) {
+    DebugName = "Screen";
     memset(m_cursors, 0, sizeof(GLFWcursor*) * (size_t)Cursor::CursorCount);
 #if defined(NANOGUI_USE_OPENGL)
     GLint n_stencil_bits = 0, n_depth_bits = 0;
@@ -253,9 +254,9 @@ Screen::Screen(const Vector2i& size, const std::string& caption, bool resizable,
 
         if (m_glfw_window == nullptr && m_float_buffer) {
             m_float_buffer = false;
-        #if defined(GLFW_FLOATBUFFER)
+#if defined(GLFW_FLOATBUFFER)
             glfwWindowHint(GLFW_FLOATBUFFER, GL_FALSE);
-        #endif
+#endif
             fprintf(stderr, "Could not allocate floating point framebuffer, retrying without..\n");
         }
         else {
@@ -276,16 +277,16 @@ Screen::Screen(const Vector2i& size, const std::string& caption, bool resizable,
 
     if (!m_glfw_window) {
         (void)gl_major; (void)gl_minor;
-    #if defined(NANOGUI_USE_OPENGL)
+#if defined(NANOGUI_USE_OPENGL)
         throw std::runtime_error("Could not create an OpenGL " +
             std::to_string(gl_major) + "." +
             std::to_string(gl_minor) + " context!");
-    #elif defined(NANOGUI_USE_GLES)
+#elif defined(NANOGUI_USE_GLES)
         throw std::runtime_error("Could not create a GLES 2 context!");
-    #elif defined(NANOGUI_USE_METAL)
+#elif defined(NANOGUI_USE_METAL)
         throw std::runtime_error(
             "Could not create a GLFW window for rendering using Metal!");
-    #endif
+#endif
     }
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
@@ -539,13 +540,13 @@ Screen::~Screen() {
     }
 
     if (m_nvg_context) {
-    #if defined(NANOGUI_USE_OPENGL)
+#if defined(NANOGUI_USE_OPENGL)
         nvgDeleteGL3(m_nvg_context);
-    #elif defined(NANOGUI_USE_GLES)
+#elif defined(NANOGUI_USE_GLES)
         nvgDeleteGLES2(m_nvg_context);
-    #elif defined(NANOGUI_USE_METAL)
+#elif defined(NANOGUI_USE_METAL)
         nvgDeleteMTL(m_nvg_context);
-    #endif
+#endif
     }
 
     if (m_glfw_window && m_shutdown_glfw)
@@ -724,8 +725,8 @@ void Screen::draw_widgets() {
 
 bool Screen::keyboard_event(int key, int scancode, int action, int modifiers) {
     if (m_focus_path.size() > 0) {
-        for (auto it = m_focus_path.rbegin() + 1; it != m_focus_path.rend(); ++it)
-            if ((*it)->focused() && (*it)->keyboard_event(key, scancode, action, modifiers))
+        for (int Cnt = m_focus_path.size() - 2; Cnt >= 0; Cnt--)// Don't use iterators because we might change focus during key event
+            if (m_focus_path[Cnt]->focused() && m_focus_path[Cnt]->keyboard_event(key, scancode, action, modifiers))
                 return true;
     }
 
@@ -734,8 +735,8 @@ bool Screen::keyboard_event(int key, int scancode, int action, int modifiers) {
 
 bool Screen::keyboard_character_event(unsigned int codepoint) {
     if (m_focus_path.size() > 0) {
-        for (auto it = m_focus_path.rbegin() + 1; it != m_focus_path.rend(); ++it)
-            if ((*it)->focused() && (*it)->keyboard_character_event(codepoint))
+        for (int Cnt = m_focus_path.size() - 2; Cnt >= 0; Cnt--)// Don't use iterators because we might change focus during key event
+            if (m_focus_path[Cnt]->focused() && m_focus_path[Cnt]->keyboard_character_event(codepoint))
                 return true;
     }
     return false;
@@ -752,9 +753,9 @@ bool Screen::resize_event(const Vector2i& size) {
 void Screen::redraw() {
     if (!m_redraw) {
         m_redraw = true;
-    #if !defined(EMSCRIPTEN)
+#if !defined(EMSCRIPTEN)
         glfwPostEmptyEvent();
-    #endif
+#endif
     }
 }
 
@@ -846,7 +847,7 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
             m_drag_widget = nullptr;
         }
         m_redraw |= mouse_button_event(m_mouse_pos, button, action == GLFW_PRESS, m_modifiers);
-        if (!m_redraw && m_popup_visible.size() != 0) {//close all opened popu window
+        if ((!m_redraw|| m_close_popups) && m_popup_visible.size() != 0) {//close all opened popu window
             int Size = m_popup_visible.size();
             for (int Cnt = 0; Cnt < Size; Cnt++)
             {
@@ -854,6 +855,7 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
                 m_popup_visible.pop_front();
             }
             m_redraw = true;
+            m_close_popups = false;
         }
     }
     catch (const std::exception& e) {

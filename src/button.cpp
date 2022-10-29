@@ -20,7 +20,9 @@ Button::Button(Widget* parent, const std::string& caption, int icon)
     : Widget(parent), m_caption(caption), m_icon(icon), m_make_transparent(false),
     m_icon_position(IconPosition::LeftCentered), m_pushed(false),
     m_flags(NormalButton), m_background_color(Color(0, 0)),
-    m_text_color(Color(0, 0)) { }
+    m_text_color(Color(0, 0)) {
+    DebugName = m_parent->DebugName + ",Butt";
+}
 
 Vector2i Button::preferred_size(NVGcontext* ctx) const {
     int font_size = m_font_size == -1 ? m_theme->m_button_font_size : m_font_size;
@@ -178,8 +180,13 @@ void Button::draw(NVGcontext* ctx) {
     Vector2f text_pos(center.x() - tw * 0.5f, center.y() - 1);
     NVGcolor text_color =
         m_text_color.w() == 0 ? m_theme->m_text_color : m_text_color;
+    NVGcolor icon_color = m_theme->m_icon_color;
+
     if (!m_enabled)
+    {
         text_color = m_theme->m_disabled_text_color;
+        icon_color = m_theme->m_disabled_icon_color;
+    }
 
     if (m_icon) {
         auto icon = utf8(m_icon);
@@ -199,7 +206,7 @@ void Button::draw(NVGcontext* ctx) {
         }
         if (m_caption != "")
             iw += m_size.y() * 0.15f;
-        nvgFillColor(ctx, text_color);
+        nvgFillColor(ctx, icon_color);
         nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
         Vector2f icon_pos = center;
         icon_pos.y() -= 1;
