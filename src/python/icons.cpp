@@ -974,12 +974,14 @@ static const Icon icons[] = {
     I(FA_YIN_YANG)
 };
 
+#undef I
+
 void register_entypo(nb::module_ &m) {
     /* Entypo constants */
     {
-        nb::module_ g = m.def_submodule("icons");
+        nb::module_ m2 = m.def_submodule("icons");
         for (Icon i: icons)
-            g.attr(i.name) = i.value;
+            m2.attr(i.name) = i.value;
     }
 }
 

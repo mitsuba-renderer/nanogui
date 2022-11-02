@@ -2,45 +2,166 @@
 
 #include "python.h"
 
+struct Key {
+    const char *name;
+    int value;
+};
+
+#define K(name) { #name, GLFW_##name }
+
+static const Key keys[] = {
+    K(KEY_UNKNOWN),
+    K(KEY_SPACE),
+    K(KEY_APOSTROPHE),
+    K(KEY_COMMA),
+    K(KEY_MINUS),
+    K(KEY_PERIOD),
+    K(KEY_SLASH),
+    K(KEY_0),
+    K(KEY_1),
+    K(KEY_2),
+    K(KEY_3),
+    K(KEY_4),
+    K(KEY_5),
+    K(KEY_6),
+    K(KEY_7),
+    K(KEY_8),
+    K(KEY_9),
+    K(KEY_SEMICOLON),
+    K(KEY_EQUAL),
+    K(KEY_A),
+    K(KEY_B),
+    K(KEY_C),
+    K(KEY_D),
+    K(KEY_E),
+    K(KEY_F),
+    K(KEY_G),
+    K(KEY_H),
+    K(KEY_I),
+    K(KEY_J),
+    K(KEY_K),
+    K(KEY_L),
+    K(KEY_M),
+    K(KEY_N),
+    K(KEY_O),
+    K(KEY_P),
+    K(KEY_Q),
+    K(KEY_R),
+    K(KEY_S),
+    K(KEY_T),
+    K(KEY_U),
+    K(KEY_V),
+    K(KEY_W),
+    K(KEY_X),
+    K(KEY_Y),
+    K(KEY_Z),
+    K(KEY_LEFT_BRACKET),
+    K(KEY_BACKSLASH),
+    K(KEY_RIGHT_BRACKET),
+    K(KEY_GRAVE_ACCENT),
+    K(KEY_WORLD_1),
+    K(KEY_WORLD_2),
+    K(KEY_ESCAPE),
+    K(KEY_ENTER),
+    K(KEY_TAB),
+    K(KEY_BACKSPACE),
+    K(KEY_INSERT),
+    K(KEY_DELETE),
+    K(KEY_RIGHT),
+    K(KEY_LEFT),
+    K(KEY_DOWN),
+    K(KEY_UP),
+    K(KEY_PAGE_UP),
+    K(KEY_PAGE_DOWN),
+    K(KEY_HOME),
+    K(KEY_END),
+    K(KEY_CAPS_LOCK),
+    K(KEY_SCROLL_LOCK),
+    K(KEY_NUM_LOCK),
+    K(KEY_PRINT_SCREEN),
+    K(KEY_PAUSE),
+    K(KEY_F1),
+    K(KEY_F2),
+    K(KEY_F3),
+    K(KEY_F4),
+    K(KEY_F5),
+    K(KEY_F6),
+    K(KEY_F7),
+    K(KEY_F8),
+    K(KEY_F9),
+    K(KEY_F10),
+    K(KEY_F11),
+    K(KEY_F12),
+    K(KEY_F13),
+    K(KEY_F14),
+    K(KEY_F15),
+    K(KEY_F16),
+    K(KEY_F17),
+    K(KEY_F18),
+    K(KEY_F19),
+    K(KEY_F20),
+    K(KEY_F21),
+    K(KEY_F22),
+    K(KEY_F23),
+    K(KEY_F24),
+    K(KEY_F25),
+    K(KEY_KP_0),
+    K(KEY_KP_1),
+    K(KEY_KP_2),
+    K(KEY_KP_3),
+    K(KEY_KP_4),
+    K(KEY_KP_5),
+    K(KEY_KP_6),
+    K(KEY_KP_7),
+    K(KEY_KP_8),
+    K(KEY_KP_9),
+    K(KEY_KP_DECIMAL),
+    K(KEY_KP_DIVIDE),
+    K(KEY_KP_MULTIPLY),
+    K(KEY_KP_SUBTRACT),
+    K(KEY_KP_ADD),
+    K(KEY_KP_ENTER),
+    K(KEY_KP_EQUAL),
+    K(KEY_LEFT_SHIFT),
+    K(KEY_LEFT_CONTROL),
+    K(KEY_LEFT_ALT),
+    K(KEY_LEFT_SUPER),
+    K(KEY_RIGHT_SHIFT),
+    K(KEY_RIGHT_CONTROL),
+    K(KEY_RIGHT_ALT),
+    K(KEY_RIGHT_SUPER),
+    K(KEY_MENU),
+    K(KEY_LAST),
+    K(MOD_SHIFT),
+    K(MOD_CONTROL),
+    K(MOD_ALT),
+    K(MOD_SUPER),
+    K(MOUSE_BUTTON_1),
+    K(MOUSE_BUTTON_2),
+    K(MOUSE_BUTTON_3),
+    K(MOUSE_BUTTON_4),
+    K(MOUSE_BUTTON_5),
+    K(MOUSE_BUTTON_6),
+    K(MOUSE_BUTTON_7),
+    K(MOUSE_BUTTON_8),
+    K(MOUSE_BUTTON_LAST),
+    K(MOUSE_BUTTON_LEFT),
+    K(MOUSE_BUTTON_RIGHT),
+    K(MOUSE_BUTTON_MIDDLE),
+    K(RELEASE),
+    K(PRESS),
+    K(REPEAT)
+};
+
+#undef K
+
 void register_glfw(nb::module_ &m) {
     /* GLFW constants + functions */
     {
-        #define C(name) g.attr(#name) = nb::int_(GLFW_##name);
-        nb::module_ g = m.def_submodule("glfw");
-        C(KEY_UNKNOWN); C(KEY_SPACE); C(KEY_APOSTROPHE); C(KEY_COMMA);
-        C(KEY_MINUS); C(KEY_PERIOD); C(KEY_SLASH); C(KEY_0); C(KEY_1);
-        C(KEY_2); C(KEY_3); C(KEY_4); C(KEY_5); C(KEY_6); C(KEY_7); C(KEY_8);
-        C(KEY_9); C(KEY_SEMICOLON); C(KEY_EQUAL); C(KEY_A); C(KEY_B); C(KEY_C);
-        C(KEY_D); C(KEY_E); C(KEY_F); C(KEY_G); C(KEY_H); C(KEY_I); C(KEY_J);
-        C(KEY_K); C(KEY_L); C(KEY_M); C(KEY_N); C(KEY_O); C(KEY_P); C(KEY_Q);
-        C(KEY_R); C(KEY_S); C(KEY_T); C(KEY_U); C(KEY_V); C(KEY_W); C(KEY_X);
-        C(KEY_Y); C(KEY_Z); C(KEY_LEFT_BRACKET); C(KEY_BACKSLASH);
-        C(KEY_RIGHT_BRACKET); C(KEY_GRAVE_ACCENT); C(KEY_WORLD_1);
-        C(KEY_WORLD_2); C(KEY_ESCAPE); C(KEY_ENTER); C(KEY_TAB);
-        C(KEY_BACKSPACE); C(KEY_INSERT); C(KEY_DELETE); C(KEY_RIGHT);
-        C(KEY_LEFT); C(KEY_DOWN); C(KEY_UP); C(KEY_PAGE_UP); C(KEY_PAGE_DOWN);
-        C(KEY_HOME); C(KEY_END); C(KEY_CAPS_LOCK); C(KEY_SCROLL_LOCK);
-        C(KEY_NUM_LOCK); C(KEY_PRINT_SCREEN); C(KEY_PAUSE); C(KEY_F1);
-        C(KEY_F2); C(KEY_F3); C(KEY_F4); C(KEY_F5); C(KEY_F6); C(KEY_F7);
-        C(KEY_F8); C(KEY_F9); C(KEY_F10); C(KEY_F11); C(KEY_F12); C(KEY_F13);
-        C(KEY_F14); C(KEY_F15); C(KEY_F16); C(KEY_F17); C(KEY_F18); C(KEY_F19);
-        C(KEY_F20); C(KEY_F21); C(KEY_F22); C(KEY_F23); C(KEY_F24); C(KEY_F25);
-        C(KEY_KP_0); C(KEY_KP_1); C(KEY_KP_2); C(KEY_KP_3); C(KEY_KP_4);
-        C(KEY_KP_5); C(KEY_KP_6); C(KEY_KP_7); C(KEY_KP_8); C(KEY_KP_9);
-        C(KEY_KP_DECIMAL); C(KEY_KP_DIVIDE); C(KEY_KP_MULTIPLY);
-        C(KEY_KP_SUBTRACT); C(KEY_KP_ADD); C(KEY_KP_ENTER); C(KEY_KP_EQUAL);
-        C(KEY_LEFT_SHIFT); C(KEY_LEFT_CONTROL); C(KEY_LEFT_ALT);
-        C(KEY_LEFT_SUPER); C(KEY_RIGHT_SHIFT); C(KEY_RIGHT_CONTROL);
-        C(KEY_RIGHT_ALT); C(KEY_RIGHT_SUPER); C(KEY_MENU); C(KEY_LAST);
-        C(MOD_SHIFT); C(MOD_CONTROL); C(MOD_ALT); C(MOD_SUPER);
-        C(MOUSE_BUTTON_1); C(MOUSE_BUTTON_2); C(MOUSE_BUTTON_3);
-        C(MOUSE_BUTTON_4); C(MOUSE_BUTTON_5); C(MOUSE_BUTTON_6);
-        C(MOUSE_BUTTON_7); C(MOUSE_BUTTON_8); C(MOUSE_BUTTON_LAST);
-        C(MOUSE_BUTTON_LEFT); C(MOUSE_BUTTON_RIGHT); C(MOUSE_BUTTON_MIDDLE);
-        C(RELEASE); C(PRESS); C(REPEAT);
-        #undef C
-
-        g.def("getTime", &glfwGetTime);
+        nb::module_ m2 = m.def_submodule("glfw");
+        for (Key k: keys)
+            m2.attr(k.name) = k.value;
+        m2.def("getTime", &glfwGetTime);
     }
 }
 
