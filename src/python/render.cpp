@@ -205,27 +205,27 @@ void register_render(nb::module_ &m) {
              "min_interpolation_mode"_a = InterpolationMode::Bilinear,
              "mag_interpolation_mode"_a = InterpolationMode::Bilinear,
              "wrap_mode"_a = WrapMode::ClampToEdge)
-        .def("pixel_format", &Texture::pixel_format, D(Texture, pixel_format))
-        .def("component_format", &Texture::component_format, D(Texture, component_format))
-        .def("min_interpolation_mode", &Texture::min_interpolation_mode, D(Texture, min_interpolation_mode))
-        .def("mag_interpolation_mode", &Texture::mag_interpolation_mode, D(Texture, mag_interpolation_mode))
-        .def("wrap_mode", &Texture::wrap_mode, D(Texture, wrap_mode))
-        .def("samples", &Texture::samples, D(Texture, samples))
-        .def("flags", &Texture::flags, D(Texture, flags))
-        .def("size", &Texture::size, D(Texture, size))
-        .def("bytes_per_pixel", &Texture::bytes_per_pixel, D(Texture, bytes_per_pixel))
-        .def("channels", &Texture::channels, D(Texture, channels))
+        .def(nb_method(Texture, pixel_format), D(Texture, pixel_format))
+        .def(nb_method(Texture, component_format), D(Texture, component_format))
+        .def(nb_method(Texture, min_interpolation_mode), D(Texture, min_interpolation_mode))
+        .def(nb_method(Texture, mag_interpolation_mode), D(Texture, mag_interpolation_mode))
+        .def(nb_method(Texture, wrap_mode), D(Texture, wrap_mode))
+        .def(nb_method(Texture, samples), D(Texture, samples))
+        .def(nb_method(Texture, flags), D(Texture, flags))
+        .def(nb_method(Texture, size), D(Texture, size))
+        .def(nb_method(Texture, bytes_per_pixel), D(Texture, bytes_per_pixel))
+        .def(nb_method(Texture, channels), D(Texture, channels))
         .def("download", &texture_download, D(Texture, download))
         .def("upload", &texture_upload, D(Texture, upload))
         .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload, origin))
-        .def("generate_mipmap", &Texture::generate_mipmap, D(Texture, generate_mipmap))
-        .def("resize", &Texture::resize, D(Texture, resize))
+        .def(nb_method(Texture, generate_mipmap), D(Texture, generate_mipmap))
+        .def(nb_method(Texture, resize), D(Texture, resize))
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
-        .def("texture_handle", &Texture::texture_handle)
-        .def("renderbuffer_handle", &Texture::renderbuffer_handle)
+        .def(nb_method(Texture, texture_handle))
+        .def(nb_method(Texture, renderbuffer_handle))
 #elif defined(NANOGUI_USE_METAL)
-        .def("texture_handle", &Texture::texture_handle)
-        .def("sampler_state_handle", &Texture::sampler_state_handle)
+        .def(nb_method(Texture, texture_handle))
+        .def(nb_method(Texture, sampler_state_handle))
 #endif
         ;
 
@@ -240,24 +240,24 @@ void register_render(nb::module_ &m) {
                       const std::string &, const std::string &, Shader::BlendMode>(),
              D(Shader, Shader), "render_pass"_a, "name"_a, "vertex_shader"_a,
              "fragment_shader"_a, "blend_mode"_a = BlendMode::None)
-        .def("name", &Shader::name, D(Shader, name))
-        .def("blend_mode", &Shader::blend_mode, D(Shader, blend_mode))
+        .def(nb_method(Shader, name), D(Shader, name))
+        .def(nb_method(Shader, blend_mode), D(Shader, blend_mode))
         .def("set_buffer", &shader_set_buffer, D(Shader, set_buffer))
-        .def("set_texture", &Shader::set_texture, D(Shader, set_texture))
-        .def("begin", &Shader::begin, D(Shader, begin))
-        .def("end", &Shader::end, D(Shader, end))
+        .def(nb_method(Shader, set_texture), D(Shader, set_texture))
+        .def(nb_method(Shader, begin), D(Shader, begin))
+        .def(nb_method(Shader, end), D(Shader, end))
         .def("__enter__", &Shader::begin)
         .def("__exit__", [](Shader &s, nb::handle, nb::handle, nb::handle) { s.end(); },
              "type"_a.none(), "value"_a.none(), "traceback"_a.none())
-        .def("draw_array", &Shader::draw_array, D(Shader, draw_array),
+        .def(nb_method(Shader, draw_array), D(Shader, draw_array),
              "primitive_type"_a, "offset"_a, "count"_a, "indexed"_a = false)
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
-        .def("shader_handle", &Shader::shader_handle)
+        .def(nb_method(Shader, shader_handle))
 #elif defined(NANOGUI_USE_METAL)
-        .def("pipeline_state", &Shader::pipeline_state)
+        .def(nb_method(Shader, pipeline_state))
 #endif
 #if defined(NANOGUI_USE_OPENGL)
-        .def("vertex_array_handle", &Shader::vertex_array_handle)
+        .def(nb_method(Shader, vertex_array_handle))
 #endif
         ;
 
@@ -272,30 +272,30 @@ void register_render(nb::module_ &m) {
         .def(nb::init<std::vector<Object *>, Object *, Object *, Object *, bool>(),
              D(RenderPass, RenderPass), "color_targets"_a, "depth_target"_a = nullptr,
              "stencil_target"_a = nullptr, "blit_target"_a = nullptr, "clear"_a = true)
-        .def("set_clear_color", &RenderPass::set_clear_color, D(RenderPass, set_clear_color))
-        .def("clear_color", &RenderPass::clear_color, D(RenderPass, clear_color))
-        .def("set_clear_depth", &RenderPass::set_clear_depth, D(RenderPass, set_clear_depth))
-        .def("clear_depth", &RenderPass::clear_depth, D(RenderPass, clear_depth))
-        .def("set_clear_stencil", &RenderPass::set_clear_stencil, D(RenderPass, set_clear_stencil))
-        .def("clear_stencil", &RenderPass::clear_stencil, D(RenderPass, clear_stencil))
-        .def("set_viewport", &RenderPass::set_viewport, D(RenderPass, set_viewport), "offset"_a, "size"_a)
-        .def("viewport", &RenderPass::viewport, D(RenderPass, viewport))
-        .def("set_depth_test", &RenderPass::set_depth_test, D(RenderPass, set_depth_test), "depth_test"_a, "depth_write"_a)
-        .def("depth_test", &RenderPass::depth_test, D(RenderPass, depth_test))
-        .def("set_cull_mode", &RenderPass::set_cull_mode, D(RenderPass, set_cull_mode))
-        .def("cull_mode", &RenderPass::cull_mode, D(RenderPass, cull_mode))
-        .def("begin", &RenderPass::begin, D(RenderPass, begin))
-        .def("end", &RenderPass::end, D(RenderPass, end))
-        .def("resize", &RenderPass::resize, D(RenderPass, resize))
-        .def("blit_to", &RenderPass::blit_to, D(RenderPass, blit_to),
+        .def(nb_method(RenderPass, set_clear_color), D(RenderPass, set_clear_color))
+        .def(nb_method(RenderPass, clear_color), D(RenderPass, clear_color))
+        .def(nb_method(RenderPass, set_clear_depth), D(RenderPass, set_clear_depth))
+        .def(nb_method(RenderPass, clear_depth), D(RenderPass, clear_depth))
+        .def(nb_method(RenderPass, set_clear_stencil), D(RenderPass, set_clear_stencil))
+        .def(nb_method(RenderPass, clear_stencil), D(RenderPass, clear_stencil))
+        .def(nb_method(RenderPass, set_viewport), D(RenderPass, set_viewport), "offset"_a, "size"_a)
+        .def(nb_method(RenderPass, viewport), D(RenderPass, viewport))
+        .def(nb_method(RenderPass, set_depth_test), D(RenderPass, set_depth_test), "depth_test"_a, "depth_write"_a)
+        .def(nb_method(RenderPass, depth_test), D(RenderPass, depth_test))
+        .def(nb_method(RenderPass, set_cull_mode), D(RenderPass, set_cull_mode))
+        .def(nb_method(RenderPass, cull_mode), D(RenderPass, cull_mode))
+        .def(nb_method(RenderPass, begin), D(RenderPass, begin))
+        .def(nb_method(RenderPass, end), D(RenderPass, end))
+        .def(nb_method(RenderPass, resize), D(RenderPass, resize))
+        .def(nb_method(RenderPass, blit_to), D(RenderPass, blit_to),
              "src_offset"_a, "src_size"_a, "dst"_a, "dst_offset"_a)
         .def("__enter__", &RenderPass::begin)
         .def("__exit__", [](RenderPass &rp, nb::handle, nb::handle, nb::handle) { rp.end(); },
              "type"_a.none(), "value"_a.none(), "traceback"_a.none())
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
-        .def("framebuffer_handle", &RenderPass::framebuffer_handle)
+        .def(nb_method(RenderPass, framebuffer_handle))
 #elif defined(NANOGUI_USE_METAL)
-        .def("command_encoder", &RenderPass::command_encoder)
+        .def(nb_method(RenderPass, command_encoder))
 #endif
         ;
 

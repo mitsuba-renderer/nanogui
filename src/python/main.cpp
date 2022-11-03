@@ -112,8 +112,8 @@ NB_MODULE(nanogui_ext, m_) {
               nanogui::file_dialog,
           D(file_dialog, 2));
 #if defined(__APPLE__)
-        m.def("chdir_to_bundle_parent", &nanogui::chdir_to_bundle_parent);
-    #endif
+    m.def("chdir_to_bundle_parent", &nanogui::chdir_to_bundle_parent, D(chdir_to_bundle_parent));
+#endif
     m.def("utf8", [](int c) { return std::string(utf8(c).data()); }, D(utf8));
     m.def("load_image_directory", &nanogui::load_image_directory, D(load_image_directory));
 

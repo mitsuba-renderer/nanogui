@@ -8,7 +8,7 @@ void register_eigen(nb::module_ &m) {
         .def(nb::init<int, int>(), D(Color, Color, 5))
         .def(nb::init<float, float, float, float>(), D(Color, Color, 7))
         .def(nb::init<float, float>(), D(Color, Color, 5))
-        .def("contrasting_color", &Color::contrasting_color,
+        .def(nb_method(Color, contrasting_color),
              D(Color, contrasting_color))
         .def_property("r", [](const Color &c) { return c.r(); },
                       [](Color &c, float v) { c.r() = v; }, D(Color, r))

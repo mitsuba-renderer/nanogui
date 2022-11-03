@@ -29,27 +29,27 @@ void register_canvas(nb::module_ &m) {
              "parent"_a, "samples"_a = 4, "has_depth_buffer"_a = true,
              "has_stencil_buffer"_a = false,
              "clear"_a = true, D(Canvas, Canvas))
-        .def("render_pass", &Canvas::render_pass, D(Canvas, render_pass))
-        .def("draw_border", &Canvas::draw_border, D(Canvas, draw_border))
-        .def("set_draw_border", &Canvas::set_draw_border, D(Canvas, set_draw_border))
-        .def("border_color", &Canvas::border_color, D(Canvas, border_color))
-        .def("set_border_color", &Canvas::set_border_color, D(Canvas, set_border_color))
-        .def("background_color", &Canvas::background_color, D(Canvas, background_color))
-        .def("set_background_color", &Canvas::set_background_color, D(Canvas, set_background_color))
-        .def("draw_contents", &Canvas::draw_contents, D(Canvas, draw_contents));
+        .def(nb_method(Canvas, render_pass), D(Canvas, render_pass))
+        .def(nb_method(Canvas, draw_border), D(Canvas, draw_border))
+        .def(nb_method(Canvas, set_draw_border), D(Canvas, set_draw_border))
+        .def(nb_method(Canvas, border_color), D(Canvas, border_color))
+        .def(nb_method(Canvas, set_border_color), D(Canvas, set_border_color))
+        .def(nb_method(Canvas, background_color), D(Canvas, background_color))
+        .def(nb_method(Canvas, set_background_color), D(Canvas, set_background_color))
+        .def(nb_method(Canvas, draw_contents), D(Canvas, draw_contents));
 
     nb::class_<ImageView, Canvas, PyImageView>(m, "ImageView", D(ImageView))
         .def(nb::init<Widget *>(), D(ImageView, ImageView))
         .def("image", nb::overload_cast<>(&ImageView::image, nb::const_), D(ImageView, image))
-        .def("set_image", &ImageView::set_image, D(ImageView, set_image))
-        .def("reset", &ImageView::reset, D(ImageView, reset))
-        .def("center", &ImageView::center, D(ImageView, center))
-        .def("offset", &ImageView::offset, D(ImageView, offset))
-        .def("set_offset", &ImageView::set_offset, D(ImageView, set_offset))
-        .def("scale", &ImageView::scale, D(ImageView, scale))
-        .def("set_scale", &ImageView::set_scale, D(ImageView, set_scale))
-        .def("pos_to_pixel", &ImageView::pos_to_pixel, D(ImageView, pos_to_pixel))
-        .def("pixel_to_pos", &ImageView::pixel_to_pos, D(ImageView, pixel_to_pos))
+        .def(nb_method(ImageView, set_image), D(ImageView, set_image))
+        .def(nb_method(ImageView, reset), D(ImageView, reset))
+        .def(nb_method(ImageView, center), D(ImageView, center))
+        .def(nb_method(ImageView, offset), D(ImageView, offset))
+        .def(nb_method(ImageView, set_offset), D(ImageView, set_offset))
+        .def(nb_method(ImageView, scale), D(ImageView, scale))
+        .def(nb_method(ImageView, set_scale), D(ImageView, set_scale))
+        .def(nb_method(ImageView, pos_to_pixel), D(ImageView, pos_to_pixel))
+        .def(nb_method(ImageView, pixel_to_pos), D(ImageView, pixel_to_pos))
         .def("set_pixel_callback",
              [](ImageView &img,
                 const std::function<std::array<std::string, 4>(const Vector2i &)> &func) {

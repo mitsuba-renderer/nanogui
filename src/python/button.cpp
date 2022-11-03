@@ -13,26 +13,26 @@ void register_button(nb::module_ &m) {
     button
         .def(nb::init<Widget *, const std::string &, int>(),
              "parent"_a, "caption"_a = std::string("Untitled"), "icon"_a = 0, D(Button, Button))
-        .def("caption", &Button::caption, D(Button, caption))
-        .def("set_caption", &Button::set_caption, D(Button, set_caption))
-        .def("background_color", &Button::background_color, D(Button, background_color))
-        .def("set_background_color", &Button::set_background_color, D(Button, set_background_color))
-        .def("text_color", &Button::text_color, D(Button, text_color))
-        .def("set_text_color", &Button::set_text_color, D(Button, set_text_color))
-        .def("icon", &Button::icon, D(Button, icon))
-        .def("set_icon", &Button::set_icon, D(Button, set_icon))
-        .def("flags", &Button::flags, D(Button, flags))
-        .def("set_flags", &Button::set_flags, D(Button, set_flags))
-        .def("icon_position", &Button::icon_position, D(Button, icon_position))
-        .def("set_icon_position", &Button::set_icon_position, D(Button, set_icon_position))
-        .def("pushed", &Button::pushed, D(Button, pushed))
-        .def("set_pushed", &Button::set_pushed, D(Button, set_pushed))
-        .def("callback", &Button::callback, D(Button, callback))
-        .def("set_callback", &Button::set_callback, D(Button, set_callback))
-        .def("change_callback", &Button::change_callback, D(Button, change_callback))
-        .def("set_change_callback", &Button::set_change_callback, D(Button, set_change_callback))
-        .def("button_group", &Button::button_group, D(Button, button_group))
-        .def("set_button_group", &Button::set_button_group, D(Button, set_button_group));
+        .def(nb_method(Button, caption), D(Button, caption))
+        .def(nb_method(Button, set_caption), D(Button, set_caption))
+        .def(nb_method(Button, background_color), D(Button, background_color))
+        .def(nb_method(Button, set_background_color), D(Button, set_background_color))
+        .def(nb_method(Button, text_color), D(Button, text_color))
+        .def(nb_method(Button, set_text_color), D(Button, set_text_color))
+        .def(nb_method(Button, icon), D(Button, icon))
+        .def(nb_method(Button, set_icon), D(Button, set_icon))
+        .def(nb_method(Button, flags), D(Button, flags))
+        .def(nb_method(Button, set_flags), D(Button, set_flags))
+        .def(nb_method(Button, icon_position), D(Button, icon_position))
+        .def(nb_method(Button, set_icon_position), D(Button, set_icon_position))
+        .def(nb_method(Button, pushed), D(Button, pushed))
+        .def(nb_method(Button, set_pushed), D(Button, set_pushed))
+        .def(nb_method(Button, callback), D(Button, callback))
+        .def(nb_method(Button, set_callback), D(Button, set_callback))
+        .def(nb_method(Button, change_callback), D(Button, change_callback))
+        .def(nb_method(Button, set_change_callback), D(Button, set_change_callback))
+        .def(nb_method(Button, button_group), D(Button, button_group))
+        .def(nb_method(Button, set_button_group), D(Button, set_button_group));
 
     nb::enum_<Button::IconPosition>(button, "IconPosition", D(Button, IconPosition))
         .value("Left", Button::IconPosition::Left)
@@ -58,10 +58,10 @@ void register_button(nb::module_ &m) {
                 "parent"_a, "caption"_a = std::string("Untitled"),
                 "button_icon"_a = 0, D(PopupButton, PopupButton))
         .def("popup", (Popup*(PopupButton::*)(void)) &PopupButton::popup, D(PopupButton, popup))
-        .def("chevron_icon", &PopupButton::chevron_icon, D(PopupButton, chevron_icon))
-        .def("set_chevron_icon", &PopupButton::set_chevron_icon, D(PopupButton, set_chevron_icon))
-        .def("side", &PopupButton::side, D(PopupButton, side))
-        .def("set_side", &PopupButton::set_side, D(PopupButton, set_side));
+        .def(nb_method(PopupButton, chevron_icon), D(PopupButton, chevron_icon))
+        .def(nb_method(PopupButton, set_chevron_icon), D(PopupButton, set_chevron_icon))
+        .def(nb_method(PopupButton, side), D(PopupButton, side))
+        .def(nb_method(PopupButton, set_side), D(PopupButton, set_side));
 
     nb::class_<CheckBox, Widget, PyCheckBox>(m, "CheckBox", D(CheckBox))
         .def(nb::init<Widget *, const std::string &>(), "parent"_a,
@@ -70,14 +70,14 @@ void register_button(nb::module_ &m) {
         .def(nb::init<Widget *, const std::string &, const std::function<void(bool)>&>(),
              "parent"_a, "caption"_a, "callback"_a,
              D(CheckBox, CheckBox))
-        .def("caption", &CheckBox::caption, D(CheckBox, caption))
-        .def("set_caption", &CheckBox::set_caption, D(CheckBox, set_caption))
-        .def("checked", &CheckBox::checked, D(CheckBox, checked))
-        .def("set_checked", &CheckBox::set_checked, D(CheckBox, set_checked))
-        .def("pushed", &CheckBox::pushed, D(CheckBox, pushed))
-        .def("set_pushed", &CheckBox::set_pushed, D(CheckBox, set_pushed))
-        .def("callback", &CheckBox::callback, D(CheckBox, callback))
-        .def("set_callback", &CheckBox::set_callback, D(CheckBox, set_callback));
+        .def(nb_method(CheckBox, caption), D(CheckBox, caption))
+        .def(nb_method(CheckBox, set_caption), D(CheckBox, set_caption))
+        .def(nb_method(CheckBox, checked), D(CheckBox, checked))
+        .def(nb_method(CheckBox, set_checked), D(CheckBox, set_checked))
+        .def(nb_method(CheckBox, pushed), D(CheckBox, pushed))
+        .def(nb_method(CheckBox, set_pushed), D(CheckBox, set_pushed))
+        .def(nb_method(CheckBox, callback), D(CheckBox, callback))
+        .def(nb_method(CheckBox, set_callback), D(CheckBox, set_callback));
 }
 
 #endif

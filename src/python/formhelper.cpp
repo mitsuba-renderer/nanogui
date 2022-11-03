@@ -9,11 +9,11 @@ void register_formhelper(nb::module_ &m) {
 
     nb::class_<FormHelper>(m, "FormHelper", D(FormHelper))
         .def(nb::init<Screen *>(), D(FormHelper, FormHelper))
-        .def("add_window", &FormHelper::add_window, "pos"_a,
+        .def(nb_method(FormHelper, add_window), "pos"_a,
              "title"_a = std::string("Untitled"),
              D(FormHelper, add_window))
-        .def("add_group", &FormHelper::add_group, D(FormHelper, add_group))
-        .def("add_button", &FormHelper::add_button, "label"_a,
+        .def(nb_method(FormHelper, add_group), D(FormHelper, add_group))
+        .def(nb_method(FormHelper, add_button), "label"_a,
              "cb"_a, D(FormHelper, add_group))
         .def("add_bool_variable",
              [](FormHelper &h, const std::string &label,
@@ -66,21 +66,21 @@ void register_formhelper(nb::module_ &m) {
              },
              "label"_a, "setter"_a, "getter"_a,
              "editable"_a = true)
-        .def("add_widget", &FormHelper::add_widget, D(FormHelper, add_widget))
-        .def("refresh", &FormHelper::refresh, D(FormHelper, refresh))
-        .def("window", &FormHelper::window, D(FormHelper, window))
-        .def("set_window", &FormHelper::set_window, D(FormHelper, set_window))
-        .def("fixed_size", &FormHelper::fixed_size, D(FormHelper, fixed_size))
-        .def("set_fixed_size", &FormHelper::set_fixed_size, D(FormHelper, set_fixed_size))
-        .def("group_font_name", &FormHelper::group_font_name, D(FormHelper, group_font_name))
-        .def("set_group_font_name", &FormHelper::set_group_font_name, D(FormHelper, set_group_font_name))
-        .def("label_font_name", &FormHelper::label_font_name, D(FormHelper, label_font_name))
-        .def("set_label_font_name", &FormHelper::set_label_font_name, D(FormHelper, set_label_font_name))
-        .def("group_font_size", &FormHelper::group_font_size, D(FormHelper, group_font_size))
-        .def("set_group_font_size", &FormHelper::set_group_font_size, D(FormHelper, set_group_font_size))
-        .def("label_font_size", &FormHelper::label_font_size, D(FormHelper, label_font_size))
-        .def("set_label_font_size", &FormHelper::set_label_font_size, D(FormHelper, set_label_font_size))
-        .def("widget_font_size", &FormHelper::widget_font_size, D(FormHelper, widget_font_size))
-        .def("set_widget_font_size", &FormHelper::set_widget_font_size, D(FormHelper, set_widget_font_size));
+        .def(nb_method(FormHelper, add_widget), D(FormHelper, add_widget))
+        .def(nb_method(FormHelper, refresh), D(FormHelper, refresh))
+        .def(nb_method(FormHelper, window), D(FormHelper, window))
+        .def(nb_method(FormHelper, set_window), D(FormHelper, set_window))
+        .def(nb_method(FormHelper, fixed_size), D(FormHelper, fixed_size))
+        .def(nb_method(FormHelper, set_fixed_size), D(FormHelper, set_fixed_size))
+        .def(nb_method(FormHelper, group_font_name), D(FormHelper, group_font_name))
+        .def(nb_method(FormHelper, set_group_font_name), D(FormHelper, set_group_font_name))
+        .def(nb_method(FormHelper, label_font_name), D(FormHelper, label_font_name))
+        .def(nb_method(FormHelper, set_label_font_name), D(FormHelper, set_label_font_name))
+        .def(nb_method(FormHelper, group_font_size), D(FormHelper, group_font_size))
+        .def(nb_method(FormHelper, set_group_font_size), D(FormHelper, set_group_font_size))
+        .def(nb_method(FormHelper, label_font_size), D(FormHelper, label_font_size))
+        .def(nb_method(FormHelper, set_label_font_size), D(FormHelper, set_label_font_size))
+        .def(nb_method(FormHelper, widget_font_size), D(FormHelper, widget_font_size))
+        .def(nb_method(FormHelper, set_widget_font_size), D(FormHelper, set_widget_font_size));
 }
 #endif

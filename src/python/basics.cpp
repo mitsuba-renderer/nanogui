@@ -16,26 +16,26 @@ void register_basics(nb::module_ &m) {
              "parent"_a, "caption"_a, "font"_a = std::string("sans"),
              "font_size"_a = -1,
              D(Label, Label))
-        .def("caption", &Label::caption, D(Label, caption))
-        .def("set_caption", &Label::set_caption, D(Label, set_caption))
-        .def("font", &Label::font, D(Label, font))
-        .def("set_font", &Label::set_font, D(Label, set_font))
-        .def("color", &Label::color, D(Label, color))
-        .def("set_color", &Label::set_color, D(Label, set_color));
+        .def(nb_method(Label, caption), D(Label, caption))
+        .def(nb_method(Label, set_caption), D(Label, set_caption))
+        .def(nb_method(Label, font), D(Label, font))
+        .def(nb_method(Label, set_font), D(Label, set_font))
+        .def(nb_method(Label, color), D(Label, color))
+        .def(nb_method(Label, set_color), D(Label, set_color));
 
 
     nb::class_<Popup, Window, PyPopup> popup(m, "Popup", D(Popup));
     popup
         .def(nb::init<Widget *, Window *>(), "parent"_a, "parent_window"_a, D(Popup, Popup))
-        .def("anchor_pos", &Popup::anchor_pos, D(Popup, anchor_pos))
-        .def("set_anchor_pos", &Popup::set_anchor_pos, D(Popup, set_anchor_pos))
-        .def("anchor_offset", &Popup::anchor_offset, D(Popup, anchor_offset))
-        .def("set_anchor_offset", &Popup::set_anchor_offset, D(Popup, set_anchor_offset))
-        .def("anchor_size", &Popup::anchor_size, D(Popup, anchor_size))
-        .def("set_anchor_size", &Popup::set_anchor_size, D(Popup, set_anchor_size))
+        .def(nb_method(Popup, anchor_pos), D(Popup, anchor_pos))
+        .def(nb_method(Popup, set_anchor_pos), D(Popup, set_anchor_pos))
+        .def(nb_method(Popup, anchor_offset), D(Popup, anchor_offset))
+        .def(nb_method(Popup, set_anchor_offset), D(Popup, set_anchor_offset))
+        .def(nb_method(Popup, anchor_size), D(Popup, anchor_size))
+        .def(nb_method(Popup, set_anchor_size), D(Popup, set_anchor_size))
         .def("parent_window", (Window*(Popup::*)(void)) &Popup::parent_window, D(Popup, parent_window))
-        .def("side", &Popup::side, D(Popup, side))
-        .def("set_side", &Popup::set_side, D(Popup, set_side));
+        .def(nb_method(Popup, side), D(Popup, side))
+        .def(nb_method(Popup, set_side), D(Popup, set_side));
 
     nb::enum_<Popup::Side>(popup, "Side", D(Popup, Side))
         .value("Left", Popup::Side::Left)
@@ -51,8 +51,8 @@ void register_basics(nb::module_ &m) {
             "alt_button_text"_a = std::string("Cancel"), "alt_button"_a = false,
             D(MessageDialog, MessageDialog))
         .def("message_label", (Label * (MessageDialog::*)()) &MessageDialog::message_label, D(MessageDialog, message_label))
-        .def("callback", &MessageDialog::callback, D(MessageDialog, callback))
-        .def("set_callback", &MessageDialog::set_callback, D(MessageDialog, set_callback));
+        .def(nb_method(MessageDialog, callback), D(MessageDialog, callback))
+        .def(nb_method(MessageDialog, set_callback), D(MessageDialog, set_callback));
 
     nb::enum_<MessageDialog::Type>(mdlg, "Type", D(MessageDialog, Type))
         .value("Information", MessageDialog::Type::Information)
@@ -61,8 +61,8 @@ void register_basics(nb::module_ &m) {
 
     nb::class_<VScrollPanel, Widget, PyVScrollPanel>(m, "VScrollPanel", D(VScrollPanel))
         .def(nb::init<Widget *>(), "parent"_a, D(VScrollPanel, VScrollPanel))
-        .def("scroll", &VScrollPanel::scroll, D(VScrollPanel, scroll))
-        .def("set_scroll", &VScrollPanel::set_scroll, D(VScrollPanel, set_scroll));
+        .def(nb_method(VScrollPanel, scroll), D(VScrollPanel, scroll))
+        .def(nb_method(VScrollPanel, set_scroll), D(VScrollPanel, set_scroll));
 
     nb::class_<ComboBox, Widget, PyComboBox>(m, "ComboBox", D(ComboBox))
         .def(nb::init<Widget *>(), "parent"_a, D(ComboBox, ComboBox))
@@ -71,34 +71,34 @@ void register_basics(nb::module_ &m) {
         .def(nb::init<Widget *, const std::vector<std::string> &,
                       const std::vector<std::string> &>(),
              "parent"_a, "items"_a, "items_short"_a/* ,D(ComboBox, ComboBox, 3)*/)
-        .def("callback", &ComboBox::callback, D(ComboBox, callback))
-        .def("set_callback", &ComboBox::set_callback, D(ComboBox, set_callback))
-        .def("selected_index", &ComboBox::selected_index, D(ComboBox, selected_index))
-        .def("set_selected_index", &ComboBox::set_selected_index, D(ComboBox, set_selected_index))
+        .def(nb_method(ComboBox, callback), D(ComboBox, callback))
+        .def(nb_method(ComboBox, set_callback), D(ComboBox, set_callback))
+        .def(nb_method(ComboBox, selected_index), D(ComboBox, selected_index))
+        .def(nb_method(ComboBox, set_selected_index), D(ComboBox, set_selected_index))
         .def("set_items", (void(ComboBox::*)(const std::vector<std::string>&)) &ComboBox::set_items, D(ComboBox, set_items))
         .def("set_items", (void(ComboBox::*)(const std::vector<std::string>&,
                           const std::vector<std::string>&)) &ComboBox::set_items/*, D(ComboBox, set_items, 2)*/)
-        .def("items", &ComboBox::items, D(ComboBox, items))
-        .def("items_short", &ComboBox::items_short, D(ComboBox, items_short));
+        .def(nb_method(ComboBox, items), D(ComboBox, items))
+        .def(nb_method(ComboBox, items_short), D(ComboBox, items_short));
 
     nb::class_<ProgressBar, Widget, PyProgressBar>(m, "ProgressBar", D(ProgressBar))
         .def(nb::init<Widget *>(), "parent"_a, D(ProgressBar, ProgressBar))
-        .def("value", &ProgressBar::value, D(ProgressBar, value))
-        .def("set_value", &ProgressBar::set_value, D(ProgressBar, set_value));
+        .def(nb_method(ProgressBar, value), D(ProgressBar, value))
+        .def(nb_method(ProgressBar, set_value), D(ProgressBar, set_value));
 
     nb::class_<Slider, Widget, PySlider>(m, "Slider", D(Slider))
         .def(nb::init<Widget *>(), "parent"_a, D(Slider, Slider))
-        .def("value", &Slider::value, D(Slider, value))
-        .def("set_value", &Slider::set_value, D(Slider, set_value))
-        .def("highlight_color", &Slider::highlight_color, D(Slider, highlight_color))
-        .def("set_highlight_color", &Slider::set_highlight_color, D(Slider, set_highlight_color))
-        .def("range", &Slider::range, D(Slider, range))
-        .def("set_range", &Slider::set_range, D(Slider, set_range))
-        .def("highlighted_range", &Slider::highlighted_range, D(Slider, highlighted_range))
-        .def("set_highlighted_range", &Slider::set_highlighted_range, D(Slider, set_highlighted_range))
-        .def("set_callback", &Slider::set_callback, D(Slider, set_callback))
-        .def("callback", &Slider::callback, D(Slider, callback))
-        .def("set_final_callback", &Slider::set_final_callback, D(Slider, set_final_callback))
-        .def("final_callback", &Slider::final_callback, D(Slider, final_callback));
+        .def(nb_method(Slider, value), D(Slider, value))
+        .def(nb_method(Slider, set_value), D(Slider, set_value))
+        .def(nb_method(Slider, highlight_color), D(Slider, highlight_color))
+        .def(nb_method(Slider, set_highlight_color), D(Slider, set_highlight_color))
+        .def(nb_method(Slider, range), D(Slider, range))
+        .def(nb_method(Slider, set_range), D(Slider, set_range))
+        .def(nb_method(Slider, highlighted_range), D(Slider, highlighted_range))
+        .def(nb_method(Slider, set_highlighted_range), D(Slider, set_highlighted_range))
+        .def(nb_method(Slider, set_callback), D(Slider, set_callback))
+        .def(nb_method(Slider, callback), D(Slider, callback))
+        .def(nb_method(Slider, set_final_callback), D(Slider, set_final_callback))
+        .def(nb_method(Slider, final_callback), D(Slider, final_callback));
 }
 #endif
