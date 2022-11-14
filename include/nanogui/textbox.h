@@ -73,6 +73,9 @@ public:
     /// Specify a placeholder text to be displayed while the text box is empty.
     void set_placeholder(const std::string &placeholder) { m_placeholder = placeholder; }
 
+    /// Turn the textbox into a password field.
+    void set_password_field(bool enable, char mask = '*');
+
     /// Set the \ref Theme used to draw this widget
     virtual void set_theme(Theme *theme) override;
 
@@ -113,6 +116,8 @@ protected:
     bool m_editable;
     bool m_spinnable;
     bool m_committed;
+    bool m_password;
+    char m_password_mask;
     std::string m_value;
     std::string m_default_value;
     Alignment m_alignment;
