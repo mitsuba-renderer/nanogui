@@ -216,9 +216,7 @@ void TextBox::draw(NVGcontext* ctx) {
         nvgText(ctx, draw_pos.x(), draw_pos.y(),
                 m_value.empty()
                 ? m_placeholder.c_str()
-                : m_password
-                    ? std::string(m_value.length(), m_password_mask ).c_str()
-                    : m_value.c_str()
+                : value_or_mask_str(m_value).c_str()
                   , nullptr);
     } else {
         const int max_glyphs = 1024;
@@ -249,22 +247,16 @@ void TextBox::draw(NVGcontext* ctx) {
 
         // draw text with offset
         nvgText(ctx, draw_pos.x(), draw_pos.y(),
-                m_password
-                    ? std::string(m_value_temp.length(), m_password_mask ).c_str()
-                    : m_value_temp.c_str()
+                value_or_mask_str(m_value_temp).c_str()
                 , nullptr);
 
         nvgTextBounds(ctx, draw_pos.x(), draw_pos.y(),
-                      m_password
-                          ? std::string(m_value_temp.length(), m_password_mask ).c_str()
-                          : m_value_temp.c_str()
+                      value_or_mask_str(m_value_temp).c_str()
                       ,nullptr, text_bound);
 
         // recompute cursor positions
         nglyphs = nvgTextGlyphPositions(ctx, draw_pos.x(), draw_pos.y(),
-                                         m_password
-                                            ? std::string(m_value_temp.length(), m_password_mask ).c_str()
-                                            : m_value_temp.c_str()
+                                         value_or_mask_str(m_value_temp).c_str()
                                         , nullptr, glyphs, max_glyphs);
 
         if (m_cursor_pos > -1) {
@@ -654,5 +646,11 @@ void TextBox::set_password_field(bool enable, char mask) {
     m_password_mask = mask;
 }
 
+std::string TextBox::value_or_mask_str(const std::string& str) const
+{
+    return m_password
+            ? std::string(str.length(), m_password_mask).c_str()
+            : str.c_str();
+}
 
 NAMESPACE_END(nanogui)

@@ -108,6 +108,8 @@ protected:
     int position_to_cursor_index(float posx, float lastx,
                                  const NVGglyphPosition *glyphs, int size);
 
+    std::string value_or_mask_str(const std::string& str) const;
+
     /// The location (if any) for the spin area.
     enum class SpinArea { None, Top, Bottom };
     SpinArea spin_area(const Vector2i &pos);
