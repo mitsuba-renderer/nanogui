@@ -187,7 +187,10 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
+
+#if !defined(EMSCRIPTEN)
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+#endif
 
     for (int i = 0; i < 2; ++i) {
         if (fullscreen) {
@@ -377,6 +380,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
         }
     );
 
+#if !defined(EMSCRIPTEN)
     glfwSetWindowContentScaleCallback(m_glfw_window,
         [](GLFWwindow* w, float, float) {
             auto it = __nanogui_screens.find(w);
@@ -388,6 +392,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
             s->resize_callback_event(s->m_size.x(), s->m_size.y());
         }
     );
+#endif 
 
     initialize(m_glfw_window, true);
 
@@ -426,8 +431,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
         /* The canvas element is configured as width/height: auto, expand to
            the available space instead of using the specified window resolution */
         nanogui_emscripten_resize_callback(0, nullptr, nullptr);
-        emscripten_set_resize_callback(nullptr, nullptr, false,
-                                       nanogui_emscripten_resize_callback);
+        emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, false, nanogui_emscripten_resize_callback);
     } else if (w != w2 || h != h2) {
         /* Configure for rendering on a high-DPI display */
         emscripten_set_canvas_element_size("#canvas", (int) w2, (int) h2);
