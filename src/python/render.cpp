@@ -1,10 +1,10 @@
 #ifdef NANOGUI_PYTHON
 
-#include <nanobind/tensor.h>
+#include <nanobind/ndarray.h>
 
 #include "python.h"
 
-static VariableType dtype_to_enoki(nb::dlpack::dtype dtype) {
+static VariableType interpret_dlpack_dtype(nb::dlpack::dtype dtype) {
     switch ((nb::dlpack::dtype_code) dtype.code) {
         case nb::dlpack::dtype_code::Int:
             switch (dtype.bits) {
@@ -44,25 +44,25 @@ static VariableType dtype_to_enoki(nb::dlpack::dtype dtype) {
 
 static void
 shader_set_buffer(Shader &shader, const std::string &name,
-                  nb::tensor<nb::device::cpu, nb::c_contig> tensor) {
-    if (tensor.ndim() > 3)
-        throw nb::type_error("Shader::set_buffer(): tensor rank must be < 3!");
+                  nb::ndarray<nb::device::cpu, nb::c_contig> array) {
+    if (array.ndim() > 3)
+        throw nb::type_error("Shader::set_buffer(): number of array dimensions must be < 3!");
 
-    VariableType dtype = dtype_to_enoki(tensor.dtype());
+    VariableType dtype = interpret_dlpack_dtype(array.dtype());
 
     if (dtype == VariableType::Invalid)
         throw nb::type_error("Shader::set_buffer(): unsupported array dtype!");
 
     size_t dim[3] {
-        tensor.ndim() > 0 ? (size_t) tensor.shape(0) : 1,
-        tensor.ndim() > 1 ? (size_t) tensor.shape(1) : 1,
-        tensor.ndim() > 2 ? (size_t) tensor.shape(2) : 1
+        array.ndim() > 0 ? (size_t) array.shape(0) : 1,
+        array.ndim() > 1 ? (size_t) array.shape(1) : 1,
+        array.ndim() > 2 ? (size_t) array.shape(2) : 1
     };
 
-    shader.set_buffer(name, dtype, tensor.ndim(), dim, tensor.data());
+    shader.set_buffer(name, dtype, array.ndim(), dim, array.data());
 }
 
-static nb::tensor<nb::numpy> texture_download(Texture &texture) {
+static nb::ndarray<nb::numpy> texture_download(Texture &texture) {
     nb::dlpack::dtype dt;
 
     switch (texture.component_format()) {
@@ -90,18 +90,19 @@ static nb::tensor<nb::numpy> texture_download(Texture &texture) {
 
     texture.download(ptr);
 
-    return nb::tensor<nb::numpy>(ptr, 3, shape, owner, nullptr, dt);
+    return nb::ndarray<nb::numpy>(ptr, 3, shape, owner, nullptr, dt);
 }
 
-static void texture_upload(Texture &texture, nb::tensor<nb::device::cpu, nb::c_contig> tensor) {
-    size_t n_channels = tensor.ndim() == 3 ? tensor.shape(2) : 1;
-    VariableType dtype         = dtype_to_enoki(tensor.dtype()),
+static void texture_upload(Texture &texture,
+                           nb::ndarray<nb::device::cpu, nb::c_contig> array) {
+    size_t n_channels          = array.ndim() == 3 ? array.shape(2) : 1;
+    VariableType dtype         = interpret_dlpack_dtype(array.dtype()),
                  dtype_texture = (VariableType) texture.component_format();
 
-    if (tensor.ndim() != 2 && tensor.ndim() != 3)
+    if (array.ndim() != 2 && array.ndim() != 3)
         throw std::runtime_error("Texture::upload(): expected a 2 or 3-dimensional array!");
-    else if (tensor.shape(0) != (size_t) texture.size().y() ||
-             tensor.shape(1) != (size_t) texture.size().x())
+    else if (array.shape(0) != (size_t) texture.size().y() ||
+             array.shape(1) != (size_t) texture.size().x())
         throw std::runtime_error("Texture::upload(): array size does not match the texture!");
     else if (n_channels != texture.channels())
         throw std::runtime_error(
@@ -114,18 +115,21 @@ static void texture_upload(Texture &texture, nb::tensor<nb::device::cpu, nb::c_c
             type_name(dtype) + ") does not match the texture (" +
             type_name(dtype_texture) + ")!");
 
-    texture.upload((const uint8_t *) tensor.data());
+    texture.upload((const uint8_t *) array.data());
 }
 
-static void texture_upload_sub_region(Texture &texture, nb::tensor<nb::device::cpu, nb::c_contig> tensor, const Vector2i &origin) {
-    size_t n_channels = tensor.ndim() == 3 ? tensor.shape(2) : 1;
-    VariableType dtype         = dtype_to_enoki(tensor.dtype()),
+static void
+texture_upload_sub_region(Texture &texture,
+                          nb::ndarray<nb::device::cpu, nb::c_contig> array,
+                          const Vector2i &origin) {
+    size_t n_channels          = array.ndim() == 3 ? array.shape(2) : 1;
+    VariableType dtype         = interpret_dlpack_dtype(array.dtype()),
                  dtype_texture = (VariableType) texture.component_format();
 
-    if (tensor.ndim() != 2 && tensor.ndim() != 3)
+    if (array.ndim() != 2 && array.ndim() != 3)
         throw std::runtime_error("Texture::upload_sub_region(): expected a 2 or 3-dimensional array!");
-    else if (tensor.shape(0) + (size_t) origin.x() > (size_t) texture.size().y() ||
-             tensor.shape(1) + (size_t) origin.y() > (size_t) texture.size().x())
+    else if (array.shape(0) + (size_t) origin.x() > (size_t) texture.size().y() ||
+             array.shape(1) + (size_t) origin.y() > (size_t) texture.size().x())
         throw std::runtime_error("Texture::upload_sub_region(): bounds exceed the size of the texture!");
     else if (n_channels != texture.channels())
         throw std::runtime_error(
@@ -139,8 +143,8 @@ static void texture_upload_sub_region(Texture &texture, nb::tensor<nb::device::c
             type_name(dtype_texture) + ")!");
 
     texture.upload_sub_region(
-        (const uint8_t *) tensor.data(), origin,
-        { (int32_t) tensor.shape(0), (int32_t) tensor.shape(1) });
+        (const uint8_t *) array.data(), origin,
+        { (int32_t) array.shape(0), (int32_t) array.shape(1) });
 }
 #endif
 

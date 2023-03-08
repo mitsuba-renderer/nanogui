@@ -5,21 +5,19 @@
 
 class PyCanvas : public Canvas {
 public:
-    using Canvas::Canvas;
     NANOGUI_WIDGET_OVERLOADS(Canvas);
 
     void draw_contents() override {
-        NB_OVERRIDE(void, Canvas, draw_contents);
+        NB_OVERRIDE(draw_contents);
     }
 };
 
 class PyImageView : public ImageView {
 public:
-    using ImageView::ImageView;
     NANOGUI_WIDGET_OVERLOADS(ImageView);
 
     void draw_contents() override {
-        NB_OVERRIDE(void, ImageView, draw_contents);
+        NB_OVERRIDE(draw_contents);
     }
 };
 

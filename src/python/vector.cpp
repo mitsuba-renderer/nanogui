@@ -2,7 +2,7 @@
 
 #include "python.h"
 #include <nanobind/operators.h>
-#include <nanobind/tensor.h>
+#include <nanobind/ndarray.h>
 #include <nanobind/stl/array.h>
 #include <nanobind/stl/pair.h>
 
@@ -50,14 +50,14 @@ auto register_vector_type(nb::module_ &m, const char *name) {
                  throw nb::index_error();
              a[index] = value;
          }, "index"_a, "value"_a)
-         .def_property("x", [](const Array &a) { return a.x(); },
-                            [](Array &a, const Value &v) { a.x() = v; })
-         .def_property("y", [](const Array &a) { return a.y(); },
-                            [](Array &a, const Value &v) { a.y() = v; })
+         .def_prop_rw("x", [](const Array &a) { return a.x(); },
+                           [](Array &a, const Value &v) { a.x() = v; })
+         .def_prop_rw("y", [](const Array &a) { return a.y(); },
+                           [](Array &a, const Value &v) { a.y() = v; })
         .def("__dlpack__", [](nb::handle_t<Array> self) {
             const Array &a = nb::cast<const Array &>(self);
             const size_t shape[1] = { Array::Size };
-            return nb::tensor<float>((void *) a.data(), 1, shape, self);
+            return nb::ndarray<float>((void *) a.data(), 1, shape, self);
          })
          .def("__repr__", [](const Array &a) {
              std::ostringstream oss;
@@ -71,8 +71,8 @@ auto register_vector_type(nb::module_ &m, const char *name) {
 
     if constexpr (Size == 3) {
         array.def(nb::init<Value, Value, Value>());
-        array.def_property("z", [](const Array &a) { return a.z(); },
-                                [](Array &a, const Value &v) { a.z() = v; });
+        array.def_prop_rw("z", [](const Array &a) { return a.z(); },
+                               [](Array &a, const Value &v) { a.z() = v; });
     }
 
     nb::detail::implicitly_convertible(
@@ -97,7 +97,7 @@ void register_vector(nb::module_ &m) {
     nb::class_<Matrix4f>(m, "Matrix4f")
         .def(nb::init<>())
         .def(nb::init<float>())
-        .def_property_readonly("T", &Matrix4f::T)
+        .def_prop_ro("T", &Matrix4f::T)
         .def("__matmul__", [](const Matrix4f &a, const Matrix4f &b) { return a * b; }, nb::is_operator())
         .def("__getitem__",
              [](const Matrix4f &m, std::pair<size_t, size_t> index) -> float {
@@ -153,7 +153,7 @@ void register_vector(nb::module_ &m) {
                delete (Matrix4f *) p;
             });
 
-            return nb::tensor<float>(&t->m, 2, shape, owner);
+            return nb::ndarray<float>(&t->m, 2, shape, owner);
          })
         .def("__repr__", [](const Matrix4f &m) {
             std::ostringstream oss;

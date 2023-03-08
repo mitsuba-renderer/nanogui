@@ -27,65 +27,70 @@ extern "C" {
 };
 
 /// Provides a ``NB_OVERRIDE`` for any relevant Widget items that need to be bound.
-#define NANOGUI_WIDGET_OVERLOADS(Parent) \
-    NB_TRAMPOLINE(Parent, 20) \
-    bool mouse_button_event(const ::nanogui::Vector2i &p, int button, bool down, int modifiers) override { \
-        NB_OVERRIDE(bool, Parent, mouse_button_event, p, button, down, modifiers); \
-    } \
-    bool mouse_motion_event(const ::nanogui::Vector2i &p, const ::nanogui::Vector2i &rel, int button, int modifiers) override { \
-        NB_OVERRIDE(bool, Parent, mouse_motion_event, p, rel, button, modifiers); \
-    } \
-    bool mouse_drag_event(const ::nanogui::Vector2i &p, const ::nanogui::Vector2i &rel, int button, int modifiers) override { \
-        NB_OVERRIDE(bool, Parent, mouse_drag_event, p, rel, button, modifiers); \
-    } \
-    bool mouse_enter_event(const ::nanogui::Vector2i &p, bool enter) override { \
-        NB_OVERRIDE(bool, Parent, mouse_enter_event, p, enter); \
-    } \
-    bool scroll_event(const ::nanogui::Vector2i &p, const ::nanogui::Vector2f &rel) override { \
-        NB_OVERRIDE(bool, Parent, scroll_event, p, rel); \
-    } \
-    bool focus_event(bool focused) override { \
-        NB_OVERRIDE(bool, Parent, focus_event, focused); \
-    } \
-    bool keyboard_event(int key, int scancode, int action, int modifiers) override { \
-        NB_OVERRIDE(bool, Parent, keyboard_event, key, scancode, action, modifiers); \
-    } \
-    bool keyboard_character_event(unsigned int codepoint) override { \
-        NB_OVERRIDE(bool, Parent, keyboard_character_event, codepoint); \
-    } \
-    ::nanogui::Vector2i preferred_size(NVGcontext *ctx) const override { \
-        NB_OVERRIDE(::nanogui::Vector2i, Parent, preferred_size, ctx); \
-    } \
-    void perform_layout(NVGcontext *ctx) override { \
-        NB_OVERRIDE(void, Parent, perform_layout, ctx); \
-    } \
-    void draw(NVGcontext *ctx) override { \
-        NB_OVERRIDE(void, Parent, draw, ctx); \
-    }
+#define NANOGUI_WIDGET_OVERLOADS(Parent)                                       \
+    NB_TRAMPOLINE(Parent, 16);                                                 \
+    bool mouse_button_event(const ::nanogui::Vector2i &p, int button,          \
+                            bool down, int modifiers) override {               \
+        NB_OVERRIDE(mouse_button_event, p, button, down, modifiers);           \
+    }                                                                          \
+    bool mouse_motion_event(const ::nanogui::Vector2i &p,                      \
+                            const ::nanogui::Vector2i &rel, int button,        \
+                            int modifiers) override {                          \
+        NB_OVERRIDE(mouse_motion_event, p, rel, button, modifiers);            \
+    }                                                                          \
+    bool mouse_drag_event(const ::nanogui::Vector2i &p,                        \
+                          const ::nanogui::Vector2i &rel, int button,          \
+                          int modifiers) override {                            \
+        NB_OVERRIDE(mouse_drag_event, p, rel, button, modifiers);              \
+    }                                                                          \
+    bool mouse_enter_event(const ::nanogui::Vector2i &p, bool enter)           \
+        override {                                                             \
+        NB_OVERRIDE(mouse_enter_event, p, enter);                              \
+    }                                                                          \
+    bool scroll_event(const ::nanogui::Vector2i &p,                            \
+                      const ::nanogui::Vector2f &rel) override {               \
+        NB_OVERRIDE(scroll_event, p, rel);                                     \
+    }                                                                          \
+    bool focus_event(bool focused) override {                                  \
+        NB_OVERRIDE(focus_event, focused);                                     \
+    }                                                                          \
+    bool keyboard_event(int key, int scancode, int action, int modifiers)      \
+        override {                                                             \
+        NB_OVERRIDE(keyboard_event, key, scancode, action, modifiers);         \
+    }                                                                          \
+    bool keyboard_character_event(unsigned int codepoint) override {           \
+        NB_OVERRIDE(keyboard_character_event, codepoint);                      \
+    }                                                                          \
+    ::nanogui::Vector2i preferred_size(NVGcontext *ctx) const override {       \
+        NB_OVERRIDE(preferred_size, ctx);                                      \
+    }                                                                          \
+    void perform_layout(NVGcontext *ctx) override {                            \
+        NB_OVERRIDE(perform_layout, ctx);                                      \
+    }                                                                          \
+    void draw(NVGcontext *ctx) override { NB_OVERRIDE(draw, ctx); }
 
 /// Provides a ``NB_OVERRIDE`` for any relevant Layout items that need to be bound.
-#define NANOGUI_LAYOUT_OVERLOADS(Parent) \
-    NB_TRAMPOLINE(Parent, 2) \
-    ::nanogui::Vector2i preferred_size(NVGcontext *ctx, const ::nanogui::Widget *widget) const override { \
-        NB_OVERRIDE(::nanogui::Vector2i, Parent, preferred_size, ctx, widget); \
-    } \
-    void perform_layout(NVGcontext *ctx, ::nanogui::Widget *widget) const override { \
-        NB_OVERRIDE(void, Parent, perform_layout, ctx, widget); \
+#define NANOGUI_LAYOUT_OVERLOADS(Parent)                                       \
+    NB_TRAMPOLINE(Parent, 2);                                                  \
+    ::nanogui::Vector2i preferred_size(                                        \
+        NVGcontext *ctx, const ::nanogui::Widget *widget) const override {     \
+        NB_OVERRIDE(preferred_size, ctx, widget);                              \
+    }                                                                          \
+    void perform_layout(NVGcontext *ctx, ::nanogui::Widget *widget)            \
+        const override {                                                       \
+        NB_OVERRIDE(perform_layout, ctx, widget);                              \
     }
 
 /// Provides a ``NB_OVERRIDE`` for any relevant Screen items that need to be bound.
-#define NANOGUI_SCREEN_OVERLOADS(Parent) \
-    virtual void draw_all() override { \
-        NB_OVERRIDE(void, Parent, draw_all); \
-    } \
-    virtual void draw_contents() override { \
-        NB_OVERRIDE(void, Parent, draw_contents); \
-    } \
-    virtual bool drop_event(const std::vector<std::string> &filenames) override { \
-        NB_OVERRIDE(bool, Parent, drop_event, filenames); \
-    } \
-    virtual bool resize_event(const ::nanogui::Vector2i &size) override { \
-        NB_OVERRIDE(bool, Parent, resize_event, size); \
+#define NANOGUI_SCREEN_OVERLOADS(Parent)                                       \
+    virtual void draw_all() override { NB_OVERRIDE(draw_all); }                \
+    virtual void draw_contents() override { NB_OVERRIDE(draw_contents); }      \
+    virtual bool drop_event(const std::vector<std::string> &filenames)         \
+        override {                                                             \
+        NB_OVERRIDE(drop_event, filenames);                                    \
+    }                                                                          \
+    virtual bool resize_event(const ::nanogui::Vector2i &size) override {      \
+        NB_OVERRIDE(resize_event, size);                                       \
     }
 
 NAMESPACE_BEGIN(nanobind)

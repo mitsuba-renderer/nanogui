@@ -18,21 +18,18 @@
 #define DECLARE_LAYOUT(Name) \
     class Py##Name : public Name { \
     public: \
-        using Name::Name; \
         NANOGUI_LAYOUT_OVERLOADS(Name); \
     }
 
 #define DECLARE_WIDGET(Name) \
     class Py##Name : public Name { \
     public: \
-        using Name::Name; \
         NANOGUI_WIDGET_OVERLOADS(Name); \
     }
 
 #define DECLARE_SCREEN(Name) \
     class Py##Name : public Name { \
     public: \
-        using Name::Name; \
         NANOGUI_WIDGET_OVERLOADS(Name); \
         NANOGUI_SCREEN_OVERLOADS(Name); \
     }
