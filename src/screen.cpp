@@ -16,6 +16,7 @@
 #include <nanogui/opengl.h>
 #include <nanogui/window.h>
 #include <nanogui/popup.h>
+#include <nanogui/popupbutton.h>
 #include <nanogui/metal.h>
 #include <map>
 #include <iostream>
@@ -771,6 +772,27 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
         if (button == GLFW_MOUSE_BUTTON_1 && modifiers == GLFW_MOD_CONTROL)
             button = GLFW_MOUSE_BUTTON_2;
     #endif
+
+    // close any popup window, if clicked outside
+    if (action == GLFW_PRESS)
+    {
+        for (auto w : m_focus_path) {
+            Popup* p = dynamic_cast<Popup*>(w);
+            if (p && !p->contains(m_mouse_pos)) {
+                for (auto widget : p->parent_window()->children()) {
+                    PopupButton* b = dynamic_cast<PopupButton*>(widget);
+
+                    // we unpush the PopupButton that triggered the Popup-Window only,
+                    // if the user is clicking outside of this PopupButton
+                    if (b && b->pushed() && !b->contains(m_mouse_pos - p->parent_window()->position())) {
+                        b->set_pushed(false);
+                        if (b->change_callback())
+                            b->change_callback()(false);
+                    }
+                }
+            }
+        }
+    }
 
     try {
         if (m_focus_path.size() > 1) {
