@@ -431,6 +431,11 @@ add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
   include/nanogui/nanogui.h
 )
 
+# Defines various CMAKE_INSTALL_* variables used below in $<INSTALL_INTERFACE>.
+if (NANOGUI_INSTALL)
+  include(GNUInstallDirs)
+endif()
+
 target_compile_definitions(nanogui
   PUBLIC
     ${NANOGUI_BACKEND_DEFS}
@@ -502,6 +507,12 @@ if (EXISTS /opt/vc/include)
   target_include_directories(nanogui PUBLIC /opt/vc/include)
 endif()
 
+# Find glfw if nanogui is not compiling it internally.
+if (NOT NANOGUI_BUILD_GLFW)
+  find_package(glfw3 CONFIG REQUIRED)
+  target_link_libraries(nanogui PUBLIC glfw)
+endif()
+
 if (NANOGUI_INSTALL)
   include(GNUInstallDirs)
   include(CMakePackageConfigHelpers)
@@ -530,6 +541,7 @@ if (NANOGUI_INSTALL)
 
   set(NANOGUI_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/cmake/nanogui")
 
+  include(CMakePackageConfigHelpers)
   configure_package_config_file(
     resources/nanoguiConfig.cmake.in nanoguiConfig.cmake
     INSTALL_DESTINATION ${NANOGUI_CMAKECONFIG_INSTALL_DIR})
