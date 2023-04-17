@@ -100,9 +100,11 @@ void Texture::init() {
                           internal_format_gl);
 
     (void) pixel_format_gl; (void) component_format_gl;
-
+#if defined(NANOGUI_USE_OPENGL)
     GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-
+#else
+    GLenum tex_mode = GL_TEXTURE_2D;
+#endif
     if (m_flags & (uint8_t) TextureFlags::ShaderRead) {
         CHK(glGenTextures(1, &m_texture_handle));
         CHK(glBindTexture(tex_mode, m_texture_handle));
@@ -153,7 +155,11 @@ void Texture::upload(const uint8_t *data) {
                           internal_format_gl);
 
     if (m_texture_handle != 0) {
+#if defined(NANOGUI_USE_OPENGL) 
         GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+#else
+        GLenum tex_mode = GL_TEXTURE_2D;
+#endif
         CHK(glBindTexture(tex_mode, m_texture_handle));
 
         if (data)
@@ -216,7 +222,12 @@ void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, con
     if (origin.x() + size.x() > m_size.x() || origin.y() + size.y() > m_size.y())
         throw std::runtime_error("Texture::upload_sub_region(): out of bounds!");
 
+#if defined(NANOGUI_USE_OPENGL) 
     GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+#else
+    GLenum tex_mode = GL_TEXTURE_2D;
+#endif
+
     CHK(glBindTexture(tex_mode, m_texture_handle));
 
     if (data)
@@ -286,7 +297,11 @@ void Texture::resize(const Vector2i &size) {
 }
 
 void Texture::generate_mipmap() {
+#if defined(NANOGUI_USE_OPENGL) 
     GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+#else
+    GLenum tex_mode = GL_TEXTURE_2D;
+#endif
     CHK(glBindTexture(tex_mode, m_texture_handle));
     CHK(glGenerateMipmap(tex_mode));
 }
