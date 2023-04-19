@@ -42,7 +42,7 @@
 #include <GLFW/glfw3.h>
 
 #if defined(NANOGUI_USE_GLES)
-#  if NANOGUI_GLES_VERSION == 2
+#  if NANOGUI_GLES_VERSION == 2 || defined(__EMSCRIPTEN__)
 #    include <GLES2/gl2ext.h>
 #  elif NANOGUI_GLES_VERSION == 3
 #    include <GLES3/gl3ext.h>

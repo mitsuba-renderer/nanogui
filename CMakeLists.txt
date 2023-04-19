@@ -66,12 +66,6 @@ if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
   set(NANOGUI_BUILD_GLAD_DEFAULT   OFF)
   set(NANOGUI_BUILD_GLFW_DEFAULT   OFF)
 
-  set(CMAKE_STATIC_LIBRARY_SUFFIX ".so")
-  set(CMAKE_EXECUTABLE_SUFFIX ".so")
-  set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_CXX_COMPILER> -o <TARGET> <LINK_FLAGS> <OBJECTS>")
-  if (U_CMAKE_BUILD_TYPE MATCHES REL)
-    add_compile_options(-O3 -DNDEBUG)
-  endif()
 endif()
 
 # Compile for a sufficiently recent processor. Assumes Nehalem+ (with SSE4.2) by
