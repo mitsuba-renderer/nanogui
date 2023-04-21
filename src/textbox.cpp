@@ -41,8 +41,10 @@ TextBox::TextBox(Widget *parent, const std::string &value)
       m_mouse_down_pos(Vector2i(-1,-1)),
       m_mouse_drag_pos(Vector2i(-1,-1)),
       m_mouse_down_modifier(0),
+      m_corner_radius(2.5f),
       m_text_offset(0),
-      m_last_click(0) {
+      m_last_click(0),
+      m_solid_color(Color(0, 0, 0, 0)) {
     if (m_theme) m_font_size = m_theme->m_text_box_font_size;
     m_icon_extra_scale = .8f;
 }
@@ -83,19 +85,30 @@ Vector2i TextBox::preferred_size(NVGcontext *ctx) const {
 void TextBox::draw(NVGcontext* ctx) {
     Widget::draw(ctx);
 
-    NVGpaint bg = nvgBoxGradient(ctx,
-        m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2,
-        3, 4, Color(255, 32), Color(32, 32));
-    NVGpaint fg1 = nvgBoxGradient(ctx,
-        m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2,
-        3, 4, Color(150, 32), Color(32, 32));
-    NVGpaint fg2 = nvgBoxGradient(ctx,
-        m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2,
-        3, 4, nvgRGBA(255, 0, 0, 100), nvgRGBA(255, 0, 0, 50));
-
     nvgBeginPath(ctx);
-    nvgRoundedRect(ctx, m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2,
-                   m_size.y() - 2, 3);
+
+    NVGpaint bg, fg1, fg2;
+    if (m_solid_color.a() > 0) {
+        bg = fg1 = fg2 = nvgBoxGradient(ctx,
+            m_pos.x(), m_pos.y(), m_size.x(), m_size.y(),
+            3, 4, m_solid_color, m_solid_color);
+
+        nvgRoundedRect(ctx, m_pos.x(), m_pos.y(), m_size.x(),
+                    m_size.y(), m_corner_radius);
+    } else {
+        bg = nvgBoxGradient(ctx,
+            m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2,
+            3, 4, Color(255, 32), Color(32, 32));
+        fg1 = nvgBoxGradient(ctx,
+            m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2,
+            3, 4, Color(150, 32), Color(32, 32));
+        fg2 = nvgBoxGradient(ctx,
+            m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2, m_size.y() - 2,
+            3, 4, nvgRGBA(255, 0, 0, 100), nvgRGBA(255, 0, 0, 50));
+
+        nvgRoundedRect(ctx, m_pos.x() + 1, m_pos.y() + 1 + 1.0f, m_size.x() - 2,
+                    m_size.y() - 2, m_corner_radius);
+    }
 
     if (m_editable && focused())
         m_valid_format ? nvgFillPaint(ctx, fg1) : nvgFillPaint(ctx, fg2);
@@ -108,7 +121,7 @@ void TextBox::draw(NVGcontext* ctx) {
 
     nvgBeginPath(ctx);
     nvgRoundedRect(ctx, m_pos.x() + 0.5f, m_pos.y() + 0.5f, m_size.x() - 1,
-                   m_size.y() - 1, 2.5f);
+                   m_size.y() - 1, std::max(m_corner_radius - 0.5f, 0.0f));
     nvgStrokeColor(ctx, Color(0, 48));
     nvgStroke(ctx);
 
@@ -116,7 +129,7 @@ void TextBox::draw(NVGcontext* ctx) {
     nvgFontFace(ctx, "sans");
     Vector2i draw_pos(m_pos.x(), m_pos.y() + m_size.y() * 0.5f + 1);
 
-    float x_spacing = m_size.y() * 0.3f;
+    float x_spacing = m_size.y() * 0.2f;
 
     float unit_width = 0;
 

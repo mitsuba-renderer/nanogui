@@ -82,6 +82,27 @@ public:
     /// Sets the callback to execute when the value of this TextBox has changed.
     void set_callback(const std::function<bool(const std::string& str)> &callback) { m_callback = callback; }
 
+    void select_all() {
+        m_selection_pos = 0;
+        m_cursor_pos = m_value_temp.size();
+    }
+
+    float corner_radius() const {
+        return m_corner_radius;
+    }
+
+    void set_corner_radius(float val) {
+        m_corner_radius = val;
+    }
+
+    Color solid_color() const {
+        return m_solid_color;
+    }
+
+    void set_solid_color(const Color& val) {
+        m_solid_color = val;
+    }
+
     virtual bool mouse_enter_event(const Vector2i &p, bool enter) override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
     virtual bool mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
@@ -129,8 +150,10 @@ protected:
     Vector2i m_mouse_down_pos;
     Vector2i m_mouse_drag_pos;
     int m_mouse_down_modifier;
+    float m_corner_radius;
     float m_text_offset;
     double m_last_click;
+    Color m_solid_color;
 };
 
 /**
