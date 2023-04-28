@@ -10,7 +10,6 @@
     All rights reserved. Use of this source code is governed by a
     BSD-style license that can be found in the LICENSE.txt file.
 */
-
 #include <nanogui/screen.h>
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
@@ -23,6 +22,7 @@
 #if defined(EMSCRIPTEN)
 #  include <emscripten/emscripten.h>
 #  include <emscripten/html5.h>
+#  undef NANOGUI_GLAD
 #endif
 
 #if defined(_WIN32)
@@ -426,7 +426,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
         /* The canvas element is configured as width/height: auto, expand to
            the available space instead of using the specified window resolution */
         nanogui_emscripten_resize_callback(0, nullptr, nullptr);
-        emscripten_set_resize_callback(nullptr, nullptr, false,
+        emscripten_set_resize_callback("#canvas", nullptr, false,
                                        nanogui_emscripten_resize_callback);
     } else if (w != w2 || h != h2) {
         /* Configure for rendering on a high-DPI display */
