@@ -410,7 +410,7 @@ bool Window::mouse_button_event(const Vector2i& p, int button, bool down, int mo
 
     if (button == GLFW_MOUSE_BUTTON_1) {
         m_drag = down && !m_title.empty() && (p.y() - m_pos.y()) < m_theme->m_window_header_height;
-        if(down)request_focus();
+        if (down)request_focus();
         if (m_drag)
         {
             m_snap_init = position();
@@ -426,7 +426,7 @@ bool Window::mouse_button_event(const Vector2i& p, int button, bool down, int mo
             if (m_resize)
                 return true;
         }
-        
+
     }
     if (Widget::mouse_button_event(p, button, down, modifiers))
         return true;

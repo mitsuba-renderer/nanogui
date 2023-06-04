@@ -42,7 +42,7 @@ public:
     /// Return the parent widget
     const Widget* parent() const { return m_parent; }
     /// Set the parent widget
-    void set_parent(Widget* parent) { m_parent = parent; }
+    void set_parent(Widget* parent);
 
     /// Return the used \ref Layout generator
     Layout* layout() { return m_layout; }

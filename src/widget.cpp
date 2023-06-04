@@ -34,7 +34,19 @@ Widget::Widget(Widget* parent)
         parent->add_child(this);
     }
 }
-
+void Widget::set_parent(Widget* parent)
+{
+    bool AddNewChild = false;
+    if (m_parent)
+    {
+        if (m_parent == parent)return;
+        this->inc_ref();
+        m_parent->remove_child(this);
+        AddNewChild = true;
+    }
+    m_parent = parent;
+    if(AddNewChild)m_parent->add_child(this);
+}
 Widget::~Widget() {
     if (std::uncaught_exceptions() > 0) {
         /* If a widget constructor throws an exception, it is immediately

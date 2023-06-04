@@ -15,6 +15,7 @@
 #include <nanogui/scrollpanel.h>
 #include <nanogui/button.h>
 #include <nanogui/screen.h>
+#include <nanogui/window.h>
 #include <string>
 #include <cassert>
 
@@ -91,14 +92,17 @@ void TreeView::arrow_callback(std::string keystring)
     m_data_tree->Objects[keystring]->Expanded = !m_data_tree->Objects[keystring]->Expanded;
 
     ((Button*)(m_data_tree->Objects[keystring]->NodeWidget->children()[1]))->set_icon((m_data_tree->Objects[keystring]->Expanded ? FA_CARET_DOWN : FA_CARET_RIGHT));
-    
+
     if (m_expand_callback && m_data_tree->Objects[keystring]->Expanded)m_expand_callback(keystring);
 
     int ChildrenCnt = 0;
     for (auto CurrItem : m_data_tree->Objects[keystring]->Children)
         update_tree_items(CurrItem.second->KeyString, m_data_tree->Objects[keystring]->Level + 1, m_data_tree->Objects[keystring]->Expanded, ChildrenCnt++);
 
-    perform_layout(screen()->nvg_context());
+    // perform layout on the window
+    Window* CurrWin = window();
+    window()->perform_layout(screen()->nvg_context());
+    window()->set_size(preferred_size(screen()->nvg_context()));
 }
 
 void TreeView::set_fixed_size(const Vector2i& fixed_size)
