@@ -128,6 +128,19 @@ Screen::Screen()
 #endif
 }
 
+Screen::Screen(bool enableDepthBuffer, bool enableStencilBuffer, bool enableFloatMode)
+    : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
+      m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
+      m_shutdown_glfw(false), m_fullscreen(false), m_depth_buffer(false),
+      m_stencil_buffer(false), m_float_buffer(false), m_redraw(false) {
+    memset(m_cursors, 0, sizeof(GLFWcursor *) * (size_t) Cursor::CursorCount);
+#if defined(NANOGUI_USE_OPENGL)
+    m_depth_buffer = enableDepthBuffer;
+    m_stencil_buffer = enableStencilBuffer;
+    m_float_buffer = enableFloatMode;
+#endif
+}
+
 Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
                bool fullscreen, bool depth_buffer, bool stencil_buffer,
                bool float_buffer, unsigned int gl_major, unsigned int gl_minor)
