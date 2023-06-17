@@ -189,6 +189,14 @@ public:
         m_max_value = max_value;
     }
 
+    Scalar get_max_value() {
+        return m_max_value;
+    }
+
+    Scalar get_min_value() {
+        return m_min_value;
+    }
+
     void set_min_max_values(Scalar min_value, Scalar max_value) {
         set_min_value(min_value);
         set_max_value(max_value);
@@ -278,6 +286,14 @@ public:
 
     Scalar value() const {
         return (Scalar) std::stod(TextBox::value());
+    }
+
+    Scalar get_max_value() {
+        return m_max_value;
+    }
+
+    Scalar get_min_value() {
+        return m_min_value;
     }
 
     void set_value(Scalar value) {
