@@ -251,6 +251,28 @@ extern NANOGUI_EXPORT void leave();
 extern NANOGUI_EXPORT bool active();
 
 /**
+ * \brief Function to enable or disable vertical synchronization.
+ *
+ * Changes how the main loop is called and when redraws occur.
+ *
+ * Solves screen tearing and provides fluid operation on all monitors, instead of just looking about-right on 60Hz displays.
+ *
+ * Results in higher system load compared to it being disabled due to the more frequent update and draw calls.
+ *
+ * Default disabled - set_vsync(false) is called in nanogui::init()
+ * @remark Some extensions used by GLFW do not allow the vsync mode to be disabled once it has been enabled.
+ *
+ *  @remark Some GPU drivers do not honor this setting, either
+ *  because of a user setting that overrides the application's request or due to
+ *  bugs in the driver.
+ * \param enabled True to enable VSYNC, false to disable it.
+ */
+extern NANOGUI_EXPORT void set_vsync(bool enabled);
+
+/// Return true or false if vsync is enabled (set with set_vsync)
+extern NANOGUI_EXPORT bool vsync_enabled();
+
+/**
  * \brief Enqueue a function to be executed executed before
  * the application is redrawn the next time.
  *

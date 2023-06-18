@@ -260,7 +260,6 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
                 GL_STENCIL_BUFFER_BIT));
 
-    glfwSwapInterval(0);
     glfwSwapBuffers(m_glfw_window);
 #endif
 
@@ -724,6 +723,7 @@ void Screen::redraw() {
     if (!m_redraw) {
         m_redraw = true;
         #if !defined(EMSCRIPTEN)
+        if (!nanogui::vsync_enabled())
             glfwPostEmptyEvent();
         #endif
     }
@@ -757,6 +757,7 @@ void Screen::cursor_pos_callback_event(double x, double y) {
             ret = mouse_motion_event(p, p - m_mouse_pos, m_mouse_state, m_modifiers);
 
         m_mouse_pos = p;
+        std::cout << "Meep cursor pos " << p.x() << ", " << p.y() << std::endl;
         m_redraw |= ret;
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
@@ -892,6 +893,16 @@ void Screen::resize_callback_event(int, int) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
     redraw();
+}
+
+void Screen::update_cursor()
+{
+    Widget* w = find_widget(m_mouse_pos);
+    if (w != nullptr && w->cursor() != m_cursor)
+    {
+        m_cursor = w->cursor();
+        glfwSetCursor(m_glfw_window, m_cursors[(int)m_cursor]);
+    }
 }
 
 void Screen::update_focus(Widget *widget) {
