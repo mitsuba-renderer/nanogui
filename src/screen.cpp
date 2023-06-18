@@ -757,7 +757,6 @@ void Screen::cursor_pos_callback_event(double x, double y) {
             ret = mouse_motion_event(p, p - m_mouse_pos, m_mouse_state, m_modifiers);
 
         m_mouse_pos = p;
-        std::cout << "Meep cursor pos " << p.x() << ", " << p.y() << std::endl;
         m_redraw |= ret;
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
