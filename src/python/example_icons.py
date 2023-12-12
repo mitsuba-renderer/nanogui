@@ -17,7 +17,7 @@ import gc
 
 import nanogui
 from nanogui import Screen, Window, Widget, GridLayout, VScrollPanel, Button
-from nanogui import entypo
+from nanogui import icons
 
 if __name__ == "__main__":
     nanogui.init()
@@ -41,12 +41,12 @@ if __name__ == "__main__":
     wrapper.set_fixed_size((width, height))
     wrapper.set_layout(GridLayout())  # defaults: 2 columns
 
-    # NOTE: don't __dict__ crawl in real code!
-    # this is just because it's more convenient to do this for enumerating all
-    # of the icons -- see cpp example for alternative...
-    for key in entypo.__dict__.keys():
-        if key.startswith("ICON_"):
-            b = Button(wrapper, "entypo.{0}".format(key), entypo.__dict__[key])
+    # NOTE: using `dir` as done below is not good practice.
+    # It is used here because it is convenient for enumerating all available
+    # icons -- see 'example_icons.cpp' for an alternative way.
+    for name in dir(icons):
+        if name.startswith("FA_"):
+            b = Button(wrapper, "icons.{0}".format(name), getattr(icons, name))
             b.set_icon_position(Button.IconPosition.Left)
             b.set_fixed_width(half_width)
 
