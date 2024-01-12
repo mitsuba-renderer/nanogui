@@ -84,8 +84,10 @@ elseif (APPLE AND ((CMAKE_OSX_ARCHITECTURES MATCHES "arm64") OR
                    (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm64")))
   # Apple M1 compatibility
   set(NANOGUI_NATIVE_FLAGS_DEFAULT "-mcpu=apple-a12")
-else()
+elseif (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
   set(NANOGUI_NATIVE_FLAGS_DEFAULT "-march=nehalem")
+else()
+  set(NANOGUI_NATIVE_FLAGS_DEFAULT "")
 endif()
 
 option(NANOGUI_BUILD_EXAMPLES            "Build NanoGUI example application?" ON)
