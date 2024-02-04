@@ -73,7 +73,7 @@ public:
     /// Return the size of the widget
     const Vector2i &size() const { return m_size; }
     /// set the size of the widget
-    void set_size(const Vector2i &size) { m_size = size; }
+    virtual void set_size(const Vector2i &size) { m_size = size; }
 
     /// Return the width of the widget
     int width() const { return m_size.x(); }
