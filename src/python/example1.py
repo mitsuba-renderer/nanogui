@@ -358,6 +358,9 @@ class TestApp(Screen):
         alpha_int_box = IntBox(window)
 
         def cp_fast_cb(color):
+            if math.isnan(color.r) or math.isnan(color.g) or math.isnan(color.b):
+                return
+
             b.set_background_color(color)
             b.set_text_color(color.contrasting_color())
             red = int(color.r * 255.0)
