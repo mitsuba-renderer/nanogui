@@ -74,10 +74,10 @@ public:
     int padding() const { return m_padding; }
 
     /// Set whether the text can be selected using the mouse
-    void set_selectable(int selectable) { m_selectable = selectable; }
+    void set_selectable(bool selectable) { m_selectable = selectable; }
 
     /// Return whether the text can be selected using the mouse
-    int is_selectable() const { return m_selectable; }
+    bool is_selectable() const { return m_selectable; }
 
     /// Append text at the end of the widget
     void append(const std::string &text);
