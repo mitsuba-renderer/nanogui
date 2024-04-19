@@ -263,6 +263,7 @@ public:
     void resize_callback_event(int width, int height);
 
     /* Internal helper functions */
+    void ClearFcousPath(const Object* widget);
     void update_focus(Widget* widget);
     void dispose_window(Window* window);
     void center_window(Window* window);

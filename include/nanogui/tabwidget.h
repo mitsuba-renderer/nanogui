@@ -105,11 +105,9 @@ public:
     virtual void perform_layout(NVGcontext* ctx) override;
     virtual Vector2i preferred_size(NVGcontext* ctx) const override;
     virtual void draw(NVGcontext* ctx) override;
-    virtual bool mouse_button_event(const Vector2i &p, int button, bool down,
-                                    int modifiers) override;
+    virtual bool mouse_button_event(const Vector2i &p, int button, bool down,  int modifiers) override;
     virtual bool mouse_enter_event(const Vector2i &p, bool enter) override;
-    virtual bool mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button,
-                                    int modifiers) override;
+    virtual bool mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button,  int modifiers) override;
 
 protected:
     std::pair<int, bool> tab_at_position(const Vector2i &p,
@@ -133,6 +131,7 @@ protected:
     int m_tab_counter = 0;
     int m_padding = 3;
     std::function<void(int)> m_callback;
+    std::function<void(void)> m_layout_callback;
     std::function<void(int)> m_close_callback;
     std::function<Popup*(int, Screen*)> m_popup_callback;
     Color m_background_color;

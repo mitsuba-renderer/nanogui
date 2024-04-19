@@ -638,7 +638,6 @@ void Screen::draw_teardown() {
 void Screen::draw_all() {
     if (m_redraw) {
         m_redraw = false;
-
         draw_setup();
         draw_contents();
         draw_widgets();
@@ -847,7 +846,7 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
             m_drag_widget = nullptr;
         }
         m_redraw |= mouse_button_event(m_mouse_pos, button, action == GLFW_PRESS, m_modifiers);
-        if ((!m_redraw|| m_close_popups) && m_popup_visible.size() != 0) {//close all opened popu window
+        if ((!m_redraw || m_close_popups) && m_popup_visible.size() != 0) {//close all opened popu window
             int Size = m_popup_visible.size();
             for (int Cnt = 0; Cnt < Size; Cnt++)
             {
@@ -939,6 +938,17 @@ void Screen::resize_callback_event(int, int) {
     redraw();
 }
 
+// deete the object from the path if it has been removed by a self destructing button..
+void Screen::ClearFcousPath(const Object* widget)
+{
+    for (int Cnt = 0; Cnt < m_focus_path.size(); Cnt++) {
+        if (m_focus_path[Cnt] == widget)
+        {
+            m_focus_path.erase(m_focus_path.begin() + Cnt);
+            return;
+        }
+    }
+}
 void Screen::update_focus(Widget* widget) {
     for (auto w : m_focus_path) {
         if (!w->focused())

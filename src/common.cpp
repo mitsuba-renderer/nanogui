@@ -426,6 +426,8 @@ void Object::inc_ref() const {
 void Object::dec_ref(bool dealloc) const noexcept {
     --m_ref_count;
     if (m_ref_count == 0 && dealloc) {
+        for (auto kv : __nanogui_screens)
+            kv.second->ClearFcousPath(this);
         delete this;
     } else if (m_ref_count < 0) {
         fprintf(stderr, "Internal error: %p: object reference count < 0!\n", this);

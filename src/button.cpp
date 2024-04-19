@@ -87,6 +87,7 @@ bool Button::mouse_button_event(const Vector2i& p, int button, bool down, int mo
                 }
             }
             if (m_flags & PopupButton) {
+                if(m_pushed)screen()->m_close_popups = true;
                 for (auto widget : parent()->children()) {
                     Button* b = dynamic_cast<Button*>(widget);
                     if (b != this && b && (b->flags() & PopupButton) && b->m_pushed) {
