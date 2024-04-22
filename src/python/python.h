@@ -10,6 +10,9 @@
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 #include <nanobind/stl/function.h>
+#include <nanobind/stl/pair.h>
+
+
 #include <nanogui/python.h>
 #include "py_doc.h"
 
