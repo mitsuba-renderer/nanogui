@@ -56,6 +56,24 @@ file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
     return result;
 }
 
+std::string directory_dialog(const std::string saved_path) {
+    NSOpenPanel *openDlg = [NSOpenPanel openPanel];
+
+    if(saved_path.length() > 0 ){
+        std::string urlString = "folder"+saved_path;
+        [openDlg setDirectoryURL: [NSURL URLWithString: [NSString stringWithUTF8String: urlString.c_str()]]];
+    }
+    [openDlg setCanChooseFiles:NO];
+    [openDlg setCanChooseDirectories:YES];
+    [openDlg setAllowsMultipleSelection:NO];
+
+    if ([openDlg runModal] == NSModalResponseOK) {
+        NSURL* url = [openDlg URL];
+        return ((char*) [[url path] UTF8String]);
+    }
+    return "";
+}
+
 void chdir_to_bundle_parent() {
     NSString *path = [[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent];
     chdir([path fileSystemRepresentation]);

@@ -111,6 +111,7 @@ NB_MODULE(nanogui_ext, m_) {
               bool)) &
               nanogui::file_dialog,
           D(file_dialog, 2));
+    m.def("directory_dialog", &nanogui::directory_dialog);
 #if defined(__APPLE__)
         m.def("chdir_to_bundle_parent", &nanogui::chdir_to_bundle_parent);
     #endif

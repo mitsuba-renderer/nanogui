@@ -16,6 +16,7 @@
 #  define NOMINMAX 1
 #  endif
 #  include <windows.h>
+#  include <shlobj.h>
 #endif
 
 #include <nanogui/opengl.h>
@@ -439,6 +440,67 @@ std::vector<std::string> file_dialog(const std::vector<std::pair<std::string, st
     return result;
 #endif
 }
+#endif
+
+#if !defined(__APPLE__)
+    #if !defined(_WIN32)
+        //linux
+        std::string directory_dialog(const std::string save_dir){
+            static const int DIRECTORY_DIALOG_MAX_BUFFER = 16384;
+            char buffer[DIRECTORY_DIALOG_MAX_BUFFER];
+            buffer[0] = '\0';
+
+            std::string cmd = "zenity --file-selection --directory ";
+            if(save_dir.length() > 0 ){
+                cmd += "--filename="+save_dir;
+            }
+
+            FILE *output = popen(cmd.c_str(), "r");
+            if (output == nullptr)
+                throw std::runtime_error("popen() failed -- could not launch zenity!");
+            while (fgets(buffer, DIRECTORY_DIALOG_MAX_BUFFER, output) != NULL);
+            pclose(output);
+            std::string path(buffer);
+
+            path.erase(std::remove(path.begin(), path.end(), '\n'), path.end());
+
+            return path;
+
+        };
+    #else
+
+
+        std::string directory_dialog(const std::string saved_path){
+            TCHAR path[MAX_PATH];
+
+            const char * path_param = saved_path.c_str();
+
+            BROWSEINFO browseInfo = { 0 };
+            browseInfo.lpszTitle  = ("Select directory");
+            browseInfo.ulFlags    = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE | BIF_EDITBOX | BIF_BROWSEINCLUDEURLS;
+            browseInfo.lParam     = (LPARAM) path_param;
+
+            LPITEMIDLIST pidl = SHBrowseForFolder ( &browseInfo );
+
+            if( pidl == 0 ){
+                return "";
+            }else{
+                //get path
+                SHGetPathFromIDList ( pidl, path );
+
+                //free memory
+                IMalloc * imalloc = 0;
+
+                if ( SUCCEEDED( SHGetMalloc ( &imalloc )) ){
+                    imalloc->Free(pidl);
+                    imalloc->Release();
+                }
+
+                return path;
+            }
+        }
+
+    #endif
 #endif
 
 static void (*object_inc_ref_py)(PyObject *) noexcept = nullptr;
