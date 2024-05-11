@@ -221,9 +221,7 @@ if (NANOGUI_BUILD_GLFW)
   set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
   set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
   set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
-  set(GLFW_BUILD_INSTALL OFF CACHE BOOL " " FORCE)
-  set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
-  set(GLFW_USE_CHDIR OFF CACHE BOOL " " FORCE)
+  set(GLFW_INSTALL NANOGUI_INSTALL CACHE BOOL " " FORCE) # install GLFW if nanogui install requested
   set(BUILD_SHARED_LIBS ${NANOGUI_BUILD_SHARED} CACHE BOOL " " FORCE)
 
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -232,18 +230,11 @@ if (NANOGUI_BUILD_GLFW)
   endif()
 
   add_subdirectory(ext/glfw)
-
-  # Two targets have now been defined: `glfw_objects`, which will be merged into
-  # NanoGUI at the end, and `glfw`.  The `glfw` target is the library itself
-  # (e.g., libglfw.so), but can be skipped as we do not need to link against it
-  # (because we merge `glfw_objects` into NanoGUI).  Skipping is required for
-  # XCode, but preferable for all build systems (reduces build artifacts).
-  set_target_properties(glfw PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+  list(APPEND NANOGUI_LIBS glfw)
 
   mark_as_advanced(
-    GLFW_BUILD_DOCS GLFW_BUILD_EXAMPLES GLFW_BUILD_INSTALL GLFW_BUILD_TESTS
-    GLFW_DOCUMENT_INTERNALS GLFW_INSTALL GLFW_USE_CHDIR GLFW_USE_MENUBAR
-    GLFW_USE_OSMESA GLFW_VULKAN_STATIC GLFW_USE_RETINA GLFW_USE_MIR
+    GLFW_BUILD_DOCS GLFW_BUILD_EXAMPLES GLFW_BUILD_TESTS
+    GLFW_INSTALL GLFW_USE_OSMESA GLFW_VULKAN_STATIC
     BUILD_SHARED_LIBS USE_MSVC_RUNTIME_LIBRARY_DLL)
 endif()
 
@@ -303,9 +294,10 @@ elseif (APPLE)
   list(APPEND NANOGUI_EXTRA src/darwin.mm src/autorelease.mm)
   set_property(SOURCE src/autorelease.mm PROPERTY COMPILE_FLAGS -fno-objc-arc)
 elseif (CMAKE_SYSTEM MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "BSD")
-  list(APPEND NANOGUI_LIBS X11 pthread)
+  list(APPEND NANOGUI_LIBS pthread)
   if (NANOGUI_BACKEND STREQUAL "OpenGL")
-    list(APPEND NANOGUI_LIBS GL)
+    find_package(OpenGL REQUIRED COMPONENTS OpenGL)
+    list(APPEND NANOGUI_LIBS OpenGL::OpenGL)
   elseif (NANOGUI_BACKEND STREQUAL "GLES 2")
     list(APPEND NANOGUI_LIBS GLESv2)
   elseif (NANOGUI_BACKEND STREQUAL "GLES 3")
@@ -378,10 +370,6 @@ endif()
 if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   # Use automatic reference counting for Objective-C portions
   add_compile_options(-fobjc-arc)
-endif()
-
-if (NANOGUI_BUILD_GLFW)
-  list(APPEND NANOGUI_EXTRA $<TARGET_OBJECTS:glfw_objects>)
 endif()
 
 # Compile main NanoGUI library
@@ -516,11 +504,6 @@ if (NANOGUI_INSTALL)
   install(DIRECTORY ext/nanovg/src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nanovg
           FILES_MATCHING PATTERN "*.h")
 
-  if (NANOGUI_BUILD_GLFW)
-    install(DIRECTORY ext/glfw/include/GLFW DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            FILES_MATCHING PATTERN "*.h")
-  endif()
-
   if (NANOGUI_BUILD_GLAD)
     install(DIRECTORY ext/glad/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/glad
             FILES_MATCHING PATTERN "*.h")
@@ -565,10 +548,10 @@ if (NANOGUI_BUILD_EXAMPLES)
   add_executable(example4      src/example4.cpp)
   add_executable(example_icons src/example_icons.cpp)
 
-  target_link_libraries(example1      nanogui)
+  target_link_libraries(example1      nanogui glfw)
   target_link_libraries(example2      nanogui)
   target_link_libraries(example3      nanogui ${NANOGUI_LIBS}) # For OpenGL
-  target_link_libraries(example4      nanogui)
+  target_link_libraries(example4      nanogui glfw)
   target_link_libraries(example_icons nanogui)
 
   # Copy icons for example application
