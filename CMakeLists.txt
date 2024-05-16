@@ -409,6 +409,7 @@ add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
   include/nanogui/combobox.h src/combobox.cpp
   include/nanogui/progressbar.h src/progressbar.cpp
   include/nanogui/slider.h src/slider.cpp
+  include/nanogui/knob.h src/knob.cpp
   include/nanogui/messagedialog.h src/messagedialog.cpp
   include/nanogui/textbox.h src/textbox.cpp
   include/nanogui/textarea.h src/textarea.cpp
@@ -564,12 +565,14 @@ if (NANOGUI_BUILD_EXAMPLES)
   add_executable(example3      src/example3.cpp)
   add_executable(example4      src/example4.cpp)
   add_executable(example_icons src/example_icons.cpp)
+  add_executable(example_knob  src/example_knob.cpp)
 
   target_link_libraries(example1      nanogui)
   target_link_libraries(example2      nanogui)
   target_link_libraries(example3      nanogui ${NANOGUI_LIBS}) # For OpenGL
   target_link_libraries(example4      nanogui)
   target_link_libraries(example_icons nanogui)
+  target_link_libraries(example_knob  nanogui)
 
   # Copy icons for example application
   file(COPY resources/icons DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
