@@ -300,8 +300,10 @@ bool TabWidgetBase::mouse_button_event(const Vector2i &p, int button, bool down,
                     m_tab_drag_min = m_tab_offsets[index];
                     m_tab_drag_max = m_tab_offsets[index + 1];
                     m_close_index_pushed = -1;
-                    if (tab_changed && m_callback) {
+                    if (m_callback) {
                         m_callback(selected_id());
+                    }
+                    if (tab_changed) {
                         update_visibility();
                     }
                 } else if (m_tab_drag_index != -1) {
