@@ -359,6 +359,8 @@ add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
   include/nanogui/messagedialog.h src/messagedialog.cpp
   include/nanogui/textbox.h src/textbox.cpp
   include/nanogui/textarea.h src/textarea.cpp
+  include/nanogui/treeview.h src/treeview.cpp
+  include/nanogui/folderdialog.h src/folderdialog.cpp
   include/nanogui/imagepanel.h src/imagepanel.cpp
   include/nanogui/scrollpanel.h src/scrollpanel.cpp
   include/nanogui/colorwheel.h src/colorwheel.cpp

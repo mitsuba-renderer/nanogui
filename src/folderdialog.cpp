@@ -20,7 +20,7 @@
 #if WIN32
 #include <windows.h> 
 #else
-#include <fileapi.h>
+//#include <fileapi.h>
 #endif
 
 NAMESPACE_BEGIN(nanogui)
@@ -108,9 +108,9 @@ void FolderDialog::start_items()
         }
     }
 #else
-    TODO try these:
-https://www.linuxquestions.org/questions/programming-9/how-to-get-a-list-of-physical-drives-in-c-538365/
-https://stackoverflow.com/questions/7243988/how-to-list-the-harddisks-attached-to-a-linux-machine-using-c
+//    TODO try these:
+//https://www.linuxquestions.org/questions/programming-9/how-to-get-a-list-of-physical-drives-in-c-538365/
+//https://stackoverflow.com/questions/7243988/how-to-list-the-harddisks-attached-to-a-linux-machine-using-c
 
 #endif
 

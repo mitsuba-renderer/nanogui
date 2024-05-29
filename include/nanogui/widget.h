@@ -15,6 +15,7 @@
 #include <nanogui/object.h>
 #include <nanogui/theme.h>
 #include <algorithm>
+#include <limits.h>
 #include <vector>
 
 

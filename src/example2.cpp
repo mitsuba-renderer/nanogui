@@ -64,7 +64,7 @@ int main(int /* argc */, char ** /* argv */) {
         gui->add_variable("double", dvar)->set_spinnable(true);
 
         gui->add_group("Complex types");
-        gui->add_variable("Enumeration", enumval, enabled)
+        gui->add_variable("Enumeration", enumval)
            ->set_items({"Item 1", "Item 2", "Item 3"});
         gui->add_variable("Color", colval);
 

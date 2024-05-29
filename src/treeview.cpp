@@ -9,7 +9,7 @@
     BSD-style license that can be found in the LICENSE.txt file.
 */
 
-#include <nanogui/TreeView.h>
+#include <nanogui/treeview.h>
 #include <nanogui/label.h>
 #include <nanogui/layout.h>
 #include <nanogui/scrollpanel.h>
