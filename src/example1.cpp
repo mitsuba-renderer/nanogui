@@ -817,7 +817,7 @@ public:
 
     virtual void draw(NVGcontext* ctx) {
         /* Animate the scrollbar */
-       // m_progress->set_value(std::fmod((float)glfwGetTime() / 10, 1.0f));
+        m_progress->set_value(std::fmod((float)glfwGetTime() / 10, 1.0f));
 
         /* Draw the user interface */
         Screen::draw(ctx);
