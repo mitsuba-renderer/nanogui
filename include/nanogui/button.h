@@ -79,7 +79,7 @@ public:
     /// The current flags of this Button (see \ref nanogui::Button::Flags for options).
     int flags() const { return m_flags; }
     /// Sets the flags of this Button (see \ref nanogui::Button::Flags for options).
-    void set_flags(Flags button_flags) { m_flags = button_flags; }
+    void set_flags(const Flags button_flags) { m_flags = button_flags; }
 
     /// The position of the icon for this Button.
     IconPosition icon_position() const { return m_icon_position; }
