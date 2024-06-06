@@ -25,7 +25,7 @@ NAMESPACE_BEGIN(nanogui)
 class NANOGUI_EXPORT Button : public Widget {
 public:
     /// Flags to specify the button behavior (can be combined with binary OR)
-    enum Flags {
+    enum Flags : int32_t{
         NormalButton = (1 << 0), ///< A normal button.
         RadioButton  = (1 << 1), ///< A radio button.
         ToggleButton = (1 << 2), ///< A toggle button.
@@ -79,7 +79,7 @@ public:
     /// The current flags of this Button (see \ref nanogui::Button::Flags for options).
     int flags() const { return m_flags; }
     /// Sets the flags of this Button (see \ref nanogui::Button::Flags for options).
-    void set_flags(int button_flags) { m_flags = button_flags; }
+    void set_flags(Flags button_flags) { m_flags = button_flags; }
 
     /// The position of the icon for this Button.
     IconPosition icon_position() const { return m_icon_position; }
@@ -137,7 +137,7 @@ protected:
     bool m_pushed;
 
     /// The current flags of this button (see \ref nanogui::Button::Flags for options).
-    int m_flags;
+    Flags m_flags;
 
     /// The background color of this Button.
     Color m_background_color;

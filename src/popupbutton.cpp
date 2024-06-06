@@ -21,7 +21,7 @@ PopupButton::PopupButton(Widget *parent, const std::string &caption, int button_
 
     m_chevron_icon = m_theme->m_popup_chevron_right_icon;
 
-    set_flags(Flags::ToggleButton | Flags::PopupButton);
+    set_flags(static_cast<Flags>(Flags::ToggleButton | Flags::PopupButton));
 
     m_popup = new Popup(screen(), window());
     m_popup->set_size(Vector2i(320, 250));
