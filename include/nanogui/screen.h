@@ -272,6 +272,9 @@ public:
     void move_window_to_front(Window *window);
     void draw_widgets();
 
+    // Checks if the current widget under the mouse pointer has a different cursor than the one which is set (useful when dynamically changing widget cursors)
+    void update_cursor();
+
 protected:
     GLFWwindow *m_glfw_window = nullptr;
     NVGcontext *m_nvg_context = nullptr;
