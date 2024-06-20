@@ -253,6 +253,40 @@ std::string utf8(uint32_t c) {
     return std::string(seq, seq + n);
 }
 
+size_t utf8_charcount(char c) {
+    if (0 <= uint8_t(c) && uint8_t(c) < 0x80)
+        return 1;
+    if (0xc2 <= uint8_t(c) && uint8_t(c) < 0xe0)
+        return 2;
+    if (0xe0 <= uint8_t(c) && uint8_t(c) < 0xf0)
+        return 3;
+    if (0xf0 <= uint8_t(c) && uint8_t(c) < 0xf8)
+        return 4;
+    return 0;
+}
+
+size_t utf8_glyphlen(const std::string& str) {
+    size_t len = 0, pos = 0;
+    while (pos < str.length()) {
+        len++;
+        pos += utf8_charcount(str[pos]);
+    }
+    return len;
+}
+
+size_t utf8_strpos(const std::string& str, size_t glyph_pos) {
+    size_t str_pos = 0, tmp_glyph_pos = 0;
+    while (tmp_glyph_pos < glyph_pos) {
+        str_pos += utf8_charcount(str[str_pos]);
+        tmp_glyph_pos++;
+    }
+    return str_pos;
+}
+
+bool is_utf8_later_byte(char c) {
+    return 0x80 <= uint8_t(c) && uint8_t(c) < 0xc0;
+}
+
 int __nanogui_get_image(NVGcontext *ctx, const std::string &name, uint8_t *data, uint32_t size) {
     static std::map<std::string, int> icon_cache;
     auto it = icon_cache.find(name);
