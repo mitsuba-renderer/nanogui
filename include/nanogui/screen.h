@@ -252,6 +252,7 @@ public:
      * to the appropriate callback event handlers below
      */
     Screen();
+    Screen(bool enableDepthBuffer, bool enableStencilBuffer, bool enableFloatMode);
 
     /// Initialize the \ref Screen
     void initialize(GLFWwindow *window, bool shutdown_glfw);

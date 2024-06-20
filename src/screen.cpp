@@ -10,7 +10,6 @@
     All rights reserved. Use of this source code is governed by a
     BSD-style license that can be found in the LICENSE.txt file.
 */
-
 #include <nanogui/screen.h>
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
@@ -23,6 +22,7 @@
 #if defined(EMSCRIPTEN)
 #  include <emscripten/emscripten.h>
 #  include <emscripten/html5.h>
+#  undef NANOGUI_GLAD
 #endif
 
 #if defined(_WIN32)
@@ -118,13 +118,26 @@ Screen::Screen()
     GLint n_stencil_bits = 0, n_depth_bits = 0;
     GLboolean float_mode;
     CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
-        GL_DEPTH, GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &n_depth_bits));
+       GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &n_depth_bits));
     CHK(glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,
-        GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits));
+            GL_STENCIL_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &n_stencil_bits));
     CHK(glGetBooleanv(GL_RGBA_FLOAT_MODE, &float_mode));
     m_depth_buffer = n_depth_bits > 0;
     m_stencil_buffer = n_stencil_bits > 0;
     m_float_buffer = (bool) float_mode;
+#endif
+}
+
+Screen::Screen(bool enableDepthBuffer, bool enableStencilBuffer, bool enableFloatMode)
+    : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
+      m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
+      m_shutdown_glfw(false), m_fullscreen(false), m_depth_buffer(false),
+      m_stencil_buffer(false), m_float_buffer(false), m_redraw(false) {
+    memset(m_cursors, 0, sizeof(GLFWcursor *) * (size_t) Cursor::CursorCount);
+#if defined(NANOGUI_USE_OPENGL)
+    m_depth_buffer = enableDepthBuffer;
+    m_stencil_buffer = enableStencilBuffer;
+    m_float_buffer = enableFloatMode;
 #endif
 }
 
@@ -426,7 +439,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
         /* The canvas element is configured as width/height: auto, expand to
            the available space instead of using the specified window resolution */
         nanogui_emscripten_resize_callback(0, nullptr, nullptr);
-        emscripten_set_resize_callback(nullptr, nullptr, false,
+        emscripten_set_resize_callback("#canvas", nullptr, false,
                                        nanogui_emscripten_resize_callback);
     } else if (w != w2 || h != h2) {
         /* Configure for rendering on a high-DPI display */
@@ -473,7 +486,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     if (!m_nvg_context)
         throw std::runtime_error("Could not initialize NanoVG!");
 
-    m_visible = glfwGetWindowAttrib(window, GLFW_VISIBLE) != 0;
+    m_visible = true;//glfwGetWindowAttrib(window, GLFW_VISIBLE) != 0;
     set_theme(new Theme(m_nvg_context));
     m_mouse_pos = Vector2i(0);
     m_mouse_state = m_modifiers = 0;
