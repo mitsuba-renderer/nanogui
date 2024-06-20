@@ -167,7 +167,8 @@ bool Window::mouse_drag_event(const Vector2i &, const Vector2i &rel,
     if (m_drag && (button & (1 << GLFW_MOUSE_BUTTON_1)) != 0) {
         m_pos += rel;
         m_pos = max(m_pos, Vector2i(0));
-        m_pos = min(m_pos, parent()->size() - m_size);
+        if (parent()->size().y() >= m_size.y())
+            m_pos = min(m_pos, parent()->size() - m_size);
         return true;
     }
     return false;
