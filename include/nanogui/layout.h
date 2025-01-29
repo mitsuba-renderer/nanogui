@@ -68,9 +68,6 @@ public:
      *     for icons, etc.
      */
     virtual Vector2i preferred_size(NVGcontext *ctx, const Widget *widget) const = 0;
-protected:
-    /// Default destructor (exists for inheritance).
-    virtual ~Layout() { }
 };
 
 /**
@@ -411,8 +408,8 @@ public:
         /// Allows for printing out Anchor position, size, and alignment.
         operator std::string() const {
             char buf[50];
-            std::snprintf(buf, 50, "Format[pos=(%i, %i), size=(%i, %i), align=(%i, %i)]",
-                pos[0], pos[1], size[0], size[1], (int) align[0], (int) align[1]);
+            snprintf(buf, 50, "Format[pos=(%i, %i), size=(%i, %i), align=(%i, %i)]",
+                     pos[0], pos[1], size[0], size[1], (int) align[0], (int) align[1]);
             return buf;
         }
     };

@@ -7,6 +7,6 @@
 [submodule "ext/glfw"]
     path = ext/glfw
     url = https://github.com/wjakob/glfw
-[submodule "ext/pybind11"]
-	path = ext/pybind11
-	url = https://github.com/pybind/pybind11
+[submodule "ext/nanobind"]
+	path = ext/nanobind
+	url = https://github.com/wjakob/nanobind

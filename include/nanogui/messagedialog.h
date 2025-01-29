@@ -38,7 +38,7 @@ public:
     Label *message_label() { return m_message_label; }
     const Label *message_label() const { return m_message_label; }
 
-    std::function<void(int)> callback() const { return m_callback; }
+    const std::function<void(int)> &callback() const { return m_callback; }
     void set_callback(const std::function<void(int)> &callback) { m_callback = callback; }
 protected:
     std::function<void(int)> m_callback;

@@ -45,7 +45,7 @@ public:
     void set_selected_index(int idx);
 
     /// The callback to execute for this ComboBox.
-    std::function<void(int)> callback() const { return m_callback; }
+    const std::function<void(int)> &callback() const { return m_callback; }
 
     /// Sets the callback to execute for this ComboBox.
     void set_callback(const std::function<void(int)> &callback) { m_callback = callback; }

@@ -39,7 +39,7 @@ public:
     ColorWheel(Widget *parent, const Color& color = Color(1.0f, 0.0f, 0.0f, 1.0f));
 
     /// The callback to execute when a user changes the ColorWheel value.
-    std::function<void(const Color &)> callback() const                  { return m_callback;     }
+    const std::function<void(const Color &)> &callback() const { return m_callback; }
 
     /// Sets the callback to execute when a user changes the ColorWheel value.
     void set_callback(const std::function<void(const Color &)> &callback) { m_callback = callback; }

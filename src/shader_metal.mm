@@ -69,15 +69,15 @@ Shader::Shader(RenderPass *render_pass,
     pipeline_desc.vertexFunction = vertex_func;
     pipeline_desc.fragmentFunction = fragment_func;
 
-    std::vector<ref<Object>> &targets = render_pass->targets();
+    std::vector<Object*> &targets = render_pass->targets();
     int sample_count = 1;
 
     for (size_t i = 0; i < targets.size(); ++i) {
-        Texture *texture = dynamic_cast<Texture *>(targets[i].get());
-        Screen *screen = dynamic_cast<Screen *>(targets[i].get());
+        Texture *texture = dynamic_cast<Texture *>(targets[i]);
+        Screen *screen = dynamic_cast<Screen *>(targets[i]);
 
         MTLPixelFormat pixel_format;
-        if (targets[i].get() == nullptr) {
+        if (targets[i] == nullptr) {
             continue;
         } else if (screen) {
             if (i == 0 || i == 1) {

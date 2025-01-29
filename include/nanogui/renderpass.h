@@ -72,11 +72,14 @@ public:
      * \param clear
      *     Should \ref enter() begin by clearing all buffers?
      */
-    RenderPass(std::vector<Object *> color_targets,
+    RenderPass(const std::vector<Object *> &color_targets,
                Object *depth_target = nullptr,
                Object *stencil_target = nullptr,
                Object *blit_target = nullptr,
                bool clear = true);
+
+    // Polymorphic destructor
+    virtual ~RenderPass();
 
     /**
      * \brief Begin the render pass
@@ -137,7 +140,7 @@ public:
      * \brief Return the set of all render targets (including depth + stencil)
      * associated with this render pass
      */
-    std::vector<ref<Object>> &targets() { return m_targets; }
+    std::vector<Object*> &targets() { return m_targets; }
 
     /// Resize all texture targets attached to the render pass
     void resize(const Vector2i &size);
@@ -161,14 +164,12 @@ public:
 #endif
 
 protected:
-    virtual ~RenderPass();
-
-protected:
-    std::vector<ref<Object>> m_targets;
-    bool m_clear;
+    std::vector<Object *> m_targets;
+    std::vector<bool> m_targets_ref;
     std::vector<Color> m_clear_color;
-    float m_clear_depth;
+    bool m_clear;
     uint8_t m_clear_stencil;
+    float m_clear_depth;
     Vector2i m_viewport_offset;
     Vector2i m_viewport_size;
     Vector2i m_framebuffer_size;

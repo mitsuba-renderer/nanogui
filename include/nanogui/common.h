@@ -6,6 +6,7 @@
     All rights reserved. Use of this source code is governed by a
     BSD-style license that can be found in the LICENSE.txt file.
 */
+
 /**
  * \file nanogui/common.h
  *
@@ -19,6 +20,17 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+
+#define NANOGUI_VERSION_MAJOR 0
+#define NANOGUI_VERSION_MINOR 2
+#define NANOGUI_VERSION_PATCH 0
+
+#define NANOGUI_STRINGIFY(x) #x
+#define NANOGUI_TOSTRING(x)  NANOGUI_STRINGIFY(x)
+#define NANOGUI_VERSION                                                          \
+    (NANOGUI_TOSTRING(NANOGUI_VERSION_MAJOR) "."                                 \
+     NANOGUI_TOSTRING(NANOGUI_VERSION_MINOR) "."                                 \
+     NANOGUI_TOSTRING(NANOGUI_VERSION_PATCH))
 
 /* Set to 1 to draw boxes around widgets */
 //#define NANOGUI_SHOW_WIDGET_BOUNDS 1
@@ -105,7 +117,7 @@ extern "C" {
     /* Opaque handle types */
     typedef struct NVGcontext NVGcontext;
     typedef struct GLFWwindow GLFWwindow;
-};
+}
 
 struct NVGcolor;
 struct NVGglyphPosition;
@@ -261,6 +273,22 @@ extern NANOGUI_EXPORT void async(const std::function<void()> &func);
 extern NANOGUI_EXPORT std::string
 file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
             bool save);
+
+
+/**
+ * \brief Check for the availability of displays with 10-bit color and/or
+ * extended dynamic range (EDR), i.e. the ability to reproduce intensities
+ * exceeding the standard dynamic range from 0.0-1.0.
+ *
+ * To leverage either of these features, you will need to create a \ref Screen
+ * with <tt>float_buffer=True</tt>. Only the macOS Metal backend of NanoGUI
+ * implements this function right now. All other platforms return <tt>(false,
+ * false)</tt>.
+ *
+ * \return A <tt>std::pair</tt> with two boolean values. The first indicates
+ * 10-bit color support, and the second indicates EDR support.
+ */
+extern NANOGUI_EXPORT std::pair<bool, bool> test_10bit_edr_support();
 
 /**
  * \brief Open a native file open dialog, which allows multiple selection.

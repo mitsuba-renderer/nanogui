@@ -87,17 +87,17 @@ public:
     }
 
     /// Callback that is used to notify a listener about tab changes (will be called with the tab ID)
-    std::function<void(int)> callback() const { return m_callback; }
+    const std::function<void(int)> &callback() const { return m_callback; }
     /// Set a callback that is used to notify a listener about tab changes (will be called with the tab ID)
     void set_callback(const std::function<void(int)> &callback) { m_callback = callback; }
 
     /// Callback that is used to notify a listener about tab close events (will be called with the tab ID)
-    std::function<void(int)> close_callback() const { return m_close_callback; }
+    const std::function<void(int)> &close_callback() const { return m_close_callback; }
     /// Set a callback that is used to notify a listener about tab close events (will be called with the tab ID)
     void set_close_callback(const std::function<void(int)> &close_callback) { m_close_callback = close_callback; }
 
     /// Callback that is used to notify a listener about popup events (will be called with the tab ID)
-    std::function<Popup *(int, Screen*)> popup_callback() const { return m_popup_callback; }
+    const std::function<Popup *(int, Screen*)> &popup_callback() const { return m_popup_callback; }
     /// Set a callback that is used to notify a listener about popup events (will be called with the tab ID)
     void set_popup_callback(const std::function<Popup *(int, Screen*)> &popup_callback) { m_popup_callback = popup_callback; }
 

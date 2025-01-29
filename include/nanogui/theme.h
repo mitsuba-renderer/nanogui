@@ -220,10 +220,6 @@ public:
     int m_text_box_up_icon;
     /// Icon to use when a text box has a down toggle (e.g. IntBox) (default: ``FA_CHEVRON_DOWN``).
     int m_text_box_down_icon;
-
-protected:
-    /// Default destructor does nothing; allows for inheritance.
-    virtual ~Theme() { };
 };
 
 NAMESPACE_END(nanogui)

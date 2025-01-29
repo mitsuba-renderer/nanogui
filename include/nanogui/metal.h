@@ -40,6 +40,9 @@ extern NANOGUI_EXPORT void metal_window_init(void *nswin, bool float_buffer);
 /// Set size of the drawable underlying an NSWindow
 extern NANOGUI_EXPORT void metal_window_set_size(void *nswin, const Vector2i &size);
 
+/// Set content scale of the drawable underlying an NSWindow
+extern NANOGUI_EXPORT void metal_window_set_content_scale(void *nswin, float scale);
+
 /// Return the CAMetalLayer associated with a given NSWindow
 extern NANOGUI_EXPORT void *metal_window_layer(void *nswin);
 
@@ -51,6 +54,15 @@ extern NANOGUI_EXPORT void *metal_drawable_texture(void *drawable);
 
 /// Release a drawable back to the pool
 extern NANOGUI_EXPORT void metal_present_and_release_drawable(void *drawable);
+
+/// Check whether any connected display supports 10-bit or EDR mode
+extern NANOGUI_EXPORT std::pair<bool, bool> metal_10bit_edr_support();
+
+// Create a new autorelease pool
+extern NANOGUI_EXPORT void *autorelease_init();
+
+// Drawin an autorelease pool
+extern NANOGUI_EXPORT void autorelease_release(void *pool_);
 
 NAMESPACE_END(nanogui)
 #endif

@@ -4,6 +4,15 @@
 #if defined(NANOGUI_USE_METAL)
 #  import <Metal/Metal.h>
 #  import <QuartzCore/CAMetalLayer.h>
+#  import <QuartzCore/CATransaction.h>
+#endif
+
+#if !defined(MAC_OS_X_VERSION_10_15) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_15
+@interface NSScreen (ForwardDeclare)
+@property(readonly)
+    CGFloat maximumPotentialExtendedDynamicRangeColorComponentValue;
+@end
 #endif
 
 NAMESPACE_BEGIN(nanogui)
@@ -94,18 +103,41 @@ void metal_window_init(void *nswin_, bool float_buffer) {
     nswin.contentView.wantsLayer = YES;
     nswin.contentView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
     layer.device = (__bridge id<MTLDevice>) s_metal_device;
-    layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     layer.contentsScale = nswin.backingScaleFactor;
     if (float_buffer) {
         layer.wantsExtendedDynamicRangeContent = YES;
         layer.pixelFormat = MTLPixelFormatRGBA16Float;
+        layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB);
     } else {
         layer.wantsExtendedDynamicRangeContent = NO;
         layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+        layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     }
-    layer.displaySyncEnabled = NO;
+    layer.displaySyncEnabled = YES;
     layer.allowsNextDrawableTimeout = NO;
     layer.framebufferOnly = NO;
+}
+
+std::pair<bool, bool> metal_10bit_edr_support() {
+    NSArray<NSScreen *> * screens = [NSScreen screens];
+    bool buffer_10bit = false,
+         buffer_ext = false;
+
+    for (NSScreen * screen in screens) {
+        if ([screen canRepresentDisplayGamut: NSDisplayGamutP3]) {
+            buffer_10bit = true; // on macOS, P3 gamut is equivalent to 10 bit color depth
+        }
+
+        if ([screen respondsToSelector:@selector
+                      (maximumPotentialExtendedDynamicRangeColorComponentValue)]) {
+            if ([screen maximumPotentialExtendedDynamicRangeColorComponentValue] >= 2.f) {
+                buffer_10bit = true;
+                buffer_ext = true;
+            }
+        }
+    }
+
+    return { buffer_10bit, buffer_ext };
 }
 
 void* metal_layer(void *nswin_) {
@@ -114,10 +146,25 @@ void* metal_layer(void *nswin_) {
     return (__bridge void *) layer;
 }
 
+
 void metal_window_set_size(void *nswin_, const Vector2i &size) {
     NSWindow *nswin = (__bridge NSWindow *) nswin_;
     CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
     layer.drawableSize = CGSizeMake(size.x(), size.y());
+}
+
+void metal_window_set_content_scale(void *nswin_, float scale) {
+    NSWindow *nswin = (__bridge NSWindow *) nswin_;
+    CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
+
+    float old_scale = layer.contentsScale;
+    if (old_scale != scale) {
+        [CATransaction begin];
+        [CATransaction setValue:(id)kCFBooleanTrue
+                        forKey:kCATransactionDisableActions];
+        layer.contentsScale = scale;
+        [CATransaction commit];
+    }
 }
 
 void* metal_window_layer(void *nswin_) {

@@ -37,10 +37,10 @@ public:
     std::pair<float, float> highlighted_range() const { return m_highlighted_range; }
     void set_highlighted_range(std::pair<float, float> highlighted_range) { m_highlighted_range = highlighted_range; }
 
-    std::function<void(float)> callback() const { return m_callback; }
+    const std::function<void(float)> &callback() const { return m_callback; }
     void set_callback(const std::function<void(float)> &callback) { m_callback = callback; }
 
-    std::function<void(float)> final_callback() const { return m_final_callback; }
+    const std::function<void(float)> &final_callback() const { return m_final_callback; }
     void set_final_callback(const std::function<void(float)> &callback) { m_final_callback = callback; }
 
     virtual Vector2i preferred_size(NVGcontext *ctx) const override;

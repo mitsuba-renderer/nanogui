@@ -76,59 +76,10 @@ static bool glad_initialized = false;
 static float get_pixel_ratio(GLFWwindow *window) {
 #if defined(EMSCRIPTEN)
     return emscripten_get_device_pixel_ratio();
-#elif defined(_WIN32)
-    HWND hwnd = glfwGetWin32Window(window);
-    HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-    /* The following function only exists on Windows 8.1+, but we don't want to make that a dependency */
-    static HRESULT (WINAPI *GetDpiForMonitor_)(HMONITOR, UINT, UINT*, UINT*) = nullptr;
-    static bool GetDpiForMonitor_tried = false;
-
-    if (!GetDpiForMonitor_tried) {
-        auto shcore = LoadLibrary(TEXT("shcore"));
-        if (shcore)
-            GetDpiForMonitor_ = (decltype(GetDpiForMonitor_)) GetProcAddress(shcore, "GetDpiForMonitor");
-        GetDpiForMonitor_tried = true;
-    }
-
-    if (GetDpiForMonitor_) {
-        uint32_t dpi_x, dpi_y;
-        if (GetDpiForMonitor_(monitor, 0 /* effective DPI */, &dpi_x, &dpi_y) == S_OK)
-            return dpi_x / 96.0;
-    }
-    return 1.f;
-#elif defined(__linux__)
-    (void) window;
-
-    float ratio = 1.0f;
-    FILE *fp;
-    /* Try to read the pixel ratio from KDEs config */
-    auto currentDesktop = std::getenv("XDG_CURRENT_DESKTOP");
-    if (currentDesktop && currentDesktop == std::string("KDE")) {
-        fp = popen("kreadconfig5 --group KScreen --key ScaleFactor", "r");
-        if (!fp)
-            return 1;
-
-        if (fscanf(fp, "%f", &ratio) != 1)
-            return 1;
-    } else {
-        /* Try to read the pixel ratio from GTK */
-        fp = popen("gsettings get org.gnome.desktop.interface scaling-factor", "r");
-        if (!fp)
-            return 1;
-
-        int ratioInt = 1;
-        if (fscanf(fp, "uint32 %i", &ratioInt) != 1)
-            return 1;
-        ratio = ratioInt;
-    }
-    if (pclose(fp) != 0)
-        return 1;
-    return ratio >= 1 ? ratio : 1;
 #else
-    Vector2i fb_size, size;
-    glfwGetFramebufferSize(window, &fb_size[0], &fb_size[1]);
-    glfwGetWindowSize(window, &size[0], &size[1]);
-    return (float)fb_size[0] / (float)size[0];
+    float xscale, yscale;
+    glfwGetWindowContentScale(window, &xscale, &yscale);
+    return xscale;
 #endif
 }
 
@@ -236,6 +187,7 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
     for (int i = 0; i < 2; ++i) {
         if (fullscreen) {
@@ -258,17 +210,6 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
             break;
         }
     }
-
-#if defined(NANOGUI_USE_OPENGL)
-    if (m_float_buffer) {
-        GLboolean float_mode;
-        CHK(glGetBooleanv(GL_RGBA_FLOAT_MODE, &float_mode));
-        if (!float_mode) {
-            fprintf(stderr, "Could not allocate floating point framebuffer.\n");
-            m_float_buffer = false;
-        }
-    }
-#endif
 
     if (!m_glfw_window) {
         (void) gl_major; (void) gl_minor;
@@ -296,6 +237,17 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
             throw std::runtime_error("Could not initialize GLAD!");
         glGetError(); // pull and ignore unhandled errors like GL_INVALID_ENUM
+    }
+#endif
+
+#if defined(NANOGUI_USE_OPENGL)
+    if (m_float_buffer) {
+      GLboolean float_mode;
+      CHK(glGetBooleanv(GL_RGBA_FLOAT_MODE, &float_mode));
+      if (!float_mode) {
+        fprintf(stderr, "Could not allocate floating point framebuffer.\n");
+        m_float_buffer = false;
+      }
     }
 #endif
 
@@ -424,6 +376,19 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
             s->focus_event(focused != 0);
         }
     );
+
+    glfwSetWindowContentScaleCallback(m_glfw_window,
+        [](GLFWwindow* w, float, float) {
+            auto it = __nanogui_screens.find(w);
+            if (it == __nanogui_screens.end())
+                return;
+            Screen* s = it->second;
+
+            s->m_pixel_ratio = get_pixel_ratio(w);
+            s->resize_callback_event(s->m_size.x(), s->m_size.y());
+        }
+    );
+
     initialize(m_glfw_window, true);
 
 #if defined(NANOGUI_USE_METAL)
@@ -611,6 +576,9 @@ void Screen::draw_setup() {
     /* Recompute pixel ratio on OSX */
     if (m_size[0])
         m_pixel_ratio = (float) m_fbsize[0] / (float) m_size[0];
+#if defined(NANOGUI_USE_METAL)
+    metal_window_set_content_scale(nswin, m_pixel_ratio);
+#endif
 #endif
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
@@ -633,10 +601,18 @@ void Screen::draw_all() {
     if (m_redraw) {
         m_redraw = false;
 
+#if defined(NANOGUI_USE_METAL)
+        void *pool = autorelease_init();
+#endif
+
         draw_setup();
         draw_contents();
         draw_widgets();
         draw_teardown();
+
+#if defined(NANOGUI_USE_METAL)
+        autorelease_release(pool);
+#endif
     }
 }
 
@@ -891,6 +867,7 @@ void Screen::resize_callback_event(int, int) {
 #if defined(EMSCRIPTEN)
     return;
 #endif
+
     Vector2i fb_size, size;
     glfwGetFramebufferSize(m_glfw_window, &fb_size[0], &fb_size[1]);
     glfwGetWindowSize(m_glfw_window, &size[0], &size[1]);

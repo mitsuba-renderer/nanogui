@@ -50,7 +50,7 @@ std::string strval = "A string";
 test_enum enumval = Item2;
 Color colval(0.5f, 0.5f, 0.7f, 1.f);
 
-Screen *screen = nullptr;
+ref<Screen> screen;
 
 int main(int /* argc */, char ** /* argv */) {
     glfwInit();
@@ -183,6 +183,14 @@ int main(int /* argc */, char ** /* argv */) {
         // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
 
+        /* Alternatively call 'screen->draw_all();' that subsumes all of the above steps,
+           including setting up an autorelease pool on macOS / Metal targets */
+
+#if defined(NANOGUI_USE_METAL)
+        // Important to periodically free memory used up by Metal command queues, etc.
+        void *pool = autorelease_init();
+#endif
+
         // Draw nanogui
         screen->draw_setup();
         screen->clear(); // glClear
@@ -190,8 +198,15 @@ int main(int /* argc */, char ** /* argv */) {
         screen->draw_widgets();
         screen->draw_teardown();
 
+#if defined(NANOGUI_USE_METAL)
+        autorelease_release(pool);
+#endif
+
         glfwSwapBuffers(window);
     }
+
+    delete gui;
+    screen.reset();
 
     // Terminate GLFW, clearing any resources allocated by GLFW.
     glfwTerminate();

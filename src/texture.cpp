@@ -11,7 +11,8 @@ Texture::Texture(PixelFormat pixel_format,
                  InterpolationMode mag_interpolation_mode,
                  WrapMode wrap_mode,
                  uint8_t samples,
-                 uint8_t flags)
+                 uint8_t flags,
+                 bool mipmap_manual)
     : m_pixel_format(pixel_format),
       m_component_format(component_format),
       m_min_interpolation_mode(min_interpolation_mode),
@@ -19,7 +20,8 @@ Texture::Texture(PixelFormat pixel_format,
       m_wrap_mode(wrap_mode),
       m_samples(samples),
       m_flags(flags),
-      m_size(size) {
+      m_size(size),
+      m_mipmap_manual(mipmap_manual) {
 
     init();
 }
@@ -33,7 +35,8 @@ Texture::Texture(const std::string &filename,
       m_mag_interpolation_mode(mag_interpolation_mode),
       m_wrap_mode(wrap_mode),
       m_samples(1),
-      m_flags(TextureFlags::ShaderRead) {
+      m_flags(TextureFlags::ShaderRead),
+      m_mipmap_manual(false) {
     int n = 0;
     using Holder = std::unique_ptr<uint8_t[], void(*)(void*)>;
     Holder texture_data(stbi_load(filename.c_str(), &m_size.x(), &m_size.y(), &n, 0),

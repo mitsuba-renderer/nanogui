@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  standard:
+    name: Compile on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-latest]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Update CMake
+        uses: jwlawson/actions-setup-cmake@v1.13
+
+      - uses: actions/setup-python@v4
+        name: Install Python
+        with:
+          python-version: '3.9'
+
+      - name: Prepare compiler environment for Windows
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install dependencies on Linux
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y xorg-dev libglu1-mesa-dev
+
+      - name: Configure
+        run: >
+          cmake -S . -B build "-DPython_EXECUTABLE=$(python3 -c 'import sys; print(sys.executable)')"
+
+      - name: Build C++
+        run: cmake --build build -j 2

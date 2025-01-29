@@ -8,17 +8,18 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-RenderPass::RenderPass(std::vector<Object *> color_targets,
+RenderPass::RenderPass(const std::vector<Object *> &color_targets,
                        Object *depth_target,
                        Object *stencil_target,
                        Object *blit_target,
                        bool clear)
-    : m_targets(color_targets.size() + 2), m_clear(clear),
-      m_clear_color(color_targets.size()), m_viewport_offset(0),
-      m_viewport_size(0), m_framebuffer_size(0),
-      m_depth_test(DepthTest::Less), m_depth_write(true),
-      m_cull_mode(CullMode::Back), m_blit_target(blit_target), m_active(false),
-      m_command_buffer(nullptr), m_command_encoder(nullptr) {
+    : m_targets(color_targets.size() + 2), m_targets_ref(color_targets.size() + 2),
+      m_clear_color(color_targets.size()), m_clear(clear), m_clear_stencil(0),
+      m_clear_depth(1.f), m_viewport_offset(0), m_viewport_size(0),
+      m_framebuffer_size(0), m_depth_test(DepthTest::Less),
+      m_depth_write(true), m_cull_mode(CullMode::Back),
+      m_blit_target(blit_target), m_active(false), m_command_buffer(nullptr),
+      m_command_encoder(nullptr) {
 
     m_targets[0] = depth_target;
     m_targets[1] = stencil_target;
@@ -26,10 +27,18 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         m_targets[i + 2] = color_targets[i];
         m_clear_color[i] = Color(0.f, 0.f, 0.f, 1.f);
     }
-    m_clear_stencil = 0;
-    m_clear_depth = 1.f;
 
-    if (!m_targets[0].get()) {
+    // Avoid a potential reference cycle involving 'RenderPass' and 'Screen'
+    for (size_t i = 0; i < m_targets.size(); ++i) {
+        Object *o = m_targets[i];
+
+        bool inc_ref = o && dynamic_cast<Screen *>(o) == nullptr;
+        m_targets_ref[i] = inc_ref;
+        if (inc_ref)
+            o->inc_ref();
+    }
+
+    if (!m_targets[0]) {
         m_depth_write = false;
         m_depth_test = DepthTest::Always;
     }
@@ -38,8 +47,8 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
         [MTLRenderPassDescriptor renderPassDescriptor];
 
     for (size_t i = 0; i < m_targets.size(); ++i) {
-        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
-        Screen *screen   = dynamic_cast<Screen *>(m_targets[i].get());
+        Texture *texture = dynamic_cast<Texture *>(m_targets[i]);
+        Screen *screen   = dynamic_cast<Screen *>(m_targets[i]);
 
         if (texture) {
             if (!(texture->flags() & Texture::TextureFlags::RenderTarget))
@@ -48,8 +57,8 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
             m_framebuffer_size = max(m_framebuffer_size, texture->size());
         } else if (screen) {
             m_framebuffer_size = max(m_framebuffer_size, screen->framebuffer_size());
-        } else if (m_targets[i].get()) {
-            throw std::runtime_error("RenderPas::RenderPass(): invalid attachment type!");
+        } else if (m_targets[i]) {
+            throw std::runtime_error("RenderPass::RenderPass(): invalid attachment type!");
         }
     }
     m_viewport_size = m_framebuffer_size;
@@ -63,6 +72,11 @@ RenderPass::RenderPass(std::vector<Object *> color_targets,
 }
 
 RenderPass::~RenderPass() {
+    for (size_t i = 0; i < m_targets.size(); ++i) {
+        if (m_targets_ref[i])
+            m_targets[i]->dec_ref();
+    }
+
     (void) (__bridge_transfer MTLRenderPassDescriptor *) m_pass_descriptor;
 }
 
@@ -83,8 +97,8 @@ void RenderPass::begin() {
                                     m_viewport_size != m_framebuffer_size);
 
     for (size_t i = 0; i < m_targets.size(); ++i) {
-        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
-        Screen *screen = dynamic_cast<Screen *>(m_targets[i].get());
+        Texture *texture = dynamic_cast<Texture *>(m_targets[i]);
+        Screen *screen = dynamic_cast<Screen *>(m_targets[i]);
         id<MTLTexture> texture_handle = nil;
 
         if (texture) {
@@ -118,7 +132,7 @@ void RenderPass::begin() {
         RenderPass *blit_rp = dynamic_cast<RenderPass *>(m_blit_target.get());
         if (blit_rp && i < blit_rp->targets().size()) {
             const Texture *resolve_texture =
-                dynamic_cast<Texture *>(blit_rp->targets()[i].get());
+                dynamic_cast<Texture *>(blit_rp->targets()[i]);
             if (resolve_texture == nullptr)
                 continue;
 
@@ -163,7 +177,7 @@ void RenderPass::begin() {
     if (clear_manual) {
         MTLDepthStencilDescriptor *depth_desc = [MTLDepthStencilDescriptor new];
         depth_desc.depthCompareFunction = MTLCompareFunctionAlways;
-        depth_desc.depthWriteEnabled = m_targets[0].get() != nullptr;
+        depth_desc.depthWriteEnabled = m_targets[0] != nullptr;
         id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
         id<MTLDepthStencilState> depth_state =
             [device newDepthStencilStateWithDescriptor: depth_desc];
@@ -242,7 +256,7 @@ void RenderPass::end() {
 
 void RenderPass::resize(const Vector2i &size) {
     for (size_t i = 0; i < m_targets.size(); ++i) {
-        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
+        Texture *texture = dynamic_cast<Texture *>(m_targets[i]);
         if (texture)
             texture->resize(size);
     }
@@ -368,9 +382,9 @@ void RenderPass::blit_to(const Vector2i &src_offset,
         dst_textures.push_back(nullptr);
         dst_textures.push_back(screen->metal_texture());
     } else if (rp) {
-        std::vector<ref<Object>>& targets = rp->targets();
+        std::vector<Object *>& targets = rp->targets();
         for (size_t i = 0; i < targets.size(); ++i) {
-            Texture *texture = dynamic_cast<Texture *>(targets[i].get());
+            Texture *texture = dynamic_cast<Texture *>(targets[i]);
             if (texture)
                 dst_textures.push_back(texture->texture_handle());
             else
@@ -388,7 +402,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
         [command_buffer blitCommandEncoder];
 
     for (size_t i = 0; i < std::min(dst_textures.size(), m_targets.size()); ++i) {
-        Texture *texture = dynamic_cast<Texture *>(m_targets[i].get());
+        Texture *texture = dynamic_cast<Texture *>(m_targets[i]);
         id<MTLTexture> src_texture =
             (__bridge id<MTLTexture>) (texture ? texture->texture_handle()
                                                : nullptr);

@@ -92,12 +92,12 @@ public:
     void set_pushed(bool pushed) { m_pushed = pushed; }
 
     /// Return the push callback (for any type of button)
-    std::function<void()> callback() const { return m_callback; }
+    const std::function<void()> &callback() const { return m_callback; }
     /// Set the push callback (for any type of button).
     void set_callback(const std::function<void()> &callback) { m_callback = callback; }
 
     /// Return the change callback (for toggle buttons)
-    std::function<void(bool)> change_callback() const { return m_change_callback; }
+    const std::function<void(bool)> &change_callback() const { return m_change_callback; }
     /// Set the change callback (for toggle buttons).
     void set_change_callback(const std::function<void(bool)> &callback) { m_change_callback = callback; }
 
