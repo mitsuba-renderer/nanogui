@@ -1872,6 +1872,8 @@ static const char *__doc_nanogui_Screen_depth_stencil_texture = R"doc(Return the
 
 static const char *__doc_nanogui_Screen_dispose_window = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_move_window = R"doc(Move window relatively)doc";
+
 static const char *__doc_nanogui_Screen_draw_all =
 R"doc(Redraw the screen if the redraw flag is set
 

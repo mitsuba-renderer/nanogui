@@ -109,6 +109,9 @@ public:
     /// Set the top-level window visibility (no effect on full-screen windows)
     void set_visible(bool visible);
 
+    /// Move window relatively
+    void move_window(const Vector2i& rel);
+
     /// Set window size
     void set_size(const Vector2i& size);
 

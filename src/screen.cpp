@@ -546,6 +546,42 @@ void Screen::set_caption(const std::string &caption) {
     }
 }
 
+void Screen::move_window(const Vector2i &rel) {
+    Vector2i pos;
+    glfwGetWindowPos(m_glfw_window, &pos[0], &pos[1]);
+    pos += rel;
+
+#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
+    auto scaled_size = m_size * m_pixel_ratio;
+#else
+    auto scaled_size = m_size;
+#endif
+
+    int monitor_count = 0;
+    GLFWmonitor **monitors = glfwGetMonitors(&monitor_count);
+    if (monitor_count > 0) {
+        Vector2i work_pos{std::numeric_limits<int>::max()};
+        Vector2i work_size{std::numeric_limits<int>::min()};
+        for (int i = 0; i < monitor_count; ++i) {
+            Vector2i monitor_work_pos, monitor_work_size;
+            glfwGetMonitorWorkarea(monitors[i], &monitor_work_pos[0],
+                                   &monitor_work_pos[1], &monitor_work_size[0],
+                                   &monitor_work_size[1]);
+            work_pos = min(work_pos, monitor_work_pos);
+            work_size = max(work_size, monitor_work_size);
+        }
+
+        pos = max(min(pos, work_pos + work_size - scaled_size), work_pos);
+    }
+
+#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
+    glfwSetWindowPos(m_glfw_window, pos.x() * m_pixel_ratio,
+                                    pos.y() * m_pixel_ratio);
+#else
+    glfwSetWindowPos(m_glfw_window, pos.x(), pos.y());
+#endif
+}
+
 void Screen::set_size(const Vector2i &size) {
     Widget::set_size(size);
 

@@ -227,6 +227,7 @@ void register_widget(nb::module_ &m) {
         .def("has_depth_buffer", &Screen::has_depth_buffer, D(Screen, has_depth_buffer))
         .def("has_stencil_buffer", &Screen::has_stencil_buffer, D(Screen, has_stencil_buffer))
         .def("has_float_buffer", &Screen::has_float_buffer, D(Screen, has_float_buffer))
+        .def("move_window", &Screen::move_window, D(Screen, move_window))
         .def("glfw_window", &Screen::glfw_window, D(Screen, glfw_window),
                 nb::rv_policy::reference)
         .def("nvg_context", &Screen::nvg_context, D(Screen, nvg_context),
