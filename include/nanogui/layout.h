@@ -18,6 +18,8 @@
 #include <nanogui/object.h>
 #include <nanogui/vector.h>
 #include <unordered_map>
+
+#include <stdexcept>
 #include <vector>
 
 NAMESPACE_BEGIN(nanogui)
@@ -429,10 +431,10 @@ public:
     int row_count() const { return (int) m_rows.size(); }
 
     /// Append a row of the given size (and stretch factor)
-    void append_row(int size, float stretch = 0.f) { m_rows.push_back(size); m_row_stretch.push_back(stretch); };
+    void append_row(int size, float stretch = 0.f) { m_rows.push_back(size); m_row_stretch.push_back(stretch); }
 
     /// Append a column of the given size (and stretch factor)
-    void append_col(int size, float stretch = 0.f) { m_cols.push_back(size); m_col_stretch.push_back(stretch); };
+    void append_col(int size, float stretch = 0.f) { m_cols.push_back(size); m_col_stretch.push_back(stretch); }
 
     /// Set the stretch factor of a given row
     void set_row_stretch(int index, float stretch) { m_row_stretch.at(index) = stretch; }

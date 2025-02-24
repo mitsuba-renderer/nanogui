@@ -32,10 +32,10 @@ public:
     TabWidgetBase(Widget *parent, const std::string &font = "sans-bold");
 
     /// Return the total number of tabs
-    int tab_count() const { return (int) m_tab_captions.size(); };
+    int tab_count() const { return (int) m_tab_captions.size(); }
 
     /// Return the ID of the tab at a given index
-    int tab_id(int index) const { return m_tab_ids[index]; };
+    int tab_id(int index) const { return m_tab_ids[index]; }
 
     /// Return the index of the tab with a given ID (or throw an exception)
     int tab_index(int id) const;
@@ -60,9 +60,9 @@ public:
     void set_selected_index(int index) { m_active_tab = index; update_visibility(); }
 
     /// Return the caption of the tab with the given ID
-    const std::string& tab_caption(int id) const { return m_tab_captions[tab_index(id)]; };
+    const std::string& tab_caption(int id) const { return m_tab_captions[tab_index(id)]; }
     /// Change the caption of the tab with the given ID
-    void set_tab_caption(int id, const std::string &caption) { m_tab_captions[tab_index(id)] = caption; };
+    void set_tab_caption(int id, const std::string &caption) { m_tab_captions[tab_index(id)] = caption; }
 
     /// Return whether tabs provide a close button
     bool tabs_closeable() const { return m_tabs_closeable; }

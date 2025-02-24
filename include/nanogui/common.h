@@ -19,7 +19,6 @@
 #include <functional>
 #include <vector>
 #include <string>
-#include <stdexcept>
 
 #define NANOGUI_VERSION_MAJOR 0
 #define NANOGUI_VERSION_MINOR 2

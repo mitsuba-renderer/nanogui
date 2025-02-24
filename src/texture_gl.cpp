@@ -1,7 +1,9 @@
 #include <nanogui/texture.h>
 #include <nanogui/opengl.h>
 #include "opengl_check.h"
+
 #include <memory>
+#include <stdexcept>
 
 #if !defined(GL_HALF_FLOAT)
 #  define GL_HALF_FLOAT 0x140B

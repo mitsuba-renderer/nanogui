@@ -16,6 +16,8 @@
 #include <nanogui/icons.h>
 #include <nanogui_resources.h>
 
+#include <stdexcept>
+
 NAMESPACE_BEGIN(nanogui)
 
 Theme::Theme(NVGcontext *ctx) {

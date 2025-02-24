@@ -84,7 +84,7 @@ public:
 
     void select_all() {
         m_selection_pos = 0;
-        m_cursor_pos = m_value_temp.size();
+        m_cursor_pos = (int)m_value_temp.size();
     }
 
     float corner_radius() const {

@@ -20,6 +20,8 @@
 #include <nanogui/opengl.h>
 #include "opengl_check.h"
 
+#include <stdexcept>
+
 NAMESPACE_BEGIN(nanogui)
 
 Canvas::Canvas(Widget *parent, uint8_t samples,

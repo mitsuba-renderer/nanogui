@@ -188,7 +188,7 @@ Value squared_norm(const Array<Value, Size> &a) {
 
 template <typename Value, size_t Size>
 Value norm(const Array<Value, Size> &a) {
-    return std::sqrt(squared_norm(a));
+    return (Value)std::sqrt(squared_norm(a));
 }
 
 template <typename Value, size_t Size>
