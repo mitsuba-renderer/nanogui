@@ -28,7 +28,7 @@ void Popup::perform_layout(NVGcontext *ctx) {
         m_children[0]->set_size(m_size);
         m_children[0]->perform_layout(ctx);
     }
-    if (m_side == Side::Left)
+    if (m_side == Side::Left || m_side == Side::LeftInside)
         m_anchor_pos[0] -= size()[0];
 }
 
@@ -70,7 +70,7 @@ void Popup::draw(NVGcontext* ctx) {
 
     Vector2i base = m_pos + Vector2i(0, m_anchor_offset);
     int sign = -1;
-    if (m_side == Side::Left) {
+    if (m_side == Side::Left || m_side == Side::LeftInside) {
         base.x() += m_size.x();
         sign = 1;
     }

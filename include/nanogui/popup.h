@@ -27,7 +27,7 @@ NAMESPACE_BEGIN(nanogui)
  */
 class NANOGUI_EXPORT Popup : public Window {
 public:
-    enum Side { Left = 0, Right };
+    enum Side { Left = 0, Right, LeftInside, RightInside };
 
     /// Create a new popup parented to a screen (first argument) and a parent window (if applicable)
     Popup(Widget *parent, Window *parent_window = nullptr);

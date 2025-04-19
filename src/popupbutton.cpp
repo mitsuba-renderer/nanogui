@@ -54,7 +54,7 @@ void PopupButton::draw(NVGcontext* ctx) {
         float iw = nvgTextBounds(ctx, 0, 0, icon.data(), nullptr, nullptr);
         Vector2f icon_pos(0, m_pos.y() + m_size.y() * 0.5f - 1);
 
-        if (m_popup->side() == Popup::Right)
+        if (m_popup->side() == Popup::Right || m_popup->side() == Popup::RightInside)
             icon_pos[0] = m_pos.x() + m_size.x() - iw - 8;
         else
             icon_pos[0] = m_pos.x() + 8;
@@ -71,24 +71,38 @@ void PopupButton::perform_layout(NVGcontext *ctx) {
     int anchor_size = m_popup->anchor_size();
 
     if (parent_window) {
+        int pos_x = absolute_position().x() - parent_window->position().x();
         int pos_y = absolute_position().y() - parent_window->position().y() + m_size.y() / 2;
         if (m_popup->side() == Popup::Right)
             m_popup->set_anchor_pos(Vector2i(parent_window->width() + anchor_size, pos_y));
-        else
+        else if (m_popup->side() == Popup::RightInside)
+            m_popup->set_anchor_pos(Vector2i(pos_x + m_size.x() + anchor_size, pos_y));
+        else if (m_popup->side() == Popup::Left)
             m_popup->set_anchor_pos(Vector2i(-anchor_size, pos_y));
+        else
+            m_popup->set_anchor_pos(Vector2i(pos_x - anchor_size, pos_y));
     } else {
         m_popup->set_position(absolute_position() + Vector2i(width() + anchor_size + 1,  m_size.y() / 2 - anchor_size));
     }
 }
 
 void PopupButton::set_side(Popup::Side side) {
-    if (m_popup->side() == Popup::Right &&
-        m_chevron_icon == m_theme->m_popup_chevron_right_icon)
-        set_chevron_icon(m_theme->m_popup_chevron_left_icon);
-    else if (m_popup->side() == Popup::Left &&
-             m_chevron_icon == m_theme->m_popup_chevron_left_icon)
-        set_chevron_icon(m_theme->m_popup_chevron_right_icon);
+    bool should_change_icon = false;
+    if ((m_popup->side() == Popup::Right || m_popup->side() == Popup::RightInside) &&
+        m_chevron_icon == m_theme->m_popup_chevron_right_icon) {
+        should_change_icon = true;
+    } else if ((m_popup->side() == Popup::Left || m_popup->side() == Popup::LeftInside) &&
+        m_chevron_icon == m_theme->m_popup_chevron_left_icon) {
+        should_change_icon = true;
+    }
     m_popup->set_side(side);
+    if (should_change_icon) {
+        if (m_popup->side() == Popup::Right || m_popup->side() == Popup::RightInside) {
+            set_chevron_icon(m_theme->m_popup_chevron_right_icon);
+        } else {
+            set_chevron_icon(m_theme->m_popup_chevron_left_icon);
+        }
+    }
 }
 
 NAMESPACE_END(nanogui)
