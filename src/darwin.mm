@@ -32,6 +32,7 @@ file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
             [types addObject: [NSString stringWithUTF8String: filetypes[idx].first.c_str()]];
 
         [saveDlg setAllowedFileTypes: types];
+        [saveDlg setNameFieldStringValue: @"untitled" ]; // See: https://github.com/mlabbe/nativefiledialog/issues/76
 
         if ([saveDlg runModal] == NSModalResponseOK)
             result.emplace_back([[[saveDlg URL] path] UTF8String]);
