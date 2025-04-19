@@ -73,6 +73,17 @@ public:
         b->set_tooltip("This button has a fairly long tooltip. It is so long, in "
                 "fact, that the shown text will span several lines.");
 
+        /* Create a flat (i.e. border and background) button */
+        b = new Button(window, "Flat button");
+        b->set_flat(true);
+        b->set_tooltip("This button has no border, unles the mouse cursor hovers above it.");
+
+        /* Create a more compact button with smaller inner padding */
+        b = new Button(window, "Compact button");
+        b->set_horizontal_padding(1);
+        b->set_vertical_padding(1);
+        b->set_tooltip("This button has smaller internal paddings, hence takes less space\n(Could be useful for toolbar buttons)");
+
         new Label(window, "Toggle buttons", "sans-bold");
         b = new Button(window, "Toggle me");
         b->set_flags(Button::ToggleButton);

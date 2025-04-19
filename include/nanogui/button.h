@@ -91,6 +91,21 @@ public:
     /// Sets whether or not this Button is currently pushed.
     void set_pushed(bool pushed) { m_pushed = pushed; }
 
+     /// Whether or not this Button is flat.
+     bool flat() const { return m_flat; }
+     /// Sets whether or not this Button is flat (i.e. background and outline not rendered)
+     void set_flat(bool flat) { m_flat = flat; }
+
+     /// Horizontal padding on both sides
+     uint8_t horizontal_padding() const { return m_horizontal_padding; }
+     /// Sets the horizontal padding on both sides
+     void set_horizontal_padding(uint8_t horizontal_padding) { m_horizontal_padding = horizontal_padding; }
+
+     /// Vertical padding on both sides
+     uint8_t vertical_padding() const { return m_vertical_padding; }
+     /// Sets the vertical padding on both sides
+     void set_vertical_padding(uint8_t vertical_padding) { m_vertical_padding = vertical_padding; }
+
     /// Return the push callback (for any type of button)
     const std::function<void()> &callback() const { return m_callback; }
     /// Set the push callback (for any type of button).
@@ -135,6 +150,14 @@ protected:
 
     /// Whether or not this Button is currently pushed.
     bool m_pushed;
+
+    /// Whether the button outline + background should be rendered
+    bool m_flat;
+
+    /// Horizontal padding on both sides
+    uint8_t m_horizontal_padding;
+    /// Vertical padding on both sides
+    uint8_t m_vertical_padding;
 
     /// The current flags of this button (see \ref nanogui::Button::Flags for options).
     int m_flags;
