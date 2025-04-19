@@ -140,6 +140,9 @@ void Canvas::draw(NVGcontext *ctx) {
     if (m_draw_border)
         fbsize -= 2;
 
+    if (fbsize.x() <= 0 || fbsize.y() <= 0)
+        return;
+
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     if (m_render_to_texture)
         offset = Vector2i(offset.x(), scr->size().y() - offset.y() - m_size.y());
