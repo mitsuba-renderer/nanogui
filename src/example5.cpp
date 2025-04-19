@@ -13,6 +13,9 @@
 #include <nanogui/window.h>
 #include <nanogui/borderlayout.h>
 #include <nanogui/button.h>
+#include <nanogui/combobox.h>
+#include <nanogui/label.h>
+#include <nanogui/popup.h>
 #include <iostream>
 
 using namespace nanogui;
@@ -62,6 +65,35 @@ public:
             Button *center = new Button(win, "Center");
             center->set_fixed_size({ 150, 150 });
             south->set_fixed_height(100);
+        }
+
+        // Test window for popup location
+        {
+            Window * win = new Window(this, "Popups");
+            win->set_position({ 700, 10 });
+            BorderLayout *bl = new BorderLayout();
+            win->set_layout(bl);
+
+            // Add some dummy space to the left and right (to demonstrate the difference between Popup::Left and Popup::LeftInside)
+            Widget *dummy_left_panel = new Widget(win);
+            bl->set_side(dummy_left_panel, BorderLayout::West);
+            dummy_left_panel->set_fixed_width(50);
+            Widget *dummy_right_panel = new Widget(win);
+            bl->set_side(dummy_right_panel, BorderLayout::East);
+            dummy_right_panel->set_fixed_width(50);
+
+            // Main container
+            Widget *container = new Widget(win);
+            container->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 8, 8));
+
+            // Create a standard combo box
+            std::vector<std::string> fruits{ "Apple", "Banana", "Lemon", "Strawberry" };
+            new Label(container, "ComboBox:");
+            /* ComboBox * combo0 = */ new ComboBox(container, fruits);
+            /* ComboBox * combo0l = */ (new ComboBox(container, fruits))->set_side(Popup::Left);
+            new Label(container, "ComboBox(inside):");
+            /* ComboBox * combo1 = */ (new ComboBox(container, fruits))->set_side(Popup::RightInside);
+            /* ComboBox * combo1l = */ (new ComboBox(container, fruits))->set_side(Popup::LeftInside);
         }
 
         perform_layout();
