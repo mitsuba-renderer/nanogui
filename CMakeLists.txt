@@ -564,12 +564,14 @@ if (NANOGUI_BUILD_EXAMPLES)
   add_executable(example2      src/example2.cpp)
   add_executable(example3      src/example3.cpp)
   add_executable(example4      src/example4.cpp)
+  add_executable(example5      src/example5.cpp)
   add_executable(example_icons src/example_icons.cpp)
 
   target_link_libraries(example1      nanogui)
   target_link_libraries(example2      nanogui)
   target_link_libraries(example3      nanogui ${NANOGUI_LIBS}) # For OpenGL
   target_link_libraries(example4      nanogui)
+  target_link_libraries(example5      nanogui)
   target_link_libraries(example_icons nanogui)
 
   # Copy icons for example application
