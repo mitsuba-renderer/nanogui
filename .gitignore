@@ -48,3 +48,4 @@ resources/nanogui-entypo
 
 compile_commands.json
 .clangd
+.cache
