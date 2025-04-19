@@ -429,6 +429,7 @@ add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
   include/nanogui/toolbutton.h
   include/nanogui/opengl.h
   include/nanogui/nanogui.h
+  include/nanogui/borderlayout.h src/borderlayout.cpp
 )
 
 target_compile_definitions(nanogui

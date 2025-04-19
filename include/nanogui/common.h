@@ -152,6 +152,7 @@ enum class Cursor {
 /* Forward declarations */
 template <typename T> class ref;
 class AdvancedGridLayout;
+class BorderLayout;
 class BoxLayout;
 class Button;
 class CheckBox;
