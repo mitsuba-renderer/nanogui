@@ -40,7 +40,7 @@ void register_button(nb::module_ &m) {
         .value("RightCentered", Button::IconPosition::RightCentered)
         .value("Right", Button::IconPosition::Right);
 
-    nb::enum_<Button::Flags>(button, "Flags", D(Button, Flags))
+    nb::enum_<Button::Flags>(button, "Flags", D(Button, Flags), nb::is_flag(), nb::is_arithmetic())
         .value("NormalButton", Button::Flags::NormalButton)
         .value("RadioButton", Button::Flags::RadioButton)
         .value("ToggleButton", Button::Flags::ToggleButton)
