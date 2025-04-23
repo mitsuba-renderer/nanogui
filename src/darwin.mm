@@ -113,9 +113,10 @@ void metal_window_init(void *nswin_, bool float_buffer) {
         layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
         layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     }
-    layer.displaySyncEnabled = YES;
+    layer.displaySyncEnabled = NO;
     layer.allowsNextDrawableTimeout = NO;
     layer.framebufferOnly = NO;
+    layer.presentsWithTransaction = YES;
 }
 
 std::pair<bool, bool> metal_10bit_edr_support() {
