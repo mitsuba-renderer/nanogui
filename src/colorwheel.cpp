@@ -270,7 +270,7 @@ void ColorWheel::set_color(const Color &rgb) {
             h = (r - g) / d + 4;
         h /= 6;
 
-        Color ch = hue2rgb(m_hue);
+        Color ch = hue2rgb(h);
         float M2 = std::max({ ch[0], ch[1], ch[2] });
         float m2 = std::min({ ch[0], ch[1], ch[2] });
 
