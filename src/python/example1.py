@@ -137,7 +137,7 @@ class TestApp(Screen):
             try:
                 icons_data = nanogui.load_image_directory(self.nvg_context(), "../icons")
             except:
-                icons_data = nanogui.load_image_directory(self.nvg_context(), "../resources/icons")
+                icons_data = nanogui.load_image_directory(self.nvg_context(), "../../resources/icons")
 
 
         Label(window, "Image panel & scroll panel", "sans-bold")
