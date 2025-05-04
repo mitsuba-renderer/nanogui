@@ -6,7 +6,7 @@
     url = https://github.com/wjakob/nanovg_metal
 [submodule "ext/glfw"]
     path = ext/glfw
-    url = https://github.com/wjakob/glfw
+    url = https://github.com/glfw/glfw
 [submodule "ext/nanobind"]
 	path = ext/nanobind
 	url = https://github.com/wjakob/nanobind
