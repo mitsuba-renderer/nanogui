@@ -13,6 +13,8 @@ import nanogui
 import math
 import time
 import gc
+from os.path import dirname, join
+
 import numpy as np
 
 from nanogui import Color, ColorPicker, Screen, Window, GroupLayout, \
@@ -27,6 +29,8 @@ from nanogui import glfw, icons
 
 # A simple counter, used for dynamic tab creation with TabWidget callback
 counter = 1
+# Directory where icons are located
+ICONS_DIR = join(dirname(dirname(dirname(__file__))), "resources", "icons")
 
 
 class TestApp(Screen):
@@ -128,17 +132,7 @@ class TestApp(Screen):
             dlg.set_callback(cb2)
         b.set_callback(cb)
 
-        import os
-        import sys
-        os.chdir(sys.path[0])
-        try:
-            icons_data = nanogui.load_image_directory(self.nvg_context(), "icons")
-        except:
-            try:
-                icons_data = nanogui.load_image_directory(self.nvg_context(), "../icons")
-            except:
-                icons_data = nanogui.load_image_directory(self.nvg_context(), "../resources/icons")
-
+        icons_data = nanogui.load_image_directory(self.nvg_context(), ICONS_DIR)
 
         Label(window, "Image panel & scroll panel", "sans-bold")
         image_panel_btn = PopupButton(window, "Image Panel")
@@ -364,6 +358,9 @@ class TestApp(Screen):
         alpha_int_box = IntBox(window)
 
         def cp_fast_cb(color):
+            if math.isnan(color.r) or math.isnan(color.g) or math.isnan(color.b):
+                return
+
             b.set_background_color(color)
             b.set_text_color(color.contrasting_color())
             red = int(color.r * 255.0)
