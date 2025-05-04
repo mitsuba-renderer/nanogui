@@ -274,6 +274,15 @@ extern NANOGUI_EXPORT std::string
 file_dialog(const std::vector<std::pair<std::string, std::string>> &filetypes,
             bool save);
 
+/**
+* \brief Open a native directory dialog.
+*
+*
+* \param saved_path
+*     Optional parameter to specify a directory that the dialog should start in.
+*/
+    extern NANOGUI_EXPORT std::string
+    directory_dialog(std::string saved_path = "");
 
 /**
  * \brief Check for the availability of displays with 10-bit color and/or
