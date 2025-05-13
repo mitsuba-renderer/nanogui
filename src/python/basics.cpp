@@ -62,7 +62,8 @@ void register_basics(nb::module_ &m) {
     nb::class_<VScrollPanel, Widget, PyVScrollPanel>(m, "VScrollPanel", D(VScrollPanel))
         .def(nb::init<Widget *>(), "parent"_a, D(VScrollPanel, VScrollPanel))
         .def("scroll", &VScrollPanel::scroll, D(VScrollPanel, scroll))
-        .def("set_scroll", &VScrollPanel::set_scroll, D(VScrollPanel, set_scroll));
+        .def("set_scroll", &VScrollPanel::set_scroll, D(VScrollPanel, set_scroll))
+        .def("scroll_absolute", &VScrollPanel::scroll_absolute, D(VScrollPanel, scroll_absolute));
 
     nb::class_<ComboBox, Widget, PyComboBox>(m, "ComboBox", D(ComboBox))
         .def(nb::init<Widget *>(), "parent"_a, D(ComboBox, ComboBox))

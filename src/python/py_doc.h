@@ -3056,6 +3056,8 @@ static const char *__doc_nanogui_VScrollPanel_perform_layout = R"doc()doc";
 
 static const char *__doc_nanogui_VScrollPanel_preferred_size = R"doc()doc";
 
+static const char *__doc_nanogui_VScrollPanel_scroll_absolute = R"doc(Scroll to an absolute pixel position)doc";
+
 static const char *__doc_nanogui_VScrollPanel_scroll =
 R"doc(Return the current scroll amount as a value between 0 and 1. 0 means
 scrolled to the top and 1 to the bottom.)doc";

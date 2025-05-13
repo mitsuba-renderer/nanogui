@@ -39,6 +39,12 @@ public:
      */
     void set_scroll(float scroll) { m_scroll = scroll; }
 
+    /// Scroll to an absolute pixel position
+    void scroll_absolute(float scroll) {
+        float target = scroll / std::max(m_child_preferred_height + 8.0f - m_size.y(), 1.f);
+        m_scroll = std::max(0.f, std::min(1.f, m_scroll + target));
+    }
+
     virtual void perform_layout(NVGcontext *ctx) override;
     virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down,
