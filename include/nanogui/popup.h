@@ -27,7 +27,7 @@ NAMESPACE_BEGIN(nanogui)
  */
 class NANOGUI_EXPORT Popup : public Window {
 public:
-    enum Side { Left = 0, Right };
+    enum Side { Left = 0, Right, LeftInside, RightInside };
 
     /// Create a new popup parented to a screen (first argument) and a parent window (if applicable)
     Popup(Widget *parent, Window *parent_window = nullptr);
@@ -62,6 +62,11 @@ public:
 
     /// Draw the popup window
     virtual void draw(NVGcontext* ctx) override;
+
+    /// Recomputes the anchor position (given a reference widget)
+    void update_anchor(const Widget * ref);
+    /// Recomputes the anchor position (given a reference point)
+    void update_anchor(const Vector2i &p);
 protected:
     /// Internal helper function to maintain nested window position values
     virtual void refresh_relative_placement() override;

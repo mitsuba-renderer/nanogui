@@ -100,10 +100,13 @@ void mainloop(float refresh) {
         #endif
 
         /* Run async functions */ {
-            std::lock_guard<std::mutex> guard(m_async_mutex);
-            for (auto &f : m_async_functions)
+            std::vector<std::function<void()>> async_functions;
+            {
+                std::lock_guard<std::mutex> guard(m_async_mutex);
+                std::swap(async_functions, m_async_functions);
+            }
+            for (auto &f : async_functions)
                 f();
-            m_async_functions.clear();
         }
 
         for (auto kv : __nanogui_screens) {
