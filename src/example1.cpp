@@ -209,6 +209,9 @@ public:
             }
         );
 
+        // Create an overlay label for the image view
+        new Label(image_view, "This is an overlay");
+
         new Label(window, "File dialog", "sans-bold");
         tools = new Widget(window);
         tools->set_layout(new BoxLayout(Orientation::Horizontal,
