@@ -82,12 +82,13 @@ option(NANOGUI_BUILD_GLFW                "Build GLFW?" ${NANOGUI_BUILD_GLFW_DEFA
 option(NANOGUI_INSTALL                   "Install NanoGUI on `make install`?" ON)
 
 if (NOT NANOGUI_BACKEND)
-  if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv7" OR
-      CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64" OR
-      CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
+  if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
     set(NANOGUI_BACKEND_DEFAULT "GLES 2")
   elseif (APPLE)
     set(NANOGUI_BACKEND_DEFAULT "Metal")
+  elseif (CMAKE_SYSTEM_NAME MATCHES "Linux" OR
+          CMAKE_SYSTEM_NAME MATCHES "BSD")
+    set(NANOGUI_BACKEND_DEFAULT "OpenGL")
   else()
     set(NANOGUI_BACKEND_DEFAULT "OpenGL")
   endif()
@@ -288,7 +289,7 @@ elseif (CMAKE_SYSTEM MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "BSD")
   elseif (NANOGUI_BACKEND STREQUAL "GLES 2")
     list(APPEND NANOGUI_LIBS GLESv2)
   elseif (NANOGUI_BACKEND STREQUAL "GLES 3")
-    list(APPEND NANOGUI_LIBS GLESv3)
+    list(APPEND NANOGUI_LIBS GLESv2) # Most systems expose ESv3 functionality through GLESv2
   endif()
   if (NOT CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
     list(APPEND NANOGUI_LIBS rt)
@@ -398,6 +399,7 @@ add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
   include/nanogui/graph.h src/graph.cpp
   include/nanogui/tabwidget.h src/tabwidget.cpp
   include/nanogui/canvas.h src/canvas.cpp
+  include/nanogui/chroma.h src/chroma.cpp
   include/nanogui/texture.h src/texture.cpp
   include/nanogui/shader.h src/shader.cpp
   include/nanogui/quad.h src/quad.cpp

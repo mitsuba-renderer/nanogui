@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <array>
 #include <functional>
 #include <string>
 #include <vector>
@@ -202,7 +203,7 @@ class Window;
  * and GLFW on your own, while still using NanoGUI's classes.
  * \endrst
  */
-extern NANOGUI_EXPORT void init();
+extern NANOGUI_EXPORT void init(bool color_management = false);
 
 /// Static shutdown; should be called before the application terminates.
 extern NANOGUI_EXPORT void shutdown();
@@ -339,6 +340,10 @@ extern NANOGUI_EXPORT std::vector<std::pair<int, std::string>>
 /// Helper function used by nvg_image_icon
 extern NANOGUI_EXPORT int __nanogui_get_image(NVGcontext *ctx, const std::string &name,
                                               uint8_t *data, uint32_t size);
+
+static const size_t DITHER_MATRIX_SIZE = 8;
+using dither_matrix_t = std::array<float, DITHER_MATRIX_SIZE * DITHER_MATRIX_SIZE>;
+dither_matrix_t ditherMatrix(float scale);
 
 NAMESPACE_END(nanogui)
 

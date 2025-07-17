@@ -44,7 +44,7 @@ extern std::map<GLFWwindow *, Screen *> __nanogui_screens;
   extern void disable_saved_application_state_osx();
 #endif
 
-void init() {
+void init(bool color_management) {
     #if !defined(_WIN32)
         /* Avoid locale-related number parsing issues */
         setlocale(LC_NUMERIC, "C");
@@ -62,6 +62,10 @@ void init() {
             std::cerr << "GLFW error " << error << ": " << descr << std::endl;
         }
     );
+
+    if (color_management) {
+        glfwInitHint(GLFW_WAYLAND_COLOR_MANAGEMENT, GLFW_TRUE);
+    }
 
     if (!glfwInit())
         throw std::runtime_error("Could not initialize GLFW!");
@@ -497,6 +501,26 @@ void object_init_py(void (*object_inc_ref_py_)(PyObject *) noexcept,
                     void (*object_dec_ref_py_)(PyObject *) noexcept) {
     object_inc_ref_py = object_inc_ref_py_;
     object_dec_ref_py = object_dec_ref_py_;
+}
+
+dither_matrix_t ditherMatrix(float scale) {
+    // 8x8 Bayer dithering matrix scaled to [-0.5f, 0.5f] / 255
+    dither_matrix_t thresholdMatrix = {
+        {0, 32, 8, 40, 2, 34, 10, 42,
+         48, 16, 56, 24, 50, 18, 58, 26,
+         12, 44, 4, 36, 14, 46, 6, 38,
+         60, 28, 52, 20, 62, 30, 54, 22,
+         3, 35, 11, 43, 1, 33, 9, 41,
+         51, 19, 59, 27, 49, 17, 57, 25,
+         15, 47, 7, 39, 13, 45, 5, 37,
+         63, 31, 55, 23, 61, 29, 53, 21}
+    };
+
+    for (size_t i = 0; i < DITHER_MATRIX_SIZE * DITHER_MATRIX_SIZE; ++i) {
+        thresholdMatrix[i] = (thresholdMatrix[i] / DITHER_MATRIX_SIZE / DITHER_MATRIX_SIZE - 0.5f) * scale;
+    }
+
+    return thresholdMatrix;
 }
 
 NAMESPACE_END(nanogui)

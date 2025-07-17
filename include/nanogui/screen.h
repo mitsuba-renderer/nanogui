@@ -16,7 +16,8 @@
 
 #include <nanogui/widget.h>
 #include <nanogui/texture.h>
-#include <mutex>
+
+#include <optional>
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -219,6 +220,12 @@ public:
     /// Does the framebuffer use a floating point representation
     bool has_float_buffer() const { return m_float_buffer; }
 
+    /// Does the screen apply color management as a post processing shader?
+    bool applies_color_management() const { return m_wants_color_management && m_cm_render_pass && m_cm_shader && m_cm_texture; }
+
+    /// How many bits per sample does the framebuffer use?
+    uint32_t bits_per_sample() const { return m_bits_per_sample; }
+
 #if defined(NANOGUI_USE_METAL)
     /// Return the associated CAMetalLayer object
     void *metal_layer() const;
@@ -287,6 +294,10 @@ public:
     void move_window_to_front(Window *window);
     void draw_widgets();
 
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
+    uint32_t framebuffer_handle() const;
+#endif
+
 protected:
     GLFWwindow *m_glfw_window = nullptr;
     NVGcontext *m_nvg_context = nullptr;
@@ -309,9 +320,17 @@ protected:
     bool m_depth_buffer;
     bool m_stencil_buffer;
     bool m_float_buffer;
+    uint32_t m_bits_per_sample;
+    bool m_wants_color_management = false;
+    std::optional<float> m_display_sdr_white_level_override = std::nullopt;
     bool m_redraw;
     std::function<void(Vector2i)> m_resize_callback;
     RunMode m_last_run_mode;
+    ref<RenderPass> m_cm_render_pass;
+    ref<Texture> m_cm_texture;
+    ref<Texture> m_cm_depth_texture;
+    ref<Shader> m_cm_shader;
+    ref<Texture> m_dither_matrix;
 #if defined(NANOGUI_USE_METAL)
     void *m_metal_texture = nullptr;
     void *m_metal_drawable = nullptr;

@@ -180,6 +180,7 @@ protected:
     bool m_active;
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
     uint32_t m_framebuffer_handle;
+    int m_prev_framebuffer_handle = 0;
     int m_viewport_backup[4], m_scissor_backup[4];
     bool m_depth_test_backup;
     bool m_depth_write_backup;

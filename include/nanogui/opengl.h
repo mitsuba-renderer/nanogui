@@ -49,6 +49,10 @@
 #  endif
 #endif
 
+#if !defined(GL_TEXTURE_2D_MULTISAMPLE)
+#  define GL_TEXTURE_2D_MULTISAMPLE 0x9100
+#endif
+
 #include <nanovg.h>
 
 // Special treatment of linux Nvidia opengl headers

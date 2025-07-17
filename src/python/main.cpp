@@ -80,7 +80,7 @@ NB_MODULE(nanogui_ext, m_) {
     m.attr("api") = "metal";
 #endif
 
-    m.def("init", &nanogui::init, D(init));
+    m.def("init", &nanogui::init, D(init), "color_management"_a = false);
     m.def("shutdown", &nanogui::shutdown, D(shutdown));
 
     nb::enum_<RunMode>(m, "RunMode", D(RunMode))

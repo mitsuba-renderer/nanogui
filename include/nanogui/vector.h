@@ -221,6 +221,22 @@ Array<Value, Size> min(const Array<Value, Size> &a1, const Array<Value, Size> &a
     return result;
 }
 
+template <typename Value, size_t Size>
+Array<Value, Size> inverse(const Array<Value, Size>& a) {
+    Array<Value, Size> result;
+    for (size_t i = 0; i < Size; ++i)
+        result.v[i] = 1.0f / a.v[i];
+    return result;
+}
+
+template <typename Value, size_t Size>
+Value mean(const Array<Value, Size>& a) {
+    Value result = 0;
+    for (size_t i = 0; i < Size; ++i)
+        result += a.v[i];
+    return result / (Value)Size;
+}
+
 // Create aliases for common array types
 using Vector2f = Array<float, 2>;
 using Vector3f = Array<float, 3>;
@@ -595,7 +611,101 @@ template <typename Value_, size_t Size_> struct Matrix {
 };
 
 using Matrix2f = Matrix<float, 2>;
+using Matrix3f = Matrix<float, 3>;
 using Matrix4f = Matrix<float, 4>;
+
+inline Matrix3f inverse(const Matrix3f& mat) {
+    float d11 = mat.m[1][1] * mat.m[2][2] + mat.m[1][2] * -mat.m[2][1];
+    float d12 = mat.m[1][0] * mat.m[2][2] + mat.m[1][2] * -mat.m[2][0];
+    float d13 = mat.m[1][0] * mat.m[2][1] + mat.m[1][1] * -mat.m[2][0];
+
+    float det = mat.m[0][0] * d11 - mat.m[0][1] * d12 + mat.m[0][2] * d13;
+
+    if (std::abs(det) == 0.0f) {
+        return Matrix3f{0.0f};
+    }
+
+    det = 1.0f / det;
+
+    float d21 = mat.m[0][1] * mat.m[2][2] + mat.m[0][2] * -mat.m[2][1];
+    float d22 = mat.m[0][0] * mat.m[2][2] + mat.m[0][2] * -mat.m[2][0];
+    float d23 = mat.m[0][0] * mat.m[2][1] + mat.m[0][1] * -mat.m[2][0];
+
+    float d31 = mat.m[0][1] * mat.m[1][2] - mat.m[0][2] * mat.m[1][1];
+    float d32 = mat.m[0][0] * mat.m[1][2] - mat.m[0][2] * mat.m[1][0];
+    float d33 = mat.m[0][0] * mat.m[1][1] - mat.m[0][1] * mat.m[1][0];
+
+    Matrix3f result;
+    result.m[0][0] = +d11 * det;
+    result.m[0][1] = -d21 * det;
+    result.m[0][2] = +d31 * det;
+    result.m[1][0] = -d12 * det;
+    result.m[1][1] = +d22 * det;
+    result.m[1][2] = -d32 * det;
+    result.m[2][0] = +d13 * det;
+    result.m[2][1] = -d23 * det;
+    result.m[2][2] = +d33 * det;
+
+    return result;
+}
+
+inline Matrix3f transpose(const Matrix3f& mat) {
+    Matrix3f result;
+    for (int m = 0; m < 3; ++m) {
+        for (int n = 0; n < 3; ++n) {
+            result.m[m][n] = mat.m[n][m];
+        }
+    }
+
+    return result;
+}
+
+template <typename Value, size_t Size> Array<Value, Size> operator*(const Matrix<Value, Size>& m, const Array<Value, Size>& v) {
+    Array<Value, Size> result;
+    for (size_t i = 0; i < Size; ++i) {
+        Value accum = 0;
+        for (size_t k = 0; k < Size; ++k) {
+            accum += m.m[k][i] * v.v[k];
+        }
+
+        result.v[i] = accum;
+    }
+
+    return result;
+}
+
+template <typename Value, size_t Size> Array<Value, Size - 1> operator*(const Matrix<Value, Size>& m, const Array<Value, Size - 1>& v) {
+    Array<Value, Size - 1> result;
+    Value w = 0;
+    for (size_t i = 0; i < Size; ++i) {
+        Value accum = 0;
+        for (size_t k = 0; k < Size; ++k) {
+            accum += m.m[k][i] * (k == Size - 1 ? 1 : v.v[k]);
+        }
+
+        if (i == Size - 1) {
+            w = accum;
+        } else {
+            result.v[i] = accum;
+        }
+    }
+
+    return result / w;
+}
+
+template <typename Value, size_t Size> bool operator==(const Matrix<Value, Size>& a, const Matrix<Value, Size>& b) {
+    for (size_t m = 0; m < Size; ++m) {
+        for (size_t n = 0; n < Size; ++n) {
+            if (a.m[m][n] != b.m[m][n]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+template <typename Value, size_t Size> bool operator!=(const Matrix<Value, Size>& a, const Matrix<Value, Size>& b) { return !(a == b); }
 
 template <typename Stream, typename Value, size_t Size,
           std::enable_if_t<std::is_base_of_v<std::ostream, Stream>, int> = 0>

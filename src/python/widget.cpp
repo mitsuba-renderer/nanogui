@@ -240,6 +240,7 @@ void register_widget(nb::module_ &m) {
         .def("metal_texture", &Screen::metal_texture)
         .def("depth_stencil_texture", &Screen::depth_stencil_texture)
 #endif
+        .def("applies_color_management", &Screen::applies_color_management, D(Screen, applies_color_management))
         ;
 }
 #endif

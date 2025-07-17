@@ -41,6 +41,8 @@ RenderPass::RenderPass(const std::vector<Object *> &color_targets,
         m_depth_test = DepthTest::Always;
     }
 
+	CHK(glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_prev_framebuffer_handle));
+
     CHK(glGenFramebuffers(1, &m_framebuffer_handle));
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_handle));
 
@@ -51,6 +53,7 @@ RenderPass::RenderPass(const std::vector<Object *> &color_targets,
     bool has_texture = false,
          has_screen  = false;
 
+    Screen *screen = nullptr;
     for (size_t i = 0; i < m_targets.size(); ++i) {
         GLenum attachment_id;
         if (i == 0)
@@ -60,7 +63,7 @@ RenderPass::RenderPass(const std::vector<Object *> &color_targets,
         else
             attachment_id = (GLenum) (GL_COLOR_ATTACHMENT0 + i - 2);
 
-        Screen *screen = dynamic_cast<Screen *>(m_targets[i]);
+        screen = dynamic_cast<Screen *>(m_targets[i]);
         Texture *texture = dynamic_cast<Texture *>(m_targets[i]);
         if (screen) {
             m_framebuffer_size = max(m_framebuffer_size, screen->framebuffer_size());
@@ -89,7 +92,7 @@ RenderPass::RenderPass(const std::vector<Object *> &color_targets,
 
     if (has_screen && !has_texture) {
         CHK(glDeleteFramebuffers(1, &m_framebuffer_handle));
-        m_framebuffer_handle = 0;
+        m_framebuffer_handle = screen->framebuffer_handle();
     } else {
 #if defined(NANOGUI_USE_OPENGL)
         CHK(glDrawBuffers((GLsizei) draw_buffers.size(), draw_buffers.data()));
@@ -143,7 +146,7 @@ RenderPass::RenderPass(const std::vector<Object *> &color_targets,
         }
     }
 
-    CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_prev_framebuffer_handle));
 }
 
 RenderPass::~RenderPass() {
@@ -172,6 +175,8 @@ void RenderPass::begin() {
     m_scissor_test_backup = glIsEnabled(GL_SCISSOR_TEST);
     m_cull_face_backup = glIsEnabled(GL_CULL_FACE);
     m_blend_backup = glIsEnabled(GL_BLEND);
+
+    CHK(glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_prev_framebuffer_handle));
 
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_handle));
     set_viewport(m_viewport_offset, m_viewport_size);
@@ -222,7 +227,7 @@ void RenderPass::end() {
         throw std::runtime_error("RenderPass::end(): render pass is not active!");
 #endif
 
-    CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_prev_framebuffer_handle));
     if (m_blit_target)
         blit_to(Vector2i(0, 0), m_framebuffer_size, m_blit_target, Vector2i(0, 0));
 
@@ -358,7 +363,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
     GLenum what = 0;
 
     if (screen) {
-        target_id = 0;
+        target_id = screen->framebuffer_handle();
         what = GL_COLOR_BUFFER_BIT;
         if (screen->has_depth_buffer() && m_targets[0])
             what |= GL_STENCIL_BUFFER_BIT;
@@ -379,6 +384,8 @@ void RenderPass::blit_to(const Vector2i &src_offset,
     #if defined(NANOGUI_USE_GLES)
         what = GL_COLOR_BUFFER_BIT;
     #endif
+
+    CHK(glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &m_prev_framebuffer_handle));
 
     CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_handle));
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target_id));
@@ -401,7 +408,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
                           (GLsizei) dst_end.x(), (GLsizei) dst_end.y(),
                           what, GL_NEAREST));
 
-    CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_prev_framebuffer_handle));
 #endif
 }
 

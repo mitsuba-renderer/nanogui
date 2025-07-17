@@ -1878,6 +1878,14 @@ static const char *__doc_nanogui_Screen_dispose_window = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_move_window = R"doc(Move window relatively)doc";
 
+static const char *__doc_nanogui_Screen_applies_color_management = R"doc(Does the floatbuffer use linear sRGB instead of regular sRGB?)doc";
+
+static const char *__doc_nanogui_Screen_display_primaries = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_display_transfer_function = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_set_display_color_matrix = R"doc()doc";
+
 static const char *__doc_nanogui_Screen_draw_all =
 R"doc(Redraw the screen if the redraw flag is set
 
