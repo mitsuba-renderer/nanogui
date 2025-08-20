@@ -166,7 +166,7 @@ def run():
     ng.init()
     s = MyScreen()
     s.set_visible(True)
-    ng.mainloop(1 / 60.0 * 1000)
+    ng.run()
     ng.shutdown()
 
 if __name__ == '__main__':

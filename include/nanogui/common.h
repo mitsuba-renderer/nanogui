@@ -206,49 +206,46 @@ extern NANOGUI_EXPORT void init();
 /// Static shutdown; should be called before the application terminates.
 extern NANOGUI_EXPORT void shutdown();
 
+/// The nanogui mainloop can be in the following set of states
+enum class RunMode : uint32_t {
+    /// The mainloop is currently stopped
+    Stopped,
+
+    /// Windows are redrawn lazily as events arrive
+    Lazy,
+
+    /// Windows are redrawn based on the screen's refresh rate
+    VSync,
+
+    /// Windows are redrawn as quickly as possible. Will use 100% CPU.
+    Eager
+};
+
 /**
  * \brief Enter the application main loop
  *
- * \param refresh
- *     NanoGUI issues a redraw call whenever an keyboard/mouse/.. event is
- *     received. In the absence of any external events, it enforces a redraw
- *     once every ``refresh`` milliseconds. To disable the refresh timer,
- *     specify a negative value here.
- *
- * \param detach
- *     This parameter only exists in the Python bindings. When the active
- *     \c Screen instance is provided via the \c detach parameter, the
- *     ``mainloop()`` function becomes non-blocking and returns
- *     immediately (in this case, the main loop runs in parallel on a newly
- *     created thread). This feature is convenient for prototyping user
- *     interfaces on an interactive Python command prompt. When
- *     ``detach != None``, the function returns an opaque handle that
- *     will release any resources allocated by the created thread when the
- *     handle's ``join()`` method is invoked (or when it is garbage
- *     collected).
- *
- * \remark
- *     Unfortunately, Mac OS X strictly requires all event processing to take
- *     place on the application's main thread, which is fundamentally
- *     incompatible with this type of approach. Thus, NanoGUI relies on a
- *     rather crazy workaround on Mac OS (kudos to Dmitriy Morozov):
- *     ``mainloop()`` launches a new thread as before but then uses
- *     libcoro to swap the thread execution environment (stack, registers, ..)
- *     with the main thread. This means that the main application thread is
- *     hijacked and processes events in the main loop to satisfy the
- *     requirements on Mac OS, while the thread that actually returns from this
- *     function is the newly created one (paradoxical, as that may seem).
- *     Deleting or ``join()``ing the returned handle causes application to
- *     wait for the termination of the main loop and then swap the two thread
- *     environments back into their initial configuration.
+ * \param mode
+ *     By default, NanoGUI redraws the window contents based on the screen's
+ *     native refresh rate (e.g., 60FPS). To save power, prefer \ref
+ *     RunMode::Lazy, which only redraws when processing of keyboard/mouse/..
+ *     events explicitly *requests* a redraw by returning \c true. A manual
+ *     redraw can also be triggered using \ref Screen::redraw(). The last
+ *     option, \ref RunMode::Eager, runs the main loop while merely polling for
+ *     events, which will use 100% CPU.
  */
-extern NANOGUI_EXPORT void mainloop(float refresh = -1.f);
+extern NANOGUI_EXPORT void run(RunMode mode = RunMode::VSync);
 
-/// Request the application main loop to terminate (e.g. if you detached mainloop).
-extern NANOGUI_EXPORT void leave();
+/// Adjust the application's run mode following a call to \ref run().
+extern NANOGUI_EXPORT void set_run_mode(RunMode mode);
 
-/// Return whether or not a main loop is currently active
-extern NANOGUI_EXPORT bool active();
+/// Query the application's run mode
+extern NANOGUI_EXPORT RunMode run_mode();
+
+/// Terminate the main loop
+inline void leave() { set_run_mode(RunMode::Stopped); }
+
+/// Check if the main loop is still active
+inline bool active() { return run_mode() != RunMode::Stopped; }
 
 /**
  * \brief Enqueue a function to be executed executed before

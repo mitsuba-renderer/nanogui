@@ -69,7 +69,7 @@ screen.set_visible(True)
 screen.perform_layout()
 window.center()
 
-ng.mainloop(refresh=0)
+ng.run(ng.RunMode.Lazy)
 screen = gui = window = None
 gc.collect()
 ng.shutdown()

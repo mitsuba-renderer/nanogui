@@ -83,19 +83,25 @@ NB_MODULE(nanogui_ext, m_) {
     m.def("init", &nanogui::init, D(init));
     m.def("shutdown", &nanogui::shutdown, D(shutdown));
 
-    m.def("mainloop", [](float refresh) {
+    nb::enum_<RunMode>(m, "RunMode", D(RunMode))
+        .value("Stopped", RunMode::Stopped, D(RunMode, Stopped))
+        .value("VSync", RunMode::VSync, D(RunMode, VSync))
+        .value("Eager", RunMode::Eager, D(RunMode, Eager))
+        .value("Lazy", RunMode::Lazy, D(RunMode, Lazy));
+
+    m.def("run", [](RunMode run_mode) {
         nb::gil_scoped_release release;
 
         #if defined(__APPLE__) || defined(__linux__)
             sigint_handler_prev = signal(SIGINT, sigint_handler);
         #endif
 
-        mainloop(refresh);
+        run(run_mode);
 
         #if defined(__APPLE__) || defined(__linux__)
             signal(SIGINT, sigint_handler_prev);
         #endif
-    }, "refresh"_a = -1, D(mainloop));
+    }, "run_mode"_a = RunMode::VSync, D(run));
 
     m.def("async", &nanogui::async, D(async));
     m.def("leave", &nanogui::leave, D(leave));

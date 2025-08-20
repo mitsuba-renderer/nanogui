@@ -475,7 +475,7 @@ if __name__ == "__main__":
     test = TestApp()
     test.draw_all()
     test.set_visible(True)
-    ng.mainloop(refresh=1 / 60.0 * 1000)
+    ng.run()
     del test
     gc.collect()
     ng.shutdown()

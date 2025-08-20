@@ -92,7 +92,7 @@ def run():
     ng.init()
     s = MyScreen()
     s.set_visible(True)
-    ng.mainloop()
+    ng.run()
     ng.shutdown()
 
 if __name__ == '__main__':
