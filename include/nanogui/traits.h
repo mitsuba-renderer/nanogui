@@ -71,7 +71,7 @@ namespace detail {
     struct detector<std::void_t<Op<Arg>>, Op, Arg>
         : std::true_type { };
 
-    template <typename T> using is_enoki_array_det    = std::enable_if_t<T::IsEnoki>;
+    template <typename T> using is_drjit_array_det    = std::enable_if_t<T::IsDrJit>;
     template <typename T> using is_nanogui_array_det  = std::enable_if_t<T::IsNanoGUI && !T::IsMatrix>;
     template <typename T> using is_nanogui_matrix_det = std::enable_if_t<T::IsNanoGUI && T::IsMatrix>;
 }
@@ -80,7 +80,7 @@ template <template<typename> class Op, typename Arg>
 constexpr bool is_detected_v = detail::detector<void, Op, Arg>::value;
 
 template <typename T>
-constexpr bool is_enoki_array_v = is_detected_v<detail::is_enoki_array_det, std::decay_t<T>>;
+constexpr bool is_drjit_array_v = is_detected_v<detail::is_drjit_array_det, std::decay_t<T>>;
 
 template <typename T>
 constexpr bool is_nanogui_array_v = is_detected_v<detail::is_nanogui_array_det, std::decay_t<T>>;

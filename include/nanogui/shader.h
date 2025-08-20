@@ -117,7 +117,7 @@ public:
             shape[0] = Array::Size;
             shape[1] = Array::Size;
             vtype = get_type<typename Array::Value>();
-        } else if constexpr (is_enoki_array_v<Array>) {
+        } else if constexpr (is_drjit_array_v<Array>) {
             if constexpr (Array::Depth == 1) {
                 shape[0] = value.size();
                 ndim = 1;
