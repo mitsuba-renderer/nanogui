@@ -48,6 +48,9 @@ Texture::~Texture() {
 }
 
 void Texture::upload(const uint8_t *data) {
+    if (!data)
+        return;
+
     id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
 
     MTLTextureDescriptor *texture_desc =

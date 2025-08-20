@@ -1,6 +1,7 @@
 *.exe
 *.lib
 *.cmake
+*.pyi
 .DS_Store
 ext_build
 nanogui_resources.*
@@ -47,4 +48,5 @@ docs/api
 resources/nanogui-entypo
 
 compile_commands.json
-.clangd
+\.clangd
+\.cache

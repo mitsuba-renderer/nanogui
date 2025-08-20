@@ -118,6 +118,12 @@ static void texture_upload(Texture &texture,
     texture.upload((const uint8_t *) array.data());
 }
 
+static void texture_upload_none(Texture &texture, nb::fallback x) {
+    if (!x.is(nb::none()))
+        throw nb::next_overload();
+    texture.upload(nullptr);
+}
+
 static void
 texture_upload_sub_region(Texture &texture,
                           nb::ndarray<nb::device::cpu, nb::c_contig> array,
@@ -221,6 +227,7 @@ void register_render(nb::module_ &m) {
         .def("channels", &Texture::channels, D(Texture, channels))
         .def("download", &texture_download, D(Texture, download))
         .def("upload", &texture_upload, D(Texture, upload))
+        .def("upload", &texture_upload_none, ""_a.none())
         .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload, origin))
         .def("generate_mipmap", &Texture::generate_mipmap, D(Texture, generate_mipmap))
         .def("resize", &Texture::resize, D(Texture, resize))

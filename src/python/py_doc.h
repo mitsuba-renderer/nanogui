@@ -3759,6 +3759,69 @@ R"doc(Convert a single UTF32 character code to UTF8.
 Parameter ``c``:
     The UTF32 character to be converted.)doc";
 
+static const char *__doc_nanogui_TexturedQuad =
+R"doc(Textured quad
+
+This convenience class implements a shader that renders a textured quad
+on the supported platforms (OpenGL, EGL, Metal))doc";
+
+static const char *__doc_nanogui_TexturedQuad_TexturedQuad =
+R"doc(Initialize the quad renderer
+
+Parameter ``render_pass``:
+    RenderPass object encoding targets to which the quad will be rendered
+
+Parameter ``blend_mode``:
+    Alpha blending mode for rendering)doc";
+
+static const char *__doc_nanogui_TexturedQuad_set_texture =
+R"doc(Set the texture to be rendered on the quad
+
+Parameter ``texture``:
+    The texture to display)doc";
+
+static const char *__doc_nanogui_TexturedQuad_set_mvp =
+R"doc(Set the model-view-projection matrix
+
+Parameter ``mvp``:
+    The transformation matrix)doc";
+
+static const char *__doc_nanogui_TexturedQuad_draw =
+R"doc(Render the quad
+
+This method handles begin(), draw_array(), and end() internally)doc";
+
+static const char *__doc_nanogui_TexturedQuad_set_texture_linear =
+R"doc(Set whether the texture is in linear space
+
+When true, the shader will convert from linear to sRGB space.
+When false, the texture is assumed to already be in sRGB space.
+Default is ``false``.
+
+Parameter ``linear``:
+    True if texture is in linear space, false if in sRGB space)doc";
+
+static const char *__doc_nanogui_TexturedQuad_texture_linear =
+R"doc(Get whether the texture is treated as linear space
+
+Returns:
+    True if texture is treated as linear space)doc";
+
+static const char *__doc_nanogui_TexturedQuad_set_texture_exposure =
+R"doc(Set the exposure multiplier for the texture
+
+This value is multiplied onto the texture color before
+linear-to-sRGB conversion. Default is 1.0.
+
+Parameter ``exposure``:
+    Exposure multiplier (typically 0.0 to 10.0))doc";
+
+static const char *__doc_nanogui_TexturedQuad_texture_exposure =
+R"doc(Get the current exposure multiplier
+
+Returns:
+    Current exposure value)doc";
+
 #if defined(__GNUG__)
 #pragma GCC diagnostic pop
 #endif

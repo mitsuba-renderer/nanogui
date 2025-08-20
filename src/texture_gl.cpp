@@ -113,6 +113,7 @@ void Texture::init() {
 
         if (m_flags & (uint8_t) TextureFlags::RenderTarget)
             upload(nullptr);
+
     } else if (m_flags & (uint8_t) TextureFlags::RenderTarget) {
         CHK(glGenRenderbuffers(1, &m_renderbuffer_handle));
         CHK(glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer_handle));
