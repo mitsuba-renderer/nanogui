@@ -218,13 +218,13 @@ Array<Value, Size> min(const Array<Value, Size> &a1, const Array<Value, Size> &a
     return result;
 }
 
-// Import some common Enoki types
-using Vector2f     = Array<float, 2>;
-using Vector3f     = Array<float, 3>;
-using Vector4f     = Array<float, 4>;
-using Vector2i     = Array<int32_t, 2>;
-using Vector3i     = Array<int32_t, 3>;
-using Vector4i     = Array<int32_t, 4>;
+// Create aliases for common array types
+using Vector2f = Array<float, 2>;
+using Vector3f = Array<float, 3>;
+using Vector4f = Array<float, 4>;
+using Vector2i = Array<int32_t, 2>;
+using Vector3i = Array<int32_t, 3>;
+using Vector4i = Array<int32_t, 4>;
 
 /**
  * \class Color common.h nanogui/common.h
@@ -423,6 +423,15 @@ template <typename Value_, size_t Size_> struct Matrix {
         memset(m, 0, sizeof(Value) * Size * Size);
         for (size_t i = 0; i < Size; ++i)
             m[i][i] = s;
+    }
+
+    template <typename... Args, std::enable_if_t<sizeof...(Args) == Size*Size, int> = 0>
+    Matrix(Args... args) {
+        Value data[] {(Value) args...};
+        for (size_t i = 0; i < Size; ++i) {
+            for (size_t j = 0; j < Size; ++j)
+                m[i][j] = data[j*Size+i];
+        }
     }
 
     friend Matrix operator*(const Matrix &a, const Matrix &b) {

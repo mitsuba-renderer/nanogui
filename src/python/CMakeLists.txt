@@ -30,6 +30,7 @@ nanobind_add_module(nanogui-python MODULE
   canvas.cpp
   nanovg.cpp
   render.cpp
+  quad.cpp
   vector.cpp
   python.h
   py_doc.h)

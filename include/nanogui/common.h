@@ -344,8 +344,8 @@ extern NANOGUI_EXPORT int __nanogui_get_image(NVGcontext *ctx, const std::string
 
 NAMESPACE_END(nanogui)
 
-NAMESPACE_BEGIN(enoki)
-/// Base class of all Enoki arrays
+NAMESPACE_BEGIN(drjit)
+/// Base class of all Dr.Jit arrays
 template <typename Value_, bool IsMask_, typename Derived_> struct ArrayBase;
-NAMESPACE_END(enoki)
+NAMESPACE_END(drjit)
 
