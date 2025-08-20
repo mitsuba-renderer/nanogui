@@ -112,7 +112,8 @@ Screen::Screen()
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f),
       m_shutdown_glfw(false), m_fullscreen(false), m_depth_buffer(false),
-      m_stencil_buffer(false), m_float_buffer(false), m_redraw(false) {
+      m_stencil_buffer(false), m_float_buffer(false), m_redraw(false),
+      m_last_run_mode(RunMode::Stopped) {
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (size_t) Cursor::CursorCount);
 #if defined(NANOGUI_USE_OPENGL)
     GLint n_stencil_bits = 0, n_depth_bits = 0;
@@ -134,7 +135,8 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
       m_cursor(Cursor::Arrow), m_background(0.3f, 0.3f, 0.32f, 1.f), m_caption(caption),
       m_shutdown_glfw(false), m_fullscreen(fullscreen), m_depth_buffer(depth_buffer),
-      m_stencil_buffer(stencil_buffer), m_float_buffer(float_buffer), m_redraw(false) {
+      m_stencil_buffer(stencil_buffer), m_float_buffer(float_buffer), m_redraw(false),
+      m_last_run_mode(RunMode::Stopped) {
     memset(m_cursors, 0, sizeof(GLFWcursor *) * (int) Cursor::CursorCount);
 
 #if defined(NANOGUI_USE_OPENGL)
@@ -259,8 +261,6 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
                      m_background[2], m_background[3]));
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
                 GL_STENCIL_BUFFER_BIT));
-
-    glfwSwapInterval(0);
     glfwSwapBuffers(m_glfw_window);
 #endif
 
@@ -569,6 +569,19 @@ void Screen::draw_setup() {
     m_fbsize = m_size;
 #endif
 
+    RunMode run_mode = nanogui::run_mode();
+    if (run_mode != m_last_run_mode) {
+        int interval = 0;
+        if (run_mode != RunMode::Eager) {
+            bool swap_control = glfwExtensionSupported("WGL_EXT_swap_control_tear") ||
+                                glfwExtensionSupported("GLX_EXT_swap_control_tear");
+            interval = swap_control ? -1 : 1;
+        }
+        glfwSwapInterval(interval);
+        m_last_run_mode = run_mode;
+    }
+
+
 #if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
     m_fbsize = m_size;
     m_size = Vector2i(Vector2f(m_size) / m_pixel_ratio);
@@ -598,9 +611,7 @@ void Screen::draw_teardown() {
 }
 
 void Screen::draw_all() {
-    if (m_redraw) {
-        m_redraw = false;
-
+    if (run_mode() != RunMode::Lazy || m_redraw) {
 #if defined(NANOGUI_USE_METAL)
         void *pool = autorelease_init();
 #endif
@@ -613,6 +624,7 @@ void Screen::draw_all() {
 #if defined(NANOGUI_USE_METAL)
         autorelease_release(pool);
 #endif
+        m_redraw = false;
     }
 }
 
@@ -722,10 +734,10 @@ bool Screen::resize_event(const Vector2i& size) {
 
 void Screen::redraw() {
     if (!m_redraw) {
-        m_redraw = true;
         #if !defined(EMSCRIPTEN)
             glfwPostEmptyEvent();
         #endif
+        m_redraw = true;
     }
 }
 

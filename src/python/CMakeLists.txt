@@ -53,10 +53,12 @@ if (NANOGUI_INSTALL)
   set_target_properties(nanogui-python PROPERTIES INSTALL_RPATH "${NANOGUI_ORIGIN}")
 endif()
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.py
-                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../../nanogui/__init__.py
-                                                    ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.py
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../../nanogui/__init__.py)
+if (NOT (CMAKE_CURRENT_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR))
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.py
+                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../../nanogui/__init__.py
+                                                      ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.py
+                     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../../nanogui/__init__.py)
+endif()
 
 nanobind_add_stub(
   nanobind-python-stub

@@ -73,8 +73,6 @@ void init() {
     glfwSetTime(0);
 }
 
-static bool mainloop_active = false;
-
 #if defined(EMSCRIPTEN)
 static double emscripten_last = 0;
 static float emscripten_refresh = 0;
@@ -82,57 +80,62 @@ static float emscripten_refresh = 0;
 
 std::mutex m_async_mutex;
 std::vector<std::function<void()>> m_async_functions;
+static RunMode current_run_mode = RunMode::Stopped;
 
-void mainloop(float refresh) {
-    if (mainloop_active)
-        throw std::runtime_error("Main loop is already running!");
 
-    auto mainloop_iteration = []() {
-        int num_screens = 0;
+static void mainloop_iteration() {
+    int num_screens = 0;
 
+    #if defined(EMSCRIPTEN)
+        double emscripten_now = glfwGetTime();
+        bool emscripten_redraw = false;
+        if (float((emscripten_now - emscripten_last) * 1000) > emscripten_refresh) {
+            emscripten_redraw = true;
+            emscripten_last = emscripten_now;
+        }
+    #endif
+
+    /* Run async functions */ {
+        std::lock_guard<std::mutex> guard(m_async_mutex);
+        for (auto &f : m_async_functions)
+            f();
+        m_async_functions.clear();
+    }
+
+    for (auto kv : __nanogui_screens) {
+        Screen *screen = kv.second;
+        if (!screen->visible()) {
+            continue;
+        } else if (glfwWindowShouldClose(screen->glfw_window())) {
+            screen->set_visible(false);
+            continue;
+        }
         #if defined(EMSCRIPTEN)
-            double emscripten_now = glfwGetTime();
-            bool emscripten_redraw = false;
-            if (float((emscripten_now - emscripten_last) * 1000) > emscripten_refresh) {
-                emscripten_redraw = true;
-                emscripten_last = emscripten_now;
-            }
+            if (emscripten_redraw || screen->tooltip_fade_in_progress())
+                screen->redraw();
         #endif
+        screen->draw_all();
+        num_screens++;
+    }
 
-        /* Run async functions */ {
-            std::lock_guard<std::mutex> guard(m_async_mutex);
-            for (auto &f : m_async_functions)
-                f();
-            m_async_functions.clear();
-        }
+    if (num_screens == 0) {
+        // Give up if there was nothing to draw
+        current_run_mode = RunMode::Stopped;
+        return;
+    }
 
-        for (auto kv : __nanogui_screens) {
-            Screen *screen = kv.second;
-            if (!screen->visible()) {
-                continue;
-            } else if (glfwWindowShouldClose(screen->glfw_window())) {
-                screen->set_visible(false);
-                continue;
-            }
-            #if defined(EMSCRIPTEN)
-                if (emscripten_redraw || screen->tooltip_fade_in_progress())
-                    screen->redraw();
-            #endif
-            screen->draw_all();
-            num_screens++;
-        }
-
-        if (num_screens == 0) {
-            /* Give up if there was nothing to draw */
-            mainloop_active = false;
-            return;
-        }
-
-        #if !defined(EMSCRIPTEN)
-            /* Wait for mouse/keyboard or empty refresh events */
+    #if !defined(EMSCRIPTEN)
+        // Wait for mouse/keyboard or empty refresh events
+        if (current_run_mode == RunMode::Lazy)
             glfwWaitEvents();
-        #endif
-    };
+        else
+            glfwPollEvents();
+    #endif
+}
+
+void run(RunMode run_mode) {
+    if (current_run_mode != RunMode::Stopped)
+        throw std::runtime_error("Main loop is already active!");
 
 #if defined(EMSCRIPTEN)
     emscripten_refresh = refresh;
@@ -142,56 +145,18 @@ void mainloop(float refresh) {
     emscripten_set_main_loop(mainloop_iteration, 0, 1);
 #endif
 
-    mainloop_active = true;
-
-    std::thread refresh_thread;
-    std::chrono::microseconds quantum;
-    size_t quantum_count = 1;
-    if (refresh >= 0) {
-        quantum = std::chrono::microseconds((int64_t)(refresh * 1'000));
-        while (quantum.count() > 50'000) {
-            quantum /= 2;
-            quantum_count *= 2;
-        }
-    } else {
-        quantum = std::chrono::microseconds(50'000);
-        quantum_count = std::numeric_limits<size_t>::max();
-    }
-
-    /* If there are no mouse/keyboard events, try to refresh the
-       view roughly every 50 ms (default); this is to support animations
-       such as progress bars while keeping the system load
-       reasonably low */
-    refresh_thread = std::thread(
-        [quantum, quantum_count]() {
-            while (true) {
-                for (size_t i = 0; i < quantum_count; ++i) {
-                    if (!mainloop_active)
-                        return;
-                    std::this_thread::sleep_for(quantum);
-                    for (auto kv : __nanogui_screens) {
-                        if (kv.second->tooltip_fade_in_progress())
-                            kv.second->redraw();
-                    }
-                }
-                for (auto kv : __nanogui_screens)
-                    kv.second->redraw();
-            }
-        }
-    );
+    current_run_mode = run_mode;
 
     try {
-        while (mainloop_active)
+        while (current_run_mode != RunMode::Stopped)
             mainloop_iteration();
 
-        /* Process events once more */
+        // Process events once more
         glfwPollEvents();
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in main loop: " << e.what() << std::endl;
         leave();
     }
-
-    refresh_thread.join();
 }
 
 void async(const std::function<void()> &func) {
@@ -199,13 +164,8 @@ void async(const std::function<void()> &func) {
     m_async_functions.push_back(func);
 }
 
-void leave() {
-    mainloop_active = false;
-}
-
-bool active() {
-    return mainloop_active;
-}
+RunMode run_mode() { return current_run_mode; }
+void set_run_mode(RunMode run_mode) { current_run_mode = run_mode; }
 
 std::pair<bool, bool> test_10bit_edr_support() {
 #if defined(NANOGUI_USE_METAL)

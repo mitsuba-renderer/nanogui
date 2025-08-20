@@ -247,7 +247,7 @@ int main(int /* argc */, char ** /* argv */) {
             nanogui::ref<ExampleApplication> app = new ExampleApplication();
             app->draw_all();
             app->set_visible(true);
-            nanogui::mainloop(1 / 60.f * 1000);
+            nanogui::run();
         }
 
         nanogui::shutdown();

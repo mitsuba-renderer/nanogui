@@ -1017,7 +1017,7 @@ int main(int /* argc */, char ** /* argv */) {
         screen->perform_layout();
         screen->set_visible(true);
 
-        nanogui::mainloop();
+        nanogui::run(RunMode::Lazy);
     }
 
     nanogui::shutdown();
