@@ -77,7 +77,7 @@ file as follows (this assumes that ``nanogui`` lives in the directory
     add_subdirectory(ext/nanogui)
 
     # For reliability of parallel build, make the NanoGUI targets dependencies
-    set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
+    set_property(TARGET glfw nanogui PROPERTY FOLDER "dependencies")
 
 Required Variables Exposed
 ----------------------------------------------------------------------------------------
