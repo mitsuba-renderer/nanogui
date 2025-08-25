@@ -257,6 +257,10 @@ public:
     /// Initialize the \ref Screen
     void initialize(GLFWwindow *window, bool shutdown_glfw);
 
+    /// Like mouse_motion_event(), but also capture fractional motion
+    virtual bool mouse_motion_event_f(const Vector2f &p, const Vector2f &rel,
+                                      int button, int modifiers);
+
     /* Event handlers */
     void cursor_pos_callback_event(double x, double y);
     void mouse_button_callback_event(int button, int action, int modifiers);
@@ -283,6 +287,7 @@ protected:
     float m_pixel_ratio;
     int m_mouse_state, m_modifiers;
     Vector2i m_mouse_pos;
+    Vector2f m_mouse_pos_f;
     bool m_drag_active;
     Widget *m_drag_widget = nullptr;
     double m_last_interaction;
