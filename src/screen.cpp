@@ -742,15 +742,17 @@ void Screen::redraw() {
 }
 
 void Screen::cursor_pos_callback_event(double x, double y) {
-    Vector2i p((int) x, (int) y);
-
 #if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
-    p = Vector2i(Vector2f(p) / m_pixel_ratio);
+    x /= m_pixel_ratio;
+    y /= m_pixel_ratio;
 #endif
+    x -= 1; y -= 2;
+
+    Vector2i p((int) x, (int) y);
+    Vector2f p_f((float) x, (float) y);
 
     m_last_interaction = glfwGetTime();
     try {
-        p -= Vector2i(1, 2);
 
         bool ret = false;
         if (!m_drag_active) {
@@ -765,14 +767,21 @@ void Screen::cursor_pos_callback_event(double x, double y) {
                 m_mouse_state, m_modifiers);
         }
 
-        if (!ret)
+        if (!ret) {
             ret = mouse_motion_event(p, p - m_mouse_pos, m_mouse_state, m_modifiers);
+            ret = mouse_motion_event_f(p, p_f - m_mouse_pos_f, m_mouse_state, m_modifiers);
+        }
 
         m_mouse_pos = p;
+        m_mouse_pos_f = p_f;
         m_redraw |= ret;
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
+}
+
+bool Screen::mouse_motion_event_f(const Vector2f &, const Vector2f &, int, int) {
+    return false;
 }
 
 void Screen::mouse_button_callback_event(int button, int action, int modifiers) {

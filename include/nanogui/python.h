@@ -28,7 +28,7 @@ extern "C" {
 
 /// Provides a ``NB_OVERRIDE`` for any relevant Widget items that need to be bound.
 #define NANOGUI_WIDGET_OVERLOADS(Parent)                                       \
-    NB_TRAMPOLINE(Parent, 16);                                                 \
+    NB_TRAMPOLINE(Parent, 17);                                                 \
     bool mouse_button_event(const ::nanogui::Vector2i &p, int button,          \
                             bool down, int modifiers) override {               \
         NB_OVERRIDE(mouse_button_event, p, button, down, modifiers);           \
@@ -88,6 +88,11 @@ extern "C" {
     virtual bool drop_event(const std::vector<std::string> &filenames)         \
         override {                                                             \
         NB_OVERRIDE(drop_event, filenames);                                    \
+    }                                                                          \
+    bool mouse_motion_event_f(const ::nanogui::Vector2f &p,                    \
+                              const ::nanogui::Vector2f &rel, int button,      \
+                              int modifiers) override {                        \
+        NB_OVERRIDE(mouse_motion_event_f, p, rel, button, modifiers);          \
     }                                                                          \
     virtual bool resize_event(const ::nanogui::Vector2i &size) override {      \
         NB_OVERRIDE(resize_event, size);                                       \
