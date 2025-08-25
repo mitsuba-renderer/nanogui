@@ -581,7 +581,7 @@ int main(int /* argc */, char ** /* argv */) {
             app->dec_ref();
             app->draw_all();
             app->set_visible(true);
-            nanogui::run();
+            nanogui::run(RunMode::VSync);
         }
 
         nanogui::shutdown();

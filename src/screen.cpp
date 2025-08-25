@@ -155,6 +155,8 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #elif defined(NANOGUI_USE_METAL)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
+    glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, GLFW_TRUE);
     m_stencil_buffer = stencil_buffer = false;
 #else
 #  error Did not select a graphics API!
@@ -467,7 +469,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     metal_window_set_size(nswin, m_fbsize);
     m_nvg_context = nvgCreateMTL(metal_layer(),
                                  metal_command_queue(),
-                                 flags | NVG_TRIPLE_BUFFER);
+                                 flags | NVG_DOUBLE_BUFFER);
 #endif
 
     if (!m_nvg_context)
@@ -571,6 +573,7 @@ void Screen::draw_setup() {
 
     RunMode run_mode = nanogui::run_mode();
     if (run_mode != m_last_run_mode) {
+#if !defined(NANOGUI_USE_METAL)
         int interval = 0;
         if (run_mode != RunMode::Eager) {
             bool swap_control = glfwExtensionSupported("WGL_EXT_swap_control_tear") ||
@@ -578,6 +581,11 @@ void Screen::draw_setup() {
             interval = swap_control ? -1 : 1;
         }
         glfwSwapInterval(interval);
+#else
+        bool vsync = run_mode == RunMode::VSync;
+        metal_window_set_vsync(nswin, vsync);
+        mnvgSetFlushWait(m_nvg_context, !vsync);
+#endif
         m_last_run_mode = run_mode;
     }
 

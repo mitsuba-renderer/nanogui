@@ -98,9 +98,10 @@ void metal_window_init(void *nswin_, bool float_buffer) {
     CAMetalLayer *layer = [CAMetalLayer layer];
     if (!layer)
         throw std::runtime_error("init_metal(): unable to create layer.");
+    [layer setOpaque: YES];
     NSWindow *nswin = (__bridge NSWindow *) nswin_;
-    nswin.contentView.layer = layer;
     nswin.contentView.wantsLayer = YES;
+    nswin.contentView.layer = layer;
     nswin.contentView.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
     layer.device = (__bridge id<MTLDevice>) s_metal_device;
     layer.contentsScale = nswin.backingScaleFactor;
@@ -113,10 +114,16 @@ void metal_window_init(void *nswin_, bool float_buffer) {
         layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
         layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     }
-    layer.displaySyncEnabled = NO;
+    layer.maximumDrawableCount = 2;
     layer.allowsNextDrawableTimeout = NO;
-    layer.framebufferOnly = NO;
-    layer.presentsWithTransaction = YES;
+    layer.framebufferOnly = YES;
+    layer.presentsWithTransaction = NO;
+}
+
+void metal_window_set_vsync(void *nswin_, bool vsync) {
+    NSWindow *nswin = (__bridge NSWindow *) nswin_;
+    CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
+    layer.displaySyncEnabled = vsync ? YES : NO;
 }
 
 std::pair<bool, bool> metal_10bit_edr_support() {
@@ -125,9 +132,8 @@ std::pair<bool, bool> metal_10bit_edr_support() {
          buffer_ext = false;
 
     for (NSScreen * screen in screens) {
-        if ([screen canRepresentDisplayGamut: NSDisplayGamutP3]) {
+        if ([screen canRepresentDisplayGamut: NSDisplayGamutP3])
             buffer_10bit = true; // on macOS, P3 gamut is equivalent to 10 bit color depth
-        }
 
         if ([screen respondsToSelector:@selector
                       (maximumPotentialExtendedDynamicRangeColorComponentValue)]) {
