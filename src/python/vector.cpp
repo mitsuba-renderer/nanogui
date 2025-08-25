@@ -12,67 +12,77 @@
 #  pragma clang diagnostic ignored "-Wunused-lambda-capture"
 #endif
 
-template <typename Array>
+template <typename Vector>
 auto register_vector_type(nb::module_ &m, const char *name) {
-    constexpr size_t Size = Array::Size;
-    using Value = typename Array::Value;
+    constexpr size_t Size = Vector::Size;
+    using Value = typename Vector::Value;
 
-    auto array = nb::class_<Array>(m, name);
+    auto type = nb::class_<Vector>(m, name);
 
-    array.def(nb::init<Value>())
-         .def(nb::init<const Array &>())
-         .def("__init__", [](Array &a, const std::array<Value, Size> &arr) {
-            new (&a) Array();
-            for (size_t i = 0; i < Array::Size; ++i)
-                a[i] = arr[i];
-         })
-         .def(nb::self == nb::self)
-         .def(nb::self != nb::self)
-         .def(nb::self + nb::self)
-         .def(nb::self - nb::self)
-         .def(nb::self * nb::self)
-         .def(Value() + nb::self)
-         .def(Value() - nb::self)
-         .def(Value() * nb::self)
-         .def(Value() / nb::self)
-         .def(nb::self / nb::self)
-         .def(nb::self += nb::self)
-         .def(nb::self -= nb::self)
-         .def(nb::self *= nb::self)
-         .def(nb::self /= nb::self)
-         .def("__getitem__", [](const Array &a, size_t index) -> Value {
-             if (index >= Array::Size)
-                 throw nb::index_error();
-             return a[index];
+    type.def(nb::init<Value>())
+        .def(nb::init<const Vector &>())
+        .def("__init__", [](Vector *v, const nb::sequence &arr) {
+           new (v) Vector(0);
+           for (size_t i = 0, size = std::min(Vector::Size, nb::len(arr)); i < size; ++i)
+               (*v)[i] = nb::cast<Value>(arr[i]);
+        })
+        .def("__len__", [](const Vector &) { return Size; })
+        .def(-nb::self)
+        .def(nb::self == nb::self)
+        .def(nb::self != nb::self)
+        .def(nb::self + nb::self)
+        .def(nb::self - nb::self)
+        .def(nb::self * nb::self)
+        .def(Value() + nb::self)
+        .def(Value() - nb::self)
+        .def(Value() * nb::self)
+        .def(Value() / nb::self)
+        .def(nb::self / nb::self)
+        .def(nb::self += nb::self)
+        .def(nb::self -= nb::self)
+        .def(nb::self *= nb::self)
+        .def(nb::self /= nb::self)
+        .def("__getitem__", [](const Vector &a, size_t index) -> Value {
+            if (index >= Vector::Size)
+                throw nb::index_error();
+            return a[index];
          }, "index"_a)
-         .def("__setitem__", [](Array &a, size_t index, Value value) {
-             if (index >= Array::Size)
+         .def("__setitem__", [](Vector &a, size_t index, Value value) {
+             if (index >= Vector::Size)
                  throw nb::index_error();
              a[index] = value;
          }, "index"_a, "value"_a)
-         .def_prop_rw("x", [](const Array &a) { return a.x(); },
-                           [](Array &a, const Value &v) { a.x() = v; })
-         .def_prop_rw("y", [](const Array &a) { return a.y(); },
-                           [](Array &a, const Value &v) { a.y() = v; })
-        .def("__dlpack__", [](nb::handle_t<Array> self) {
-            const Array &a = nb::cast<const Array &>(self);
-            const size_t shape[1] = { Array::Size };
-            return nb::ndarray<float>((void *) a.data(), 1, shape, self);
-         })
-         .def("__repr__", [](const Array &a) {
-             std::ostringstream oss;
-             oss << a;
-             return oss.str();
-         });
+         .def_prop_rw("x", [](const Vector &a) { return a.x(); },
+                           [](Vector &a, const Value &v) { a.x() = v; })
+         .def_prop_rw("y", [](const Vector &a) { return a.y(); },
+                           [](Vector &a, const Value &v) { a.y() = v; })
+         .def("__dlpack__", [](nb::handle_t<Vector> self) {
+             const Vector &a = nb::cast<const Vector &>(self);
+             const size_t shape[1] = { Vector::Size };
+             return nb::ndarray<float>((void *) a.data(), 1, shape, self);
+          })
+          .def("__repr__", [](const Vector &a) {
+              std::ostringstream oss;
+              oss << a;
+              return oss.str();
+          });
 
 
     if constexpr (Size == 2)
-        array.def(nb::init<Value, Value>());
+        type.def(nb::init<Value, Value>());
 
     if constexpr (Size == 3) {
-        array.def(nb::init<Value, Value, Value>());
-        array.def_prop_rw("z", [](const Array &a) { return a.z(); },
-                               [](Array &a, const Value &v) { a.z() = v; });
+        type.def(nb::init<Value, Value, Value>());
+        type.def_prop_rw("z", [](const Vector &a) { return a.z(); },
+                              [](Vector &a, const Value &v) { a.z() = v; });
+    }
+
+    if constexpr (Size == 4) {
+        type.def(nb::init<Value, Value, Value, Value>());
+        type.def_prop_rw("z", [](const Vector &a) { return a.z(); },
+                              [](Vector &a, const Value &v) { a.z() = v; });
+        type.def_prop_rw("w", [](const Vector &a) { return a.w(); },
+                              [](Vector &a, const Value &v) { a.w() = v; });
     }
 
     nb::detail::implicitly_convertible(
@@ -80,9 +90,59 @@ auto register_vector_type(nb::module_ &m, const char *name) {
            nb::detail::cleanup_list *) noexcept -> bool {
             return PySequence_Check(src) || PyNumber_Check(src);
         },
-        &typeid(Array));
+        &typeid(Vector));
 
-    return array;
+    return type;
+}
+
+template <typename Matrix>
+auto register_matrix_type(nb::module_ &m, const char *name) {
+    using Vector = typename Matrix::Column;
+    using Value = typename Matrix::Value;
+    constexpr size_t Size = Matrix::Size;
+
+    auto type = nb::class_<Matrix>(m, name)
+        .def(nb::init<>())
+        .def(nb::init<float>())
+        .def(nb::init<const Matrix &>());
+
+    type.def("__init__",
+             [](Matrix *m, const nb::ndarray<Value, nb::f_contig, nb::shape<Size, Size>, nb::ro, nb::device::cpu> &array) {
+                new (m) Matrix();
+                memcpy(m->m, array.data(), sizeof(Value)*Size*Size);
+             })
+        .def("__init__",
+             [](Matrix *m, const nb::ndarray<Value, nb::c_contig, nb::shape<Size, Size>, nb::ro, nb::device::cpu> &array) {
+                new (m) Matrix();
+                memcpy(m->m, array.data(), sizeof(Value)*Size*Size);
+                *m = m->T();
+             })
+        .def_prop_ro("T", &Matrix::T)
+        .def("__matmul__", [](const Matrix &a, const Matrix &b) { return a * b; }, nb::is_operator())
+        .def("__len__", [](const Matrix &) { return Size; })
+        .def("__getitem__", [](const Matrix &m, size_t index) -> const Vector& { return m.m[index]; })
+        .def("__setitem__", [](Matrix &m, size_t index, const Vector &value) { m.m[index] = value; })
+        .def("__dlpack__", [](const Matrix *self) {
+            Matrix *t = new Matrix(self->T());
+
+            nb::capsule owner(t, [](void *p) noexcept {
+                delete (Matrix *) p;
+            });
+
+            return nb::ndarray<float>(&t->m, {Size, Size}, owner);
+         })
+        .def("__repr__", [](const Matrix &m) {
+            std::ostringstream oss;
+            oss << m;
+            return oss.str();
+        })
+        .def_static("scale", nb::overload_cast<const Vector3f &>(&Matrix::scale))
+        .def_static("rotate",
+                    [](const Vector3f &axis, float angle) {
+                        return Matrix::rotate(axis, angle);
+                    },
+                    "axis"_a, "angle"_a);
+    return type;
 }
 
 #if defined(__clang__)
@@ -93,40 +153,10 @@ void register_vector(nb::module_ &m) {
     register_vector_type<Vector2i>(m, "Vector2i");
     register_vector_type<Vector2f>(m, "Vector2f");
     register_vector_type<Vector3f>(m, "Vector3f");
+    register_vector_type<Vector4f>(m, "Vector4f");
 
-    nb::class_<Matrix4f>(m, "Matrix4f")
-        .def(nb::init<>())
-        .def(nb::init<float>())
-        .def_prop_ro("T", &Matrix4f::T)
-        .def("__matmul__", [](const Matrix4f &a, const Matrix4f &b) { return a * b; }, nb::is_operator())
-        .def("__getitem__",
-             [](const Matrix4f &m, std::pair<size_t, size_t> index) -> float {
-                 if (index.first >= 4 || index.second >= 4)
-                     throw nb::index_error();
-                 return m.m[index.second][index.first];
-             },
-             "index"_a)
-        .def("__setitem__",
-             [](Matrix4f &m, std::pair<size_t, size_t> index, float value) {
-                 if (index.first >= 4 || index.second >= 4)
-                     throw nb::index_error();
-                 m.m[index.second][index.first] = value;
-             },
-             "index"_a, "value"_a)
-        .def_static(
-            "translate",
-            [](const Vector3f &amount) { return Matrix4f::translate(amount); },
-            "amount"_a)
-        .def_static(
-            "scale",
-            [](const Vector3f &amount) { return Matrix4f::scale(amount); },
-            "amount"_a)
-        .def_static(
-            "rotate",
-            [](const Vector3f &axis, float angle) {
-                return Matrix4f::rotate(axis, angle);
-            },
-            "axis"_a, "angle"_a)
+    register_matrix_type<Matrix4f>(m, "Matrix4f")
+        .def_static("translate", &Matrix4f::translate)
         .def_static(
             "perspective",
             [](float fov, float near_, float far_, float aspect) {
@@ -144,22 +174,7 @@ void register_vector(nb::module_ &m) {
             [](const Vector3f &origin, const Vector3f &target, const Vector3f &up) {
                 return Matrix4f::look_at(origin, target, up);
             },
-            "origin"_a, "target"_a, "up"_a)
-        .def("__dlpack__", [](const Matrix4f &m) {
-            Matrix4f *t = new Matrix4f(m.T());
-            const size_t shape[2] = { 4, 4 };
-
-            nb::capsule owner(t, [](void *p) noexcept {
-               delete (Matrix4f *) p;
-            });
-
-            return nb::ndarray<float>(&t->m, 2, shape, owner);
-         })
-        .def("__repr__", [](const Matrix4f &m) {
-            std::ostringstream oss;
-            oss << m;
-            return oss.str();
-        });
+            "origin"_a, "target"_a, "up"_a);
 }
 
 #endif
