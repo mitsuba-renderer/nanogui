@@ -409,13 +409,14 @@ public:
     inline operator const NVGcolor &() const;
 };
 
-/// Simple matrix class with column-major storage
+/// Simple matrix class with *column-major* storage (that is the convention used by OpenGL/Metal)
 template <typename Value_, size_t Size_> struct Matrix {
     static constexpr bool IsNanoGUI = true;
     static constexpr bool IsMatrix  = true;
 
     using Value = Value_;
     static constexpr size_t Size = Size_;
+    using Column = Array<Value, Size>;
 
     Matrix() { }
 
@@ -425,6 +426,17 @@ template <typename Value_, size_t Size_> struct Matrix {
             m[i][i] = s;
     }
 
+    /// Initialize another matrix type
+    template <typename Value2, size_t Size2>
+    Matrix(const Matrix<Value2, Size2> &other) : Matrix(1.f) {
+        for (size_t i = 0; i < std::min(Size, Size2); ++i) {
+            for (size_t j = 0; j <  std::min(Size, Size2); ++j)
+                m[i][j] = other.m[i][j];
+        }
+    }
+
+
+    /// Initialize from sequence (in row-major order)
     template <typename... Args, std::enable_if_t<sizeof...(Args) == Size*Size, int> = 0>
     Matrix(Args... args) {
         Value data[] {(Value) args...};
@@ -433,6 +445,10 @@ template <typename Value_, size_t Size_> struct Matrix {
                 m[i][j] = data[j*Size+i];
         }
     }
+
+    /// Initialize from columns
+    template <typename... Args, std::enable_if_t<(std::is_same_v<Args, Column> && ...), int> = 0>
+    Matrix(const Args&... args) : m{args...} { }
 
     friend Matrix operator*(const Matrix &a, const Matrix &b) {
         Matrix c;
@@ -472,24 +488,19 @@ template <typename Value_, size_t Size_> struct Matrix {
     }
 
     static Matrix translate(const Array<Value, Size - 1> &v) {
-        Matrix result;
-        memset(result.m, 0, sizeof(Value) * Size * Size);
-        for (size_t i = 0; i < Size; ++i) {
-            result.m[i][i] = 1.f;
-            if (i < Size - 1)
-                result.m[Size - 1][i] = v[i];
-        }
+        Matrix result(1.f);
+        for (size_t i = 0; i < Size - 1; ++i)
+            result.m[Size - 1][i] = v[i];
         return result;
     }
 
-    template <size_t S = Size, std::enable_if_t<S == 4, int> = 0>
+    template <size_t S = Size, std::enable_if_t<S == 4 || S == 3, int> = 0>
     static Matrix rotate(const Array<Value, 3> &axis, Value angle) {
         Value s = std::sin(angle),
               c = std::cos(angle),
               t = 1 - c;
 
-        Matrix result(0);
-        result.m[3][3] = 1;
+        Matrix result(1.f);
         result.m[0][0] = c + axis.x() * axis.x() * t;
         result.m[1][1] = c + axis.y() * axis.y() * t;
         result.m[2][2] = c + axis.z() * axis.z() * t;
@@ -574,11 +585,13 @@ template <typename Value_, size_t Size_> struct Matrix {
         return result;
     }
 
-    Value m[Size][Size];
+    Column &operator[](size_t i) { return m[i]; }
+    const Column &operator[](size_t i) const { return m[i]; }
+
+    Column m[Size];
 };
 
 using Matrix2f = Matrix<float, 2>;
-using Matrix3f = Matrix<float, 3>;
 using Matrix4f = Matrix<float, 4>;
 
 template <typename Stream, typename Value, size_t Size,
