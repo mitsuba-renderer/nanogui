@@ -346,7 +346,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
                          Object *dst,
                          const Vector2i &dst_offset) {
 #if defined(NANOGUI_USE_GLES) && NANOGUI_GLES_VERSION == 2
-    (void) src_offset; (void) src_size; (void) dst; (void) src_offset;
+    (void) src_offset; (void) src_size; (void) dst; (void) src_offset; (void) dst_offset;
     throw std::runtime_error("RenderPass::blit_to(): not supported on GLES 2!");
 #else
     Screen *screen = dynamic_cast<Screen *>(dst);

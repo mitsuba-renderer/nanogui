@@ -223,12 +223,17 @@ if (NANOGUI_BUILD_GLFW)
   set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
   set(GLFW_BUILD_INSTALL OFF CACHE BOOL " " FORCE)
   set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
+  set(GLFW_LIBRARY_TYPE OBJECT CACHE STRING "" FORCE)
   set(GLFW_USE_CHDIR OFF CACHE BOOL " " FORCE)
   set(BUILD_SHARED_LIBS ${NANOGUI_BUILD_SHARED} CACHE BOOL " " FORCE)
 
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # Quench annoying deprecation warnings when compiling GLFW on OSX
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated-declarations")
+  endif()
+
+  if (APPLE)
+     enable_language(OBJCXX OBJC)
   endif()
 
   add_subdirectory(ext/glfw)
@@ -381,7 +386,7 @@ if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if (NANOGUI_BUILD_GLFW)
-  list(APPEND NANOGUI_EXTRA $<TARGET_OBJECTS:glfw_objects>)
+  list(APPEND NANOGUI_EXTRA $<TARGET_OBJECTS:glfw>)
 endif()
 
 # Compile main NanoGUI library
