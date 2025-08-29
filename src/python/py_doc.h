@@ -2004,6 +2004,8 @@ static const char *__doc_nanogui_Screen_mouse_button_callback_event = R"doc()doc
 
 static const char *__doc_nanogui_Screen_mouse_pos = R"doc(Return the last observed mouse position value)doc";
 
+static const char *__doc_nanogui_Screen_mouse_motion_event_f = R"doc(Like mouse_motion_event(), but also capture fractional motion)doc";
+
 static const char *__doc_nanogui_Screen_move_window_to_front = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_nvg_context = R"doc(Return a pointer to the underlying NanoVG draw context)doc";

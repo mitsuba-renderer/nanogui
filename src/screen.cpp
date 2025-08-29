@@ -291,7 +291,9 @@ Screen::Screen(const Vector2i &size, const std::string &caption, bool resizable,
     if (env_sdr_white != nullptr)
         m_display_sdr_white_level_override = display_sdr_white_level = std::stof(env_sdr_white);
 
-    m_wants_color_management = display_primaries != 1 || display_transfer_function != 10 || display_sdr_white_level != 80.0f;
+    m_wants_color_management = display_primaries != 1 ||
+                               display_transfer_function != 10 ||
+                               display_sdr_white_level != 80.0f;
 
     glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
 

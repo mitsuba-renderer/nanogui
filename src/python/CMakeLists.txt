@@ -32,6 +32,7 @@ nanobind_add_module(nanogui-python MODULE
   render.cpp
   quad.cpp
   vector.cpp
+  chroma.cpp
   python.h
   py_doc.h)
 

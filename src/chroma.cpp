@@ -11,6 +11,8 @@
 
 #include <nanogui/chroma.h>
 #include <nanogui/vector.h>
+#include <nanogui/screen.h>
+#include <nanogui/opengl.h>
 
 #include <array>
 #include <stdexcept>
@@ -313,6 +315,10 @@ ColorPrimaries from_wp_primaries(int wp_primaries) {
     }
 
     throw std::invalid_argument{"Unknown wp color primaries: " + std::to_string(wp_primaries)};
+}
+
+ColorPrimaries from_screen(const Screen *screen) {
+    return from_wp_primaries(glfwGetWindowPrimaries(screen->glfw_window()));
 }
 
 NAMESPACE_END(ituth273)

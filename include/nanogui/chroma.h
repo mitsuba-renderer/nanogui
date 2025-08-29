@@ -21,10 +21,10 @@
 
 NAMESPACE_BEGIN(nanogui)
 
-Matrix3f chroma_to_rec709_matrix(const std::array<Vector2f, 4>& chroma);
+extern NANOGUI_EXPORT Matrix3f chroma_to_rec709_matrix(const std::array<Vector2f, 4>& chroma);
 
-std::array<nanogui::Vector2f, 4> chroma_from_wp_primaries(int wp_primaries);
-std::string_view wp_primaries_to_string(int wp_primaties);
+extern NANOGUI_EXPORT std::array<nanogui::Vector2f, 4> chroma_from_wp_primaries(int wp_primaries);
+extern NANOGUI_EXPORT std::string_view wp_primaries_to_string(int wp_primaties);
 
 // Partial implementation of https://www.itu.int/rec/T-REC-H.273-202407-I/en
 NAMESPACE_BEGIN(ituth273)
@@ -44,10 +44,12 @@ enum class ColorPrimaries : uint8_t {
     Weird = 22, // The spec says "No corresponding industry specification identified"
 };
 
-std::string_view to_string(const ColorPrimaries primaries);
-std::array<nanogui::Vector2f, 4> chroma(const ColorPrimaries primaries);
+extern NANOGUI_EXPORT std::string_view to_string(const ColorPrimaries primaries);
+extern NANOGUI_EXPORT std::array<nanogui::Vector2f, 4> chroma(const ColorPrimaries primaries);
 
-ColorPrimaries from_wp_primaries(int wp_primaries);
+extern NANOGUI_EXPORT ColorPrimaries from_wp_primaries(int wp_primaries);
+
+extern NANOGUI_EXPORT ColorPrimaries from_screen(const Screen *screen);
 
 NAMESPACE_END(ituth273)
 

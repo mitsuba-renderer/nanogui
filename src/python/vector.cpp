@@ -163,6 +163,7 @@ void register_vector(nb::module_ &m) {
     register_vector_type<Vector3f>(m, "Vector3f");
     register_vector_type<Vector4f>(m, "Vector4f");
 
+    register_matrix_type<Matrix3f>(m, "Matrix3f");
     register_matrix_type<Matrix4f>(m, "Matrix4f")
         .def_static("translate", &Matrix4f::translate)
         .def_static(
