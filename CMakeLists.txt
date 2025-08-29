@@ -546,8 +546,10 @@ if (NANOGUI_BUILD_EXAMPLES)
   add_executable(example3      src/example3.cpp)
   add_executable(example4      src/example4.cpp)
   add_executable(example_icons src/example_icons.cpp)
+  add_executable(example_hdr   src/example_hdr.cpp)
 
   target_link_libraries(example1      nanogui)
+  target_link_libraries(example_hdr   nanogui)
   target_link_libraries(example2      nanogui)
   target_link_libraries(example3      nanogui ${NANOGUI_LIBS}) # For OpenGL
   target_link_libraries(example4      nanogui)

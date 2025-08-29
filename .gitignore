@@ -24,6 +24,11 @@ example_icons.bc
 example_icons.js
 example_icons.wasm
 example_icons.exe
+example_hdr
+example_hdr.bc
+example_hdr.js
+example_hdr.wasm
+example_hdr.exe
 icons
 *~
 nanogui*.so
