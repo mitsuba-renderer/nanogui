@@ -211,7 +211,11 @@ private:
 #elif defined(NANOGUI_USE_GLES)
 #  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_gles)
 #elif defined(NANOGUI_USE_METAL)
-#  define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_metallib)
+#  if defined(NANOGUI_SKIP_METAL_SHADER_PRECOMPILATION)
+#    define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_metal)
+#  else
+#    define NANOGUI_SHADER(name) NANOGUI_RESOURCE_STRING(name##_metallib)
+#  endif
 #endif
 
 

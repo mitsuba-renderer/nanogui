@@ -82,6 +82,8 @@ option(NANOGUI_BUILD_GLAD                "Build GLAD OpenGL loader library? (nee
 option(NANOGUI_BUILD_GLFW                "Build GLFW?" ${NANOGUI_BUILD_GLFW_DEFAULT})
 option(NANOGUI_INSTALL                   "Install NanoGUI on `make install`?" ON)
 
+option(NANOGUI_SKIP_METAL_SHADER_PRECOMPILATION "Compile Metal shaders at runtime instead of precompiling them while nanogui is built." OFF)
+
 if (NOT NANOGUI_BACKEND)
   if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
     set(NANOGUI_BACKEND_DEFAULT "GLES 2")
@@ -315,7 +317,7 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/resources")
 
 # Precompile .metal shaders to .metallib files
 foreach(fname_in IN LISTS resources)
-  if (NANOGUI_BACKEND STREQUAL "Metal" AND fname_in MATCHES "\\.metal")
+  if (NOT NANOGUI_SKIP_METAL_SHADER_PRECOMPILATION AND NANOGUI_BACKEND STREQUAL "Metal" AND fname_in MATCHES "\\.metal")
     get_filename_component(fname_out ${fname_in} NAME)
     set(fname_out "${CMAKE_CURRENT_BINARY_DIR}/resources/${fname_out}lib")
     add_custom_command(
@@ -454,6 +456,12 @@ if (NOT NANOGUI_SKIP_STB_IMAGE_IMPLEMENTATION)
 
   target_compile_definitions(nanogui
     PRIVATE -DNVG_STB_IMAGE_IMPLEMENTATION)
+endif()
+
+if (NANOGUI_SKIP_METAL_SHADER_PRECOMPILATION)
+  message(STATUS "NanoGUI: skipping precompilation of Metal shaders.")
+  target_compile_definitions(nanogui
+    PUBLIC -DNANOGUI_SKIP_METAL_SHADER_PRECOMPILATION)
 endif()
 
 target_include_directories(nanogui
