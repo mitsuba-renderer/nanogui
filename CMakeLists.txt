@@ -625,6 +625,10 @@ endif()
 
 # Native file dialog library
 set(BUILD_SHARED_LIBS OFF)
+set(NFD_INSTALL OFF CACHE BOOL " " FORCE)
+set(NFD_PORTAL ON CACHE BOOL " " FORCE)
+set(NFD_APPEND_EXTENSION ON CACHE BOOL " " FORCE)
+set(NFD_CASE_SENSITIVE_FILTER ON CACHE BOOL " " FORCE)
 add_subdirectory(ext/nativefiledialog-extended)
 target_link_libraries(nanogui PRIVATE nfd)
 
