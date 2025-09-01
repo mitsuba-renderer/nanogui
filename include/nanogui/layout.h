@@ -409,8 +409,8 @@ public:
 
         /// Allows for printing out Anchor position, size, and alignment.
         operator std::string() const {
-            char buf[50];
-            snprintf(buf, 50, "Format[pos=(%i, %i), size=(%i, %i), align=(%i, %i)]",
+            char buf[64];
+            snprintf(buf, 64, "Format[pos=(%i, %i), size=(%i, %i), align=(%i, %i)]",
                      pos[0], pos[1], size[0], size[1], (int) align[0], (int) align[1]);
             return buf;
         }
