@@ -13,7 +13,9 @@
 #include <nanogui/opengl.h>
 #include <nanogui/metal.h>
 #include <unordered_map>
+
 #include <mutex>
+#include <stdexcept>
 
 #if defined(__APPLE__)
 #  define GLFW_EXPOSE_NATIVE_COCOA
