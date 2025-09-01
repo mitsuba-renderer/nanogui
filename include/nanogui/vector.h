@@ -440,9 +440,11 @@ template <typename Value_, size_t Size_> struct Matrix {
     Matrix() { }
 
     explicit Matrix(Value s) {
-        memset(m, 0, sizeof(Value) * Size * Size);
-        for (size_t i = 0; i < Size; ++i)
-            m[i][i] = s;
+        for (size_t i = 0; i < Size; ++i) {
+            for (size_t j = 0; j < Size; ++j) {
+                m[i][j] = i == j ? s : 0;
+            }
+        }
     }
 
     /// Initialize another matrix type
@@ -492,17 +494,21 @@ template <typename Value_, size_t Size_> struct Matrix {
 
     static Matrix scale(const Array<Value, Size - 1> &v) {
         Matrix result;
-        memset(result.m, 0, sizeof(Value) * Size * Size);
-        for (size_t i = 0; i < Size; ++i)
-            result.m[i][i] = i < Size - 1 ? v[i] : 1;
+        for (size_t i = 0; i < Size; ++i) {
+            for (size_t j = 0; j < Size; ++j) {
+                result.m[i][j] = i == j ? (i < Size - 1 ? v[i] : 1) : 0;
+            }
+        }
         return result;
     }
 
     static Matrix scale(const Array<Value, Size> &v) {
         Matrix result;
-        memset(result.m, 0, sizeof(Value) * Size * Size);
-        for (size_t i = 0; i < Size; ++i)
-            result.m[i][i] = v[i];
+        for (size_t i = 0; i < Size; ++i) {
+            for (size_t j = 0; j < Size; ++j) {
+                result.m[i][j] = i == j ? v[i] : 0;
+            }
+        }
         return result;
     }
 
