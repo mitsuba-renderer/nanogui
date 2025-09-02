@@ -21,8 +21,8 @@
 #include <nanogui/renderpass.h>
 #include <nanogui/shader.h>
 
+#include <algorithm>
 #include <cstdlib>
-#include <map>
 #include <iostream>
 
 #if defined(EMSCRIPTEN)

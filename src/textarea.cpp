@@ -15,6 +15,8 @@
 #include <nanogui/screen.h>
 #include <nanogui/vscrollpanel.h>
 
+#include <algorithm>
+
 NAMESPACE_BEGIN(nanogui)
 
 TextArea::TextArea(Widget *parent) : Widget(parent),

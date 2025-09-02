@@ -15,6 +15,8 @@
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
 
+#include <algorithm>
+
 NAMESPACE_BEGIN(nanogui)
 
 ColorWheel::ColorWheel(Widget *parent, const Color& rgb)

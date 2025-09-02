@@ -16,6 +16,8 @@
 #include <nanogui/opengl.h>
 #include <nanogui/screen.h>
 
+#include <algorithm>
+
 /* Uncomment the following definition to draw red bounding
    boxes around widgets (useful for debugging drawing code) */
 
