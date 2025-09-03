@@ -83,6 +83,7 @@ option(NANOGUI_BUILD_GLFW                "Build GLFW?" ${NANOGUI_BUILD_GLFW_DEFA
 option(NANOGUI_INSTALL                   "Install NanoGUI on `make install`?" ON)
 
 option(NANOGUI_SKIP_METAL_SHADER_PRECOMPILATION "Compile Metal shaders at runtime instead of precompiling them while nanogui is built." OFF)
+option(NANOGUI_SKIP_STB_IMAGE_IMPLEMENTATION    "Do not compile stb_image's implementation into nanogui. If enabled, user code must do this instead." OFF)
 
 if (NOT NANOGUI_BACKEND)
   if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
