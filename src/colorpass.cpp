@@ -74,7 +74,6 @@ static const char *vertex_shader = GLSL_PRELUDE R"glsl(
 )glsl";
 
 static const char *fragment_shader = GLSL_PRELUDE R"glsl(
-    GLSL_PRELUDE R"glsl(
     varying vec2 imageUv;
     varying vec2 ditherUv;
 
