@@ -544,7 +544,8 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
             m_color_texture,
             m_depth_buffer ? m_depth_stencil_texture : nullptr,
             m_stencil_buffer ? m_depth_stencil_texture : nullptr,
-            bits_per_sample()
+            bits_per_sample(),
+            m_float_buffer
         );
     }
 #endif

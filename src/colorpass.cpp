@@ -350,16 +350,14 @@ static const char *fragment_shader = GLSL_PRELUDE R"glsl(
 ColorPass::ColorPass(Texture *color_texture,
                      Texture *depth_texture,
                      Texture *stencil_texture,
-                     uint32_t bits_per_channel)
-    : RenderPass({color_texture}, depth_texture, stencil_texture, nullptr, true) {
+                     uint32_t bits_per_channel,
+                     bool float_buffer)
+    : RenderPass({color_texture}, depth_texture, stencil_texture, nullptr, true),
+      m_float_buffer{float_buffer} {
 
     // Disable depth testing if we have a depth buffer (only used for stencil)
     if (depth_texture)
         set_depth_test(RenderPass::DepthTest::Always, true);
-
-    // Color texture for
-    m_float_buffer = color_texture->component_format() == Texture::ComponentFormat::Float16 ||
-                     color_texture->component_format() == Texture::ComponentFormat::Float32;
 
     m_dither_matrix = new Texture{
         Texture::PixelFormat::R,

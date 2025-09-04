@@ -47,7 +47,8 @@ public:
     ColorPass(Texture *color_texture,
               Texture *depth_texture,
               Texture *stencil_texture,
-              uint32_t bits_per_channel);
+              uint32_t bits_per_channel,
+              bool float_buffer);
 
     /// Destructor
     virtual ~ColorPass();
