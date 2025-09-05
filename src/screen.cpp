@@ -863,7 +863,6 @@ bool Screen::resize_event(const Vector2i& size) {
     if (m_resize_callback)
         m_resize_callback(size);
     m_redraw = true;
-    draw_all();
     return true;
 }
 
