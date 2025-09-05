@@ -50,8 +50,6 @@ public:
     /// Sets the current Color this ColorWheel has selected.
     void set_color(const Color& color);
 
-    /// The preferred size of this ColorWheel.
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
 
     /// Draws the ColorWheel.
     virtual void draw(NVGcontext *ctx) override;
@@ -99,6 +97,9 @@ protected:
 
     /// The current callback to execute when the color value has changed.
     std::function<void(const Color &)> m_callback;
+
+    /// The preferred size of this ColorWheel.
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
 };
 
 NAMESPACE_END(nanogui)

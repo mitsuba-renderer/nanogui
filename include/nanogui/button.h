@@ -59,7 +59,12 @@ public:
     std::string_view caption() const { return m_caption; }
 
     /// Sets the caption of this Button.
-    void set_caption(std::string_view caption) { m_caption = caption; }
+    void set_caption(std::string_view caption) {
+        if (m_caption != caption) {
+            m_caption = caption;
+            preferred_size_changed();
+        }
+    }
 
     /// Returns the background color of this Button.
     const Color &background_color() const { return m_background_color; }
@@ -74,7 +79,12 @@ public:
     /// Returns the icon of this Button.  See \ref nanogui::Button::m_icon.
     int icon() const { return m_icon; }
     /// Sets the icon of this Button.  See \ref nanogui::Button::m_icon.
-    void set_icon(int icon) { m_icon = icon; }
+    void set_icon(int icon) {
+        if (m_icon != icon) {
+            m_icon = icon;
+            preferred_size_changed();
+        }
+    }
 
     /// The current flags of this Button (see \ref nanogui::Button::Flags for options).
     int flags() const { return m_flags; }
@@ -84,7 +94,12 @@ public:
     /// The position of the icon for this Button.
     IconPosition icon_position() const { return m_icon_position; }
     /// Sets the position of the icon for this Button.
-    void set_icon_position(IconPosition icon_position) { m_icon_position = icon_position; }
+    void set_icon_position(IconPosition icon_position) {
+        if (m_icon_position != icon_position) {
+            m_icon_position = icon_position;
+            preferred_size_changed();
+        }
+    }
 
     /// Whether or not this Button is currently pushed.
     bool pushed() const { return m_pushed; }
@@ -109,10 +124,18 @@ public:
     /// The padding of this Button.
     const Vector2i &padding() const { return m_padding; }
     /// Set the padding of this Button.
-    void set_padding(const Vector2i &padding) { m_padding = padding; }
+    void set_padding(const Vector2i &padding) {
+        if (m_padding != padding) {
+            m_padding = padding;
+            preferred_size_changed();
+        }
+    }
 
+protected:
     /// The preferred size of this Button.
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
+
+public:
     /// The callback that is called when any type of mouse button event is issued to this Button.
     virtual bool mouse_enter_event(const Vector2i &p, bool enter) override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;

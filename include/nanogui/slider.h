@@ -43,7 +43,10 @@ public:
     const std::function<void(float)> &final_callback() const { return m_final_callback; }
     void set_final_callback(const std::function<void(float)> &callback) { m_final_callback = callback; }
 
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
+protected:
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
+
+public:
     virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
     virtual void draw(NVGcontext* ctx) override;

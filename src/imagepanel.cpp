@@ -54,7 +54,7 @@ bool ImagePanel::mouse_button_event(const Vector2i &p, int /* button */, bool do
     return true;
 }
 
-Vector2i ImagePanel::preferred_size(NVGcontext *) const {
+Vector2i ImagePanel::preferred_size_impl(NVGcontext *) const {
     Vector2i grid = grid_size();
     return Vector2i(
         grid.x() * m_thumb_size + (grid.x() - 1) * m_spacing + 2*m_margin,

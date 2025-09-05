@@ -58,12 +58,15 @@ void TextArea::append(std::string_view text) {
     VScrollPanel *vscroll = dynamic_cast<VScrollPanel *>(m_parent);
     if (vscroll)
         vscroll->perform_layout(ctx);
+
+    preferred_size_changed();
 }
 
 void TextArea::clear() {
     m_blocks.clear();
     m_offset = m_max_size = 0;
     m_selection_start = m_selection_end = -1;
+    preferred_size_changed();
 }
 
 bool TextArea::keyboard_event(int key, int /* scancode */, int action, int modifiers) {
@@ -103,7 +106,7 @@ bool TextArea::keyboard_event(int key, int /* scancode */, int action, int modif
     return false;
 }
 
-Vector2i TextArea::preferred_size(NVGcontext *) const {
+Vector2i TextArea::preferred_size_impl(NVGcontext *) const {
     return m_max_size + m_padding * 2;
 }
 

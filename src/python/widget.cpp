@@ -183,6 +183,7 @@ void register_widget(nb::module_ &m) {
         .def("keyboard_character_event", &Widget::keyboard_character_event,
              D(Widget, keyboard_character_event))
         .def("preferred_size", &Widget::preferred_size, D(Widget, preferred_size))
+        .def("preferred_size_changed", &Widget::preferred_size_changed, D(Widget, preferred_size_changed))
         .def("perform_layout", &Widget::perform_layout, D(Widget, perform_layout))
         .def("screen", nb::overload_cast<>(&Widget::screen, nb::const_), D(Widget, screen))
         .def("window", nb::overload_cast<>(&Widget::window, nb::const_), D(Widget, window))

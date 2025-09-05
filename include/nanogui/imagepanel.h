@@ -28,7 +28,7 @@ public:
 public:
     ImagePanel(Widget *parent);
 
-    void set_images(const Images &data) { m_images = data; }
+    void set_images(const Images &data) { m_images = data; preferred_size_changed(); }
     const Images& images() const { return m_images; }
 
     const std::function<void(int)> &callback() const { return m_callback; }
@@ -38,10 +38,10 @@ public:
                                     int modifiers) override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down,
                                     int modifiers) override;
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual void draw(NVGcontext *ctx) override;
 
 protected:
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
     Vector2i grid_size() const;
     int index_for_position(const Vector2i &p) const;
 protected:

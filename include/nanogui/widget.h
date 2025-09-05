@@ -92,7 +92,12 @@ public:
      * size; this is done with a call to \ref set_size or a call to \ref perform_layout()
      * in the parent widget.
      */
-    void set_fixed_size(const Vector2i &fixed_size) { m_fixed_size = fixed_size; }
+    void set_fixed_size(const Vector2i &fixed_size) {
+        if (m_fixed_size != fixed_size) {
+            m_fixed_size = fixed_size;
+            preferred_size_changed();
+        }
+    }
 
     /// Return the fixed size (see \ref set_fixed_size())
     const Vector2i &fixed_size() const { return m_fixed_size; }
@@ -102,9 +107,19 @@ public:
     // Return the fixed height (see \ref set_fixed_size())
     int fixed_height() const { return m_fixed_size.y(); }
     /// Set the fixed width (see \ref set_fixed_size())
-    void set_fixed_width(int width) { m_fixed_size.x() = width; }
+    void set_fixed_width(int width) {
+        if (m_fixed_size.x() != width) {
+            m_fixed_size.x() = width;
+            preferred_size_changed();
+        }
+    }
     /// Set the fixed height (see \ref set_fixed_size())
-    void set_fixed_height(int height) { m_fixed_size.y() = height; }
+    void set_fixed_height(int height) {
+        if (m_fixed_size.y() != height) {
+            m_fixed_size.y() = height;
+            preferred_size_changed();
+        }
+    }
 
     /// Return whether or not the widget is currently visible (assuming all parents are visible)
     bool visible() const { return m_visible; }
@@ -190,7 +205,12 @@ public:
     /// Return current font size. If not set the default of the current theme will be returned
     int font_size() const;
     /// Set the font size of this widget
-    void set_font_size(int font_size) { m_font_size = font_size; }
+    void set_font_size(int font_size) {
+        if (m_font_size != font_size) {
+            m_font_size = font_size;
+            preferred_size_changed();
+        }
+    }
     /// Return whether the font size is explicitly specified for this widget
     bool has_font_size() const { return m_font_size > 0; }
 
@@ -204,7 +224,12 @@ public:
      * Sets the amount of extra scaling applied to *icon* fonts.
      * See \ref nanogui::Widget::m_icon_extra_scale.
      */
-    void set_icon_extra_scale(float scale) { m_icon_extra_scale = scale; }
+    void set_icon_extra_scale(float scale) {
+        if (m_icon_extra_scale != scale) {
+            m_icon_extra_scale = scale;
+            preferred_size_changed();
+        }
+    }
 
     /// Return a pointer to the cursor of the widget
     Cursor cursor() const { return m_cursor; }
@@ -247,13 +272,20 @@ public:
     virtual bool keyboard_character_event(unsigned int codepoint);
 
     /// Compute the preferred size of the widget
-    virtual Vector2i preferred_size(NVGcontext *ctx) const;
+    Vector2i preferred_size(NVGcontext *ctx) const;
+
+    ///  Indicate that any previously cached preferred size value needs to be recomputed
+    void preferred_size_changed() const { m_preferred_size_cache = Vector2i(-1); }
 
     /// Invoke the associated layout generator to properly place child widgets, if any
     virtual void perform_layout(NVGcontext *ctx);
 
     /// Draw the widget (and all child widgets)
     virtual void draw(NVGcontext *ctx);
+
+protected:
+    /// Internal implementation of preferred size computation
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const;
 
 protected:
     /**
@@ -335,6 +367,7 @@ protected:
      */
     float m_icon_extra_scale;
     Cursor m_cursor;
+    mutable Vector2i m_preferred_size_cache{-1};
 };
 
 NAMESPACE_END(nanogui)

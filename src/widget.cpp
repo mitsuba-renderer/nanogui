@@ -52,6 +52,7 @@ void Widget::set_theme(Theme *theme) {
     if (m_theme.get() == theme)
         return;
     m_theme = theme;
+    preferred_size_changed();
     for (auto child : m_children)
         child->set_theme(theme);
 }
@@ -63,8 +64,15 @@ int Widget::font_size() const {
 Vector2i Widget::preferred_size(NVGcontext *ctx) const {
     if (m_layout)
         return m_layout->preferred_size(ctx, this);
-    else
-        return m_size;
+
+    if (m_preferred_size_cache == Vector2i(-1))
+        m_preferred_size_cache = preferred_size_impl(ctx);
+
+    return m_preferred_size_cache;
+}
+
+Vector2i Widget::preferred_size_impl(NVGcontext * /* ctx */) const {
+    return m_size;
 }
 
 void Widget::perform_layout(NVGcontext *ctx) {

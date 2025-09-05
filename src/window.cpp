@@ -21,10 +21,12 @@ Window::Window(Widget *parent, std::string_view title)
     : Widget(parent), m_title(title), m_button_panel(nullptr), m_modal(false),
       m_drag(false) { }
 
-Vector2i Window::preferred_size(NVGcontext *ctx) const {
+Vector2i Window::preferred_size_impl(NVGcontext *ctx) const {
     if (m_button_panel)
         m_button_panel->set_visible(false);
-    Vector2i result = Widget::preferred_size(ctx);
+
+    Vector2i result = Widget::preferred_size_impl(ctx);
+
     if (m_button_panel)
         m_button_panel->set_visible(true);
 

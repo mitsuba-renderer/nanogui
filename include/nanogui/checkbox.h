@@ -52,7 +52,12 @@ public:
     std::string_view caption() const { return m_caption; }
 
     /// Sets the caption of this check box
-    void set_caption(std::string_view caption) { m_caption = caption; }
+    void set_caption(std::string_view caption) {
+        if (m_caption != caption) {
+            m_caption = caption;
+            preferred_size_changed();
+        }
+    }
 
     /// Return whether or not this widget is currently checked.
     const bool &checked() const { return m_checked; }
@@ -73,8 +78,11 @@ public:
     /// Mouse button event processing for this check box
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
 
+protected:
     /// The preferred size of this CheckBox.
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
+
+public:
 
     /// Draws this CheckBox.
     virtual void draw(NVGcontext *ctx) override;

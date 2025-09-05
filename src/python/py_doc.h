@@ -3289,6 +3289,8 @@ static const char *__doc_nanogui_Widget_position = R"doc(Return the position rel
 
 static const char *__doc_nanogui_Widget_preferred_size = R"doc(Compute the preferred size of the widget)doc";
 
+static const char *__doc_nanogui_Widget_preferred_size_changed = R"doc(Indicate that any previously cached preferred size value needs to be recomputed)doc";
+
 static const char *__doc_nanogui_Widget_remove_child = R"doc(Remove a child widget by value)doc";
 
 static const char *__doc_nanogui_Widget_remove_child_at = R"doc(Remove a child widget by index)doc";

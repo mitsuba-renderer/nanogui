@@ -40,6 +40,7 @@ void TabWidgetBase::remove_tab(int id) {
         m_callback(selected_id());
         update_visibility();
     }
+    preferred_size_changed();
 }
 
 int TabWidgetBase::insert_tab(int index, std::string_view caption) {
@@ -54,6 +55,7 @@ int TabWidgetBase::insert_tab(int index, std::string_view caption) {
         m_callback(id);
         update_visibility();
     }
+    preferred_size_changed();
     return id;
 }
 
@@ -94,7 +96,7 @@ void TabWidgetBase::perform_layout(NVGcontext* ctx) {
         nvgTextBounds(ctx, 0, 0, utf8(FA_TIMES_CIRCLE).data(), nullptr, unused);
 }
 
-Vector2i TabWidgetBase::preferred_size(NVGcontext* ctx) const {
+Vector2i TabWidgetBase::preferred_size_impl(NVGcontext* ctx) const {
     nvgFontFace(ctx, m_font.c_str());
     nvgFontSize(ctx, font_size());
     nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
@@ -398,8 +400,8 @@ void TabWidget::update_visibility() {
     }
 }
 
-Vector2i TabWidget::preferred_size(NVGcontext* ctx) const {
-    Vector2i base_size = TabWidgetBase::preferred_size(ctx),
+Vector2i TabWidget::preferred_size_impl(NVGcontext* ctx) const {
+    Vector2i base_size = TabWidgetBase::preferred_size_impl(ctx),
              content_size = Vector2i(0);
     for (Widget *child : m_children)
         content_size = max(content_size, child->preferred_size(ctx));
