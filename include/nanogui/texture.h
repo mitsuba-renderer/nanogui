@@ -156,8 +156,17 @@ public:
     /// Return the number of channels of this texture
     size_t channels() const;
 
-    /// Upload packed pixel data from the CPU to the GPU
+    /// Upload packed pixel data from the CPU to the GPU (synchronous)
     void upload(const uint8_t *data);
+
+    /**
+     * \brief Upload packed pixel data from the CPU to the GPU (asynchronous)
+     *
+     * The ``data`` buffer must remain alive for the duration of the (asynchronous)
+     * operation. The underlying backend will invoke ``callback(payload)`` when
+     * the operation is done, which can be used as a hint to free the buffer.
+     */
+    void upload_async(const uint8_t *data, void (*callback)(void*), void *payload);
 
     /// Upload packed pixel data to a rectangular sub-region of the texture from the CPU to the GPU
     void upload_sub_region(const uint8_t *data, const Vector2i& origin, const Vector2i& size);

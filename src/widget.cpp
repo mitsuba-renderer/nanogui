@@ -52,6 +52,7 @@ void Widget::set_theme(Theme *theme) {
     if (m_theme.get() == theme)
         return;
     m_theme = theme;
+    preferred_size_changed();
     for (auto child : m_children)
         child->set_theme(theme);
 }
@@ -61,6 +62,32 @@ int Widget::font_size() const {
 }
 
 Vector2i Widget::preferred_size(NVGcontext *ctx) const {
+    Vector2i result;
+    if (!m_children.empty()) {
+        result = preferred_size_impl(ctx);
+    } else {
+        result = m_preferred_size_cache;
+        if (result == Vector2i(-1)) {
+            result = preferred_size_impl(ctx);
+            m_preferred_size_cache = result;
+        } else {
+#if !defined(NDEBUG)
+            Vector2i ref = preferred_size_impl(ctx);
+            if (ref != result) {
+                fprintf(stderr,
+                        "NanoGUI: widget %p of type %s returned an unexpected preferred "
+                        "size. It appears that something updated its state but did not call "
+                        "preferred_size_changed() (size=[%i, %i], ref=[%i, %i]!\n",
+                        this, typeid(*this).name(), result.x(), result.y(), ref.x(), ref.y());
+                abort();
+            }
+#endif
+        }
+    }
+    return result;
+}
+
+Vector2i Widget::preferred_size_impl(NVGcontext *ctx) const {
     if (m_layout)
         return m_layout->preferred_size(ctx, this);
     else
@@ -254,9 +281,26 @@ void Widget::draw(NVGcontext *ctx) {
         return;
 
     nvgTranslate(ctx, m_pos.x(), m_pos.y());
+
+    float scissor[4];
+    bool has_scissor = nvgCurrentScissor(ctx, scissor) == 1;
+
     for (auto child : m_children) {
         if (!child->visible())
             continue;
+
+        // Skip if child is outside the scissor rectangle
+        if (has_scissor) {
+            Vector2i scissor_min((int) scissor[0], (int) scissor[1]),
+                     scissor_max = scissor_min + Vector2i((int) scissor[2], (int) scissor[3]),
+                     child_min = child->m_pos,
+                     child_max = child_min + child->m_size;
+
+            if (child_min.x() >= scissor_max.x() || child_min.y() >= scissor_max.y() ||
+                child_max.x() <= scissor_min.x() || child_max.y() <= scissor_min.y())
+                continue;
+        }
+
         #if !defined(NANOGUI_SHOW_WIDGET_BOUNDS)
             nvgSave(ctx);
             nvgIntersectScissor(ctx, child->m_pos.x(), child->m_pos.y(),
@@ -269,6 +313,7 @@ void Widget::draw(NVGcontext *ctx) {
             nvgRestore(ctx);
         #endif
     }
+
     nvgTranslate(ctx, -m_pos.x(), -m_pos.y());
 }
 

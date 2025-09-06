@@ -60,7 +60,7 @@ void TextBox::set_theme(Theme *theme) {
         m_font_size = m_theme->m_text_box_font_size;
 }
 
-Vector2i TextBox::preferred_size(NVGcontext *ctx) const {
+Vector2i TextBox::preferred_size_impl(NVGcontext *ctx) const {
     Vector2i size(0, font_size() * 1.4f);
 
     float uw = 0;

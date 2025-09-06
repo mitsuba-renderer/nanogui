@@ -199,6 +199,12 @@ void Texture::upload(const uint8_t *data) {
     }
 }
 
+void Texture::upload_async(const uint8_t *data, void (*callback)(void*), void *payload) {
+    // Asynchronous upload not supported on the OpenGL backend
+    upload(data);
+    callback(payload);
+}
+
 void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, const Vector2i& size) {
     if (m_samples > 1 && data != nullptr)
         throw std::runtime_error("Texture::upload_sub_region(): only implemented for samples=1!");

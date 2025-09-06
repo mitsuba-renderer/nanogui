@@ -66,7 +66,7 @@ public:
     }
 
     /// Set the amount of padding to add around the text
-    void set_padding(int padding) { m_padding = padding; }
+    void set_padding(int padding) { m_padding = padding; preferred_size_changed(); }
 
     /// Return the amount of padding that is added around the text
     int padding() const { return m_padding; }
@@ -90,7 +90,6 @@ public:
 
     /* Widget implementation */
     virtual void draw(NVGcontext *ctx) override;
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down,
                                     int modifiers) override;
     virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button,
@@ -98,6 +97,7 @@ public:
     virtual bool keyboard_event(int key, int scancode, int action, int modifiers) override;
 
 protected:
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
     Vector2i position_to_block(const Vector2i &pos) const;
     Vector2i block_to_position(const Vector2i &pos) const;
 

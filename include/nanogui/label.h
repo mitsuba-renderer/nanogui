@@ -32,10 +32,20 @@ public:
     /// Get the label's text caption
     std::string_view caption() const { return m_caption; }
     /// Set the label's text caption
-    void set_caption(std::string_view caption) { m_caption = caption; }
+    void set_caption(std::string_view caption) {
+        if (m_caption != caption) {
+            m_caption = caption;
+            preferred_size_changed();
+        }
+    }
 
     /// Set the currently active font (2 are available by default: 'sans' and 'sans-bold')
-    void set_font(std::string_view font) { m_font = font; }
+    void set_font(std::string_view font) {
+        if (m_font != font) {
+            m_font = font;
+            preferred_size_changed();
+        }
+    }
     /// Get the currently active font
     std::string_view font() const { return m_font; }
 
@@ -47,8 +57,11 @@ public:
     /// Set the \ref Theme used to draw this widget
     virtual void set_theme(Theme *theme) override;
 
+protected:
     /// Compute the size needed to fully display the label
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
+
+public:
 
     /// Draw the label
     virtual void draw(NVGcontext *ctx) override;

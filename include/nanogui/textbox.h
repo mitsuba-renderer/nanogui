@@ -46,10 +46,20 @@ public:
     void set_editable(bool editable);
 
     bool spinnable() const { return m_spinnable; }
-    void set_spinnable(bool spinnable) { m_spinnable = spinnable; }
+    void set_spinnable(bool spinnable) {
+        if (m_spinnable != spinnable) {
+            m_spinnable = spinnable;
+            preferred_size_changed();
+        }
+    }
 
     const std::string &value() const { return m_value; }
-    void set_value(std::string_view value) { m_value = value; }
+    void set_value(std::string_view value) {
+        if (m_value != value) {
+            m_value = value;
+            preferred_size_changed();
+        }
+    }
 
     std::string_view default_value() const { return m_default_value; }
     void set_default_value(std::string_view default_value) { m_default_value = default_value; }
@@ -58,10 +68,20 @@ public:
     void set_alignment(Alignment align) { m_alignment = align; }
 
     std::string_view units() const { return m_units; }
-    void set_units(std::string_view units) { m_units = units; }
+    void set_units(std::string_view units) {
+        if (m_units != units) {
+            m_units = units;
+            preferred_size_changed();
+        }
+    }
 
     int units_image() const { return m_units_image; }
-    void set_units_image(int image) { m_units_image = image; }
+    void set_units_image(int image) {
+        if (m_units_image != image) {
+            m_units_image = image;
+            preferred_size_changed();
+        }
+    }
 
     /// Return the underlying regular expression specifying valid formats
     std::string_view format() const { return m_format; }
@@ -71,7 +91,12 @@ public:
     /// Return the placeholder text to be displayed while the text box is empty.
     std::string_view placeholder() const { return m_placeholder; }
     /// Specify a placeholder text to be displayed while the text box is empty.
-    void set_placeholder(std::string_view placeholder) { m_placeholder = placeholder; }
+    void set_placeholder(std::string_view placeholder) {
+        if (m_placeholder != placeholder) {
+            m_placeholder = placeholder;
+            preferred_size_changed();
+        }
+    }
 
     /// Set the \ref Theme used to draw this widget
     virtual void set_theme(Theme *theme) override;
@@ -111,7 +136,10 @@ public:
     virtual bool keyboard_event(int key, int scancode, int action, int modifiers) override;
     virtual bool keyboard_character_event(unsigned int codepoint) override;
 
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
+protected:
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
+
+public:
     virtual void draw(NVGcontext* ctx) override;
 protected:
     bool check_format(const std::string &input, const std::string &format);

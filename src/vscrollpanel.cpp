@@ -43,7 +43,7 @@ void VScrollPanel::perform_layout(NVGcontext *ctx) {
     child->perform_layout(ctx);
 }
 
-Vector2i VScrollPanel::preferred_size(NVGcontext *ctx) const {
+Vector2i VScrollPanel::preferred_size_impl(NVGcontext *ctx) const {
     if (m_children.empty())
         return Vector2i(0);
     return m_children[0]->preferred_size(ctx) + Vector2i(12, 0);

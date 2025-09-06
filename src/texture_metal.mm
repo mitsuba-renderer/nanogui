@@ -4,6 +4,9 @@
 
 NAMESPACE_BEGIN(nanogui)
 
+// Command queue for asynchronous cleanup operations
+extern dispatch_queue_t cleanup_queue;
+
 void Texture::init() {
     Vector2i size = m_size;
     m_size = 0;
@@ -47,46 +50,66 @@ Texture::~Texture() {
     (void) (__bridge_transfer id<MTLSamplerState>) m_sampler_state_handle;
 }
 
-void Texture::upload(const uint8_t *data) {
+void Texture::upload_async(const uint8_t *data, void (*callback)(void*), void *payload) {
     if (!data)
         return;
 
     id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
-
-    MTLTextureDescriptor *texture_desc =
-        [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: texture.pixelFormat
-                                                           width: (NSUInteger) m_size.x()
-                                                          height: (NSUInteger) m_size.y()
-                                                       mipmapped: NO];
-
     id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
     id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) metal_command_queue();
+
+    size_t data_size = bytes_per_pixel() * m_size.x() * m_size.y();
+    size_t bytes_per_row = bytes_per_pixel() * m_size.x();
+
+    id<MTLBuffer> buffer = [device newBufferWithBytesNoCopy: (void*)data
+                                                     length: data_size
+                                                    options: MTLResourceStorageModeShared
+                                                deallocator: nil];
+
+    if (buffer == nil) {
+        // Likely, ``data`` is not page-aligned
+        buffer = [device newBufferWithBytes: data
+                                     length: data_size
+                                    options: MTLResourceStorageModeShared];
+    }
+
     id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
-    id<MTLBlitCommandEncoder> command_encoder = [command_buffer blitCommandEncoder];
-    id<MTLTexture> temp_texture = [device newTextureWithDescriptor:texture_desc];
+    id<MTLBlitCommandEncoder> blit_encoder = [command_buffer blitCommandEncoder];
 
-    [temp_texture replaceRegion: MTLRegionMake2D(0, 0, (NSUInteger) m_size.x(), (NSUInteger) m_size.y())
-                  mipmapLevel: 0
-                  withBytes: data
-                  bytesPerRow: (NSUInteger) (bytes_per_pixel() * m_size.x())];
-
-    [command_encoder
-                 copyFromTexture: temp_texture
-                     sourceSlice: 0
-                     sourceLevel: 0
-                    sourceOrigin: MTLOriginMake(0, 0, 0)
-                      sourceSize: MTLSizeMake((NSUInteger) m_size.x(), (NSUInteger) m_size.y(), 1)
+    [blit_encoder copyFromBuffer: buffer
+                    sourceOffset: 0
+               sourceBytesPerRow: bytes_per_row
+             sourceBytesPerImage: data_size
+                      sourceSize: MTLSizeMake(m_size.x(), m_size.y(), 1)
                        toTexture: texture
                 destinationSlice: 0
                 destinationLevel: 0
                destinationOrigin: MTLOriginMake(0, 0, 0)];
 
-    [command_encoder endEncoding];
-    [command_buffer commit];
-    [command_buffer waitUntilCompleted];
+    [blit_encoder endEncoding];
 
-    if (!m_mipmap_manual && m_min_interpolation_mode == InterpolationMode::Trilinear)
-        generate_mipmap();
+    if (!m_mipmap_manual && m_min_interpolation_mode == InterpolationMode::Trilinear) {
+        id<MTLBlitCommandEncoder> mipmap_encoder = [command_buffer blitCommandEncoder];
+        [mipmap_encoder generateMipmapsForTexture:texture];
+        [mipmap_encoder endEncoding];
+    }
+
+    if (callback) {
+        [command_buffer addCompletedHandler:^(id<MTLCommandBuffer> cb) {
+            dispatch_async((__bridge dispatch_queue_t) metal_cleanup_queue(), ^{
+                callback(payload);
+            });
+        }];
+        [command_buffer commit];
+    } else {
+        // Synchronous path - wait for completion
+        [command_buffer commit];
+        [command_buffer waitUntilCompleted];
+    }
+}
+
+void Texture::upload(const uint8_t *data) {
+    upload_async(data, nullptr, nullptr);
 }
 
 void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, const Vector2i& size) {
@@ -313,7 +336,6 @@ void Texture::generate_mipmap() {
     [command_encoder generateMipmapsForTexture: texture];
     [command_encoder endEncoding];
     [command_buffer commit];
-    [command_buffer waitUntilCompleted];
 }
 
 NAMESPACE_END(nanogui)

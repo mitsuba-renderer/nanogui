@@ -17,7 +17,10 @@ NAMESPACE_BEGIN(nanogui)
 
 ImagePanel::ImagePanel(Widget *parent)
     : Widget(parent), m_thumb_size(64), m_spacing(10), m_margin(10),
-      m_mouse_index(-1) {}
+      m_mouse_index(-1) {
+    // add a dummy child to mark this widget as inadmissable for preferred_size() caching
+    new Widget(this);
+}
 
 Vector2i ImagePanel::grid_size() const {
     int n_cols = 1 + std::max(0,
@@ -54,7 +57,7 @@ bool ImagePanel::mouse_button_event(const Vector2i &p, int /* button */, bool do
     return true;
 }
 
-Vector2i ImagePanel::preferred_size(NVGcontext *) const {
+Vector2i ImagePanel::preferred_size_impl(NVGcontext *) const {
     Vector2i grid = grid_size();
     return Vector2i(
         grid.x() * m_thumb_size + (grid.x() - 1) * m_spacing + 2*m_margin,

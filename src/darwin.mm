@@ -30,6 +30,7 @@ void disable_saved_application_state_osx() {
 
 static void *s_metal_device = nullptr;
 static void *s_metal_command_queue = nullptr;
+static void *s_metal_cleanup_queue = nullptr;
 
 void metal_init() {
     if (s_metal_device || s_metal_command_queue)
@@ -43,17 +44,35 @@ void metal_init() {
     if (!command_queue)
         throw std::runtime_error("init_metal(): unable to create command queue.");
 
+    dispatch_queue_t metal_cleanup_queue = dispatch_queue_create("nanogui.cleanup", DISPATCH_QUEUE_SERIAL);
+
     s_metal_device = (__bridge_retained void *) device;
     s_metal_command_queue = (__bridge_retained void *) command_queue;
+    s_metal_cleanup_queue = (__bridge_retained void *) metal_cleanup_queue;
 }
 
 void metal_shutdown() {
-    (void) (__bridge_transfer id<MTLDevice>) s_metal_device;
-    (void) (__bridge_transfer id<MTLCommandQueue>) s_metal_command_queue;
+    if (s_metal_cleanup_queue) {
+        dispatch_queue_t queue = (__bridge dispatch_queue_t) s_metal_cleanup_queue;
+        dispatch_sync(queue, ^{});  // Wait for pending work
+        (void) (__bridge_transfer dispatch_queue_t) s_metal_cleanup_queue;  // Transfer to ARC for release
+        s_metal_cleanup_queue = nullptr;
+    }
+
+    if (s_metal_device) {
+        (void) (__bridge_transfer id<MTLDevice>) s_metal_device;
+        s_metal_device = nullptr;
+    }
+
+    if (s_metal_command_queue) {
+        (void) (__bridge_transfer id<MTLCommandQueue>) s_metal_command_queue;
+        s_metal_command_queue = nullptr;
+    }
 }
 
 void* metal_device() { return s_metal_device; }
 void* metal_command_queue() { return s_metal_command_queue; }
+void* metal_cleanup_queue() { return s_metal_cleanup_queue; }
 
 void metal_sync() {
     id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) s_metal_command_queue;

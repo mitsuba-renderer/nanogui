@@ -60,11 +60,11 @@ public:
     /// Return the caption of the tab with the given ID
     const std::string& tab_caption(int id) const { return m_tab_captions[tab_index(id)]; }
     /// Change the caption of the tab with the given ID
-    void set_tab_caption(int id, std::string_view caption) { m_tab_captions[tab_index(id)] = caption; }
+    void set_tab_caption(int id, std::string_view caption) { m_tab_captions[tab_index(id)] = caption; preferred_size_changed(); }
 
     /// Return whether tabs provide a close button
     bool tabs_closeable() const { return m_tabs_closeable; }
-    void set_tabs_closeable(bool value) { m_tabs_closeable = value; }
+    void set_tabs_closeable(bool value) { m_tabs_closeable = value; preferred_size_changed(); }
 
     /// Return whether tabs can be dragged to different positions
     bool tabs_draggable() const { return m_tabs_draggable; }
@@ -72,7 +72,7 @@ public:
 
     /// Return the padding between the tab widget boundary and child widgets
     int padding() const { return m_padding; }
-    void set_padding(int value) { m_padding = value; }
+    void set_padding(int value) { m_padding = value; preferred_size_changed(); }
 
     /// Set the widget's background color (a global property)
     void set_background_color(const Color &background_color) {
@@ -101,7 +101,6 @@ public:
 
     // Widget implementation
     virtual void perform_layout(NVGcontext* ctx) override;
-    virtual Vector2i preferred_size(NVGcontext* ctx) const override;
     virtual void draw(NVGcontext* ctx) override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down,
                                     int modifiers) override;
@@ -110,6 +109,7 @@ public:
                                     int modifiers) override;
 
 protected:
+    virtual Vector2i preferred_size_impl(NVGcontext* ctx) const override;
     std::pair<int, bool> tab_at_position(const Vector2i &p,
                                          bool test_vertical = true) const;
     virtual void update_visibility();
@@ -198,8 +198,8 @@ public:
     void set_remove_children(bool value) { m_remove_children = value; }
 
     virtual void perform_layout(NVGcontext* ctx) override;
-    virtual Vector2i preferred_size(NVGcontext* ctx) const override;
 protected:
+    virtual Vector2i preferred_size_impl(NVGcontext* ctx) const override;
     virtual void update_visibility() override;
 protected:
     std::vector<std::pair<int, Widget *>> m_widgets;

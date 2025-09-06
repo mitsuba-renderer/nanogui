@@ -454,9 +454,9 @@ public:
         /* All NanoGUI widgets are initialized at this point. Now
            create shaders to draw the main window contents.
 
-           NanoGUI comes with a simple wrapper around OpenGL 3, which
-           eliminates most of the tedious and error-prone shader and buffer
-           object management.
+           NanoGUI comes with a simple wrapper around GLES/Metal/OpenGL 3,
+           which eliminates most of the tedious and error-prone shader and
+           buffer object management.
         */
 
         m_render_pass = new RenderPass({ this });
@@ -521,12 +521,12 @@ public:
 #endif
         );
 
-        uint32_t indices[3*2] = {
+        const uint32_t indices[3*2] = {
             0, 1, 2,
             2, 3, 0
         };
 
-        float positions[3*4] = {
+        const float positions[3*4] = {
             -1.f, -1.f, 0.f,
             1.f, -1.f, 0.f,
             1.f, 1.f, 0.f,
@@ -535,7 +535,7 @@ public:
 
         m_shader->set_buffer("indices", VariableType::UInt32, {3*2}, indices);
         m_shader->set_buffer("position", VariableType::Float32, {4, 3}, positions);
-        m_shader->set_uniform("intensity", 0.5f);
+        m_shader->set_uniform("intensity", .5f);
     }
 
     virtual bool keyboard_event(int key, int scancode, int action, int modifiers) {

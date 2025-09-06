@@ -93,8 +93,9 @@ static nb::ndarray<nb::numpy> texture_download(Texture &texture) {
     return nb::ndarray<nb::numpy>(ptr, 3, shape, owner, nullptr, dt);
 }
 
+template <bool Async>
 static void texture_upload(Texture &texture,
-                           nb::ndarray<nb::device::cpu, nb::c_contig> array) {
+                           const nb::ndarray<nb::device::cpu, nb::c_contig> &array) {
     size_t n_channels          = array.ndim() == 3 ? array.shape(2) : 1;
     VariableType dtype         = interpret_dlpack_dtype(array.dtype()),
                  dtype_texture = (VariableType) texture.component_format();
@@ -115,6 +116,22 @@ static void texture_upload(Texture &texture,
             type_name(dtype) + ") does not match the texture (" +
             type_name(dtype_texture) + ")!");
 
+    if constexpr (Async) {
+#if defined(__APPLE__)
+        nb::detail::ndarray_handle *handle = array.handle();
+        nb::detail::ndarray_inc_ref(handle);
+
+        auto free_cb = [](void *p) {
+            nb::detail::ndarray_dec_ref((nb::detail::ndarray_handle *) p);
+        };
+
+        texture.upload_async((const uint8_t *) array.data(),
+                             free_cb, handle);
+        return;
+#endif
+    }
+
+    // Synchronous fallback
     texture.upload((const uint8_t *) array.data());
 }
 
@@ -226,7 +243,8 @@ void register_render(nb::module_ &m) {
         .def("bytes_per_pixel", &Texture::bytes_per_pixel, D(Texture, bytes_per_pixel))
         .def("channels", &Texture::channels, D(Texture, channels))
         .def("download", &texture_download, D(Texture, download))
-        .def("upload", &texture_upload, D(Texture, upload))
+        .def("upload", &texture_upload<false>, D(Texture, upload))
+        .def("upload_async", &texture_upload<true>, D(Texture, upload))
         .def("upload", &texture_upload_none, ""_a.none())
         .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload, origin))
         .def("generate_mipmap", &Texture::generate_mipmap, D(Texture, generate_mipmap))

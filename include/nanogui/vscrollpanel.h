@@ -46,7 +46,6 @@ public:
     }
 
     virtual void perform_layout(NVGcontext *ctx) override;
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down,
                                     int modifiers) override;
     virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel,
@@ -55,6 +54,7 @@ public:
     virtual void draw(NVGcontext *ctx) override;
 
 protected:
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
     int m_child_preferred_height;
     float m_scroll;
     bool m_update_layout;

@@ -31,6 +31,9 @@ extern NANOGUI_EXPORT void *metal_device();
 /// Return a pointer to the underlying Metal command queue (id<MTLCommandQueue>)
 extern NANOGUI_EXPORT void *metal_command_queue();
 
+/// Return a pointer to the a dispatch queue for asynchronous cleanup work
+extern NANOGUI_EXPORT void *metal_cleanup_queue();
+
 /// Wait for pending work to finish
 extern void metal_sync();
 

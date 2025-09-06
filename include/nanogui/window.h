@@ -29,7 +29,7 @@ public:
     /// Return the window title
     std::string_view title() const { return m_title; }
     /// Set the window title
-    void set_title(std::string_view title) { m_title = title; }
+    void set_title(std::string_view title) { m_title = title; preferred_size_changed(); }
 
     /// Is this a model dialog?
     bool modal() const { return m_modal; }
@@ -55,11 +55,11 @@ public:
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
     /// Accept scroll events and propagate them to the widget under the mouse cursor
     virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
-    /// Compute the preferred size of the widget
-    virtual Vector2i preferred_size(NVGcontext *ctx) const override;
     /// Invoke the associated layout generator to properly place child widgets, if any
     virtual void perform_layout(NVGcontext *ctx) override;
 protected:
+    /// Compute the preferred size of the widget
+    virtual Vector2i preferred_size_impl(NVGcontext *ctx) const override;
     /// Internal helper function to maintain nested window position values; overridden in \ref Popup
     virtual void refresh_relative_placement();
 protected:

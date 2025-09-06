@@ -61,8 +61,8 @@ extern "C" {
     bool keyboard_character_event(unsigned int codepoint) override {           \
         NB_OVERRIDE(keyboard_character_event, codepoint);                      \
     }                                                                          \
-    ::nanogui::Vector2i preferred_size(NVGcontext *ctx) const override {       \
-        NB_OVERRIDE(preferred_size, ctx);                                      \
+    ::nanogui::Vector2i preferred_size_impl(NVGcontext *ctx) const override {  \
+        NB_OVERRIDE(preferred_size_impl, ctx);                                 \
     }                                                                          \
     void perform_layout(NVGcontext *ctx) override {                            \
         NB_OVERRIDE(perform_layout, ctx);                                      \
