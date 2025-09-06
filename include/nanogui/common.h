@@ -354,6 +354,18 @@ extern NANOGUI_EXPORT std::vector<std::pair<int, std::string>>
 extern NANOGUI_EXPORT int __nanogui_get_image(NVGcontext *ctx, std::string_view name,
                                               uint8_t *data, uint32_t size);
 
+template <typename Func> struct scope_guard {
+    scope_guard(Func &&func) : func(std::move(func)) { };
+    ~scope_guard() { func(); }
+    scope_guard(const Func &) = delete;
+    scope_guard() = delete;
+    scope_guard& operator=(const Func &) = delete;
+    scope_guard& operator=(Func&&) = delete;
+
+private:
+    Func func;
+};
+
 NAMESPACE_END(nanogui)
 
 NAMESPACE_BEGIN(drjit)

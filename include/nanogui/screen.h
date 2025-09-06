@@ -249,9 +249,6 @@ public:
     void set_shutdown_glfw(bool v) { m_shutdown_glfw = v; }
     bool shutdown_glfw() { return m_shutdown_glfw; }
 
-    /// Is a tooltip currently fading in?
-    bool tooltip_fade_in_progress() const;
-
     using Widget::perform_layout;
 
     /// Compute the layout of all widgets
@@ -331,6 +328,10 @@ protected:
     std::function<void(Vector2i)> m_resize_callback;
     RunMode m_last_run_mode;
     ref<Texture> m_depth_stencil_texture;
+
+    double m_tooltip_delay = 0.2;
+    bool m_tooltip_redraw_required = false;
+    void *m_tooltip_redraw_notify_thread;
 #if defined(NANOGUI_USE_METAL)
     void *m_metal_texture = nullptr;
     void *m_metal_drawable = nullptr;

@@ -273,18 +273,6 @@ load_image_directory(NVGcontext *ctx, const std::string &path) {
     return result;
 }
 
-template <typename Func> struct scope_guard {
-    scope_guard(Func &&func) : func(std::move(func)) { };
-    ~scope_guard() { func(); }
-    scope_guard(const Func &) = delete;
-    scope_guard() = delete;
-    scope_guard& operator=(const Func &) = delete;
-    scope_guard& operator=(Func&&) = delete;
-
-private:
-    Func func;
-};
-
 std::vector<std::string>
 file_dialog(Widget *parent,
             FileDialogType type,
