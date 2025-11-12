@@ -760,6 +760,8 @@ void Screen::draw_teardown() {
 
 void Screen::draw_all() {
     if (run_mode() != RunMode::Lazy || m_redraw) {
+        m_redraw = false;
+
 #if defined(NANOGUI_USE_METAL)
         void *pool = autorelease_init();
 #endif
@@ -777,7 +779,6 @@ void Screen::draw_all() {
 #if defined(NANOGUI_USE_METAL)
         autorelease_release(pool);
 #endif
-        m_redraw = false;
     }
 }
 
