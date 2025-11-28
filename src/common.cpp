@@ -24,7 +24,9 @@
 #  define GLFW_EXPOSE_NATIVE_WIN32
 #else
 #  define GLFW_EXPOSE_NATIVE_WAYLAND
+#if !defined(NANOGUI_USE_GLES)
 #  define GLFW_EXPOSE_NATIVE_X11
+#endif
 #endif
 
 #include <nfd_glfw3.h>
