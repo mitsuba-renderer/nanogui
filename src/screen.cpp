@@ -21,6 +21,7 @@
 #include "rtimer.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 
@@ -628,7 +629,7 @@ void Screen::set_size(const Vector2i &size) {
     auto targetSize = size;
 #if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
     if (glfwGetPlatform() != GLFW_PLATFORM_WAYLAND)
-        targetSize = Vector2i(size.x() * m_pixel_ratio, size.y() * m_pixel_ratio);
+        targetSize = Vector2i(std::ceil(size.x() * m_pixel_ratio), std::ceil(size.y() * m_pixel_ratio));
 #endif
 
     glfwSetWindowSize(m_glfw_window, targetSize.x(), targetSize.y());
