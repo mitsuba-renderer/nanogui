@@ -17,6 +17,7 @@
 
 #include <mutex>
 #include <cstring>
+#include <clocale>
 
 #if defined(__APPLE__)
 #  define GLFW_EXPOSE_NATIVE_COCOA
@@ -48,7 +49,7 @@ extern std::vector<std::pair<GLFWwindow *, Screen *>> __nanogui_screens;
 void init(bool color_management) {
     #if !defined(_WIN32)
         /* Avoid locale-related number parsing issues */
-        setlocale(LC_NUMERIC, "C");
+        std::setlocale(LC_NUMERIC, "C");
     #endif
 
     #if defined(__APPLE__)
@@ -471,4 +472,3 @@ void object_init_py(void (*object_inc_ref_py_)(PyObject *) noexcept,
 }
 
 NAMESPACE_END(nanogui)
-
