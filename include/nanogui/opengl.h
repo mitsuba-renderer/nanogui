@@ -25,6 +25,7 @@
 #    else
 #      if defined(__APPLE__)
 #        define GLFW_INCLUDE_GLCOREARB
+#        define GLFW_INCLUDE_GLEXT
 #      else
 #        define GL_GLEXT_PROTOTYPES
 #      endif
