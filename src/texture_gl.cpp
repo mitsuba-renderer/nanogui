@@ -200,8 +200,36 @@ void Texture::upload(const uint8_t *data) {
 }
 
 void Texture::upload_async(const uint8_t *data, void (*callback)(void*), void *payload) {
-    // Asynchronous upload not supported on the OpenGL backend
+#if defined(NANOGUI_USE_OPENGL) || (defined(NANOGUI_USE_GLES) && NANOGUI_GLES_VERSION >= 3)
+    // GL does not let us upload asynchronously per se, but we can copy our data to a
+    // driver-owned PBO and then trigger an upload from there. By controlling the data,
+    // the driver can upload asynchronously *in principle* which seems to actually happen
+    // on some platforms (tested NVIDIA).
+    const size_t dataSize = bytes_per_pixel() * m_size.x() * m_size.y();
+
+    GLuint pbo = 0;
+    CHK(glGenBuffers(1, &pbo));
+    CHK(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo));
+    CHK(glBufferData(GL_PIXEL_UNPACK_BUFFER, dataSize, NULL, GL_STREAM_DRAW));
+
+    void *ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, dataSize,
+      GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    memcpy(ptr, data, dataSize);
+    CHK(glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER));
+
+    CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+    CHK(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
+    CHK(glPixelStorei(GL_UNPACK_SKIP_ROWS, 0));
+    CHK(glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0));
+
+    upload(nullptr);
+
+    CHK(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+    CHK(glDeleteBuffers(1, &pbo));
+#else
     upload(data);
+#endif
+
     callback(payload);
 }
 
