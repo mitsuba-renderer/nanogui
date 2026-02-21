@@ -249,6 +249,16 @@ void Texture::upload_async(const uint8_t *data, void (*callback)(void*), void *p
 
     void *ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, dataSize,
       GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+    if (!ptr) {
+        CHK(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+        CHK(glDeleteBuffers(1, &pbo));
+
+        callback(payload);
+
+        throw std::runtime_error("Texture::upload_async(): failed to map PBO; likely OOM!");
+    }
+
     memcpy(ptr, data, dataSize);
     CHK(glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER));
 
