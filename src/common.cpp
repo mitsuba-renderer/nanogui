@@ -46,6 +46,8 @@ extern std::vector<std::pair<GLFWwindow *, Screen *>> __nanogui_screens;
   extern void disable_saved_application_state_osx();
 #endif
 
+static bool nfd_initialized = false;
+
 void init(bool color_management) {
     #if !defined(_WIN32)
         /* Avoid locale-related number parsing issues */
@@ -57,13 +59,16 @@ void init(bool color_management) {
         glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GLFW_FALSE);
     #endif
 
-    glfwSetErrorCallback(
+    const auto old_error_callback = glfwSetErrorCallback(
         [](int error, const char *descr) {
             if (error == GLFW_NOT_INITIALIZED)
                 return; /* Ignore */
             fprintf(stderr, "GLFW error %i: %s", error, descr);
         }
     );
+
+    if (old_error_callback)
+        glfwSetErrorCallback(old_error_callback);
 
     if (color_management) {
         glfwInitHint(GLFW_WAYLAND_COLOR_MANAGEMENT, GLFW_TRUE);
