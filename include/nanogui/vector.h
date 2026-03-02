@@ -488,13 +488,11 @@ template <typename Value_, size_t Size_> struct Matrix {
     Matrix(const Args&... args) : m{args...} { }
 
     friend Matrix operator*(const Matrix &a, const Matrix &b) {
-        Matrix c;
-        for (size_t i = 0; i < Size; ++i) {
-            for (size_t j = 0; j < Size; ++j) {
-                Value accum = 0;
-                for (size_t k = 0; k < Size; ++k)
-                    accum += a.m[k][i] * b.m[j][k];
-                c.m[j][i] = accum;
+        Matrix c((Value)0);
+        for (size_t j = 0; j < Size; ++j) {
+            for (size_t k = 0; k < Size; ++k)
+                for (size_t i = 0; i < Size; ++i) {
+                    c.m[j][i] += a.m[k][i] * b.m[j][k];
             }
         }
         return c;
@@ -683,33 +681,29 @@ inline Matrix3f transpose(const Matrix3f& mat) {
 }
 
 template <typename Value, size_t Size> Array<Value, Size> operator*(const Matrix<Value, Size>& m, const Array<Value, Size>& v) {
-    Array<Value, Size> result;
-    for (size_t i = 0; i < Size; ++i) {
-        Value accum = 0;
-        for (size_t k = 0; k < Size; ++k) {
-            accum += m.m[k][i] * v.v[k];
+    Array<Value, Size> result((Value)0);
+    for (size_t k = 0; k < Size; ++k) {
+        for (size_t i = 0; i < Size; ++i) {
+            result.v[i] += m.m[k][i] * v.v[k];
         }
-
-        result.v[i] = accum;
     }
 
     return result;
 }
 
 template <typename Value, size_t Size> Array<Value, Size - 1> operator*(const Matrix<Value, Size>& m, const Array<Value, Size - 1>& v) {
-    Array<Value, Size - 1> result;
+    Array<Value, Size - 1> result((Value)0);
     Value w = 0;
-    for (size_t i = 0; i < Size; ++i) {
-        Value accum = 0;
-        for (size_t k = 0; k < Size; ++k) {
-            accum += m.m[k][i] * (k == Size - 1 ? 1 : v.v[k]);
+    for (size_t k = 0; k < Size; ++k) {
+        for (size_t i = 0; i < Size; ++i) {
+            Value mki_vk = m.m[k][i] * (k == Size - 1 ? 1 : v.v[k]);
+            if (i == Size - 1) {
+                w += mki_vk;
+            } else {
+                result.v[i] += mki_vk;
+            }
         }
 
-        if (i == Size - 1) {
-            w = accum;
-        } else {
-            result.v[i] = accum;
-        }
     }
 
     return result / w;
