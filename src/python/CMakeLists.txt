@@ -1,6 +1,7 @@
 if (NOT NANOGUI_BUILD_SHARED)
-  # Need PIC code in libnanogui & GLFW even when compiled as a static library
+  # Need PIC code in libnanogui, GLFW, and nfd even when compiled as a static library
   set_target_properties(nanogui PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(nfd PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
   if (NANOGUI_BUILD_GLFW)
     set_target_properties(glfw PROPERTIES POSITION_INDEPENDENT_CODE ON)

@@ -83,9 +83,10 @@ void init(bool color_management) {
 
     glfwSetTime(0);
 
-    nfdresult_t rv = NFD_Init();
-    if (rv != NFD_OKAY)
-        throw std::runtime_error("Could not initialize NFD!");
+    if (NFD_Init() == NFD_OKAY)
+        nfd_initialized = true;
+    else
+        fprintf(stderr, "Could not initialize NFD; file dialogs will not work.\n");
 }
 
 #if defined(EMSCRIPTEN)
@@ -192,7 +193,8 @@ std::pair<bool, bool> test_10bit_edr_support() {
 
 
 void shutdown() {
-    NFD_Quit();
+    if (nfd_initialized)
+        NFD_Quit();
 
     glfwTerminate();
 
@@ -295,6 +297,8 @@ file_dialog(Widget *parent,
             FileDialogType type,
             const std::vector<std::pair<std::string, std::string>> &filters,
             const std::string &default_path) {
+    if (!nfd_initialized)
+        throw std::runtime_error("nanogui::file_dialog(): NFD was not initialized successfully.");
 
     std::vector<nfdu8filteritem_t> nfd_filters;
     for (const auto& ftype: filters)
