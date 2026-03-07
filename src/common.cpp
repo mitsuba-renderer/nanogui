@@ -83,9 +83,11 @@ void init(bool color_management) {
 
     glfwSetTime(0);
 
-    if (NFD_Init() == NFD_OKAY)
+    if (NFD_Init() == NFD_OKAY) {
         nfd_initialized = true;
-    else
+        if (!NFD_SetDisplayPropertiesFromGLFW())
+            fprintf(stderr, "Could not set NFD display properties; file dialogs might misbehave.\n");
+    } else
         fprintf(stderr, "Could not initialize NFD; file dialogs will not work.\n");
 }
 
