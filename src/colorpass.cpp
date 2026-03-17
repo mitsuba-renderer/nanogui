@@ -327,7 +327,7 @@ static const char *fragment_shader = GLSL_PRELUDE R"glsl(
         // nanogui uses colors in extended sRGB with a scale that assumes SDR white corresponds to a value of 1. Hence, to convert to
         // absolute nits in the display's color space, we need to undo the extended sRGB transfer function, multiply by the SDR white
         // level of the display, apply the display's color matrix, and finally apply the display's transfer function.
-        vec3 nits = display_color_matrix * (display_sdr_white_level * toLinearRGB(color.rgb, CM_TRANSFER_FUNCTION_EXT_SRGB));
+        vec3 nits = display_color_matrix * (display_sdr_white_level * toLinearRGB(color.rgb, CM_TRANSFER_FUNCTION_GAMMA22));
 
         // Some displays perform strange tonemapping when provided with values outside of their luminance range. Make sure we don't
         // let this happen -- we strongly prefer hard clipping because we want the displayable colors to be preserved.

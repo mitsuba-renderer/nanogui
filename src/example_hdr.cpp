@@ -79,11 +79,10 @@ public:
     }
 
 private:
-    float to_srgb(float value) {
+    float invgamma22ext(float value) {
         float sign = value < 0 ? -1.0f : 1.0f;
         value = std::abs(value);
-        return sign * (value < 0.0031308f ? value * 12.92f 
-                                           : 1.055f * std::pow(value, 1.0f/2.4f) - 0.055f);
+        return sign * std::pow(value, 1.0f/2.2f);
     }
 
     void update_texture() {
@@ -115,7 +114,7 @@ private:
                     float* p = &img[(y * width + x) * 4];
                     for (int c = 0; c < 3; ++c) {
                         float val = ramp * (is_srgb ? bar.srgb[c] : bar.primary[c]);
-                        p[c] = to_srgb(is_srgb ? std::min(val, 1.0f) : val);
+                        p[c] = invgamma22ext(is_srgb ? std::min(val, 1.0f) : val);
                     }
                     p[3] = 1.0f;
                 }
