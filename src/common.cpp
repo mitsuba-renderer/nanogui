@@ -16,6 +16,7 @@
 #  define NOMINMAX 1
 #  endif
 #  include <windows.h>
+#  include <commdlg.h>
 #endif
 
 #include <nanogui/opengl.h>
