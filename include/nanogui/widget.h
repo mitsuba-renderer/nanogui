@@ -72,30 +72,30 @@ public:
     const Vector2i &size() const { return m_size; }
     /// set the size of the widget
     void set_size(const Vector2i &size) {
-        if (m_size != size) {
-            m_size = size;
+        if (m_size != size && m_preferred_size_depends_on_size) {
             preferred_size_changed();
         }
+        m_size = size;
     }
 
     /// Return the width of the widget
     int width() const { return m_size.x(); }
     /// Set the width of the widget
     void set_width(int width) {
-        if (m_size.x() != width) {
-            m_size.x() = width;
+        if (m_size.x() != width && m_preferred_size_depends_on_size) {
             preferred_size_changed();
         }
+        m_size.x() = width;
     }
 
     /// Return the height of the widget
     int height() const { return m_size.y(); }
     /// Set the height of the widget
     void set_height(int height) {
-        if (m_size.y() != height) {
-            m_size.y() = height;
+        if (m_size.y() != height && m_preferred_size_depends_on_size) {
             preferred_size_changed();
         }
+        m_size.y() = height;
     }
 
     /**
@@ -334,6 +334,7 @@ protected:
 
     // Field to cache the preferred size for performance reasons
     mutable Vector2i m_preferred_size_cache{-1};
+    bool m_preferred_size_depends_on_size{true};
 
     // Child widgets that are layered on top of this widget
     std::vector<Widget *> m_children;

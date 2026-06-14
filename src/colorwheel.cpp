@@ -22,6 +22,7 @@ NAMESPACE_BEGIN(nanogui)
 ColorWheel::ColorWheel(Widget *parent, const Color& rgb)
     : Widget(parent), m_drag_region(None) {
     set_color(rgb);
+    m_preferred_size_depends_on_size = false;
 }
 
 Vector2i ColorWheel::preferred_size_impl(NVGcontext *) const {

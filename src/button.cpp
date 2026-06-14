@@ -20,7 +20,9 @@ Button::Button(Widget *parent, std::string_view caption, int icon)
     : Widget(parent), m_caption(caption), m_icon(icon),
       m_icon_position(IconPosition::LeftCentered), m_pushed(false),
       m_flags(NormalButton), m_background_color(Color(0, 0)),
-      m_text_color(Color(0, 0)) { }
+      m_text_color(Color(0, 0)) {
+    m_preferred_size_depends_on_size = false;
+}
 
 Vector2i Button::preferred_size_impl(NVGcontext *ctx) const {
     int font_size = m_font_size == -1 ? m_theme->m_button_font_size : m_font_size;

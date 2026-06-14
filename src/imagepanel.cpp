@@ -20,6 +20,7 @@ ImagePanel::ImagePanel(Widget *parent)
       m_mouse_index(-1) {
     // add a dummy child to mark this widget as inadmissable for preferred_size() caching
     new Widget(this);
+    m_preferred_size_depends_on_size = false;
 }
 
 Vector2i ImagePanel::grid_size() const {

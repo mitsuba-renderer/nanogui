@@ -48,6 +48,7 @@ TextBox::TextBox(Widget *parent, std::string_view value)
     if (m_theme)
         m_font_size = m_theme->m_text_box_font_size;
     m_icon_extra_scale = .8f;
+    m_preferred_size_depends_on_size = false;
 }
 
 void TextBox::set_editable(bool editable) {

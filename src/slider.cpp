@@ -19,6 +19,7 @@ Slider::Slider(Widget *parent)
     : Widget(parent), m_value(0.0f), m_range(0.f, 1.f),
       m_highlighted_range(0.f, 0.f) {
     m_highlight_color = Color(255, 80, 80, 70);
+    m_preferred_size_depends_on_size = false;
 }
 
 Vector2i Slider::preferred_size_impl(NVGcontext *) const {

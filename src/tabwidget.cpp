@@ -24,6 +24,7 @@ NAMESPACE_BEGIN(nanogui)
 TabWidgetBase::TabWidgetBase(Widget *parent, std::string_view font)
     : Widget(parent), m_font(font), m_background_color(Color(0.f, 0.f)) {
     m_tab_offsets.push_back(0);
+    m_preferred_size_depends_on_size = false;
 }
 
 void TabWidgetBase::remove_tab(int id) {

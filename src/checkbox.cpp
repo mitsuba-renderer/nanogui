@@ -20,6 +20,7 @@ CheckBox::CheckBox(Widget *parent, std::string_view caption,
     : Widget(parent), m_caption(caption), m_pushed(false), m_checked(false),
       m_callback(callback) {
     m_icon_extra_scale = 1.2f; // widget override
+    m_preferred_size_depends_on_size = false;
 }
 
 bool CheckBox::mouse_button_event(const Vector2i &p, int button, bool down,

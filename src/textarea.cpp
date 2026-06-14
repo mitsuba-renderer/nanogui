@@ -23,7 +23,9 @@ TextArea::TextArea(Widget *parent) : Widget(parent),
   m_foreground_color(Color(0, 0)), m_background_color(Color(0, 0)),
   m_selection_color(.5f, 1.f), m_font("sans"), m_offset(0),
   m_max_size(0), m_padding(0), m_selectable(true),
-  m_selection_start(-1), m_selection_end(-1) { }
+  m_selection_start(-1), m_selection_end(-1) {
+    m_preferred_size_depends_on_size = false;
+}
 
 void TextArea::append(std::string_view text) {
     NVGcontext *ctx = screen()->nvg_context();

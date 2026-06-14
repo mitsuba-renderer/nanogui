@@ -21,6 +21,7 @@ Graph::Graph(Widget *parent, std::string_view caption)
     m_fill_color = Color(255, 192, 0, 128);
     m_stroke_color = Color(100, 255);
     m_text_color = Color(240, 192);
+    m_preferred_size_depends_on_size = false;
 }
 
 Vector2i Graph::preferred_size_impl(NVGcontext *) const {
