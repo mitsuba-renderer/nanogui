@@ -22,8 +22,6 @@ VScrollPanel::VScrollPanel(Widget *parent)
       m_scroll(0.f), m_update_layout(false) { }
 
 void VScrollPanel::perform_layout(NVGcontext *ctx) {
-    Widget::perform_layout(ctx);
-
     if (m_children.empty())
         return;
     if (m_children.size() > 1)
