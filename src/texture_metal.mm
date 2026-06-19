@@ -120,38 +120,33 @@ void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, con
         throw std::runtime_error("Texture::upload_sub_region(): only implemented for samples=1!");
 
     id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
-
-    MTLTextureDescriptor *texture_desc =
-        [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: texture.pixelFormat
-                                                           width: (NSUInteger) size.x()
-                                                          height: (NSUInteger) size.y()
-                                                       mipmapped: NO];
-
     id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
     id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) metal_command_queue();
+
+    size_t bytes_per_row = bytes_per_pixel() * size.x();
+    size_t data_size = bytes_per_row * size.y();
+
+    // Copy into a CPU/GPU-shared staging buffer and blit it into the sub-region.
+    // The command buffer retains the buffer until the GPU is finished.
+    id<MTLBuffer> buffer = [device newBufferWithBytes: data
+                                               length: data_size
+                                              options: MTLResourceStorageModeShared];
+
     id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
-    id<MTLBlitCommandEncoder> command_encoder = [command_buffer blitCommandEncoder];
-    id<MTLTexture> temp_texture = [device newTextureWithDescriptor:texture_desc];
+    id<MTLBlitCommandEncoder> blit_encoder = [command_buffer blitCommandEncoder];
 
-    [temp_texture replaceRegion: MTLRegionMake2D(0, 0, (NSUInteger) size.x(), (NSUInteger) size.y())
-                  mipmapLevel: 0
-                  withBytes: data
-                  bytesPerRow: (NSUInteger) (bytes_per_pixel() * size.x())];
-
-    [command_encoder
-                 copyFromTexture: temp_texture
-                     sourceSlice: 0
-                     sourceLevel: 0
-                    sourceOrigin: MTLOriginMake(0, 0, 0)
+    [blit_encoder copyFromBuffer: buffer
+                    sourceOffset: 0
+               sourceBytesPerRow: bytes_per_row
+             sourceBytesPerImage: data_size
                       sourceSize: MTLSizeMake((NSUInteger) size.x(), (NSUInteger) size.y(), 1)
                        toTexture: texture
                 destinationSlice: 0
                 destinationLevel: 0
                destinationOrigin: MTLOriginMake((NSUInteger) origin.x(), (NSUInteger) origin.y(), 0)];
 
-    [command_encoder endEncoding];
+    [blit_encoder endEncoding];
     [command_buffer commit];
-    [command_buffer waitUntilCompleted];
 
     if (!m_mipmap_manual &&
         (m_min_interpolation_mode == InterpolationMode::Trilinear ||
