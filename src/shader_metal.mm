@@ -202,7 +202,8 @@ Shader::~Shader() {
         if (buf.type == VertexBuffer ||
             buf.type == FragmentBuffer ||
             buf.type == IndexBuffer) {
-            if (buf.size <= NANOGUI_BUFFER_THRESHOLD)
+            // Free as allocated: index buffers are always MTLBuffers
+            if (buf.size <= NANOGUI_BUFFER_THRESHOLD && buf.type != IndexBuffer)
                 delete[] (uint8_t *) buf.buffer;
             else
                 (void) (__bridge_transfer id<MTLBuffer>) buf.buffer;
@@ -241,7 +242,8 @@ void Shader::set_buffer(std::string_view name,
 
     size_t size = type_size(dtype) * buf.shape[0] * buf.shape[1] * buf.shape[2];
     if (buf.buffer && buf.size != size) {
-        if (buf.size <= NANOGUI_BUFFER_THRESHOLD)
+        // Free as allocated (see below): index buffers are always MTLBuffers
+        if (buf.size <= NANOGUI_BUFFER_THRESHOLD && buf.type != IndexBuffer)
             delete[] (uint8_t *) buf.buffer;
         else
             (void) (__bridge_transfer id<MTLBuffer>) buf.buffer;

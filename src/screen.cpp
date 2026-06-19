@@ -750,6 +750,13 @@ void Screen::draw_all() {
         m_frame_index++;
 
         draw_setup();
+#if defined(NANOGUI_USE_METAL)
+        // No drawable was acquired (e.g. occluded window); skip this frame.
+        if (!m_metal_texture) {
+            autorelease_release(pool);
+            return;
+        }
+#endif
         draw_contents();
         draw_widgets();
         draw_teardown();

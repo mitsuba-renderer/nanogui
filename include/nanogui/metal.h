@@ -37,10 +37,10 @@ extern NANOGUI_EXPORT void *metal_cleanup_queue();
 /// Wait for pending work to finish
 extern void metal_sync();
 
-/// Return a pointer to the underlying Metal command queue (CAMetalLayer *)
+/// Return a pointer to the underlying Metal layer (CAMetalLayer *)
 extern NANOGUI_EXPORT void *metal_layer(void *nswin);
 
-/// Associate a metal layer with a NSWindow created by GLEW
+/// Associate a metal layer with a NSWindow created by GLFW
 extern NANOGUI_EXPORT void metal_window_init(void *nswin, bool float_buffer);
 
 /// Set size of the drawable underlying an NSWindow
@@ -67,7 +67,7 @@ extern NANOGUI_EXPORT std::pair<bool, bool> metal_10bit_edr_support();
 // Create a new autorelease pool
 extern NANOGUI_EXPORT void *autorelease_init();
 
-// Drawin an autorelease pool
+// Drain an autorelease pool
 extern NANOGUI_EXPORT void autorelease_release(void *pool_);
 
 NAMESPACE_END(nanogui)

@@ -78,6 +78,10 @@ RenderPass::~RenderPass() {
     }
 
     (void) (__bridge_transfer MTLRenderPassDescriptor *) m_pass_descriptor;
+    if (m_depth_stencil_state) {
+        (void) (__bridge_transfer id<MTLDepthStencilState>) m_depth_stencil_state;
+        m_depth_stencil_state = nullptr;
+    }
 }
 
 void RenderPass::begin() {
@@ -315,32 +319,53 @@ void RenderPass::set_depth_test(DepthTest depth_test, bool depth_write) {
     m_depth_test = depth_test;
     m_depth_write = depth_write;
     if (m_active) {
-        MTLDepthStencilDescriptor *depth_desc = [MTLDepthStencilDescriptor new];
-        if (m_targets[0]) {
-            MTLCompareFunction func;
-            switch (depth_test) {
-                case DepthTest::Never:        func = MTLCompareFunctionNever; break;
-                case DepthTest::Less:         func = MTLCompareFunctionLess; break;
-                case DepthTest::Equal:        func = MTLCompareFunctionEqual; break;
-                case DepthTest::LessEqual:    func = MTLCompareFunctionLessEqual; break;
-                case DepthTest::Greater:      func = MTLCompareFunctionGreater; break;
-                case DepthTest::NotEqual:     func = MTLCompareFunctionNotEqual; break;
-                case DepthTest::GreaterEqual: func = MTLCompareFunctionGreater; break;
-                case DepthTest::Always:       func = MTLCompareFunctionAlways; break;
-                default:
-                    throw std::runtime_error(
-                        "Shader::set_depth_test(): invalid depth test mode!");
+        bool has_target = m_targets[0] != nullptr;
+
+        // Rebuild the (expensive) state object only when its inputs change
+        if (!m_depth_stencil_state_valid ||
+            m_depth_stencil_state_test != depth_test ||
+            m_depth_stencil_state_write != depth_write ||
+            m_depth_stencil_state_has_target != has_target) {
+
+            MTLDepthStencilDescriptor *depth_desc = [MTLDepthStencilDescriptor new];
+            if (has_target) {
+                MTLCompareFunction func;
+                switch (depth_test) {
+                    case DepthTest::Never:        func = MTLCompareFunctionNever; break;
+                    case DepthTest::Less:         func = MTLCompareFunctionLess; break;
+                    case DepthTest::Equal:        func = MTLCompareFunctionEqual; break;
+                    case DepthTest::LessEqual:    func = MTLCompareFunctionLessEqual; break;
+                    case DepthTest::Greater:      func = MTLCompareFunctionGreater; break;
+                    case DepthTest::NotEqual:     func = MTLCompareFunctionNotEqual; break;
+                    case DepthTest::GreaterEqual: func = MTLCompareFunctionGreaterEqual; break;
+                    case DepthTest::Always:       func = MTLCompareFunctionAlways; break;
+                    default:
+                        throw std::runtime_error(
+                            "Shader::set_depth_test(): invalid depth test mode!");
+                }
+                depth_desc.depthCompareFunction = func;
+                depth_desc.depthWriteEnabled = depth_write;
+            } else {
+                depth_desc.depthCompareFunction = MTLCompareFunctionAlways;
+                depth_desc.depthWriteEnabled = NO;
             }
-            depth_desc.depthCompareFunction = func;
-            depth_desc.depthWriteEnabled = depth_write;
-        } else {
-            depth_desc.depthCompareFunction = MTLCompareFunctionAlways;
-            depth_desc.depthWriteEnabled = NO;
+
+            id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
+            id<MTLDepthStencilState> depth_state =
+                [device newDepthStencilStateWithDescriptor: depth_desc];
+
+            // Release the previously cached state (if any) and cache the new one
+            if (m_depth_stencil_state)
+                (void) (__bridge_transfer id<MTLDepthStencilState>) m_depth_stencil_state;
+            m_depth_stencil_state = (__bridge_retained void *) depth_state;
+            m_depth_stencil_state_test = depth_test;
+            m_depth_stencil_state_write = depth_write;
+            m_depth_stencil_state_has_target = has_target;
+            m_depth_stencil_state_valid = true;
         }
 
-        id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
         id<MTLDepthStencilState> depth_state =
-            [device newDepthStencilStateWithDescriptor: depth_desc];
+            (__bridge id<MTLDepthStencilState>) m_depth_stencil_state;
         id<MTLRenderCommandEncoder> command_encoder =
             (__bridge id<MTLRenderCommandEncoder>) m_command_encoder;
         [command_encoder setDepthStencilState: depth_state];

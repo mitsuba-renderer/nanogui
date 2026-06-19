@@ -191,6 +191,12 @@ protected:
     void *m_command_encoder;
     void *m_pass_descriptor;
     ref<Shader> m_clear_shader;
+    /// Cached id<MTLDepthStencilState> and the inputs it was built from
+    void *m_depth_stencil_state = nullptr;
+    DepthTest m_depth_stencil_state_test;
+    bool m_depth_stencil_state_write;
+    bool m_depth_stencil_state_has_target;
+    bool m_depth_stencil_state_valid = false;
 #endif
 };
 

@@ -170,12 +170,20 @@ void metal_window_next_drawable(void *nswin_, void **drawable_, void **texture_)
     NSWindow *nswin = (__bridge NSWindow *) nswin_;
     CAMetalLayer *layer = (CAMetalLayer *) nswin.contentView.layer;
     id<CAMetalDrawable> drawable = layer.nextDrawable;
+    if (drawable == nil) {
+        // No drawable available (e.g. occluded/minimized window); skip frame
+        *texture_ = nullptr;
+        *drawable_ = nullptr;
+        return;
+    }
     *texture_ = (__bridge void *) drawable.texture;
     *drawable_ = (__bridge_retained void *) drawable;
 }
 
 void metal_present_and_release_drawable(void *drawable_) {
     id<CAMetalDrawable> drawable = (__bridge_transfer id<CAMetalDrawable>) drawable_;
+    if (drawable == nil)
+        return;
     id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) s_metal_command_queue;
     id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
     [command_buffer presentDrawable: drawable];

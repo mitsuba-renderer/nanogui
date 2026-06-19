@@ -34,7 +34,8 @@ void Texture::init() {
             : MTLSamplerMinMagFilterLinear;
 
     sampler_desc.mipFilter =
-        m_min_interpolation_mode == InterpolationMode::Trilinear
+        (m_min_interpolation_mode == InterpolationMode::Trilinear ||
+         m_mag_interpolation_mode == InterpolationMode::Trilinear)
             ? MTLSamplerMipFilterLinear
             : MTLSamplerMipFilterNotMipmapped;
 
@@ -88,7 +89,9 @@ void Texture::upload_async(const uint8_t *data, void (*callback)(void*), void *p
 
     [blit_encoder endEncoding];
 
-    if (!m_mipmap_manual && m_min_interpolation_mode == InterpolationMode::Trilinear) {
+    if (!m_mipmap_manual &&
+        (m_min_interpolation_mode == InterpolationMode::Trilinear ||
+         m_mag_interpolation_mode == InterpolationMode::Trilinear)) {
         id<MTLBlitCommandEncoder> mipmap_encoder = [command_buffer blitCommandEncoder];
         [mipmap_encoder generateMipmapsForTexture:texture];
         [mipmap_encoder endEncoding];
@@ -113,6 +116,9 @@ void Texture::upload(const uint8_t *data) {
 }
 
 void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, const Vector2i& size) {
+    if (m_samples > 1 && data != nullptr)
+        throw std::runtime_error("Texture::upload_sub_region(): only implemented for samples=1!");
+
     id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
 
     MTLTextureDescriptor *texture_desc =
@@ -147,7 +153,9 @@ void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, con
     [command_buffer commit];
     [command_buffer waitUntilCompleted];
 
-    if (!m_mipmap_manual && m_min_interpolation_mode == InterpolationMode::Trilinear)
+    if (!m_mipmap_manual &&
+        (m_min_interpolation_mode == InterpolationMode::Trilinear ||
+         m_mag_interpolation_mode == InterpolationMode::Trilinear))
         generate_mipmap();
 }
 
@@ -281,10 +289,18 @@ void Texture::resize(const Vector2i &size) {
                 case ComponentFormat::Int16:
                 case ComponentFormat::UInt16:
                 case ComponentFormat::Int32:
-                case ComponentFormat::UInt32:
-                    m_component_format = ComponentFormat::UInt32;
-                    pixel_format_mtl = MTLPixelFormatDepth24Unorm_Stencil8;
+                case ComponentFormat::UInt32: {
+                    // Depth24Unorm_Stencil8 is unavailable on Apple Silicon
+                    id<MTLDevice> dev = (__bridge id<MTLDevice>) metal_device();
+                    if (dev.depth24Stencil8PixelFormatSupported) {
+                        m_component_format = ComponentFormat::UInt32;
+                        pixel_format_mtl = MTLPixelFormatDepth24Unorm_Stencil8;
+                    } else {
+                        m_component_format = ComponentFormat::Float32;
+                        pixel_format_mtl = MTLPixelFormatDepth32Float_Stencil8;
+                    }
                     break;
+                }
 
                 case ComponentFormat::Float16:
                 case ComponentFormat::Float32:
@@ -300,7 +316,8 @@ void Texture::resize(const Vector2i &size) {
             throw std::runtime_error("Texture::Texture(): invalid pixel format!");
     }
 
-    bool mipmap = m_min_interpolation_mode == InterpolationMode::Trilinear;
+    bool mipmap = m_min_interpolation_mode == InterpolationMode::Trilinear ||
+                  m_mag_interpolation_mode == InterpolationMode::Trilinear;
     id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
     MTLTextureDescriptor *texture_desc =
         [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: pixel_format_mtl
