@@ -344,7 +344,8 @@ void Shader::set_buffer(std::string_view name,
         memcpy(buf.buffer, data, size);
     } else {
         GLuint buffer_id = 0;
-        if (buf.buffer) {
+        bool exists = buf.buffer != nullptr;
+        if (exists) {
             buffer_id = (GLuint) ((uintptr_t) buf.buffer);
         } else {
             CHK(glGenBuffers(1, &buffer_id));
@@ -353,7 +354,15 @@ void Shader::set_buffer(std::string_view name,
         GLenum buf_type = (name == "indices")
             ? GL_ELEMENT_ARRAY_BUFFER : GL_ARRAY_BUFFER;
         CHK(glBindBuffer(buf_type, buffer_id));
-        CHK(glBufferData(buf_type, size, data, GL_DYNAMIC_DRAW));
+        // Refill an existing allocation in place (orphan + sub-data) to avoid
+        // reallocating; only reallocate (grow) when the data no longer fits.
+        if (exists && size <= buf.size) {
+            CHK(glBufferData(buf_type, buf.size, nullptr, GL_DYNAMIC_DRAW));
+            if (size > 0)
+                CHK(glBufferSubData(buf_type, 0, size, data));
+        } else {
+            CHK(glBufferData(buf_type, size, data, GL_DYNAMIC_DRAW));
+        }
     }
 
     buf.dtype = dtype;
