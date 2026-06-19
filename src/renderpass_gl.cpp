@@ -365,7 +365,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
         target_id = screen->framebuffer_handle();
         what = GL_COLOR_BUFFER_BIT;
         if (screen->has_depth_buffer() && m_targets[0])
-            what |= GL_STENCIL_BUFFER_BIT;
+            what |= GL_DEPTH_BUFFER_BIT;
         if (screen->has_stencil_buffer() && m_targets[1])
             what |= GL_STENCIL_BUFFER_BIT;
     } else if (rp) {
@@ -384,7 +384,8 @@ void RenderPass::blit_to(const Vector2i &src_offset,
         what = GL_COLOR_BUFFER_BIT;
     #endif
 
-    CHK(glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &m_prev_framebuffer_handle));
+    int prev_read_framebuffer_handle = 0;
+    CHK(glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &prev_read_framebuffer_handle));
 
     CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_handle));
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target_id));
@@ -407,7 +408,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
                           (GLsizei) dst_end.x(), (GLsizei) dst_end.y(),
                           what, GL_NEAREST));
 
-    CHK(glBindFramebuffer(GL_FRAMEBUFFER, m_prev_framebuffer_handle));
+    CHK(glBindFramebuffer(GL_FRAMEBUFFER, prev_read_framebuffer_handle));
 #endif
 }
 

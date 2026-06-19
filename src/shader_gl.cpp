@@ -80,10 +80,14 @@ Shader::Shader(RenderPass *render_pass,
     if (status != GL_TRUE) {
         char error_shader[4096];
         CHK(glGetProgramInfoLog(p->shader_handle, sizeof(error_shader), nullptr, error_shader));
+        GLuint handle = p->shader_handle;
         p->shader_handle = 0;
+        CHK(glDeleteProgram(handle));
         throw std::runtime_error("Shader::Shader(name=\"" + std::string(name) +
                                  "\"): unable to link shader!\n\n" + error_shader);
     }
+
+    try {
 
     GLint attribute_count, uniform_count;
     CHK(glGetProgramiv(p->shader_handle, GL_ACTIVE_ATTRIBUTES, &attribute_count));
@@ -259,9 +263,37 @@ Shader::Shader(RenderPass *render_pass,
 
     p->uses_point_size = vertex_shader.find("gl_PointSize") != std::string::npos;
 #endif
+
+    } catch (...) {
+        if (p->shader_handle) {
+            CHK(glDeleteProgram(p->shader_handle));
+            p->shader_handle = 0;
+        }
+#if defined(NANOGUI_USE_OPENGL)
+        if (p->vertex_array_handle) {
+            CHK(glDeleteVertexArrays(1, &p->vertex_array_handle));
+            p->vertex_array_handle = 0;
+        }
+#endif
+        delete p;
+        p = nullptr;
+        throw;
+    }
 }
 
 Shader::~Shader() {
+    for (auto it = p->buffers.begin(); it != p->buffers.end(); ++it) {
+        Buffer &buf = it.value();
+        if (!buf.buffer)
+            continue;
+        if (buf.type == UniformBuffer) {
+            delete[] (uint8_t *) buf.buffer;
+        } else if (buf.type == VertexBuffer || buf.type == IndexBuffer) {
+            GLuint buffer_id = (GLuint) ((uintptr_t) buf.buffer);
+            CHK(glDeleteBuffers(1, &buffer_id));
+        }
+        buf.buffer = nullptr;
+    }
     CHK(glDeleteProgram(p->shader_handle));
 #if defined(NANOGUI_USE_OPENGL)
     CHK(glDeleteVertexArrays(1, &p->vertex_array_handle));

@@ -11,49 +11,54 @@ NAMESPACE_BEGIN(nanogui)
 #endif
 
 bool nanogui_check_glerror(const char *cmd) {
-    GLenum err = glGetError();
-    const char *msg = nullptr;
+    bool found_error = false;
 
-    switch (err) {
-        case GL_NO_ERROR:
-            // printf("OK: %s\n", cmd);
-            return false;
-
-        case GL_INVALID_ENUM:
-            msg = "invalid enumeration";
+    // GL maintains a queue of error flags; drain all of them.
+    while (true) {
+        GLenum err = glGetError();
+        if (err == GL_NO_ERROR)
             break;
 
-        case GL_INVALID_VALUE:
-            msg = "invalid value";
-            break;
+        const char *msg = nullptr;
+        switch (err) {
+            case GL_INVALID_ENUM:
+                msg = "invalid enumeration";
+                break;
 
-        case GL_INVALID_OPERATION:
-            msg = "invalid operation";
-            break;
+            case GL_INVALID_VALUE:
+                msg = "invalid value";
+                break;
 
-        case GL_INVALID_FRAMEBUFFER_OPERATION:
-            msg = "invalid framebuffer operation";
-            break;
+            case GL_INVALID_OPERATION:
+                msg = "invalid operation";
+                break;
 
-        case GL_OUT_OF_MEMORY:
-            msg = "out of memory";
-            break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:
+                msg = "invalid framebuffer operation";
+                break;
 
-        case GL_STACK_UNDERFLOW:
-            msg = "stack underflow";
-            break;
+            case GL_OUT_OF_MEMORY:
+                msg = "out of memory";
+                break;
 
-        case GL_STACK_OVERFLOW:
-            msg = "stack overflow";
-            break;
+            case GL_STACK_UNDERFLOW:
+                msg = "stack underflow";
+                break;
 
-        default:
-            msg = "unknown error";
-            break;
+            case GL_STACK_OVERFLOW:
+                msg = "stack overflow";
+                break;
+
+            default:
+                msg = "unknown error";
+                break;
+        }
+
+        fprintf(stderr, "OpenGL error (%s) during operation \"%s\"!\n", msg, cmd);
+        found_error = true;
     }
 
-    fprintf(stderr, "OpenGL error (%s) during operation \"%s\"!\n", msg, cmd);
-    return true;
+    return found_error;
 }
 
 NAMESPACE_END(nanogui)
