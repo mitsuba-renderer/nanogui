@@ -49,7 +49,7 @@ void register_textbox(nb::module_ &m) {
         .def("set_value_increment", &Int64Box::set_value_increment, D(IntBox, set_value_increment))
         .def("set_min_value", &Int64Box::set_min_value, D(IntBox, set_min_value))
         .def("set_max_value", &Int64Box::set_max_value, D(IntBox, set_max_value))
-        .def("set_min_value", &Int64Box::set_min_max_values, D(IntBox, set_min_max_values));
+        .def("set_min_max_values", &Int64Box::set_min_max_values, D(IntBox, set_min_max_values));
 
     nb::class_<DoubleBox, TextBox, PyDoubleBox>(m, "FloatBox", D(FloatBox))
         .def(nb::init<Widget *, double>(), "parent"_a, "value"_a = 0.0)
@@ -60,7 +60,7 @@ void register_textbox(nb::module_ &m) {
         .def("set_value_increment", &DoubleBox::set_value_increment, D(FloatBox, set_value_increment))
         .def("set_min_value", &DoubleBox::set_min_value, D(FloatBox, set_min_value))
         .def("set_max_value", &DoubleBox::set_max_value, D(FloatBox, set_max_value))
-        .def("set_min_value", &DoubleBox::set_min_max_values, D(FloatBox, set_min_max_values));
+        .def("set_min_max_values", &DoubleBox::set_min_max_values, D(FloatBox, set_min_max_values));
 }
 
 #endif

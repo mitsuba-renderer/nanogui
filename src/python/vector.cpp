@@ -119,12 +119,12 @@ auto register_matrix_type(nb::module_ &m, const char *name) {
         .def("__matmul__", [](const Matrix &a, const Matrix &b) { return a * b; }, nb::is_operator())
         .def("__len__", [](const Matrix &) -> size_t { return Matrix::Size; })
         .def("__getitem__", [](const Matrix &m, size_t index) -> const Vector& {
-            if (index >= Vector::Size)
+            if (index >= Matrix::Size)
                 throw nb::index_error();
             return m.m[index];
         })
         .def("__setitem__", [](Matrix &m, size_t index, const Vector &value) {
-            if (index >= Vector::Size)
+            if (index >= Matrix::Size)
                 throw nb::index_error();
             m.m[index] = value;
         })

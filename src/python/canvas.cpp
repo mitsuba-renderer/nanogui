@@ -54,8 +54,12 @@ void register_canvas(nb::module_ &m) {
                 const std::function<std::array<std::string, 4>(const Vector2i &)> &func) {
                 img.set_pixel_callback([func](const Vector2i &p, char **out, size_t size) {
                     auto str = func(p);
-                    for (int i = 0; i < 4; ++i)
-                        strncpy(out[i], str[i].c_str(), size);
+                    if (size > 0) {
+                        for (int i = 0; i < 4; ++i) {
+                            strncpy(out[i], str[i].c_str(), size - 1);
+                            out[i][size - 1] = '\0';
+                        }
+                    }
                 });
              },
              D(ImageView, set_pixel_callback));

@@ -217,7 +217,7 @@ if __name__ == "__main__":
     test = TestApp()
     test.draw_all()
     test.set_visible(True)
-    ng.run(refresh=1 / 60.0 * 1000)
+    ng.run(ng.RunMode.VSync)
     del test
     gc.collect()
     ng.shutdown()

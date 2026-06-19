@@ -66,10 +66,10 @@ NB_MODULE(nanogui_ext, m_) {
 
     nb::enum_<FileDialogType>(m, "FileDialogType", D(FileDialogType))
         .value("Open", FileDialogType::Open, D(FileDialogType, Open))
-        .value("OpenMultiple", FileDialogType::Open, D(FileDialogType, OpenMultiple))
+        .value("OpenMultiple", FileDialogType::OpenMultiple, D(FileDialogType, OpenMultiple))
         .value("Save", FileDialogType::Save, D(FileDialogType, Save))
         .value("PickFolder", FileDialogType::PickFolder, D(FileDialogType, PickFolder))
-        .value("PickFolderMultiple", FileDialogType::PickFolder, D(FileDialogType, PickFolderMultiple));
+        .value("PickFolderMultiple", FileDialogType::PickFolderMultiple, D(FileDialogType, PickFolderMultiple));
 
     m.def("run", [](RunMode run_mode) {
         nb::gil_scoped_release release;
@@ -86,6 +86,8 @@ NB_MODULE(nanogui_ext, m_) {
     }, "run_mode"_a = RunMode::VSync, D(run));
 
     m.def("async", &nanogui::async, D(async));
+    m.def("set_run_mode", &nanogui::set_run_mode);
+    m.def("run_mode", &nanogui::run_mode);
     m.def("leave", &nanogui::leave, D(leave));
     m.def("test_10bit_edr_support", &test_10bit_edr_support, D(test_10bit_edr_support));
     m.def("active", &nanogui::active, D(active));
@@ -135,6 +137,7 @@ NB_MODULE(nanogui_ext, m_) {
     register_render(m);
     register_quad(m);
     register_chroma(m);
+    register_ema(m);
 }
 
 #endif

@@ -33,6 +33,7 @@ nanobind_add_module(nanogui-python MODULE
   quad.cpp
   vector.cpp
   chroma.cpp
+  ema.cpp
   python.h
   py_doc.h)
 

@@ -14,13 +14,13 @@ void register_chroma(nb::module_ &m_) {
         .value("Unspecified", ColorPrimaries::Unspecified)
         .value("BT470M", ColorPrimaries::BT470M)
         .value("BT470BG", ColorPrimaries::BT470BG)
-        .value("SMTPE170M", ColorPrimaries::SMPTE170M)
-        .value("SMTP240M", ColorPrimaries::SMPTE240M)
+        .value("SMPTE170M", ColorPrimaries::SMPTE170M)
+        .value("SMPTE240M", ColorPrimaries::SMPTE240M)
         .value("Film", ColorPrimaries::Film)
         .value("BT2020", ColorPrimaries::BT2020)
-        .value("SMTPE428", ColorPrimaries::SMPTE428)
-        .value("SMTPE431", ColorPrimaries::SMPTE431)
-        .value("SMTPE432", ColorPrimaries::SMPTE432)
+        .value("SMPTE428", ColorPrimaries::SMPTE428)
+        .value("SMPTE431", ColorPrimaries::SMPTE431)
+        .value("SMPTE432", ColorPrimaries::SMPTE432)
         .value("Weird", ColorPrimaries::Weird);
 
 

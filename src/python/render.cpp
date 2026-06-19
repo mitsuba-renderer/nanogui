@@ -244,6 +244,7 @@ void register_render(nb::module_ &m) {
         .def("channels", &Texture::channels, D(Texture, channels))
         .def("download", &texture_download, D(Texture, download))
         .def("upload", &texture_upload<false>, D(Texture, upload))
+        // Async upload is Apple-only; falls back to a synchronous upload elsewhere
         .def("upload_async", &texture_upload<true>, D(Texture, upload))
         .def("upload", &texture_upload_none, ""_a.none())
         .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload, origin))

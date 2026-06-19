@@ -11,7 +11,7 @@ DECLARE_WIDGET(ImagePanel);
 void register_misc(nb::module_ &m) {
     nb::class_<ColorWheel, Widget, PyColorWheel>(m, "ColorWheel", D(ColorWheel))
         .def(nb::init<Widget *>(), "parent"_a, D(ColorWheel, ColorWheel))
-        .def(nb::init<Widget *, const Color &>(), "parent"_a, "Color"_a)
+        .def(nb::init<Widget *, const Color &>(), "parent"_a, "color"_a)
         .def("color", &ColorWheel::color, D(ColorWheel, color))
         .def("set_color", &ColorWheel::set_color, D(ColorWheel, set_color))
         .def("callback", &ColorWheel::callback, D(ColorWheel, callback))
@@ -19,7 +19,7 @@ void register_misc(nb::module_ &m) {
 
     nb::class_<ColorPicker, PopupButton, PyColorPicker>(m, "ColorPicker", D(ColorPicker))
         .def(nb::init<Widget *>(), "parent"_a, D(ColorPicker, ColorPicker))
-        .def(nb::init<Widget *, const Color &>(), "parent"_a, "Color"_a)
+        .def(nb::init<Widget *, const Color &>(), "parent"_a, "color"_a)
         .def("color", &ColorPicker::color, D(ColorPicker, color))
         .def("set_color", &ColorPicker::set_color, D(ColorPicker, set_color))
         .def("callback", &ColorPicker::callback, D(ColorPicker, callback))
