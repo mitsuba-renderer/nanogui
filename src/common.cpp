@@ -111,8 +111,9 @@ static void mainloop_iteration() {
         m_async_functions.clear();
     }
 
-    for (auto kv : __nanogui_screens) {
-        Screen *screen = kv.second;
+    // Index by position: a draw callback may add or remove a screen mid-loop
+    for (size_t i = 0; i < __nanogui_screens.size(); ++i) {
+        Screen *screen = __nanogui_screens[i].second;
         if (!screen->visible()) {
             continue;
         } else if (glfwWindowShouldClose(screen->glfw_window())) {
@@ -147,7 +148,7 @@ void run(RunMode run_mode) {
         throw std::runtime_error("Main loop is already active!");
 
 #if defined(EMSCRIPTEN)
-    emscripten_refresh = refresh;
+    current_run_mode = run_mode;
     /* The following will throw an exception and enter the main
        loop within Emscripten. This means that none of the code below
        (or in the caller, for that matter) will be executed */
@@ -204,18 +205,16 @@ void shutdown() {
 #endif
 
 std::string utf8(uint32_t c) {
-    char seq[8];
+    char seq[5];
     int n = 0;
+    if (c > 0x10FFFF)
+        return std::string();
     if (c < 0x80) n = 1;
     else if (c < 0x800) n = 2;
     else if (c < 0x10000) n = 3;
-    else if (c < 0x200000) n = 4;
-    else if (c < 0x4000000) n = 5;
-    else if (c <= 0x7fffffff) n = 6;
+    else n = 4;
     seq[n] = '\0';
     switch (n) {
-        case 6: seq[5] = 0x80 | (c & 0x3f); c = c >> 6; c |= 0x4000000; NANOGUI_FALLTHROUGH
-        case 5: seq[4] = 0x80 | (c & 0x3f); c = c >> 6; c |= 0x200000;  NANOGUI_FALLTHROUGH
         case 4: seq[3] = 0x80 | (c & 0x3f); c = c >> 6; c |= 0x10000;   NANOGUI_FALLTHROUGH
         case 3: seq[2] = 0x80 | (c & 0x3f); c = c >> 6; c |= 0x800;     NANOGUI_FALLTHROUGH
         case 2: seq[1] = 0x80 | (c & 0x3f); c = c >> 6; c |= 0xc0;      NANOGUI_FALLTHROUGH

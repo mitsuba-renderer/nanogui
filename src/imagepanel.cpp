@@ -40,7 +40,10 @@ int ImagePanel::index_for_position(const Vector2i &p) const {
     over_image &= grid_pos.x() >= 0 && grid_pos.y() >= 0 && pp.x() >= 0 &&
                   pp.y() >= 0 && grid_pos.x() < grid.x() &&
                   grid_pos.y() < grid.y();
-    return over_image ? (grid_pos.x() + grid_pos.y() * grid.x()) : -1;
+    int index = grid_pos.x() + grid_pos.y() * grid.x();
+    if (index >= (int) m_images.size())
+        over_image = false;
+    return over_image ? index : -1;
 }
 
 bool ImagePanel::mouse_motion_event(const Vector2i &p, const Vector2i & /* rel */,

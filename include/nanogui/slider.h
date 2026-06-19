@@ -13,6 +13,7 @@
 #pragma once
 
 #include <nanogui/widget.h>
+#include <algorithm>
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -26,7 +27,9 @@ public:
     Slider(Widget *parent);
 
     float value() const { return m_value; }
-    void set_value(float value) { m_value = value; }
+    void set_value(float value) {
+        m_value = std::min(std::max(value, m_range.first), m_range.second);
+    }
 
     const Color &highlight_color() const { return m_highlight_color; }
     void set_highlight_color(const Color &highlight_color) { m_highlight_color = highlight_color; }

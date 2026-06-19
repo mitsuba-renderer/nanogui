@@ -35,7 +35,7 @@ public:
     int m_font_sans_regular;
     /// The bold font face (default: ``"sans-bold"`` from ``resources/roboto_regular.ttf``).
     int m_font_sans_bold;
-    /// The icon font face (default: ``"icons"`` from ``resources/entypo.ttf``).
+    /// The icon font face (default: ``"icons"`` from ``resources/fontawesome_solid.ttf``).
     int m_font_icons;
     /// The monospace font face (default: ``"mono"`` from ``resources/inconsolata_regular.ttf``).
     int m_font_mono_regular;
@@ -206,7 +206,7 @@ public:
     int m_message_information_icon;
     /// Icon to use for interrogative message dialog widgets (default: ``FA_QUESTION_CIRCLE``).
     int m_message_question_icon;
-    /// Icon to use for warning message dialog widgets (default: ``FA_EXCLAMATION_TRINAGLE``).
+    /// Icon to use for warning message dialog widgets (default: ``FA_EXCLAMATION_TRIANGLE``).
     int m_message_warning_icon;
     /// Icon to use on message dialog alt button (default: ``FA_CIRCLE_WITH_CROSS``).
     int m_message_alt_button_icon;

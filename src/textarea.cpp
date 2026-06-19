@@ -166,7 +166,7 @@ void TextArea::draw(NVGcontext *ctx) {
         std::swap(selection_start, selection_end);
         flip = true;
     }
-    if (m_selection_end != Vector2i(-1) && m_selection_end != Vector2i(-1)) {
+    if (m_selection_start != Vector2i(-1) && m_selection_end != Vector2i(-1)) {
         nvgBeginPath(ctx);
         nvgFillColor(ctx, m_selection_color);
         if (selection_end.y() == selection_start.y()) {
@@ -196,7 +196,7 @@ void TextArea::draw(NVGcontext *ctx) {
 
         Vector2i offset = block.offset + m_pos + m_padding;
 
-        if (m_selection_end != Vector2i(-1) && m_selection_end != Vector2i(-1) &&
+        if (m_selection_start != Vector2i(-1) && m_selection_end != Vector2i(-1) &&
             offset.y() > selection_start.y() && offset.y() < selection_end.y()) {
             nvgFillColor(ctx, m_selection_color);
             nvgBeginPath(ctx);
@@ -249,7 +249,7 @@ Vector2i TextArea::position_to_block(const Vector2i &pos) const {
 
     if (it == m_blocks.end()) {
         if (m_blocks.empty())
-            return Vector2i(-1, 1);
+            return Vector2i(-1, -1);
         it = m_blocks.end() - 1;
         const Block &block = *it;
         selection = nvgTextGlyphPositions(ctx, block.offset.x(), block.offset.y(),

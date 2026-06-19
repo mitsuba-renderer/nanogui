@@ -80,7 +80,7 @@ Vector2f ImageView::pos_to_pixel(const Vector2f &p) const {
 }
 
 Vector2f ImageView::pixel_to_pos(const Vector2f &p) const {
-    Vector2i pos = (p * scale() + m_offset) / screen()->pixel_ratio();
+    Vector2f pos = (p * scale() + m_offset) / screen()->pixel_ratio();
     if (m_draw_border)
         pos += 1.f;
     return pos;

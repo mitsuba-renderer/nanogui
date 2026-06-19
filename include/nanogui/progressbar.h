@@ -25,7 +25,7 @@ class NANOGUI_EXPORT ProgressBar : public Widget {
 public:
     ProgressBar(Widget *parent);
 
-    float value() { return m_value; }
+    float value() const { return m_value; }
     void set_value(float value) { m_value = value; }
 
     virtual void draw(NVGcontext* ctx) override;

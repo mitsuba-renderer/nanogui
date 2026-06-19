@@ -91,7 +91,8 @@ bool Button::mouse_button_event(const Vector2i &p, int button, bool down, int mo
                             b->m_change_callback(false);
                     }
                 }
-                dynamic_cast<nanogui::PopupButton*>(this)->popup()->request_focus();
+                if (auto *pb = dynamic_cast<nanogui::PopupButton*>(this))
+                    pb->popup()->request_focus();
             }
             if (m_flags & ToggleButton)
                 m_pushed = !m_pushed;

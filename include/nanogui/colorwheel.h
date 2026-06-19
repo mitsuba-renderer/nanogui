@@ -76,21 +76,21 @@ private:
 
 protected:
     /// The current hue in the HSV color model.
-    float m_hue;
+    float m_hue = 0.f;
 
     /**
      * The 'V' (value) component of the HSV color model.  See implementation \ref
      * nanogui::ColorWheel::color for its usage.  Valid values are in the range
      * ``[0, 1]``.
      */
-    float m_white;
+    float m_white = 0.f;
 
     /**
      * The 'S' (satration) component of the HSV color model.  See implementation
      * \ref nanogui::ColorWheel::color for its usage.  Valid values are in the
      * range ``[0, 1]``.
      */
-    float m_black;
+    float m_black = 0.f;
 
     /// The current region the mouse is interacting with.
     Region m_drag_region;

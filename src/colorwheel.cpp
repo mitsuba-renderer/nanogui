@@ -175,10 +175,9 @@ ColorWheel::Region ColorWheel::adjust_position(const Vector2i &p, Region conside
         ((mr >= r0 && mr <= r1) || (considered_regions == OuterCircle))) {
         if (!(considered_regions & OuterCircle))
             return None;
-        m_hue = std::atan(y / x);
-        if (x < 0)
-            m_hue += NVG_PI;
-        m_hue /= 2*NVG_PI;
+        m_hue = std::atan2(y, x) / (2 * NVG_PI);
+        if (m_hue < 0)
+            m_hue += 1.f;
 
         if (m_callback)
             m_callback(color());
@@ -272,13 +271,14 @@ void ColorWheel::set_color(const Color &rgb) {
             h = (r - g) / d + 4;
         h /= 6;
 
+        m_hue = h;
+
         Color ch = hue2rgb(m_hue);
         float M2 = std::max({ ch[0], ch[1], ch[2] });
         float m2 = std::min({ ch[0], ch[1], ch[2] });
 
         m_white = (M*m2 - m*M2) / (m2 - M2);
         m_black = (M + m2 + m*M2 - m - M*m2 - M2) / (m2 - M2);
-        m_hue = h;
     }
 }
 

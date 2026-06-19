@@ -266,22 +266,24 @@ bool TabWidgetBase::mouse_button_event(const Vector2i &p, int button, bool down,
     if (m_popup_callback && button == GLFW_MOUSE_BUTTON_2 && down && index != -1 &&
         !drag_in_progress) {
         m_popup = m_popup_callback(tab_id(index), screen);
-        m_popup->set_position(p + Vector2i(8, -6));
-        m_popup->set_anchor_offset(8);
-        m_popup->set_anchor_size(8);
-        if (m_popup->layout() == nullptr)
-            m_popup->set_layout(new GroupLayout(5, 3));
-        for (Widget *w : m_popup->children()) {
-            Button *b = dynamic_cast<Button *>(w);
-            if (!b)
-                continue;
-            b->set_icon_position(Button::IconPosition::Right);
-            b->set_flags(Button::MenuButton);
+        if (m_popup) {
+            m_popup->set_position(p + Vector2i(8, -6));
+            m_popup->set_anchor_offset(8);
+            m_popup->set_anchor_size(8);
+            if (m_popup->layout() == nullptr)
+                m_popup->set_layout(new GroupLayout(5, 3));
+            for (Widget *w : m_popup->children()) {
+                Button *b = dynamic_cast<Button *>(w);
+                if (!b)
+                    continue;
+                b->set_icon_position(Button::IconPosition::Right);
+                b->set_flags(Button::MenuButton);
+            }
+            NVGcontext *ctx = screen->nvg_context();
+            m_popup->set_size(m_popup->preferred_size(ctx) + Vector2i(40, 0));
+            m_popup->perform_layout(ctx);
+            handled = true;
         }
-        NVGcontext *ctx = screen->nvg_context();
-        m_popup->set_size(m_popup->preferred_size(ctx) + Vector2i(40, 0));
-        m_popup->perform_layout(ctx);
-        handled = true;
     }
 
     if (button == GLFW_MOUSE_BUTTON_1 && m_popup == nullptr) {
@@ -347,8 +349,8 @@ bool TabWidgetBase::mouse_motion_event(const Vector2i &p, const Vector2i &rel,
             int i0 = std::min(m_tab_drag_index, index),
                 i1 = std::max(m_tab_drag_index, index);
             int mid = (m_tab_offsets[i0] + m_tab_offsets[i1 + 1]) / 2;
-            if ((m_tab_drag_index < index && p.x() - m_pos.y() > mid) ||
-                (m_tab_drag_index > index && p.x() - m_pos.y() < mid)) {
+            if ((m_tab_drag_index < index && p.x() - m_pos.x() > mid) ||
+                (m_tab_drag_index > index && p.x() - m_pos.x() < mid)) {
                 std::swap(m_tab_captions[index], m_tab_captions[m_tab_drag_index]);
                 std::swap(m_tab_ids[index], m_tab_ids[m_tab_drag_index]);
                 TabWidgetBase::perform_layout(screen()->nvg_context());

@@ -17,6 +17,7 @@
 
 #include <nanogui/widget.h>
 #include <cstdio>
+#include <cstdlib>
 #include <sstream>
 
 NAMESPACE_BEGIN(nanogui)
@@ -314,7 +315,7 @@ public:
     FloatBox(Widget *parent, Scalar value = (Scalar) 0.f) : TextBox(parent) {
         m_number_format = sizeof(Scalar) == sizeof(float) ? "%.4g" : "%.7g";
         set_default_value("0");
-        set_format("[-+]?[0-9]*\\.?[0-9]+([e_e][-+]?[0-9]+)?");
+        set_format("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?");
         set_value_increment((Scalar) 0.1);
         set_min_max_values(std::numeric_limits<Scalar>::lowest(),
                            std::numeric_limits<Scalar>::max());
@@ -327,7 +328,12 @@ public:
     void number_format(std::string_view format) { m_number_format = format; }
 
     Scalar value() const {
-        return (Scalar) std::stod(TextBox::value());
+        const std::string str = TextBox::value();
+        char *end = nullptr;
+        double v = std::strtod(str.c_str(), &end);
+        if (end == str.c_str())
+            return (Scalar) 0;
+        return (Scalar) v;
     }
 
     void set_value(Scalar value) {

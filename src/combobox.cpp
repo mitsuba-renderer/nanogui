@@ -33,8 +33,11 @@ ComboBox::ComboBox(Widget *parent, const std::vector<std::string> &items, const 
 void ComboBox::set_selected_index(int idx) {
     if (m_items_short.empty())
         return;
+    if (idx < 0 || idx >= (int) m_items_short.size())
+        return;
     const std::vector<Widget *> &children = m_container->children();
-    ((Button *) children[m_selected_index])->set_pushed(false);
+    if (m_selected_index >= 0 && m_selected_index < (int) children.size())
+        ((Button *) children[m_selected_index])->set_pushed(false);
     ((Button *) children[idx])->set_pushed(true);
     m_selected_index = idx;
     set_caption(m_items_short[idx]);
@@ -77,20 +80,17 @@ void ComboBox::set_items(const std::vector<std::string> &items, const std::vecto
 }
 
 bool ComboBox::scroll_event(const Vector2i &p, const Vector2f &rel) {
+    if (rel.y() == 0)
+        return Widget::scroll_event(p, rel);
     set_pushed(false);
     popup()->set_visible(false);
-    if (rel.y() < 0) {
+    if (rel.y() < 0)
         set_selected_index(std::min(m_selected_index+1, (int)(items().size()-1)));
-        if (m_callback)
-            m_callback(m_selected_index);
-        return true;
-    } else if (rel.y() > 0) {
+    else
         set_selected_index(std::max(m_selected_index-1, 0));
-        if (m_callback)
-            m_callback(m_selected_index);
-        return true;
-    }
-    return Widget::scroll_event(p, rel);
+    if (m_callback)
+        m_callback(m_selected_index);
+    return true;
 }
 
 NAMESPACE_END(nanogui)

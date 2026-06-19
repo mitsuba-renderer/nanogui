@@ -500,12 +500,11 @@ bool TextBox::keyboard_event(int key, int /* scancode */, int action, int modifi
 
 bool TextBox::keyboard_character_event(unsigned int codepoint) {
     if (m_editable && focused()) {
-        std::ostringstream convert;
-        convert << (char) codepoint;
+        std::string encoded = utf8(codepoint);
 
         delete_selection();
-        m_value_temp.insert(m_cursor_pos, convert.str());
-        m_cursor_pos++;
+        m_value_temp.insert(m_cursor_pos, encoded);
+        m_cursor_pos += (int) encoded.size();
 
         m_valid_format = (m_value_temp == "") || check_format(m_value_temp, m_format);
 
@@ -544,7 +543,7 @@ bool TextBox::copy_selection() {
             std::swap(begin, end);
 
         glfwSetClipboardString(sc->glfw_window(),
-                               m_value_temp.substr(begin, end).c_str());
+                               m_value_temp.substr(begin, end - begin).c_str());
         return true;
     }
 

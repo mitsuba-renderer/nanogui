@@ -71,8 +71,11 @@ void Slider::draw(NVGcontext* ctx) {
     float start_x = kr + kshadow + m_pos.x();
     float width_x = m_size.x() - 2*(kr+kshadow);
 
-    Vector2f knob_pos(start_x + (m_value - m_range.first) /
-            (m_range.second - m_range.first) * width_x,
+    float range_extent = m_range.second - m_range.first;
+    float value_fraction = range_extent != 0.f
+        ? (m_value - m_range.first) / range_extent
+        : 0.f;
+    Vector2f knob_pos(start_x + value_fraction * width_x,
             center.y() + 0.5f);
 
     NVGpaint bg = nvgBoxGradient(
