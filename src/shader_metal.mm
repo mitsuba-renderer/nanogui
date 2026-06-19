@@ -241,54 +241,34 @@ void Shader::set_buffer(std::string_view name,
         buf.shape[i] = i < ndim ? shape[i] : 1;
 
     size_t size = type_size(dtype) * buf.shape[0] * buf.shape[1] * buf.shape[2];
-    if (buf.buffer && buf.size != size) {
-        // Free as allocated (see below): index buffers are always MTLBuffers
-        if (buf.size <= NANOGUI_BUFFER_THRESHOLD && buf.type != IndexBuffer)
+    bool inline_data = size <= NANOGUI_BUFFER_THRESHOLD && name != "indices";
+
+    // Release the previous allocation. Inline data lives on the heap and is
+    // reused in place when the size is unchanged; everything else is an MTLBuffer.
+    bool prev_inline = buf.buffer && buf.size <= NANOGUI_BUFFER_THRESHOLD &&
+                       buf.type != IndexBuffer;
+    if (buf.buffer && !(inline_data && prev_inline && buf.size == size)) {
+        if (prev_inline)
             delete[] (uint8_t *) buf.buffer;
         else
             (void) (__bridge_transfer id<MTLBuffer>) buf.buffer;
         buf.buffer = nullptr;
     }
 
-    if (size <= NANOGUI_BUFFER_THRESHOLD && name != "indices") {
+    if (inline_data) {
+        // Bound inline via setVertex/FragmentBytes; no GPU buffer needed.
         if (!buf.buffer)
             buf.buffer = new uint8_t[size];
         memcpy(buf.buffer, data, size);
     } else {
-        /* Procedure recommended by Apple: create a temporary shared buffer and
-           blit into a private GPU-only buffer */
+        // Dynamic data: allocate a fresh CPU/GPU-shared buffer and copy into it.
+        // The command buffer that draws with it retains it until the GPU is
+        // finished, so our reference can be released on the next update.
         id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
-        id<MTLBuffer> mtl_buffer;
-
-        if (buf.buffer)
-            mtl_buffer = (__bridge_transfer id<MTLBuffer>) buf.buffer;
-        else
-            mtl_buffer =
-                [device newBufferWithLength: size
-                                    options: MTLResourceStorageModePrivate];
-
-        id<MTLBuffer> temp_buffer =
+        buf.buffer = (__bridge_retained void *)
             [device newBufferWithBytes: data
                                 length: size
                                options: MTLResourceStorageModeShared];
-
-        id<MTLCommandQueue> command_queue =
-            (__bridge id<MTLCommandQueue>) metal_command_queue();
-        id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
-        id<MTLBlitCommandEncoder> blit_encoder =
-            [command_buffer blitCommandEncoder];
-
-        [blit_encoder copyFromBuffer: temp_buffer
-                        sourceOffset: 0
-                            toBuffer: mtl_buffer
-                   destinationOffset: 0
-                                size: size];
-
-        [blit_encoder endEncoding];
-        [command_buffer commit];
-        [command_buffer waitUntilCompleted];
-
-        buf.buffer = (__bridge_retained void *) mtl_buffer;
     }
 
     buf.dtype = dtype;
