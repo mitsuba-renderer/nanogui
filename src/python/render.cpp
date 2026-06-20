@@ -250,7 +250,7 @@ void register_render(nb::module_ &m) {
         // Async upload is Apple-only; falls back to a synchronous upload elsewhere
         .def("upload_async", &texture_upload<true>, D(Texture, upload))
         .def("upload", &texture_upload_none, ""_a.none())
-        .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload, origin))
+        .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload_sub_region))
         .def("generate_mipmap", &Texture::generate_mipmap, D(Texture, generate_mipmap))
         .def("resize", &Texture::resize, D(Texture, resize))
         .def("texture_handle", &Texture::texture_handle)
