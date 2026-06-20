@@ -219,7 +219,9 @@ void register_render(nb::module_ &m) {
 
     nb::enum_<TextureFlags>(texture, "TextureFlags", D(Texture, TextureFlags), nb::is_arithmetic())
         .value("ShaderRead", TextureFlags::ShaderRead, D(Texture, TextureFlags, ShaderRead))
-        .value("RenderTarget", TextureFlags::RenderTarget, D(Texture, TextureFlags, RenderTarget));
+        .value("RenderTarget", TextureFlags::RenderTarget, D(Texture, TextureFlags, RenderTarget))
+        .value("ShaderWrite", TextureFlags::ShaderWrite,
+               "Allow GPU compute/shader stores (e.g. a writable Dr.Jit wrap)");
 
     texture
         .def(nb::init<PixelFormat, ComponentFormat, const Vector2i &,
@@ -253,7 +255,9 @@ void register_render(nb::module_ &m) {
         .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload_sub_region))
         .def("generate_mipmap", &Texture::generate_mipmap, D(Texture, generate_mipmap))
         .def("resize", &Texture::resize, D(Texture, resize))
-        .def("texture_handle", &Texture::texture_handle)
+        .def("native_handle",
+             [](const Texture &t) { return (uintptr_t) t.native_handle(); },
+             D(Texture, native_handle))
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
         .def("renderbuffer_handle", &Texture::renderbuffer_handle)
 #elif defined(NANOGUI_USE_METAL)
@@ -319,6 +323,7 @@ void register_render(nb::module_ &m) {
         .def("begin", &RenderPass::begin, D(RenderPass, begin))
         .def("end", &RenderPass::end, D(RenderPass, end))
         .def("resize", &RenderPass::resize, D(RenderPass, resize))
+        .def("insert_fence", &RenderPass::insert_fence, D(RenderPass, insert_fence), "fence"_a)
         .def("blit_to", &RenderPass::blit_to, D(RenderPass, blit_to),
              "src_offset"_a, "src_size"_a, "dst"_a, "dst_offset"_a)
         .def("__enter__", &RenderPass::begin)
@@ -345,4 +350,10 @@ void register_render(nb::module_ &m) {
         .value("NotEqual", DepthTest::NotEqual, D(RenderPass, DepthTest, NotEqual))
         .value("GreaterEqual", DepthTest::GreaterEqual, D(RenderPass, DepthTest, GreaterEqual))
         .value("Always", DepthTest::Always, D(RenderPass, DepthTest, Always));
+
+    nb::class_<Fence, Object>(m, "Fence", D(Fence))
+        .def(nb::init<>())
+        .def("completed", &Fence::completed, D(Fence, completed))
+        .def("wait", &Fence::wait, nb::call_guard<nb::gil_scoped_release>(),
+             D(Fence, wait));
 }

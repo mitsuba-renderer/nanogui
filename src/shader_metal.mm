@@ -92,12 +92,12 @@ Shader::Shader(RenderPass *render_pass,
                     (i == 1 && depth_stencil_texture->pixel_format() !=
                                    Texture::PixelFormat::DepthStencil))
                     throw std::runtime_error("Shader::Shader(): Screen not configured for depth/stencil rendering");
-                pixel_format = ((__bridge id<MTLTexture>) depth_stencil_texture->texture_handle()).pixelFormat;
+                pixel_format = ((__bridge id<MTLTexture>) depth_stencil_texture->native_handle()).pixelFormat;
             } else {
                 pixel_format = ((__bridge CAMetalLayer *) screen->metal_layer()).pixelFormat;
             }
         } else if (texture) {
-            pixel_format = ((__bridge id<MTLTexture>) texture->texture_handle()).pixelFormat;
+            pixel_format = ((__bridge id<MTLTexture>) texture->native_handle()).pixelFormat;
             sample_count = std::max((int) texture->samples(), sample_count);
         } else {
             throw std::runtime_error(
@@ -292,7 +292,7 @@ void Shader::set_texture(std::string_view name, Texture *texture) {
     }
 
     buf.buffer = (__bridge_retained void *) ((__bridge id<MTLTexture>)
-                                                 texture->texture_handle());
+                                                 texture->native_handle());
 
     std::string sampler_name;
     if (name.length() > 8 && name.compare(name.length() - 8, 8, "_texture") == 0)

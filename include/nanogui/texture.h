@@ -96,7 +96,11 @@ public:
         ShaderRead = 0x01,
 
         /// Target framebuffer for rendering
-        RenderTarget = 0x02
+        RenderTarget = 0x02,
+
+        /// Allow texture writes, e.g., from cpute shaders. Incompatible
+        /// with multi-sampling and mip-mapping.
+        ShaderWrite = 0x04
     };
 
     /**
@@ -181,10 +185,14 @@ public:
     void generate_mipmap();
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
-    uint32_t texture_handle() const { return m_texture_handle; }
+    /// Return the native backend handle (an OpenGL texture ID, or a Metal
+    /// ``id<MTLTexture>`` pointer) so it round-trips into Dr.Jit's ``from_native_handle``.
+    uint32_t native_handle() const { return m_handle; }
     uint32_t renderbuffer_handle() const { return m_renderbuffer_handle; }
 #elif defined(NANOGUI_USE_METAL)
-    void *texture_handle() const { return m_texture_handle; }
+    /// Return the native backend handle (an OpenGL texture ID, or a Metal
+    /// ``id<MTLTexture>`` pointer) so it round-trips into Dr.Jit's ``from_native_handle``.
+    void *native_handle() const { return m_handle; }
     void *sampler_state_handle() const { return m_sampler_state_handle; }
 #endif
 
@@ -207,10 +215,10 @@ protected:
     bool m_mipmap_manual;
 
     #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
-        uint32_t m_texture_handle = 0;
+        uint32_t m_handle = 0;
         uint32_t m_renderbuffer_handle = 0;
     #elif defined(NANOGUI_USE_METAL)
-        void *m_texture_handle = nullptr;
+        void *m_handle = nullptr;
         void *m_sampler_state_handle = nullptr;
     #endif
 };

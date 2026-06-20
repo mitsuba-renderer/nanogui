@@ -121,6 +121,7 @@ if (NANOGUI_BACKEND MATCHES "(OpenGL|GLES 2|GLES 3)")
   list(APPEND NANOGUI_EXTRA
     src/texture_gl.cpp src/shader_gl.cpp
     src/renderpass_gl.cpp src/opengl.cpp
+    src/fence_gl.cpp
     src/opengl_check.h
   )
 endif()
@@ -142,6 +143,7 @@ elseif (NANOGUI_BACKEND STREQUAL "Metal")
   list(APPEND NANOGUI_EXTRA
     ext/nanovg_metal/src/nanovg_mtl.m ext/nanovg_metal/src/nanovg_mtl.h
     src/texture_metal.mm src/shader_metal.mm src/renderpass_metal.mm
+    src/fence_metal.mm
   )
   set(NANOGUI_GLOB "resources/*.metal")
   include_directories(ext/nanovg_metal/src)
@@ -432,6 +434,7 @@ add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
   include/nanogui/traits.h src/traits.cpp
   include/nanogui/colorpass.h src/colorpass.cpp
   include/nanogui/renderpass.h
+  include/nanogui/fence.h
   include/nanogui/formhelper.h
   include/nanogui/icons.h
   include/nanogui/toolbutton.h

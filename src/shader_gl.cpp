@@ -381,7 +381,7 @@ void Shader::set_texture(std::string_view name, Texture *texture) {
         throw std::runtime_error(
             "Shader::set_texture(): argument named \"" + std::string(name) + "\" is not a texture!");
 
-    buf.buffer = (void *) ((uintptr_t) texture->texture_handle());
+    buf.buffer = (void *) ((uintptr_t) texture->native_handle());
     buf.dirty  = true;
 }
 

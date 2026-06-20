@@ -25,6 +25,15 @@ Texture::Texture(PixelFormat pixel_format,
       m_size(size),
       m_mipmap_manual(mipmap_manual) {
 
+    if (m_flags & (uint8_t) TextureFlags::ShaderWrite) {
+        if (m_samples > 1)
+            throw std::runtime_error("Texture::Texture(): ShaderWrite is incompatible with MSAA (samples > 1)!");
+        if (m_min_interpolation_mode == InterpolationMode::Trilinear ||
+            m_mag_interpolation_mode == InterpolationMode::Trilinear)
+            throw std::runtime_error("Texture::Texture(): ShaderWrite is incompatible with trilinear/mipmapped "
+                                     "textures (write() only populates level 0)!");
+    }
+
     init();
 }
 

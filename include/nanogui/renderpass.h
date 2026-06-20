@@ -21,6 +21,8 @@
 
 NAMESPACE_BEGIN(nanogui)
 
+class Fence;
+
 class NANOGUI_EXPORT RenderPass : public Object {
 public:
     /// Depth test
@@ -143,6 +145,16 @@ public:
 
     /// Resize all texture targets attached to the render pass
     void resize(const Vector2i &size);
+
+    /**
+     * \brief Insert a GPU-completion \ref Fence covering this render pass.
+     *
+     * Call while the pass is active. The fence signals once the pass's GPU work
+     * (notably its texture samples) has retired, so a producer can know when it
+     * is safe to overwrite a texture the pass read. The fence is attached to the
+     * pass's own command buffer, which is why this lives on \ref RenderPass.
+     */
+    void insert_fence(Fence &fence);
 
     /**
      * Blit the framebuffer to another target (which can either be another \ref

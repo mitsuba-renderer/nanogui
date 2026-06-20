@@ -2,6 +2,7 @@
 #include <nanogui/screen.h>
 #include <nanogui/opengl.h>
 #include <nanogui/texture.h>
+#include <nanogui/fence.h>
 #include "opengl_check.h"
 
 
@@ -74,7 +75,7 @@ RenderPass::RenderPass(const std::vector<Object *> &color_targets,
         } else if (texture) {
             if (texture->flags() & Texture::TextureFlags::ShaderRead) {
                 CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_id, GL_TEXTURE_2D,
-                                           texture->texture_handle(), 0));
+                                           texture->native_handle(), 0));
             } else {
                 CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment_id, GL_RENDERBUFFER,
                                               texture->renderbuffer_handle()));
@@ -269,6 +270,14 @@ void RenderPass::resize(const Vector2i &size) {
     m_framebuffer_size = size;
     m_viewport_offset = Vector2i(0, 0);
     m_viewport_size = size;
+}
+
+void RenderPass::insert_fence(Fence &fence) {
+#if !defined(NDEBUG)
+    if (!m_active)
+        throw std::runtime_error("RenderPass::insert_fence(): render pass is not active!");
+#endif
+    fence.signal(nullptr);
 }
 
 void RenderPass::set_clear_color(size_t index, const Color &color) {

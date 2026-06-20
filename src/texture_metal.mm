@@ -47,7 +47,7 @@ void Texture::init() {
 }
 
 Texture::~Texture() {
-    (void) (__bridge_transfer id<MTLTexture>) m_texture_handle;
+    (void) (__bridge_transfer id<MTLTexture>) m_handle;
     (void) (__bridge_transfer id<MTLSamplerState>) m_sampler_state_handle;
 }
 
@@ -55,7 +55,7 @@ void Texture::upload_async(const uint8_t *data, void (*callback)(void*), void *p
     if (!data)
         return;
 
-    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
+    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_handle;
     id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
     id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) metal_command_queue();
 
@@ -119,7 +119,7 @@ void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, con
     if (m_samples > 1 && data != nullptr)
         throw std::runtime_error("Texture::upload_sub_region(): only implemented for samples=1!");
 
-    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
+    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_handle;
     id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
     id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) metal_command_queue();
 
@@ -165,7 +165,7 @@ void Texture::download(uint8_t *data) {
            img_bytes = row_bytes * m_size.y();
 
     id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
-    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
+    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_handle;
     id<MTLBuffer> buffer =
         [device newBufferWithLength: img_bytes
                             options: MTLResourceStorageModeShared];
@@ -191,9 +191,9 @@ void Texture::resize(const Vector2i &size) {
     if (m_size == size)
         return;
     m_size = size;
-    if (m_texture_handle) {
-        (void) (__bridge_transfer id<MTLTexture>) m_texture_handle;
-        m_texture_handle = nullptr;
+    if (m_handle) {
+        (void) (__bridge_transfer id<MTLTexture>) m_handle;
+        m_handle = nullptr;
     }
 
     if (m_component_format == ComponentFormat::UInt32)
@@ -331,16 +331,18 @@ void Texture::resize(const Vector2i &size) {
         texture_desc.usage |= MTLTextureUsageShaderRead;
     if (m_flags & (uint8_t) TextureFlags::RenderTarget)
         texture_desc.usage |= MTLTextureUsageRenderTarget;
+    if (m_flags & (uint8_t) TextureFlags::ShaderWrite)
+        texture_desc.usage |= MTLTextureUsageShaderWrite;
     if (texture_desc.usage == 0)
         throw std::runtime_error("Texture::Texture(): flags must either "
                                  "specify ShaderRead, RenderTarget, or both!");
 
     id<MTLTexture> texture = [device newTextureWithDescriptor:texture_desc];
-    m_texture_handle = (__bridge_retained void *) texture;
+    m_handle = (__bridge_retained void *) texture;
 }
 
 void Texture::generate_mipmap() {
-    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_texture_handle;
+    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_handle;
     id<MTLCommandQueue> command_queue = (__bridge id<MTLCommandQueue>) metal_command_queue();
     id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
     id<MTLBlitCommandEncoder> command_encoder = [command_buffer blitCommandEncoder];

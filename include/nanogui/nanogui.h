@@ -40,5 +40,6 @@
 #include <nanogui/texture.h>
 #include <nanogui/shader.h>
 #include <nanogui/renderpass.h>
+#include <nanogui/fence.h>
 #include <nanogui/canvas.h>
 #include <nanogui/imageview.h>

@@ -2,6 +2,7 @@
 #include <nanogui/screen.h>
 #include <nanogui/texture.h>
 #include <nanogui/shader.h>
+#include <nanogui/fence.h>
 #include <nanogui/metal.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -106,14 +107,14 @@ void RenderPass::begin() {
         id<MTLTexture> texture_handle = nil;
 
         if (texture) {
-            texture_handle = (__bridge id<MTLTexture>) texture->texture_handle();
+            texture_handle = (__bridge id<MTLTexture>) texture->native_handle();
         } else if (screen) {
             if (i < 2) {
                 Texture *screen_tex = screen->depth_stencil_texture();
                 if (screen_tex && (i == 0 ||
                                   (i == 1 && (screen_tex->pixel_format() ==
                                               Texture::PixelFormat::DepthStencil)))) {
-                    texture_handle = (__bridge id<MTLTexture>) screen_tex->texture_handle();
+                    texture_handle = (__bridge id<MTLTexture>) screen_tex->native_handle();
                 }
             } else {
                 texture_handle = (__bridge id<MTLTexture>) screen->metal_texture();
@@ -141,7 +142,7 @@ void RenderPass::begin() {
                 continue;
 
             id<MTLTexture> resolve_texture_handle =
-                (__bridge id<MTLTexture>) resolve_texture->texture_handle();
+                (__bridge id<MTLTexture>) resolve_texture->native_handle();
 
             if (resolve_texture_handle.pixelFormat != texture_handle.pixelFormat)
                 throw std::runtime_error("RenderPass::begin(): 'blit_target' pixel format mismatch!");
@@ -256,6 +257,14 @@ void RenderPass::end() {
     m_command_encoder = nullptr;
     m_command_buffer = nullptr;
     m_active = false;
+}
+
+void RenderPass::insert_fence(Fence &fence) {
+#if !defined(NDEBUG)
+    if (!m_active)
+        throw std::runtime_error("RenderPass::insert_fence(): render pass is not active!");
+#endif
+    fence.signal(m_command_buffer);
 }
 
 void RenderPass::resize(const Vector2i &size) {
@@ -401,7 +410,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
     if (screen) {
         Texture *depth_stencil_texture = screen->depth_stencil_texture();
         if (depth_stencil_texture)
-            dst_textures.push_back(depth_stencil_texture->texture_handle());
+            dst_textures.push_back(depth_stencil_texture->native_handle());
         else
             dst_textures.push_back(nullptr);
         dst_textures.push_back(nullptr);
@@ -411,7 +420,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
         for (size_t i = 0; i < targets.size(); ++i) {
             Texture *texture = dynamic_cast<Texture *>(targets[i]);
             if (texture)
-                dst_textures.push_back(texture->texture_handle());
+                dst_textures.push_back(texture->native_handle());
             else
                 dst_textures.push_back(nullptr);
         }
@@ -429,7 +438,7 @@ void RenderPass::blit_to(const Vector2i &src_offset,
     for (size_t i = 0; i < std::min(dst_textures.size(), m_targets.size()); ++i) {
         Texture *texture = dynamic_cast<Texture *>(m_targets[i]);
         id<MTLTexture> src_texture =
-            (__bridge id<MTLTexture>) (texture ? texture->texture_handle()
+            (__bridge id<MTLTexture>) (texture ? texture->native_handle()
                                                : nullptr);
         id<MTLTexture> dst_texture = (__bridge id<MTLTexture>) dst_textures[i];
 

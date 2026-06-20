@@ -63,6 +63,11 @@ void Texture::init() {
     m_samples = 1;
 #endif
 
+    if ((m_flags & (uint8_t) TextureFlags::ShaderWrite) &&
+        !(m_flags & (uint8_t) TextureFlags::ShaderRead))
+        throw std::runtime_error("Texture::Texture(): ShaderWrite requires ShaderRead "
+                                 "(so the object is a registerable GL_TEXTURE_2D)!");
+
     GLuint interpolation_mode_gl[2];
     for (int i = 0; i<2; ++i) {
         switch (i == 0 ? m_min_interpolation_mode : m_mag_interpolation_mode) {
@@ -106,14 +111,16 @@ void Texture::init() {
     GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 
     if (m_flags & (uint8_t) TextureFlags::ShaderRead) {
-        CHK(glGenTextures(1, &m_texture_handle));
-        CHK(glBindTexture(tex_mode, m_texture_handle));
+        CHK(glGenTextures(1, &m_handle));
+        CHK(glBindTexture(tex_mode, m_handle));
         CHK(glTexParameteri(tex_mode, GL_TEXTURE_MIN_FILTER, interpolation_mode_gl[0]));
         CHK(glTexParameteri(tex_mode, GL_TEXTURE_MAG_FILTER, interpolation_mode_gl[1]));
         CHK(glTexParameteri(tex_mode, GL_TEXTURE_WRAP_S, wrap_mode_gl));
         CHK(glTexParameteri(tex_mode, GL_TEXTURE_WRAP_T, wrap_mode_gl));
 
-        if (m_flags & (uint8_t) TextureFlags::RenderTarget)
+        // RenderTarget and ShaderWrite both require pre-allocated level-0
+        // storage (ShaderWrite so cuGraphicsGLRegisterImage sees a sized image).
+        if (m_flags & (uint8_t) (TextureFlags::RenderTarget | TextureFlags::ShaderWrite))
             upload(nullptr);
 
     } else if (m_flags & (uint8_t) TextureFlags::RenderTarget) {
@@ -137,7 +144,7 @@ void Texture::init() {
 }
 
 Texture::~Texture() {
-    CHK(glDeleteTextures(1, &m_texture_handle));
+    CHK(glDeleteTextures(1, &m_handle));
     CHK(glDeleteRenderbuffers(1, &m_renderbuffer_handle));
 }
 
@@ -155,9 +162,9 @@ void Texture::upload(const uint8_t *data) {
                           component_format_gl,
                           internal_format_gl);
 
-    if (m_texture_handle != 0) {
+    if (m_handle != 0) {
         GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-        CHK(glBindTexture(tex_mode, m_texture_handle));
+        CHK(glBindTexture(tex_mode, m_handle));
 
         if (data)
             CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
@@ -292,14 +299,14 @@ void Texture::upload_sub_region(const uint8_t *data, const Vector2i& origin, con
                           component_format_gl,
                           internal_format_gl);
 
-    if (m_texture_handle == 0)
+    if (m_handle == 0)
         throw std::runtime_error("Texture::upload_sub_region(): not implemented for render targets!");
 
     if (origin.x() + size.x() > m_size.x() || origin.y() + size.y() > m_size.y())
         throw std::runtime_error("Texture::upload_sub_region(): out of bounds!");
 
     GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-    CHK(glBindTexture(tex_mode, m_texture_handle));
+    CHK(glBindTexture(tex_mode, m_handle));
 
     if (data)
         CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
@@ -325,7 +332,7 @@ void Texture::download(uint8_t *data) {
     (void) data;
     throw std::runtime_error("Texture::download(): not supported on GLES 2!");
 #else
-    if (m_texture_handle == 0)
+    if (m_handle == 0)
         throw std::runtime_error("Texture::download(): no texture handle!");
     else if (m_samples > 1)
         throw std::runtime_error("Texture::download(): only implemented for samples=1!");
@@ -341,7 +348,7 @@ void Texture::download(uint8_t *data) {
                           internal_format_gl);
 
     (void) internal_format_gl;
-    CHK(glBindTexture(GL_TEXTURE_2D, m_texture_handle));
+    CHK(glBindTexture(GL_TEXTURE_2D, m_handle));
     CHK(glGetTexImage(GL_TEXTURE_2D, 0, pixel_format_gl, component_format_gl, data));
 
     if (m_flags & (uint8_t) TextureFlags::RenderTarget) {
@@ -369,7 +376,7 @@ void Texture::resize(const Vector2i &size) {
 
 void Texture::generate_mipmap() {
     GLenum tex_mode = m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-    CHK(glBindTexture(tex_mode, m_texture_handle));
+    CHK(glBindTexture(tex_mode, m_handle));
     CHK(glGenerateMipmap(tex_mode));
 }
 

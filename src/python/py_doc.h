@@ -900,6 +900,37 @@ static const char *__doc_nanogui_EMA_value = R"doc(Get the bias-corrected accumu
 
 static const char *__doc_nanogui_EMA_weight = R"doc(Get the current weight)doc";
 
+static const char *__doc_nanogui_Fence =
+R"doc(A passive, render-pass-scoped GPU-completion token.
+
+Inserted into an active RenderPass via RenderPass::insert_fence(), it
+signals once that pass's GPU work (notably its texture samples) has
+retired. It is the read side of a producer/consumer texture handoff: a
+producer may overwrite a texture only after the fence guarding the
+consumer's last read of it completes.
+
+A fence tracks only its most recent signal (a ``GLsync`` on OpenGL,
+the committed ``id<MTLCommandBuffer>`` on Metal), so re-inserting it
+on a later pass simply supersedes the previous token. All methods must
+be called on the render (GL/Metal) thread.
+
+OpenGL ES 2 lacks required functionality and implements the fence as a
+no-op: completed() is always true and wait() returns immediately.)doc";
+
+static const char *__doc_nanogui_Fence_2 = R"doc()doc";
+
+static const char *__doc_nanogui_Fence_Fence = R"doc()doc";
+
+static const char *__doc_nanogui_Fence_completed = R"doc(Non-blocking poll: has the most recent signal completed?)doc";
+
+static const char *__doc_nanogui_Fence_m_command_buffer = R"doc()doc";
+
+static const char *__doc_nanogui_Fence_signal =
+R"doc(Called by RenderPass::insert_fence(): record a GLsync, or retain
+``command_buffer`` (an id<MTLCommandBuffer>) for completion tracking.)doc";
+
+static const char *__doc_nanogui_Fence_wait = R"doc(Host-side blocking wait until the most recent signal completes)doc";
+
 static const char *__doc_nanogui_FileDialogType = R"doc(Selection of file/folder dialog types supported by file_dialog())doc";
 
 static const char *__doc_nanogui_FileDialogType_Open = R"doc(Open a single file)doc";
@@ -1836,6 +1867,15 @@ static const char *__doc_nanogui_RenderPass_cull_mode = R"doc(Return the culling
 static const char *__doc_nanogui_RenderPass_depth_test = R"doc(Return the depth test and depth write mask of this render pass)doc";
 
 static const char *__doc_nanogui_RenderPass_end = R"doc(Finish the render pass)doc";
+
+static const char *__doc_nanogui_RenderPass_insert_fence =
+R"doc(Insert a GPU-completion Fence covering this render pass.
+
+Call while the pass is active. The fence signals once the pass's GPU
+work (notably its texture samples) has retired, so a producer can know
+when it is safe to overwrite a texture the pass read. The fence is
+attached to the pass's own command buffer, which is why this lives on
+RenderPass.)doc";
 
 static const char *__doc_nanogui_RenderPass_m_active = R"doc()doc";
 
@@ -2883,6 +2923,10 @@ static const char *__doc_nanogui_Texture_TextureFlags_RenderTarget = R"doc(Targe
 
 static const char *__doc_nanogui_Texture_TextureFlags_ShaderRead = R"doc(Texture to be read in shaders)doc";
 
+static const char *__doc_nanogui_Texture_TextureFlags_ShaderWrite =
+R"doc(Allow texture writes, e.g., from cpute shaders. Incompatible with
+multi-sampling and mip-mapping.)doc";
+
 static const char *__doc_nanogui_Texture_WrapMode = R"doc(How should out-of-bounds texture evaluations be handled?)doc";
 
 static const char *__doc_nanogui_Texture_WrapMode_ClampToEdge = R"doc(Clamp evaluations to the edge of the texture)doc";
@@ -2911,6 +2955,8 @@ static const char *__doc_nanogui_Texture_m_component_format = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_flags = R"doc()doc";
 
+static const char *__doc_nanogui_Texture_m_handle = R"doc()doc";
+
 static const char *__doc_nanogui_Texture_m_mag_interpolation_mode = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_min_interpolation_mode = R"doc()doc";
@@ -2925,13 +2971,16 @@ static const char *__doc_nanogui_Texture_m_samples = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_m_size = R"doc()doc";
 
-static const char *__doc_nanogui_Texture_m_texture_handle = R"doc()doc";
-
 static const char *__doc_nanogui_Texture_m_wrap_mode = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_mag_interpolation_mode = R"doc(Return the interpolation mode for minimization)doc";
 
 static const char *__doc_nanogui_Texture_min_interpolation_mode = R"doc(Return the interpolation mode for minimization)doc";
+
+static const char *__doc_nanogui_Texture_native_handle =
+R"doc(Return the native backend handle (an OpenGL texture ID, or a Metal
+``id<MTLTexture>`` pointer) so it round-trips into Dr.Jit's
+``from_native_handle``.)doc";
 
 static const char *__doc_nanogui_Texture_pixel_format = R"doc(Return the pixel format)doc";
 
@@ -2942,8 +2991,6 @@ static const char *__doc_nanogui_Texture_sampler_state_handle = R"doc()doc";
 static const char *__doc_nanogui_Texture_samples = R"doc(Return the number of samples (MSAA))doc";
 
 static const char *__doc_nanogui_Texture_size = R"doc(Return the size of this texture)doc";
-
-static const char *__doc_nanogui_Texture_texture_handle = R"doc()doc";
 
 static const char *__doc_nanogui_Texture_upload = R"doc(Upload packed pixel data from the CPU to the GPU (synchronous))doc";
 
