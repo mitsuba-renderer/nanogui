@@ -93,12 +93,13 @@ NB_MODULE(nanogui_ext, m_) {
     m.def("active", &nanogui::active, D(active));
     m.def("file_dialog", nanogui::file_dialog, "widget"_a, "type"_a,
           "filters"_a = nb::list(), "default_path"_a = nb::str(""),
-          D(file_dialog));
+          D(file_dialog), nb::call_guard<nb::gil_scoped_release>());
     #if defined(__APPLE__)
         m.def("chdir_to_bundle_parent", &nanogui::chdir_to_bundle_parent);
     #endif
     m.def("utf8", [](int c) { return std::string(utf8(c).data()); }, D(utf8));
-    m.def("load_image_directory", &nanogui::load_image_directory, D(load_image_directory));
+    m.def("load_image_directory", &nanogui::load_image_directory, D(load_image_directory),
+          nb::call_guard<nb::gil_scoped_release>());
 
     nb::enum_<Cursor>(m, "Cursor", D(Cursor))
         .value("Arrow", Cursor::Arrow)

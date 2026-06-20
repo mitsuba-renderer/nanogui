@@ -88,7 +88,10 @@ static nb::ndarray<nb::numpy> texture_download(Texture &texture) {
        delete[] (uint8_t *) p;
     });
 
-    texture.download(ptr);
+    {
+        nb::gil_scoped_release release;
+        texture.download(ptr);
+    }
 
     return nb::ndarray<nb::numpy>(ptr, 3, shape, owner, nullptr, dt);
 }
