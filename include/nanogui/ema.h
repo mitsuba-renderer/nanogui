@@ -30,7 +30,7 @@ public:
     Value value() const {
         if (m_sample_count == 0)
             return 0.f;
-        return m_value / (1.f - std::pow(m_weights[0], m_sample_count));
+        return (Value) (m_value / (1.f - std::pow(m_weights[0], m_sample_count)));
     }
 
     /// Get the current weight

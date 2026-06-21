@@ -32,10 +32,9 @@ enum class VariableType {
 
 /// Convert from a C++ type to an element of \ref VariableType
 template <typename T> constexpr VariableType get_type() {
-    if constexpr (std::is_same_v<T, bool>)
+    if constexpr (std::is_same_v<T, bool>) {
         return VariableType::Bool;
-
-    if constexpr (std::is_integral_v<T>) {
+    } else if constexpr (std::is_integral_v<T>) {
         if constexpr (sizeof(T) == 1)
             return std::is_signed_v<T> ? VariableType::Int8 : VariableType::UInt8;
         else if constexpr (sizeof(T) == 2)

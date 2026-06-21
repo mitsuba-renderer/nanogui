@@ -47,19 +47,13 @@ template <typename Value_, size_t Size_> struct Array {
     }
 
     template <size_t S = Size, std::enable_if_t<S == 2, int> = 0>
-    Array(Value v0, Value v1) {
-        v[0] = v0; v[1] = v1;
-    }
+    Array(Value v0, Value v1) : v{v0, v1} { }
 
     template <size_t S = Size, std::enable_if_t<S == 3, int> = 0>
-    Array(Value v0, Value v1, Value v2) {
-        v[0] = v0; v[1] = v1; v[2] = v2;
-    }
+    Array(Value v0, Value v1, Value v2) : v{v0, v1, v2} { }
 
     template <size_t S = Size, std::enable_if_t<S == 4, int> = 0>
-    Array(Value v0, Value v1, Value v2, Value v3) {
-        v[0] = v0; v[1] = v1; v[2] = v2; v[3] = v3;
-    }
+    Array(Value v0, Value v1, Value v2, Value v3) : v{v0, v1, v2, v3} { }
 
     Array operator-() const {
         Array result;
