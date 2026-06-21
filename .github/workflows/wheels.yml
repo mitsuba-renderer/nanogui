@@ -8,6 +8,9 @@ on:
         required: true
         default: '0'
 
+permissions:
+  contents: read
+
 jobs:
   build_wheels:
     strategy:
@@ -34,7 +37,7 @@ jobs:
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
       - name: Prepare compiler environment for Windows
         if: runner.os == 'Windows'
@@ -42,13 +45,8 @@ jobs:
         with:
           arch: x64
 
-      - name: Install cibuildwheel
-        run: |
-          python -m pip install cibuildwheel==2.20.0
-
       - name: Build wheels
-        run: |
-          python -m cibuildwheel --output-dir wheelhouse
+        uses: pypa/cibuildwheel@v4.1.0
 
       - uses: actions/upload-artifact@v4
         with:
@@ -58,7 +56,7 @@ jobs:
   upload_pypi:
     name: Upload wheels to PyPI
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.upload == '1'}}
+    if: ${{ github.event.inputs.upload == '1' }}
     needs: [build_wheels]
 
     steps:

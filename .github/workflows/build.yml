@@ -7,6 +7,13 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: ${{ matrix.build-type }} on ${{ matrix.os }}
@@ -25,33 +32,26 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Update CMake
-        uses: jwlawson/actions-setup-cmake@v2
-
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
-      - name: Install dependencies on Linux
+      - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y xorg-dev libglu1-mesa-dev libwayland-dev libxkbcommon-dev libdbus-1-dev
 
-      - name: Configure (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          cmake -S . -B build -G "Visual Studio 17 2022" `
-            -DNANOGUI_BUILD_SHARED=${{ env.BUILD_SHARED }} `
-            "-DPython_EXECUTABLE=$(python -c 'import sys; print(sys.executable)')"
-
-      - name: Configure (Linux/macOS)
-        if: runner.os == 'Linux' || runner.os == 'macOS'
+      # Let CMake pick the default generator for each runner (e.g. the
+      # installed Visual Studio on Windows) instead of pinning a version.
+      - name: Configure
+        shell: bash
         run: |
           cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
             -DNANOGUI_BUILD_SHARED=${{ env.BUILD_SHARED }} \
-            "-DPython_EXECUTABLE=$(python3 -c 'import sys; print(sys.executable)')"
+            "-DPython_EXECUTABLE=$(python -c 'import sys; print(sys.executable)')"
 
-      - name: Build C++
+      - name: Build
         run: cmake --build build -j 2 --config Release

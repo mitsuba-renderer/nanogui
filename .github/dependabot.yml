@@ -4,8 +4,13 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    groups:
+      # Batch all action bumps into a single PR
+      actions:
+        patterns:
+          - "*"
     ignore:
-      # Offical actions have moving tags like v1
-      # that are used, so they don't need updates here
+      # Official actions use moving major tags (e.g. v4), so they
+      # update automatically and don't need bumps here.
       - dependency-name: "actions/*"
