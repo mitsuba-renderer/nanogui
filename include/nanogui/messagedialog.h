@@ -33,7 +33,8 @@ public:
     MessageDialog(Widget *parent, Type type, std::string_view title = "Untitled",
                   std::string_view message = "Message",
                   std::string_view button_text = "OK",
-                  std::string_view alt_button_text = "Cancel", bool alt_button = false);
+                  std::string_view alt_button_text = "Cancel", bool alt_button = false,
+                  int max_width = 200, int max_height = 200);
 
     Label *message_label() { return m_message_label; }
     const Label *message_label() const { return m_message_label; }
@@ -43,6 +44,7 @@ public:
 protected:
     std::function<void(int)> m_callback;
     Label *m_message_label;
+    VScrollPanel *m_scroll_panel;
 };
 
 NAMESPACE_END(nanogui)

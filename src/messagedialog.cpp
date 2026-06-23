@@ -13,13 +13,16 @@
 #include <nanogui/layout.h>
 #include <nanogui/button.h>
 #include <nanogui/label.h>
+#include <nanogui/screen.h>
+#include <nanogui/vscrollpanel.h>
 
 NAMESPACE_BEGIN(nanogui)
 
 MessageDialog::MessageDialog(Widget *parent, Type type, std::string_view title,
               std::string_view message,
               std::string_view button_text,
-              std::string_view alt_button_text, bool alt_button) : Window(parent, title) {
+              std::string_view alt_button_text, bool alt_button,
+              int max_width, int max_height) : Window(parent, title) {
     set_layout(new BoxLayout(Orientation::Vertical,
                             Alignment::Middle, 10, 10));
     set_modal(true);
@@ -35,8 +38,19 @@ MessageDialog::MessageDialog(Widget *parent, Type type, std::string_view title,
     }
     Label *icon_label = new Label(panel1, std::string(utf8(icon).data()), "icons");
     icon_label->set_font_size(50);
-    m_message_label = new Label(panel1, message);
-    m_message_label->set_fixed_width(200);
+
+    VScrollPanel *scroll_panel = new VScrollPanel(panel1);
+    m_message_label = new Label(scroll_panel, message);
+
+    Screen *screen = this->screen();
+    if (screen) {
+        Vector2i pref_size = m_message_label->preferred_size(screen->nvg_context());
+        if (pref_size.x() > max_width)
+            m_message_label->set_fixed_width(max_width);
+        if (pref_size.y() > max_height)
+            scroll_panel->set_fixed_height(max_height);
+    }
+
     Widget *panel2 = new Widget(this);
     panel2->set_layout(new BoxLayout(Orientation::Horizontal,
                                      Alignment::Middle, 0, 15));
