@@ -182,6 +182,20 @@ void RenderPass::begin() {
     set_viewport(m_viewport_offset, m_viewport_size);
 
     if (m_clear) {
+        bool clear_screen_stencil = false;
+        if (!m_targets[1]) {
+            /* The default framebuffer has implicit depth/stencil attachments
+               that are not listed as render pass targets. */
+            for (size_t i = 2; i < m_targets.size(); ++i) {
+                Screen *screen = dynamic_cast<Screen *>(m_targets[i]);
+                if (screen && screen->has_stencil_buffer() &&
+                    m_framebuffer_handle == screen->framebuffer_handle()) {
+                    clear_screen_stencil = true;
+                    break;
+                }
+            }
+        }
+
 #if defined(NANOGUI_USE_OPENGL)
         for (size_t i = 0; i < m_targets.size(); ++i) {
             if (i == 0 && m_targets[0]) {
@@ -195,13 +209,18 @@ void RenderPass::begin() {
             if (i >= 2)
                 CHK(glClearBufferfv(GL_COLOR, (GLint) i - 2, m_clear_color[i - 2].v));
         }
+
+        if (clear_screen_stencil) {
+            GLint clear_stencil = m_clear_stencil;
+            CHK(glClearBufferiv(GL_STENCIL, 0, &clear_stencil));
+        }
 #else
         GLenum what = 0;
         if (m_targets[0]) {
             CHK(glClearDepthf(m_clear_depth));
             what |= GL_DEPTH_BUFFER_BIT;
         }
-        if (m_targets[1]) {
+        if (m_targets[1] || clear_screen_stencil) {
             CHK(glClearStencil(m_clear_stencil));
             what |= GL_STENCIL_BUFFER_BIT;
         }

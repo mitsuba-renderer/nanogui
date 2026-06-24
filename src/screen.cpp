@@ -400,6 +400,19 @@ Screen::Screen(const Vector2i &size, std::string_view caption, bool resizable,
         }
     );
 
+    glfwSetWindowRefreshCallback(m_glfw_window,
+        [](GLFWwindow *w) {
+            for (auto kv: __nanogui_screens) {
+                if (w == kv.first) {
+                    Screen *screen = kv.second;
+                    if (nanogui::run_mode() != RunMode::Stopped)
+                        screen->draw_all();
+                    break;
+                }
+            }
+        }
+    );
+
     // notify when the screen has lost focus (e.g. application switch)
     glfwSetWindowFocusCallback(m_glfw_window,
         [](GLFWwindow *w, int focused) {
@@ -652,10 +665,6 @@ void Screen::draw_setup() {
     if (m_color_pass)
         m_color_pass->begin();
 
-#elif defined(NANOGUI_USE_METAL)
-    metal_window_set_size(m_nswin, m_fbsize);
-    metal_window_next_drawable(m_nswin, &m_metal_drawable, &m_metal_texture);
-    mnvgSetColorTexture(m_nvg_context, m_metal_texture);
 #endif
 
 #if !defined(EMSCRIPTEN)
@@ -708,6 +717,12 @@ void Screen::draw_setup() {
 #if defined(NANOGUI_USE_METAL)
     metal_window_set_content_scale(m_nswin, m_pixel_ratio);
 #endif
+#endif
+
+#if defined(NANOGUI_USE_METAL)
+    metal_window_set_size(m_nswin, m_fbsize);
+    metal_window_next_drawable(m_nswin, &m_metal_drawable, &m_metal_texture);
+    mnvgSetColorTexture(m_nvg_context, m_metal_texture);
 #endif
 
 #if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
