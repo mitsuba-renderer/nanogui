@@ -2924,8 +2924,58 @@ static const char *__doc_nanogui_Texture_TextureFlags_RenderTarget = R"doc(Targe
 static const char *__doc_nanogui_Texture_TextureFlags_ShaderRead = R"doc(Texture to be read in shaders)doc";
 
 static const char *__doc_nanogui_Texture_TextureFlags_ShaderWrite =
-R"doc(Allow texture writes, e.g., from cpute shaders. Incompatible with
+R"doc(Allow texture writes, e.g., from compute shaders. Incompatible with
 multi-sampling and mip-mapping.)doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle =
+R"doc(Tracks source-memory lifetime for asynchronous texture uploads.
+
+upload_async() may return before the backend has finished reading the
+source buffer. Keep that buffer alive and unchanged until the
+associated handle reports completion. In Python,
+``Texture.upload_async(array)`` retains ``array`` for this period and
+returns a ``Texture.UploadHandle``; use ``is_done()`` to poll or
+``wait()`` to block.
+
+This handle only covers the lifetime of the upload source memory. It
+does not indicate that later GPU work sampling this texture has
+completed.)doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_State = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_UploadHandle = R"doc(Construct an already-completed handle.)doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_UploadHandle_2 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_UploadHandle_3 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_UploadHandle_4 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_is_done =
+R"doc(Return whether the upload source buffer can be reused.
+
+This is a non-blocking poll. It returns true for default-constructed
+handles and after the completion callback associated with the upload
+has run.)doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_m_state = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_mark_done = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_operator_assign = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_operator_assign_2 = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_pending = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_release = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_retain = R"doc()doc";
+
+static const char *__doc_nanogui_Texture_UploadHandle_wait =
+R"doc(Block until the upload source buffer can be reused.
+
+The Python binding releases the GIL while waiting.)doc";
 
 static const char *__doc_nanogui_Texture_WrapMode = R"doc(How should out-of-bounds texture evaluations be handled?)doc";
 
@@ -2995,12 +3045,20 @@ static const char *__doc_nanogui_Texture_size = R"doc(Return the size of this te
 static const char *__doc_nanogui_Texture_upload = R"doc(Upload packed pixel data from the CPU to the GPU (synchronous))doc";
 
 static const char *__doc_nanogui_Texture_upload_async =
-R"doc(Upload packed pixel data from the CPU to the GPU (asynchronous)
+R"doc(Start an upload and report when the source memory can be reused.
 
-The ``data`` buffer must remain alive for the duration of the
-(asynchronous) operation. The underlying backend will invoke
-``callback(payload)`` when the operation is done, which can be used as
-a hint to free the buffer.)doc";
+The backend may either copy ``data`` into staging memory immediately
+or read from it later, depending on the platform and driver. The
+caller must therefore keep ``data`` alive and unchanged until
+completion is reported.
+
+In C++, completion is reported by invoking ``callback(payload)``. In
+Python, ``Texture.upload_async(array)`` retains the input array and
+returns a ``Texture.UploadHandle``. Once that handle is done, the
+array storage can be reused or released.
+
+Completion only covers reads from the upload source. It does not
+indicate that later GPU work sampling this texture has completed.)doc";
 
 static const char *__doc_nanogui_Texture_upload_sub_region =
 R"doc(Upload packed pixel data to a rectangular sub-region of the texture
@@ -3795,6 +3853,8 @@ static const char *__doc_nanogui_detail_FormWidget_set_value_2 = R"doc(Pass-thro
 static const char *__doc_nanogui_detail_FormWidget_value = R"doc(Returns the value of nanogui::CheckBox::checked.)doc";
 
 static const char *__doc_nanogui_detail_FormWidget_value_2 = R"doc(Returns the value of nanogui::ColorPicker::color.)doc";
+
+static const char *__doc_nanogui_detail_TextureUploadHandleAccessor = R"doc()doc";
 
 static const char *__doc_nanogui_detail_detector = R"doc(Detector pattern that is used to drive many type traits below)doc";
 

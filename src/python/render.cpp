@@ -2,7 +2,35 @@
 
 #include <nanobind/ndarray.h>
 
+#include <memory>
+#include <utility>
+
 #include "python.h"
+
+NAMESPACE_BEGIN(nanogui)
+
+namespace detail {
+struct TextureUploadHandleAccessor {
+    static Texture::UploadHandle pending() {
+        return Texture::UploadHandle::pending();
+    }
+
+    static Texture::UploadHandle retain(const Texture::UploadHandle &upload) {
+        return Texture::UploadHandle::retain(upload);
+    }
+
+    static void mark_done(const Texture::UploadHandle &upload) {
+        upload.mark_done();
+    }
+};
+}
+
+struct TextureUploadPayload {
+    Texture::UploadHandle upload;
+    nb::detail::ndarray_handle *array;
+};
+
+NAMESPACE_END(nanogui)
 
 static VariableType interpret_dlpack_dtype(nb::dlpack::dtype dtype) {
     switch ((nb::dlpack::dtype_code) dtype.code) {
@@ -97,7 +125,7 @@ static nb::ndarray<nb::numpy> texture_download(Texture &texture) {
 }
 
 template <bool Async>
-static void texture_upload(Texture &texture,
+static auto texture_upload(Texture &texture,
                            const nb::ndarray<nb::device::cpu, nb::c_contig> &array) {
     size_t n_channels          = array.ndim() == 3 ? array.shape(2) : 1;
     VariableType dtype         = interpret_dlpack_dtype(array.dtype()),
@@ -120,22 +148,34 @@ static void texture_upload(Texture &texture,
             type_name(dtype_texture) + ")!");
 
     if constexpr (Async) {
-#if defined(__APPLE__)
         nb::detail::ndarray_handle *handle = array.handle();
         nb::detail::ndarray_inc_ref(handle);
-
-        auto free_cb = [](void *p) {
-            nb::detail::ndarray_dec_ref((nb::detail::ndarray_handle *) p);
+        auto upload = detail::TextureUploadHandleAccessor::pending();
+        auto payload = new TextureUploadPayload {
+            detail::TextureUploadHandleAccessor::retain(upload), handle
         };
 
-        texture.upload_async((const uint8_t *) array.data(),
-                             free_cb, handle);
-        return;
-#endif
+        auto free_cb = [](void *p) {
+            std::unique_ptr<TextureUploadPayload> payload(
+                (TextureUploadPayload *) p);
+            detail::TextureUploadHandleAccessor::mark_done(payload->upload);
+            nb::gil_scoped_acquire guard;
+            nb::detail::ndarray_dec_ref(payload->array);
+        };
+
+        {
+            nb::gil_scoped_release release;
+            texture.upload_async((const uint8_t *) array.data(),
+                                 free_cb, payload);
+        }
+        return std::move(upload);
     }
 
     // Synchronous fallback
-    texture.upload((const uint8_t *) array.data());
+    {
+        nb::gil_scoped_release release;
+        texture.upload((const uint8_t *) array.data());
+    }
 }
 
 static void texture_upload_none(Texture &texture, nb::fallback x) {
@@ -187,6 +227,14 @@ void register_render(nb::module_ &m) {
 
     auto texture = nb::class_<Texture, Object>(m, "Texture", D(Texture));
 
+    nb::class_<Texture::UploadHandle>(texture, "UploadHandle", nb::pooled(),
+                                      D(Texture, UploadHandle))
+        .def("is_done", &Texture::UploadHandle::is_done,
+             D(Texture, UploadHandle, is_done))
+        .def("wait", &Texture::UploadHandle::wait,
+             nb::call_guard<nb::gil_scoped_release>(),
+             D(Texture, UploadHandle, wait));
+
     nb::enum_<PixelFormat>(texture, "PixelFormat", D(Texture, PixelFormat))
         .value("R", PixelFormat::R, D(Texture, PixelFormat, R))
         .value("RA", PixelFormat::RA, D(Texture, PixelFormat, RA))
@@ -220,8 +268,7 @@ void register_render(nb::module_ &m) {
     nb::enum_<TextureFlags>(texture, "TextureFlags", D(Texture, TextureFlags), nb::is_arithmetic())
         .value("ShaderRead", TextureFlags::ShaderRead, D(Texture, TextureFlags, ShaderRead))
         .value("RenderTarget", TextureFlags::RenderTarget, D(Texture, TextureFlags, RenderTarget))
-        .value("ShaderWrite", TextureFlags::ShaderWrite,
-               "Allow GPU compute/shader stores (e.g. a writable Dr.Jit wrap)");
+        .value("ShaderWrite", TextureFlags::ShaderWrite, D(Texture, TextureFlags, ShaderWrite));
 
     texture
         .def(nb::init<PixelFormat, ComponentFormat, const Vector2i &,
@@ -249,8 +296,8 @@ void register_render(nb::module_ &m) {
         .def("channels", &Texture::channels, D(Texture, channels))
         .def("download", &texture_download, D(Texture, download))
         .def("upload", &texture_upload<false>, D(Texture, upload))
-        // Async upload is Apple-only; falls back to a synchronous upload elsewhere
-        .def("upload_async", &texture_upload<true>, D(Texture, upload))
+        // Async upload uses Metal blits on Apple and PBO staging on GL/GLES3.
+        .def("upload_async", &texture_upload<true>, D(Texture, upload_async))
         .def("upload", &texture_upload_none, ""_a.none())
         .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload_sub_region))
         .def("generate_mipmap", &Texture::generate_mipmap, D(Texture, generate_mipmap))

@@ -2,9 +2,90 @@
 
 #include <stb_image.h>
 
-#include <memory>
+#include <atomic>
+#include <condition_variable>
+#include <cstdint>
+#include <mutex>
 
 NAMESPACE_BEGIN(nanogui)
+
+struct Texture::UploadHandle::State {
+    State(bool done) : done(done) { }
+
+    std::atomic<uint32_t> ref_count { 1 };
+    std::atomic<bool> done;
+    std::mutex mutex;
+    std::condition_variable cv;
+};
+
+Texture::UploadHandle::UploadHandle() = default;
+
+Texture::UploadHandle::UploadHandle(State *state)
+    : m_state(state) { }
+
+Texture::UploadHandle::UploadHandle(UploadHandle &&other) noexcept
+    : m_state(other.m_state) {
+    other.m_state = nullptr;
+}
+
+Texture::UploadHandle &Texture::UploadHandle::operator=(UploadHandle &&other) noexcept {
+    if (this != &other) {
+        release();
+        m_state = other.m_state;
+        other.m_state = nullptr;
+    }
+    return *this;
+}
+
+Texture::UploadHandle::~UploadHandle() {
+    release();
+}
+
+Texture::UploadHandle Texture::UploadHandle::pending() {
+    return UploadHandle(new State(false));
+}
+
+Texture::UploadHandle Texture::UploadHandle::retain(const UploadHandle &handle) {
+    State *state = handle.m_state;
+    if (state)
+        state->ref_count.fetch_add(1, std::memory_order_relaxed);
+    return UploadHandle(state);
+}
+
+void Texture::UploadHandle::release() {
+    State *state = m_state;
+    m_state = nullptr;
+    if (state && state->ref_count.fetch_sub(1, std::memory_order_acq_rel) == 1)
+        delete state;
+}
+
+bool Texture::UploadHandle::is_done() const {
+    State *state = m_state;
+    return !state || state->done.load(std::memory_order_acquire);
+}
+
+void Texture::UploadHandle::wait() const {
+    State *state = m_state;
+    if (!state)
+        return;
+
+    std::unique_lock<std::mutex> lock(state->mutex);
+    state->cv.wait(lock, [&] {
+        return state->done.load(std::memory_order_acquire);
+    });
+}
+
+void Texture::UploadHandle::mark_done() const {
+    State *state = m_state;
+    if (!state)
+        return;
+
+    {
+        std::lock_guard<std::mutex> lock(state->mutex);
+        state->done.store(true, std::memory_order_release);
+    }
+    state->cv.notify_all();
+}
 
 Texture::Texture(PixelFormat pixel_format,
                  ComponentFormat component_format,

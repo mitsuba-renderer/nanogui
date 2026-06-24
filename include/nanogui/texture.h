@@ -22,6 +22,10 @@
 
 NAMESPACE_BEGIN(nanogui)
 
+namespace detail {
+struct TextureUploadHandleAccessor;
+}
+
 class NANOGUI_EXPORT Texture : public Object {
 public:
     /// Overall format of the texture (e.g. luminance-only or RGBA)
@@ -98,9 +102,61 @@ public:
         /// Target framebuffer for rendering
         RenderTarget = 0x02,
 
-        /// Allow texture writes, e.g., from cpute shaders. Incompatible
+        /// Allow texture writes, e.g., from compute shaders. Incompatible
         /// with multi-sampling and mip-mapping.
         ShaderWrite = 0x04
+    };
+
+    /**
+     * \brief Tracks source-memory lifetime for asynchronous texture uploads.
+     *
+     * \ref upload_async() may return before the backend has finished reading the
+     * source buffer. Keep that buffer alive and unchanged until the associated
+     * handle reports completion. In Python, ``Texture.upload_async(array)``
+     * retains ``array`` for this period and returns a ``Texture.UploadHandle``;
+     * use ``is_done()`` to poll or ``wait()`` to block.
+     *
+     * This handle only covers the lifetime of the upload source memory. It does
+     * not indicate that later GPU work sampling this texture has completed.
+     */
+    class UploadHandle {
+    public:
+        /// Construct an already-completed handle.
+        UploadHandle();
+        UploadHandle(const UploadHandle &) = delete;
+        UploadHandle(UploadHandle &&) noexcept;
+        UploadHandle &operator=(const UploadHandle &) = delete;
+        UploadHandle &operator=(UploadHandle &&) noexcept;
+        ~UploadHandle();
+
+        /**
+         * \brief Return whether the upload source buffer can be reused.
+         *
+         * This is a non-blocking poll. It returns true for default-constructed
+         * handles and after the completion callback associated with the upload
+         * has run.
+         */
+        bool is_done() const;
+
+        /**
+         * \brief Block until the upload source buffer can be reused.
+         *
+         * The Python binding releases the GIL while waiting.
+         */
+        void wait() const;
+
+    private:
+        struct State;
+
+        explicit UploadHandle(State *state);
+        static UploadHandle pending();
+        static UploadHandle retain(const UploadHandle &handle);
+        void release();
+        void mark_done() const;
+
+        State *m_state = nullptr;
+
+        friend struct detail::TextureUploadHandleAccessor;
     };
 
     /**
@@ -164,11 +220,19 @@ public:
     void upload(const uint8_t *data);
 
     /**
-     * \brief Upload packed pixel data from the CPU to the GPU (asynchronous)
+     * \brief Start an upload and report when the source memory can be reused.
      *
-     * The ``data`` buffer must remain alive for the duration of the (asynchronous)
-     * operation. The underlying backend will invoke ``callback(payload)`` when
-     * the operation is done, which can be used as a hint to free the buffer.
+     * The backend may either copy ``data`` into staging memory immediately or
+     * read from it later, depending on the platform and driver. The caller must
+     * therefore keep ``data`` alive and unchanged until completion is reported.
+     *
+     * In C++, completion is reported by invoking ``callback(payload)``. In
+     * Python, ``Texture.upload_async(array)`` retains the input array and
+     * returns a ``Texture.UploadHandle``. Once that handle is done, the array
+     * storage can be reused or released.
+     *
+     * Completion only covers reads from the upload source. It does not indicate
+     * that later GPU work sampling this texture has completed.
      */
     void upload_async(const uint8_t *data, void (*callback)(void*), void *payload);
 
