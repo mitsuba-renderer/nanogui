@@ -85,7 +85,7 @@ option(NANOGUI_INSTALL                   "Install NanoGUI on `make install`?" ON
 option(NANOGUI_SKIP_METAL_SHADER_PRECOMPILATION "Compile Metal shaders at runtime instead of precompiling them while nanogui is built." OFF)
 option(NANOGUI_SKIP_STB_IMAGE_IMPLEMENTATION    "Do not compile stb_image's implementation into nanogui. If enabled, user code must do this instead." OFF)
 
-if (NOT NANOGUI_BACKEND)
+if (NOT DEFINED NANOGUI_BACKEND OR "${NANOGUI_BACKEND}" STREQUAL "")
   if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
     set(NANOGUI_BACKEND_DEFAULT "GLES 2")
   elseif (APPLE)
@@ -97,9 +97,12 @@ if (NOT NANOGUI_BACKEND)
     set(NANOGUI_BACKEND_DEFAULT "OpenGL")
   endif()
 
-  set(NANOGUI_BACKEND ${NANOGUI_BACKEND_DEFAULT} CACHE STRING "Choose the backend used for rendering (OpenGL/GLES 2/GLES 3/Metal)" FORCE)
+  set(NANOGUI_BACKEND ${NANOGUI_BACKEND_DEFAULT})
 endif()
 
+set(NANOGUI_BACKEND ${NANOGUI_BACKEND} CACHE STRING
+    "Choose the backend used for rendering (OpenGL/GLES 2/GLES 3/Metal)"
+    FORCE)
 set_property(CACHE NANOGUI_BACKEND PROPERTY STRINGS "OpenGL" "GLES 2" "GLES 3" "Metal")
 
 # Required libraries, flags, and include files for compiling and linking against nanogui (all targets)
