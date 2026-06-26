@@ -63,8 +63,13 @@ void Label::draw(NVGcontext *ctx) {
     nvgFontSize(ctx, font_size());
     nvgFillColor(ctx, m_color);
     if (m_fixed_size.x() > 0) {
+        // Center the (possibly wrapped) text block so its baseline lines up with
+        // the auto-width branch below (NVG_ALIGN_MIDDLE).
+        float bounds[4];
         nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
-        nvgTextBox(ctx, m_pos.x(), m_pos.y(), m_fixed_size.x(), m_caption.data(), m_caption.data() + m_caption.size());
+        nvgTextBoxBounds(ctx, m_pos.x(), m_pos.y(), m_fixed_size.x(), m_caption.data(), m_caption.data() + m_caption.size(), bounds);
+        float y = m_pos.y() + (m_size.y() - (bounds[3] - bounds[1])) * 0.5f;
+        nvgTextBox(ctx, m_pos.x(), y, m_fixed_size.x(), m_caption.data(), m_caption.data() + m_caption.size());
     } else if (m_caption.find('\n') != std::string::npos) { // multiline
         nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
         nvgTextBox(ctx, m_pos.x(), m_pos.y(), preferred_size(ctx).x(), m_caption.data(), m_caption.data() + m_caption.size());
