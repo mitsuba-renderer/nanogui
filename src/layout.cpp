@@ -271,9 +271,9 @@ void GridLayout::perform_layout(NVGcontext *ctx, Widget *widget) const {
     /* Strech to size provided by \c widget */
     for (int i = 0; i < 2; i++) {
         int grid_size = 2 * m_margin + extra[i];
-        for (int s : grid[i]) {
-            grid_size += s;
-            if (i+1 < dim[i])
+        for (int j = 0; j < dim[i]; ++j) {
+            grid_size += grid[i][j];
+            if (j + 1 < dim[i])
                 grid_size += m_spacing[i];
         }
 
