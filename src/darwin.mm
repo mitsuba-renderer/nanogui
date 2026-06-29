@@ -26,6 +26,11 @@ void disable_saved_application_state_osx() {
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"NSQuitAlwaysKeepsWindows"];
 }
 
+bool Screen::in_live_resize() const {
+    NSWindow *nswin = (__bridge NSWindow *) m_nswin;
+    return nswin != nil && [nswin inLiveResize];
+}
+
 #if defined(NANOGUI_USE_METAL)
 
 static void *s_metal_device = nullptr;

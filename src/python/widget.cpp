@@ -231,6 +231,8 @@ void register_widget(nb::module_ &m) {
         .def("move_window", &Screen::move_window, D(Screen, move_window))
         .def("glfw_window", &Screen::glfw_window, D(Screen, glfw_window),
                 nb::rv_policy::reference)
+        .def("in_live_resize", &Screen::in_live_resize,
+                "Is the window currently in an interactive (live) resize?")
         .def("nvg_context", &Screen::nvg_context, D(Screen, nvg_context),
                 nb::rv_policy::reference)
         .def("pixel_format", &Screen::pixel_format, D(Screen, pixel_format))

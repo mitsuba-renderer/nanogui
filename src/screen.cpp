@@ -1224,6 +1224,11 @@ Texture::ComponentFormat Screen::component_format() const {
         return Texture::ComponentFormat::UInt8;
 }
 
+#if !defined(__APPLE__)
+// macOS provides this in darwin.mm via Cocoa's -[NSWindow inLiveResize].
+bool Screen::in_live_resize() const { return false; }
+#endif
+
 #if defined(NANOGUI_USE_METAL)
 void *Screen::metal_layer() const {
     return metal_window_layer(m_nswin);

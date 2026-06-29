@@ -203,6 +203,16 @@ public:
     /// Return a pointer to the underlying GLFW window data structure
     GLFWwindow *glfw_window() const { return m_glfw_window; }
 
+    /**
+     * \brief Is the window currently in an interactive (live) resize?
+     *
+     * True while the user drags a window edge and false the instant they
+     * release. Lets applications defer expensive resolution-dependent
+     * reconfiguration until the resize settles. Always false on platforms
+     * without a live-resize concept.
+     */
+    bool in_live_resize() const;
+
     /// Return a pointer to the underlying NanoVG draw context
     NVGcontext *nvg_context() const { return m_nvg_context; }
 
