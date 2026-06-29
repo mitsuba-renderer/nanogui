@@ -28,8 +28,13 @@ public:
 
     float value() const { return m_value; }
     void set_value(float value) {
-        m_value = std::min(std::max(value, m_range.first), m_range.second);
+        m_value = value;
+        if (m_clamp)
+            m_value = std::min(std::max(m_value, m_range.first), m_range.second);
     }
+
+    bool clamp() const { return m_clamp; }
+    void set_clamp(bool value) { m_clamp = value; }
 
     const Color &highlight_color() const { return m_highlight_color; }
     void set_highlight_color(const Color &highlight_color) { m_highlight_color = highlight_color; }
@@ -56,6 +61,7 @@ public:
 
 protected:
     float m_value;
+    bool m_clamp = true;
     std::function<void(float)> m_callback;
     std::function<void(float)> m_final_callback;
     std::pair<float, float> m_range;
