@@ -405,6 +405,24 @@ Screen::Screen(const Vector2i &size, std::string_view caption, bool resizable,
             for (auto kv: __nanogui_screens) {
                 if (w == kv.first) {
                     Screen *screen = kv.second;
+
+                    // Skip the refresh if it's trying to happen much faster than the monitor's
+                    // refresh rate. This fixes laggy resize behavior on systems where refresh
+                    // callbacks come in faster than vsync will allow swapping buffers.
+                    // (Found on some Wayland compositors and potentially an issue with macos's
+                    // hardcoded 60 fps timer on slow displays.)
+                    GLFWmonitor *monitor = glfwGetWindowCurrentMonitor(w);
+                    if (monitor) {
+                        const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+                        if (mode) {
+                            float t = glfwGetTime();
+                            if (mode->refreshRate > 0 &&
+                                t - screen->m_last_draw <= 1.0f / mode->refreshRate) {
+                                continue;
+                            }
+                        }
+                    }
+
                     if (nanogui::run_mode() != RunMode::Stopped)
                         screen->draw_all();
                     break;
@@ -758,10 +776,6 @@ void Screen::draw_all() {
 #if defined(NANOGUI_USE_METAL)
         void *pool = autorelease_init();
 #endif
-        float current_time = glfwGetTime();
-        if (m_last_draw != 0.0)
-            m_frame_timer.put(current_time - m_last_draw);
-        m_last_draw = current_time;
         m_frame_index++;
 
         draw_setup();
@@ -779,6 +793,11 @@ void Screen::draw_all() {
 #if defined(NANOGUI_USE_METAL)
         autorelease_release(pool);
 #endif
+
+        float current_time = glfwGetTime();
+        if (m_last_draw != 0.0)
+            m_frame_timer.put(current_time - m_last_draw);
+        m_last_draw = current_time;
     }
 }
 
