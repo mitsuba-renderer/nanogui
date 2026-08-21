@@ -11,7 +11,7 @@ endif()
 add_definitions(-DNANOGUI_PYTHON)
 
 nanobind_add_module(nanogui-python MODULE
-  NB_STATIC
+  BACKEND_MODULE nanobind_backend
   NB_DOMAIN nanogui
   LTO
   main.cpp

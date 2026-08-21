@@ -7,16 +7,22 @@ DECLARE_WIDGET(Widget);
 DECLARE_SCREEN(Screen);
 DECLARE_WIDGET(Window);
 
+/// Python type object of 'nanogui.Widget', which terminates the walk below
+static nb::handle widget_type;
+
 /// Cyclic GC support: find all callback getter functions and traverse them recursively
 int widget_tp_traverse_base(PyObject *self, visitproc visit, void *arg, PyTypeObject *tp) {
-    PyObject *dict = tp->tp_dict;
+    nb::dict dict = nb::type_dict((PyObject *) tp);
+    if (!dict.is_valid())
+        return 0;
+
     PyObject *key, *value;
     Py_ssize_t pos = 0;
 
     const char *suffix = "callback";
     size_t suffix_len = strlen(suffix);
 
-    while (PyDict_Next(dict, &pos, &key, &value)) {
+    while (PyDict_Next(dict.ptr(), &pos, &key, &value)) {
         if (!PyUnicode_Check(key))
             continue;
 
@@ -30,19 +36,9 @@ int widget_tp_traverse_base(PyObject *self, visitproc visit, void *arg, PyTypeOb
             strcmp(name + name_len - suffix_len, suffix) != 0)
             continue;
 
-
-#if PY_VERSION_HEX < 0x03090000
-        PyObject *func = PyObject_GetAttr(self, key),
-                 *result = nullptr;
-        if (func) {
-            result = _PyObject_Vectorcall(func, nullptr, 0, nullptr);
-            Py_DECREF(func);
-        }
-#else
         PyObject *args[] = { self };
-        PyObject *result = PyObject_VectorcallMethod(
-            key, args, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, nullptr);
-#endif
+        PyObject *result = nb::detail::vectorcall_method(
+            key, args, 1 | NB_VECTORCALL_ARGUMENTS_OFFSET, nullptr);
 
         if (!result) {
             PyErr_Clear();
@@ -53,7 +49,7 @@ int widget_tp_traverse_base(PyObject *self, visitproc visit, void *arg, PyTypeOb
         Py_DECREF(result);
     }
 
-    if (strcmp(tp->tp_name, "nanogui.Widget") != 0) {
+    if (!widget_type.is((PyObject *) tp)) {
         PyTypeObject *base = (PyTypeObject *) PyType_GetSlot(tp, Py_tp_base);
         if (base) {
             int rv = widget_tp_traverse_base(self, visit, arg, base);
@@ -94,11 +90,13 @@ void register_widget(nb::module_ &m) {
     object_init_py(
         [](PyObject *o) noexcept {
             nb::gil_scoped_acquire guard;
-            Py_INCREF(o);
+            if (guard.is_valid())
+                Py_INCREF(o);
         },
         [](PyObject *o) noexcept {
             nb::gil_scoped_acquire guard;
-            Py_DECREF(o);
+            if (guard.is_valid())
+                Py_DECREF(o);
         });
 
     nb::class_<Object>(
@@ -188,6 +186,8 @@ void register_widget(nb::module_ &m) {
         .def("screen", nb::overload_cast<>(&Widget::screen, nb::const_), D(Widget, screen))
         .def("window", nb::overload_cast<>(&Widget::window, nb::const_), D(Widget, window))
         .def("draw", &Widget::draw, D(Widget, draw));
+
+    widget_type = nb::type<Widget>();
 
     nb::class_<Window, Widget, PyWindow>(m, "Window", D(Window))
         .def(nb::init<Widget *, const std::string>(), "parent"_a,

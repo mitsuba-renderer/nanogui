@@ -631,7 +631,9 @@ if (NANOGUI_BUILD_PYTHON)
       # Constrain FindPython to find the Python version used by scikit-build
       set(Python_VERSION "${PYTHON_VERSION_STRING}")
 
-      find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+      find_package(Python 3.10
+        REQUIRED COMPONENTS Interpreter Development.Module
+        OPTIONAL_COMPONENTS Development.SABIModule)
 
       execute_process(
         COMMAND
@@ -642,17 +644,16 @@ if (NANOGUI_BUILD_PYTHON)
 
       find_package(nanobind CONFIG REQUIRED)
     else()
-      find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+      find_package(Python 3.10
+        REQUIRED COMPONENTS Interpreter Development.Module
+        OPTIONAL_COMPONENTS Development.SABIModule)
 
       # Allow overriding the nanobind library used to compile NanoGUI
       set(NANOGUI_NANOBIND_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanobind"
         CACHE STRING "Path containing the 'nanobind' library used to compile nanogui.")
 
       add_subdirectory(${NANOGUI_NANOBIND_DIR} ext/nanobind)
-      mark_as_advanced(
-        USE_PYTHON_INCLUDE_DIR NANOBIND_INSTALL NANOBIND_TEST NANOBIND_NOPYTHON
-        NANOBIND_FINDPYTHON NANOBIND_PYTHON_VERSION NANOBIND_WERROR
-        NANOGUI_NANOBIND_DIR)
+      mark_as_advanced(NANOGUI_NANOBIND_DIR)
     endif()
   endif()
   add_subdirectory(src/python)

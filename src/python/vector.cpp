@@ -19,7 +19,7 @@ auto register_vector_type(nb::module_ &m, const char *name) {
 
     auto type = nb::class_<Vector>(m, name);
 
-    type.def(nb::init<Value>())
+    type.def(nb::init_implicit<Value>())
         .def(nb::init<const Vector &>())
         .def("__init__", [](Vector *v, const nb::sequence &arr) {
            new (v) Vector(0);
@@ -85,12 +85,7 @@ auto register_vector_type(nb::module_ &m, const char *name) {
                               [](Vector &a, const Value &v) { a.w() = v; });
     }
 
-    nb::detail::implicitly_convertible(
-        [](PyTypeObject *, PyObject *src,
-           nb::detail::cleanup_list *) noexcept -> bool {
-            return PySequence_Check(src) || PyNumber_Check(src);
-        },
-        &typeid(Vector));
+    nb::implicitly_convertible<nb::sequence, Vector>();
 
     return type;
 }

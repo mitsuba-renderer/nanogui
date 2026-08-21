@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "scikit-build-core",
-    "nanobind==2.9.2"
+    "nanobind==3.0.0.dev5"
 ]
 build-backend = "scikit_build_core.build"
 
@@ -11,7 +11,8 @@ name = "nanogui"
 dynamic = ["version"]
 description = "A minimalistic GUI library for OpenGL, GLES 2, and Metal"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
+dependencies = ["nanobind-backend>=1.0.0.dev5"]
 authors = [
     { name = "Wenzel Jakob", email = "wenzel.jakob@epfl.ch" }
 ]
@@ -22,11 +23,11 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: User Interfaces"
 ]
@@ -42,7 +43,7 @@ minimum-version = "0.4"
 build-dir = "build/{wheel_tag}"
 cmake.verbose = true
 logging.level = "INFO"
-wheel.py-api = "cp312"
+wheel.py-api = "cp310"
 
 cmake.args = [
     "-DCMAKE_INSTALL_LIBDIR=nanogui",
@@ -68,7 +69,7 @@ result = "{major}.{minor}.{patch}"
 
 [tool.cibuildwheel]
 build-verbosity = 1
-build = ["cp39-*", "cp310-*", "cp311-*", "cp312-*"]
+build = ["cp310-*"]
 skip = "*-musllinux* pp*"
 test-command = "python -c \"import nanogui\""
 

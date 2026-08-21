@@ -2,7 +2,6 @@
 
 #include <nanobind/ndarray.h>
 
-#include <memory>
 #include <utility>
 
 #include "python.h"
@@ -27,7 +26,7 @@ struct TextureUploadHandleAccessor {
 
 struct TextureUploadPayload {
     Texture::UploadHandle upload;
-    nb::detail::ndarray_handle *array;
+    nb::ndarray<nb::device::cpu, nb::c_contig> array;
 };
 
 NAMESPACE_END(nanogui)
@@ -148,19 +147,21 @@ static auto texture_upload(Texture &texture,
             type_name(dtype_texture) + ")!");
 
     if constexpr (Async) {
-        nb::detail::ndarray_handle *handle = array.handle();
-        nb::detail::ndarray_inc_ref(handle);
         auto upload = detail::TextureUploadHandleAccessor::pending();
         auto payload = new TextureUploadPayload {
-            detail::TextureUploadHandleAccessor::retain(upload), handle
+            detail::TextureUploadHandleAccessor::retain(upload), array
         };
 
+        // The payload keeps the array alive until the upload completes
         auto free_cb = [](void *p) {
-            std::unique_ptr<TextureUploadPayload> payload(
-                (TextureUploadPayload *) p);
+            TextureUploadPayload *payload = (TextureUploadPayload *) p;
             detail::TextureUploadHandleAccessor::mark_done(payload->upload);
+
+            // This may run on a driver thread. Dropping the array reference
+            // requires a live interpreter, otherwise the payload is leaked.
             nb::gil_scoped_acquire guard;
-            nb::detail::ndarray_dec_ref(payload->array);
+            if (guard.is_valid())
+                delete payload;
         };
 
         {
@@ -178,9 +179,7 @@ static auto texture_upload(Texture &texture,
     }
 }
 
-static void texture_upload_none(Texture &texture, nb::fallback x) {
-    if (!x.is(nb::none()))
-        throw nb::next_overload();
+static void texture_upload_none(Texture &texture, nb::none) {
     texture.upload(nullptr);
 }
 
@@ -298,7 +297,8 @@ void register_render(nb::module_ &m) {
         .def("upload", &texture_upload<false>, D(Texture, upload))
         // Async upload uses Metal blits on Apple and PBO staging on GL/GLES3.
         .def("upload_async", &texture_upload<true>, D(Texture, upload_async))
-        .def("upload", &texture_upload_none, ""_a.none())
+        .def("upload", &texture_upload_none, nb::arg().none(),
+             nb::sig("def upload(self, arg: None, /) -> None"))
         .def("upload_sub_region", &texture_upload_sub_region, D(Texture, upload_sub_region))
         .def("generate_mipmap", &Texture::generate_mipmap, D(Texture, generate_mipmap))
         .def("resize", &Texture::resize, D(Texture, resize))

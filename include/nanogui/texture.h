@@ -119,7 +119,7 @@ public:
      * This handle only covers the lifetime of the upload source memory. It does
      * not indicate that later GPU work sampling this texture has completed.
      */
-    class UploadHandle {
+    class NANOGUI_EXPORT UploadHandle {
     public:
         /// Construct an already-completed handle.
         UploadHandle();

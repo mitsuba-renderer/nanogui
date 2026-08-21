@@ -28,7 +28,7 @@ extern "C" {
 
 /// Provides a ``NB_OVERRIDE`` for any relevant Widget items that need to be bound.
 #define NANOGUI_WIDGET_OVERLOADS(Parent)                                       \
-    NB_TRAMPOLINE(Parent, 18);                                                 \
+    NB_TRAMPOLINE(Parent);                                                     \
     bool mouse_button_event(const ::nanogui::Vector2i &p, int button,          \
                             bool down, int modifiers) override {               \
         NB_OVERRIDE(mouse_button_event, p, button, down, modifiers);           \
@@ -71,7 +71,7 @@ extern "C" {
 
 /// Provides a ``NB_OVERRIDE`` for any relevant Layout items that need to be bound.
 #define NANOGUI_LAYOUT_OVERLOADS(Parent)                                       \
-    NB_TRAMPOLINE(Parent, 2);                                                  \
+    NB_TRAMPOLINE(Parent);                                                     \
     ::nanogui::Vector2i preferred_size(                                        \
         NVGcontext *ctx, const ::nanogui::Widget *widget) const override {     \
         NB_OVERRIDE(preferred_size, ctx, widget);                              \
@@ -114,7 +114,7 @@ template <typename T> struct type_caster<nanogui::ref<T>> {
 
     Value value;
 
-    bool from_python(handle src, uint8_t flags,
+    bool from_python(handle src, uint32_t flags,
                      cleanup_list *cleanup) noexcept {
         Caster caster;
         if (!caster.from_python(src, flags, cleanup))

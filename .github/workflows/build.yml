@@ -37,6 +37,10 @@ jobs:
         with:
           python-version: '3.13'
 
+      # Build the backend of the locally referenced version of nanobind.
+      - name: Install the nanobind backend
+        run: python -m pip install ./ext/nanobind/nanobind-backend
+
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
