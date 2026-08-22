@@ -28,18 +28,17 @@ NAMESPACE_BEGIN(nanogui)
  * \brief Color management pass for rendering HDR and/or extended color gamuts
  * on Windows or Linux/Wayland.
  *
- * NanoGUI generally expresses color information using the nonlinear sRGB gamma
- * encoding and color gamut. When working with HDR data or color gamuts that are
- * larger than sRGB, nanogui adopts the macOS convention of "extended sRGB",
- * which uses the the standard nonlinear encoding, except that components can
- * now exceed the value 1.0 or be negative.
+ * NanoGUI generally expresses color information using the sRGB color gamut and
+ * a nonlinear gamma 2.2 encoding, where a value of 1.0 denotes SDR white. When
+ * working with HDR data or color gamuts that are larger than sRGB, this
+ * encoding is mirrored around zero so that components can exceed the value 1.0
+ * or be negative.
  *
  * On Linux/Wayland and Windows, the compositor expects a different color
  * representation that furthermore depends on the precise setup. This class
- * determines at runtime what transformation is needed and then converts from
- * extended sRGB to this format. This is implemented by first rendering to a
- * texture and then blitting a full-screen quad with a fragment shader that
- * performs the color conversion.
+ * determines at runtime what transformation is needed and then converts to that
+ * format. This is implemented by first rendering to a texture and then blitting
+ * a full-screen quad with a fragment shader that performs the color conversion.
  */
 class NANOGUI_EXPORT ColorPass : public RenderPass {
 public:
