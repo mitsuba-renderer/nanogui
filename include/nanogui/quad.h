@@ -66,12 +66,13 @@ public:
     /**
      * \brief Set whether the texture is in linear space
      *
-     * When true, the shader will convert from linear to sRGB space.
-     * When false, the texture is assumed to already be in sRGB space.
-     * Default is false.
+     * When true, the shader applies the gamma 2.2 encoding expected by
+     * NanoGUI's framebuffer (mirrored around zero, so that negative
+     * out-of-gamut components survive). When false, the texture is assumed to
+     * be encoded already. Default is false.
      *
      * \param linear
-     *     True if texture is in linear space, false if in sRGB space
+     *     True if the texture holds linear values, false if it is encoded
      */
     void set_texture_linear(bool linear);
 
@@ -85,8 +86,8 @@ public:
     /**
      * \brief Set the exposure multiplier for the texture
      *
-     * This value is multiplied onto the texture color before
-     * linear-to-sRGB conversion. Default is 1.0.
+     * This value is multiplied onto the texture color before the gamma 2.2
+     * conversion. Default is 1.0.
      *
      * \param exposure
      *     Exposure multiplier (typically 0.0 to 10.0)

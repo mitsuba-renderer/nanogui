@@ -3106,7 +3106,7 @@ Parameter ``texture``:
 static const char *__doc_nanogui_TexturedQuad_set_texture_exposure =
 R"doc(Set the exposure multiplier for the texture
 
-This value is multiplied onto the texture color before linear-to-sRGB
+This value is multiplied onto the texture color before the gamma 2.2
 conversion. Default is 1.0.
 
 Parameter ``exposure``:
@@ -3115,12 +3115,13 @@ Parameter ``exposure``:
 static const char *__doc_nanogui_TexturedQuad_set_texture_linear =
 R"doc(Set whether the texture is in linear space
 
-When true, the shader will convert from linear to sRGB space. When
-false, the texture is assumed to already be in sRGB space. Default is
-false.
+When true, the shader applies the gamma 2.2 encoding expected by
+NanoGUI's framebuffer (mirrored around zero, so that negative out-of-
+gamut components survive). When false, the texture is assumed to be
+encoded already. Default is false.
 
 Parameter ``linear``:
-    True if texture is in linear space, false if in sRGB space)doc";
+    True if the texture holds linear values, false if it is encoded)doc";
 
 static const char *__doc_nanogui_TexturedQuad_texture_exposure =
 R"doc(Get the current exposure multiplier

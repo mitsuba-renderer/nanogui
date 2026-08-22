@@ -71,12 +71,8 @@ static const char *quad_fragment_shader =
         uniform bool texture_linear;
         uniform float texture_exposure;
 
-        vec3 linearToSRGB(vec3 linear) {
-            vec3 s = sign(linear);
-            vec3 abs_linear = abs(linear);
-            vec3 higher = 1.055 * pow(abs_linear, vec3(1.0/2.4)) - 0.055;
-            vec3 lower = abs_linear * 12.92;
-            return s * mix(lower, higher, step(vec3(0.0031308), abs_linear));
+        vec3 linearToGamma22(vec3 linear) {
+            return sign(linear) * pow(abs(linear), vec3(1.0/2.2));
         }
 
         void main() {
@@ -84,7 +80,7 @@ static const char *quad_fragment_shader =
             color.rgb *= texture_exposure;
 
             if (texture_linear)
-                color.rgb = linearToSRGB(color.rgb);
+                color.rgb = linearToGamma22(color.rgb);
 
             fragColor = color;
         }
@@ -99,12 +95,8 @@ static const char *quad_fragment_shader =
         uniform bool texture_linear;
         uniform float texture_exposure;
 
-        vec3 linearToSRGB(vec3 linear) {
-            vec3 s = sign(linear);
-            vec3 abs_linear = abs(linear);
-            vec3 higher = 1.055 * pow(abs_linear, vec3(1.0/2.4)) - 0.055;
-            vec3 lower = abs_linear * 12.92;
-            return s * mix(lower, higher, step(vec3(0.0031308), abs_linear));
+        vec3 linearToGamma22(vec3 linear) {
+            return sign(linear) * pow(abs(linear), vec3(1.0/2.2));
         }
 
         void main() {
@@ -112,7 +104,7 @@ static const char *quad_fragment_shader =
             color.rgb *= texture_exposure;
 
             if (texture_linear)
-                color.rgb = linearToSRGB(color.rgb);
+                color.rgb = linearToGamma22(color.rgb);
 
             fragColor = color;
         }
@@ -126,12 +118,8 @@ static const char *quad_fragment_shader =
             float2 uv;
         };
 
-        float3 linearToSRGB(float3 linear) {
-            float3 s = sign(linear);
-            float3 abs_linear = abs(linear);
-            float3 higher = 1.055 * pow(abs_linear, float3(1.0/2.4)) - 0.055;
-            float3 lower = abs_linear * 12.92;
-            return s * select(lower, higher, abs_linear > 0.0031308);
+        float3 linearToGamma22(float3 linear) {
+            return sign(linear) * pow(abs(linear), float3(1.0/2.2));
         }
 
         fragment float4 fragment_main(VertexOut vert [[stage_in]],
@@ -143,7 +131,7 @@ static const char *quad_fragment_shader =
             color.rgb *= texture_exposure;
 
             if (texture_linear)
-                color.rgb = linearToSRGB(color.rgb);
+                color.rgb = linearToGamma22(color.rgb);
 
             return color;
         }
