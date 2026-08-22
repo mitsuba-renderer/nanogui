@@ -245,9 +245,9 @@ static const char *fragment_shader = GLSL_PRELUDE R"glsl(
         } else if (tf == CM_TRANSFER_FUNCTION_ST2084_PQ) {
             return tfInvPQ(color);
         } else if (tf == CM_TRANSFER_FUNCTION_GAMMA22) {
-            return pow(max(color, vec3(0.0)), vec3(2.2));
+            return sign(color) * pow(abs(color), vec3(2.2));
         } else if (tf == CM_TRANSFER_FUNCTION_GAMMA28) {
-            return pow(max(color, vec3(0.0)), vec3(2.8));
+            return sign(color) * pow(abs(color), vec3(2.8));
         } else if (tf == CM_TRANSFER_FUNCTION_HLG) {
             return tfInvHLG(color);
         } else if (tf == CM_TRANSFER_FUNCTION_EXT_SRGB) {
@@ -277,9 +277,9 @@ static const char *fragment_shader = GLSL_PRELUDE R"glsl(
         } else if (tf == CM_TRANSFER_FUNCTION_ST2084_PQ) {
             return tfPQ(color);
         } else if (tf == CM_TRANSFER_FUNCTION_GAMMA22) {
-            return pow(max(color, vec3(0.0)), vec3(1.0 / 2.2));
+            return sign(color) * pow(abs(color), vec3(1.0 / 2.2));
         } else if (tf == CM_TRANSFER_FUNCTION_GAMMA28) {
-            return pow(max(color, vec3(0.0)), vec3(1.0 / 2.8));
+            return sign(color) * pow(abs(color), vec3(1.0 / 2.8));
         } else if (tf == CM_TRANSFER_FUNCTION_HLG) {
             return tfHLG(color);
         } else if (tf == CM_TRANSFER_FUNCTION_EXT_SRGB) {
