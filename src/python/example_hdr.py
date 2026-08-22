@@ -17,7 +17,7 @@ class HDRGamutTest(ng.Screen):
 
         ng.Label(window, "Primaries")
         primaries = sorted(ng.ituth273.ColorPrimaries, key=lambda x: x.__name__)
-        smtp431_index = primaries.index(ng.ituth273.ColorPrimaries.SMTPE431)
+        smtp431_index = primaries.index(ng.ituth273.ColorPrimaries.SMPTE431)
         primary_names = [p.__name__ for p in primaries]
         primary_names[smtp431_index] += ' (Display P3)'
         primaries_cbox = ng.ComboBox(window, primary_names)
@@ -53,12 +53,8 @@ class HDRGamutTest(ng.Screen):
 
         return img
 
-    def to_srgb(self, value):
-        sign = np.sign(value)
-        value = abs(value)
-        return np.where(value < 0.0031308,
-                        value * 12.92,
-                        1.055 * value**(1.0/2.4) - 0.055) * sign
+    def invgamma22ext(self, value):
+        return np.sign(value) * abs(value)**(1.0/2.2)
 
     def update_texture(self):
         """Update texture with color bars using rec709_matrix primaries and sRGB comparison"""
@@ -79,7 +75,7 @@ class HDRGamutTest(ng.Screen):
         for y_start, y_end, srgb, primary in bars:
             img[y_start:y_end, :, :] = self.create_color_bar(y_start, y_end, primary, srgb)
 
-        self.texture.upload(self.to_srgb(img))
+        self.texture.upload(self.invgamma22ext(img))
 
 def main():
     ng.init()
