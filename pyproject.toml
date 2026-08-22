@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "scikit-build-core",
-    "nanobind==3.0.0.dev5"
+    "nanobind==3.0.0"
 ]
 build-backend = "scikit_build_core.build"
 
@@ -12,7 +12,7 @@ dynamic = ["version"]
 description = "A minimalistic GUI library for OpenGL, GLES 2, and Metal"
 readme = "README.rst"
 requires-python = ">=3.10"
-dependencies = ["nanobind-backend>=1.0.0.dev5"]
+dependencies = ["nanobind-backend>=1.0.0"]
 authors = [
     { name = "Wenzel Jakob", email = "wenzel.jakob@epfl.ch" }
 ]
