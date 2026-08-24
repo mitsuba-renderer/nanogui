@@ -14,41 +14,36 @@ permissions:
 jobs:
   build_wheels:
     strategy:
+      # One native runner per platform/architecture, matching the set of
+      # platforms that nanobind-backend wheels are published for.
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, windows-11-arm,
+             macos-15, macos-15-intel]
       fail-fast: false
 
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     env:
-      CIBW_ARCHS_MACOS: ${{ matrix.os == 'macos-14' && 'arm64' || matrix.os == 'macos-13' && 'x86_64' || '' }}
+      # CPython 3.10 was never released for Windows on ARM64. The stable-ABI
+      # wheel is tagged cp310-abi3 regardless of the interpreter that builds
+      # it (see wheel.py-api in pyproject.toml).
+      CIBW_BUILD: ${{ matrix.os == 'windows-11-arm' && 'cp311-*' || 'cp310-*' }}
 
     steps:
-      # Checkout with retry mechanism for reliability
-      - uses: Wandalen/wretry.action@v3.8.0
+      - uses: actions/checkout@v5
         with:
-          action: actions/checkout@v4
-          with: |
-            submodules: recursive
-          attempt_limit: 3
-          attempt_delay: 2000
+          submodules: recursive
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         name: Install Python
         with:
           python-version: '3.13'
 
-      - name: Prepare compiler environment for Windows
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.1.0
+        uses: pypa/cibuildwheel@v4.2.0
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-${{ matrix.os }}
           path: ./wheelhouse/*.whl
@@ -60,7 +55,7 @@ jobs:
     needs: [build_wheels]
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           pattern: wheels-*
           merge-multiple: true

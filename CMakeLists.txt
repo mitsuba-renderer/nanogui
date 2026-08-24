@@ -539,7 +539,9 @@ endif()
 
 if (MSVC)
   # warning C4324: "...": structure was padded due to alignment specifier
-  target_compile_options(nanogui PRIVATE /wd4324)
+  # warning C4702: unreachable code (spurious, reported during LTCG code
+  # generation with a misattributed source location)
+  target_compile_options(nanogui PRIVATE /wd4324 /wd4702)
 endif()
 
 target_link_libraries(nanogui PRIVATE $<BUILD_INTERFACE:nfd>)

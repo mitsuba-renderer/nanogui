@@ -25,7 +25,7 @@
 #include <cassert>
 
 #define NANOGUI_VERSION_MAJOR 0
-#define NANOGUI_VERSION_MINOR 3
+#define NANOGUI_VERSION_MINOR 4
 #define NANOGUI_VERSION_PATCH 0
 
 #define NANOGUI_STRINGIFY(x) #x
