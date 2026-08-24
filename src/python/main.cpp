@@ -29,7 +29,7 @@ extern void register_nanovg(nb::module_ &m);
 extern void register_render(nb::module_ &m);
 extern void register_quad(nb::module_ &m);
 extern void register_chroma(nb::module_ &m);
-extern void register_ema(nb::module_ &m);
+extern void register_ratemeter(nb::module_ &m);
 
 #if defined(__APPLE__) || defined(__linux__)
 static void (*sigint_handler_prev)(int) = nullptr;
@@ -138,7 +138,7 @@ NB_MODULE(nanogui_ext, m_) {
     register_render(m);
     register_quad(m);
     register_chroma(m);
-    register_ema(m);
+    register_ratemeter(m);
 }
 
 #endif

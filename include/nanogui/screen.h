@@ -17,7 +17,7 @@
 #include <nanogui/widget.h>
 #include <nanogui/texture.h>
 #include <nanogui/colorpass.h>
-#include <nanogui/ema.h>
+#include <nanogui/ratemeter.h>
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -234,8 +234,8 @@ public:
     /// Get the index of the last (or current) frame being rendered
     uint64_t frame_index() const { return m_frame_index; }
 
-    /// Get a smoothed estimate of the rendering time per frame (second-based)
-    double frame_time() const { return m_frame_timer.value(); }
+    /// Get a smoothed estimate of the rendering time per frame (in seconds)
+    double frame_time() const { return m_frame_timer.interval(); }
 
     /// Does the screen apply color management as a post processing shader?
     bool applies_color_management() const {
@@ -350,7 +350,7 @@ protected:
     ref<Texture> m_depth_stencil_texture;
     ref<RestartableTimer> m_tooltip_timer;
     bool m_tooltip_force_visible = false;
-    EMA<double> m_frame_timer;
+    RateMeter<double> m_frame_timer;
     uint64_t m_frame_index;
 #if defined(NANOGUI_USE_METAL)
     void *m_metal_texture = nullptr;

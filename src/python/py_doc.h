@@ -878,28 +878,6 @@ static const char *__doc_nanogui_Cursor_IBeam = R"doc(< The I-beam cursor.)doc";
 
 static const char *__doc_nanogui_Cursor_VResize = R"doc(< The vertical resize cursor.)doc";
 
-static const char *__doc_nanogui_EMA = R"doc(Exponentially weighted moving average accumulator with bias correction)doc";
-
-static const char *__doc_nanogui_EMA_EMA =
-R"doc(Construct with given weight for old samples The default weight (0.983)
-results in a ~1 second time constant at 60 FPS)doc";
-
-static const char *__doc_nanogui_EMA_m_sample_count = R"doc()doc";
-
-static const char *__doc_nanogui_EMA_m_value = R"doc()doc";
-
-static const char *__doc_nanogui_EMA_m_weights = R"doc()doc";
-
-static const char *__doc_nanogui_EMA_put = R"doc(Add a new sample to the accumulator)doc";
-
-static const char *__doc_nanogui_EMA_reset = R"doc(Reset the accumulator to initial state)doc";
-
-static const char *__doc_nanogui_EMA_sample_count = R"doc(Get the number of samples accumulated)doc";
-
-static const char *__doc_nanogui_EMA_value = R"doc(Get the bias-corrected accumulated value)doc";
-
-static const char *__doc_nanogui_EMA_weight = R"doc(Get the current weight)doc";
-
 static const char *__doc_nanogui_Fence =
 R"doc(A passive, render-pass-scoped GPU-completion token.
 
@@ -1580,6 +1558,8 @@ static const char *__doc_nanogui_MessageDialog_m_callback = R"doc()doc";
 
 static const char *__doc_nanogui_MessageDialog_m_message_label = R"doc()doc";
 
+static const char *__doc_nanogui_MessageDialog_m_scroll_panel = R"doc()doc";
+
 static const char *__doc_nanogui_MessageDialog_message_label = R"doc()doc";
 
 static const char *__doc_nanogui_MessageDialog_message_label_2 = R"doc()doc";
@@ -1777,6 +1757,45 @@ static const char *__doc_nanogui_ProgressBar_preferred_size_impl = R"doc()doc";
 static const char *__doc_nanogui_ProgressBar_set_value = R"doc()doc";
 
 static const char *__doc_nanogui_ProgressBar_value = R"doc()doc";
+
+static const char *__doc_nanogui_RateMeter =
+R"doc(Estimates the rate of recurring events, e.g. frames per second
+
+Call tick() whenever an event occurs. The estimate is an exponentially
+decayed event count divided by the exponentially decayed time spanned
+by those events, with a window of ``tau`` seconds of wall-clock time.
+It therefore settles within a few ``tau`` regardless of how often
+events occur. Each event may further report a *busy* time, whose
+decayed average is available via busy().)doc";
+
+static const char *__doc_nanogui_RateMeter_RateMeter = R"doc(Construct with the given window time constant (in seconds))doc";
+
+static const char *__doc_nanogui_RateMeter_busy = R"doc(Busy time per event in seconds, or zero before the second event)doc";
+
+static const char *__doc_nanogui_RateMeter_interval = R"doc(Seconds per event, or zero before the second event)doc";
+
+static const char *__doc_nanogui_RateMeter_m_busy = R"doc()doc";
+
+static const char *__doc_nanogui_RateMeter_m_count = R"doc()doc";
+
+static const char *__doc_nanogui_RateMeter_m_last = R"doc()doc";
+
+static const char *__doc_nanogui_RateMeter_m_tau = R"doc()doc";
+
+static const char *__doc_nanogui_RateMeter_m_time = R"doc()doc";
+
+static const char *__doc_nanogui_RateMeter_rate = R"doc(Events per second, or zero before the second event)doc";
+
+static const char *__doc_nanogui_RateMeter_reset = R"doc(Forget all recorded events)doc";
+
+static const char *__doc_nanogui_RateMeter_tau = R"doc(Get the window time constant)doc";
+
+static const char *__doc_nanogui_RateMeter_tick =
+R"doc(Record an event at the current time
+
+``busy`` optionally specifies the time (in seconds) actively spent
+producing the event, e.g. excluding waits. busy() reports its decayed
+average.)doc";
 
 static const char *__doc_nanogui_RenderPass = R"doc()doc";
 
@@ -2092,7 +2111,7 @@ static const char *__doc_nanogui_Screen_drop_event = R"doc(Handle a file drop ev
 
 static const char *__doc_nanogui_Screen_frame_index = R"doc(Get the index of the last (or current) frame being rendered)doc";
 
-static const char *__doc_nanogui_Screen_frame_time = R"doc(Get a smoothed estimate of the rendering time per frame (second-based))doc";
+static const char *__doc_nanogui_Screen_frame_time = R"doc(Get a smoothed estimate of the rendering time per frame (in seconds))doc";
 
 static const char *__doc_nanogui_Screen_framebuffer_size =
 R"doc(Return the framebuffer size (potentially larger than size() on high-
@@ -2105,6 +2124,14 @@ static const char *__doc_nanogui_Screen_has_depth_buffer = R"doc(Does the frameb
 static const char *__doc_nanogui_Screen_has_float_buffer = R"doc(Does the framebuffer use a floating point representation)doc";
 
 static const char *__doc_nanogui_Screen_has_stencil_buffer = R"doc(Does the framebuffer have a stencil buffer)doc";
+
+static const char *__doc_nanogui_Screen_in_live_resize =
+R"doc(Is the window currently in an interactive (live) resize?
+
+True while the user drags a window edge and false the instant they
+release. Lets applications defer expensive resolution-dependent
+reconfiguration until the resize settles. Always false on platforms
+without a live-resize concept.)doc";
 
 static const char *__doc_nanogui_Screen_initialize = R"doc(Initialize the Screen)doc";
 
@@ -2357,6 +2384,8 @@ static const char *__doc_nanogui_Slider_Slider = R"doc()doc";
 
 static const char *__doc_nanogui_Slider_callback = R"doc()doc";
 
+static const char *__doc_nanogui_Slider_clamp = R"doc()doc";
+
 static const char *__doc_nanogui_Slider_draw = R"doc()doc";
 
 static const char *__doc_nanogui_Slider_final_callback = R"doc()doc";
@@ -2366,6 +2395,8 @@ static const char *__doc_nanogui_Slider_highlight_color = R"doc()doc";
 static const char *__doc_nanogui_Slider_highlighted_range = R"doc()doc";
 
 static const char *__doc_nanogui_Slider_m_callback = R"doc()doc";
+
+static const char *__doc_nanogui_Slider_m_clamp = R"doc()doc";
 
 static const char *__doc_nanogui_Slider_m_final_callback = R"doc()doc";
 
@@ -2386,6 +2417,8 @@ static const char *__doc_nanogui_Slider_preferred_size_impl = R"doc()doc";
 static const char *__doc_nanogui_Slider_range = R"doc()doc";
 
 static const char *__doc_nanogui_Slider_set_callback = R"doc()doc";
+
+static const char *__doc_nanogui_Slider_set_clamp = R"doc()doc";
 
 static const char *__doc_nanogui_Slider_set_final_callback = R"doc()doc";
 
@@ -3560,6 +3593,8 @@ static const char *__doc_nanogui_Widget_m_parent = R"doc(Non-reference-counted b
 static const char *__doc_nanogui_Widget_m_pos = R"doc()doc";
 
 static const char *__doc_nanogui_Widget_m_preferred_size_cache = R"doc()doc";
+
+static const char *__doc_nanogui_Widget_m_preferred_size_depends_on_size = R"doc()doc";
 
 static const char *__doc_nanogui_Widget_m_size = R"doc()doc";
 

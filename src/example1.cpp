@@ -575,7 +575,7 @@ public:
 
         if (m_frame_index % 60 == 59) {
             char caption[128];
-            snprintf(caption, 128, "NanoGUI test (%.2f FPS)", 1.f / m_frame_timer.value());
+            snprintf(caption, 128, "NanoGUI test (%.2f FPS)", m_frame_timer.rate());
             set_caption(caption);
         }
     }

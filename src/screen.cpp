@@ -794,10 +794,8 @@ void Screen::draw_all() {
         autorelease_release(pool);
 #endif
 
-        float current_time = glfwGetTime();
-        if (m_last_draw != 0.0)
-            m_frame_timer.put(current_time - m_last_draw);
-        m_last_draw = current_time;
+        m_frame_timer.tick();
+        m_last_draw = glfwGetTime();
     }
 }
 
