@@ -112,7 +112,7 @@ from __future__ import annotations
 import collections
 import contextlib
 import threading
-from time import perf_counter
+from time import perf_counter, sleep
 from collections.abc import Callable, Iterator
 from typing import Any
 
@@ -187,6 +187,7 @@ class FrameStream:
     _sink: FrameSink                  # storage + handoff adapter
     _n: int                           # total number of frame slots
     _max_in_flight: int               # cap on outstanding producer renders
+    _spin: bool                       # poll instead of block in pace()
     size: ng.Vector2i                 # current frame size, in pixels
     active: bool                      # producer loop flag; clear to stop
     _state: tuple[Any, int]           # (app state, generation), swapped whole
@@ -206,7 +207,7 @@ class FrameStream:
     _barrier: threading.Barrier       # park/resume rendezvous, see resize()
 
     def __init__(self, sink: FrameSink, size: ng.Vector2i, state: Any = None,
-                 max_in_flight: int = 2) -> None:
+                 max_in_flight: int = 2, spin: bool = False) -> None:
         """Create a stream that hands frames from ``sink`` to NanoGUI.
 
         Args:
@@ -217,9 +218,14 @@ class FrameStream:
             max_in_flight: Number of renders that ``pace()`` allows an
                 asynchronous producer to have outstanding at once. The default
                 of 2 overlaps device rendering with enqueuing the next frame.
+            spin: Poll for render completion in ``pace()`` instead of blocking
+                on the event. The latter can cause the CPU core to ender a lower
+                power state (or the thread to be migrated to an efficiency core),
+                which leads to erratic timing behavior.
         """
         self._sink = sink
         self._max_in_flight = max_in_flight
+        self._spin = spin
 
         # Number of slots to be allocated by the sink: ``max_in_flight`` plus
         # a ready slot, the displayed slot, and typically one guarded by a
@@ -276,7 +282,12 @@ class FrameStream:
         Producers should call this function before starting a new frame."""
         events = self._pace_events
         if events is not None and self._pace_index >= self._max_in_flight:
-            events[self._pace_index % self._max_in_flight].wait()
+            event = events[self._pace_index % self._max_in_flight]
+            if self._spin:
+                while not event.query():
+                    sleep(0) # drops the GIL
+            else:
+                event.wait()
         self._produce_start = perf_counter()
 
     def submit(self, frame: Any) -> bool:
