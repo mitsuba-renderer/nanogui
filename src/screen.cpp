@@ -499,9 +499,8 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     m_fbsize = Vector2i((int) w2, (int) h2);
     m_size = Vector2i((int) w, (int) h);
 #elif defined(_WIN32) || defined(__linux__)
-    if (glfwGetPlatform() != GLFW_PLATFORM_WAYLAND && m_pixel_ratio != 1 && !m_fullscreen)
-        glfwSetWindowSize(window, m_size.x() * m_pixel_ratio,
-                                  m_size.y() * m_pixel_ratio);
+    if (glfwGetPlatform() != GLFW_PLATFORM_WAYLAND)
+        m_size = Vector2i(Vector2f(m_fbsize) / m_pixel_ratio);
 #endif
 
 #if defined(NANOGUI_GLAD)
