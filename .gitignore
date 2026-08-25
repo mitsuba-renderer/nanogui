@@ -1,6 +1,7 @@
 *\.exe
 *\.lib
-*\.cmake
+cmake_install\.cmake
+CTestTestfile\.cmake
 *\.pyi
 py\.typed
 .DS_Store
@@ -14,7 +15,7 @@ CMakeFiles
 install_manifest\.txt
 build.ninja
 rules.ninja
-Makefile
+/Makefile
 bin2c
 example[1-9]
 example[1-9].bc
@@ -31,7 +32,7 @@ example_hdr.bc
 example_hdr.js
 example_hdr.wasm
 example_hdr.exe
-icons
+/icons
 *~
 nanogui*.so
 nanogui*.pyd
