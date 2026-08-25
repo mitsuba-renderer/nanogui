@@ -415,6 +415,21 @@ class FrameStream:
         self._reconfiguring = False
         self._barrier.wait()
 
+    def close(self) -> None:
+        """Release the stream's frame storage."""
+        self.active = False
+        while self._pending:
+            fence, _ = self._pending.popleft()
+            fence.wait()
+        self._fence_pool.clear()
+        self._writing.clear()
+        self._free = []
+        self._ready = -1
+        self._displayed = -1
+        self._stale = None
+        self._pace_events = None
+        self._sink.close()
+
     def wait_if_reconfiguring(self) -> bool:
         """This function parks the producer when the consumer wishes to change the
         target resolution. It returns ``False`` during normal operation."""
@@ -451,6 +466,12 @@ class FrameSink:
         """[Consumer] Release prior storage (if any) and allocate ``n`` slots
         of the given size."""
         raise NotImplementedError
+
+    def close(self) -> None:
+        """[Consumer] Release all storage. Called while the GUI still holds
+        its graphics context, so that sinks sharing resources with another API
+        can hand them back."""
+        pass
 
     def write(self, idx: int, frame: Any) -> None:
         """[Producer] Begin writing the frame object ``frame`` to slot ``idx``.
@@ -528,12 +549,22 @@ class ZeroCopySink(FrameSink):
                                     ng.Texture.ComponentFormat.Float16,
                                     size, samples=1, flags=flags)
                          for _ in range(n)]
-        self.ptex = [self.Texture.from_native_handle(t.native_handle())
+        self.ptex = [self.Texture.from_native_handle(t.native_handle(),
+                                                     writable=True)
                      for t in self.textures]
         for t in self.ptex:
             if hasattr(t, "map"):
                 t.map()
         self.write_events = [self.Event() for _ in range(n)]
+
+    def close(self) -> None:
+        self.sync_producer()
+        for t in self.ptex:
+            if hasattr(t, "unmap"):
+                t.unmap()
+        self.ptex = []
+        self.textures = []
+        self.write_events = []
 
     def write(self, idx: int, frame: Any) -> None:
         self.ptex[idx].set_value_with_event(frame, self.write_events[idx])
