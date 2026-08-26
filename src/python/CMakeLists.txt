@@ -33,6 +33,7 @@ nanobind_add_module(nanogui-python MODULE
   render.cpp
   quad.cpp
   lines.cpp
+  camera.cpp
   vector.cpp
   chroma.cpp
   ratemeter.cpp
