@@ -3133,9 +3133,25 @@ R"doc(Render the quad
 
 This method handles begin(), draw_array(), and end() internally)doc";
 
+static const char *__doc_nanogui_TexturedQuad_linear =
+R"doc(Get whether the texture is treated as linear space
+
+Returns:
+    True if texture is treated as linear space)doc";
+
+static const char *__doc_nanogui_TexturedQuad_m_linear = R"doc()doc";
+
 static const char *__doc_nanogui_TexturedQuad_m_texture_exposure = R"doc()doc";
 
-static const char *__doc_nanogui_TexturedQuad_m_texture_linear = R"doc()doc";
+static const char *__doc_nanogui_TexturedQuad_set_linear =
+R"doc(Set whether the texture is in linear space
+
+When true, the shader applies the gamma 2.2 encoding expected by
+NanoGUI's framebuffer. When false, the texture is assumed to be
+encoded already. Default is false.
+
+Parameter ``linear``:
+    True if the texture holds linear values, false if it is encoded)doc";
 
 static const char *__doc_nanogui_TexturedQuad_set_mvp =
 R"doc(Set the model-view-projection matrix
@@ -3158,28 +3174,11 @@ conversion. Default is 1.0.
 Parameter ``exposure``:
     Exposure multiplier (typically 0.0 to 10.0))doc";
 
-static const char *__doc_nanogui_TexturedQuad_set_texture_linear =
-R"doc(Set whether the texture is in linear space
-
-When true, the shader applies the gamma 2.2 encoding expected by
-NanoGUI's framebuffer (mirrored around zero, so that negative out-of-
-gamut components survive). When false, the texture is assumed to be
-encoded already. Default is false.
-
-Parameter ``linear``:
-    True if the texture holds linear values, false if it is encoded)doc";
-
 static const char *__doc_nanogui_TexturedQuad_texture_exposure =
 R"doc(Get the current exposure multiplier
 
 Returns:
     Current exposure value)doc";
-
-static const char *__doc_nanogui_TexturedQuad_texture_linear =
-R"doc(Get whether the texture is treated as linear space
-
-Returns:
-    True if texture is treated as linear space)doc";
 
 static const char *__doc_nanogui_Theme = R"doc()doc";
 

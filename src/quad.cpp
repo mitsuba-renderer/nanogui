@@ -68,7 +68,7 @@ static const char *quad_fragment_shader =
         in vec2 uv_frag;
         out vec4 fragColor;
         uniform sampler2D texture_sampler;
-        uniform bool texture_linear;
+        uniform bool linear;
         uniform float texture_exposure;
 
         vec3 linearToGamma22(vec3 linear) {
@@ -79,7 +79,7 @@ static const char *quad_fragment_shader =
             vec4 color = texture(texture_sampler, uv_frag);
             color.rgb *= texture_exposure;
 
-            if (texture_linear)
+            if (linear)
                 color.rgb = linearToGamma22(color.rgb);
 
             fragColor = color;
@@ -92,7 +92,7 @@ static const char *quad_fragment_shader =
         in vec2 uv_frag;
         out vec4 fragColor;
         uniform sampler2D texture_sampler;
-        uniform bool texture_linear;
+        uniform bool linear;
         uniform float texture_exposure;
 
         vec3 linearToGamma22(vec3 linear) {
@@ -103,7 +103,7 @@ static const char *quad_fragment_shader =
             vec4 color = texture(texture_sampler, uv_frag);
             color.rgb *= texture_exposure;
 
-            if (texture_linear)
+            if (linear)
                 color.rgb = linearToGamma22(color.rgb);
 
             fragColor = color;
@@ -125,12 +125,12 @@ static const char *quad_fragment_shader =
         fragment float4 fragment_main(VertexOut vert [[stage_in]],
                      texture2d<float, access::sample> texture_sampler,
                      sampler texture_sampler_sampler,
-                     constant bool &texture_linear,
+                     constant bool &linear,
                      constant float &texture_exposure) {
             float4 color = texture_sampler.sample(texture_sampler_sampler, vert.uv);
             color.rgb *= texture_exposure;
 
-            if (texture_linear)
+            if (linear)
                 color.rgb = linearToGamma22(color.rgb);
 
             return color;
@@ -173,7 +173,7 @@ TexturedQuad::TexturedQuad(RenderPass *render_pass, BlendMode blend_mode)
                           0, 0, 0, 1));
 
     // Initialize texture uniforms with defaults
-    set_uniform("texture_linear", false);
+    set_uniform("linear", false);
     set_uniform("texture_exposure", 1.0f);
 }
 
@@ -185,9 +185,9 @@ void TexturedQuad::set_mvp(const Matrix4f &mvp) {
     set_uniform("mvp", mvp);
 }
 
-void TexturedQuad::set_texture_linear(bool linear) {
-    m_texture_linear = linear;
-    set_uniform("texture_linear", linear);
+void TexturedQuad::set_linear(bool linear) {
+    m_linear = linear;
+    set_uniform("linear", linear);
 }
 
 void TexturedQuad::set_texture_exposure(float exposure) {

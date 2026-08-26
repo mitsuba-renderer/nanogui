@@ -15,11 +15,11 @@ void register_quad(nb::module_ &m) {
         .def("set_mvp", &TexturedQuad::set_mvp,
              D(TexturedQuad, set_mvp),
              "mvp"_a)
-        .def("set_texture_linear", &TexturedQuad::set_texture_linear,
-             D(TexturedQuad, set_texture_linear),
+        .def("set_linear", &TexturedQuad::set_linear,
+             D(TexturedQuad, set_linear),
              "linear"_a)
-        .def("texture_linear", &TexturedQuad::texture_linear,
-             D(TexturedQuad, texture_linear))
+        .def("linear", &TexturedQuad::linear,
+             D(TexturedQuad, linear))
         .def("set_texture_exposure", &TexturedQuad::set_texture_exposure,
              D(TexturedQuad, set_texture_exposure),
              "exposure"_a)

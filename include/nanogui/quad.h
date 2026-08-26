@@ -67,21 +67,20 @@ public:
      * \brief Set whether the texture is in linear space
      *
      * When true, the shader applies the gamma 2.2 encoding expected by
-     * NanoGUI's framebuffer (mirrored around zero, so that negative
-     * out-of-gamut components survive). When false, the texture is assumed to
+     * NanoGUI's framebuffer. When false, the texture is assumed to
      * be encoded already. Default is false.
      *
      * \param linear
      *     True if the texture holds linear values, false if it is encoded
      */
-    void set_texture_linear(bool linear);
+    void set_linear(bool linear);
 
     /**
      * \brief Get whether the texture is treated as linear space
      *
      * \return True if texture is treated as linear space
      */
-    bool texture_linear() const { return m_texture_linear; }
+    bool linear() const { return m_linear; }
 
     /**
      * \brief Set the exposure multiplier for the texture
@@ -102,7 +101,7 @@ public:
     float texture_exposure() const { return m_texture_exposure; }
 
 private:
-    bool m_texture_linear = false;
+    bool m_linear = false;
     float m_texture_exposure = 1.0f;
 };
 
