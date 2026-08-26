@@ -219,6 +219,8 @@ void register_widget(nb::module_ &m) {
         .def("draw_all", &Screen::draw_all, D(Screen, draw_all))
         .def("draw_contents", &Screen::draw_contents, D(Screen, draw_contents))
         .def("resize_event", &Screen::resize_event, "size"_a, D(Screen, resize_event))
+        .def("resize_end_event", &Screen::resize_end_event, "size"_a,
+             D(Screen, resize_end_event))
         .def("resize_callback", &Screen::resize_callback)
         .def("maximize_event", &Screen::maximize_event, D(Screen, maximize_event))
         .def("set_resize_callback", &Screen::set_resize_callback)
@@ -231,8 +233,6 @@ void register_widget(nb::module_ &m) {
         .def("move_window", &Screen::move_window, D(Screen, move_window))
         .def("glfw_window", &Screen::glfw_window, D(Screen, glfw_window),
                 nb::rv_policy::reference)
-        .def("in_live_resize", &Screen::in_live_resize,
-                "Is the window currently in an interactive (live) resize?")
         .def("nvg_context", &Screen::nvg_context, D(Screen, nvg_context),
                 nb::rv_policy::reference)
         .def("pixel_format", &Screen::pixel_format, D(Screen, pixel_format))

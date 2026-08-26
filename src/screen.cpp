@@ -74,6 +74,9 @@ NAMESPACE_BEGIN(nanogui)
 /// Delay in seconds before showing tooltips
 #define TOOLTIP_DELAY_SEC 0.2f
 
+/// Debounce interval in seconds after which a resize counts as settled
+#define RESIZE_SETTLE_SEC 0.25
+
 std::vector<std::pair<GLFWwindow *, Screen *>> __nanogui_screens;
 
 #if defined(NANOGUI_GLAD)
@@ -473,6 +476,9 @@ Screen::Screen(const Vector2i &size, std::string_view caption, bool resizable,
 
 void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
     m_glfw_window = window;
+#if defined(__APPLE__)
+    live_resize_observer_install();
+#endif
     m_shutdown_glfw = shutdown_glfw;
     glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
     glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
@@ -590,6 +596,9 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 }
 
 Screen::~Screen() {
+#if defined(__APPLE__)
+    live_resize_observer_remove();
+#endif
     auto it = std::find_if(
         __nanogui_screens.begin(), __nanogui_screens.end(),
         [w = m_glfw_window](const auto &kv) { return kv.first == w; });
@@ -761,6 +770,13 @@ void Screen::draw_teardown() {
 }
 
 void Screen::draw_all() {
+    // Fallback for platforms without a live resize notification, and for
+    // non-interactive resizes: the resize has settled once no further
+    // resize event arrived for a while
+    if (m_resize_pending && !in_live_resize() &&
+        glfwGetTime() - m_last_resize >= RESIZE_SETTLE_SEC)
+        resize_end_callback_event();
+
     // Lazy mode: pin the tooltip once the mouse has hovered for long enough
     if (m_tooltip_deadline != 0.0 && glfwGetTime() >= m_tooltip_deadline) {
         m_tooltip_deadline = 0.0;
@@ -918,9 +934,27 @@ bool Screen::resize_event(const Vector2i& size) {
 
 double Screen::next_wakeup() const {
     double t = std::numeric_limits<double>::infinity();
+    if (m_resize_pending && !in_live_resize())
+        t = m_last_resize + RESIZE_SETTLE_SEC;
     if (m_tooltip_deadline != 0.0)
         t = std::min(t, m_tooltip_deadline);
     return t;
+}
+
+bool Screen::resize_end_event(const Vector2i &) {
+    return false;
+}
+
+void Screen::resize_end_callback_event() {
+    if (!m_resize_pending)
+        return;
+    m_resize_pending = false;
+    try {
+        if (resize_end_event(m_size))
+            redraw();
+    } catch (const std::exception &e) {
+        std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
+    }
 }
 
 void Screen::redraw() {
@@ -1146,6 +1180,8 @@ void Screen::resize_callback_event(int, int) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
 
+    m_resize_pending = true;
+    m_last_resize = m_last_interaction;
     redraw();
 }
 

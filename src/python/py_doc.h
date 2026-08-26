@@ -2187,12 +2187,7 @@ static const char *__doc_nanogui_Screen_has_float_buffer = R"doc(Does the frameb
 static const char *__doc_nanogui_Screen_has_stencil_buffer = R"doc(Does the framebuffer have a stencil buffer)doc";
 
 static const char *__doc_nanogui_Screen_in_live_resize =
-R"doc(Is the window currently in an interactive (live) resize?
-
-True while the user drags a window edge and false the instant they
-release. Lets applications defer expensive resolution-dependent
-reconfiguration until the resize settles. Always false on platforms
-without a live-resize concept.)doc";
+R"doc(Is the window in an interactive resize? (macOS only, false elsewhere))doc";
 
 static const char *__doc_nanogui_Screen_initialize = R"doc(Initialize the Screen)doc";
 
@@ -2201,6 +2196,10 @@ static const char *__doc_nanogui_Screen_key_callback_event = R"doc()doc";
 static const char *__doc_nanogui_Screen_keyboard_character_event = R"doc(Text input event handler: codepoint is native endian UTF-32 format)doc";
 
 static const char *__doc_nanogui_Screen_keyboard_event = R"doc(Default keyboard event handler)doc";
+
+static const char *__doc_nanogui_Screen_live_resize_observer_install = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_live_resize_observer_remove = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_background = R"doc()doc";
 
@@ -2248,6 +2247,8 @@ static const char *__doc_nanogui_Screen_m_last_draw = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_last_interaction = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_m_last_resize = R"doc()doc";
+
 static const char *__doc_nanogui_Screen_m_last_run_mode = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_metal_drawable = R"doc()doc";
@@ -2271,6 +2272,10 @@ static const char *__doc_nanogui_Screen_m_pixel_ratio = R"doc()doc";
 static const char *__doc_nanogui_Screen_m_redraw = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_resize_callback = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_resize_observer = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_resize_pending = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_shutdown_glfw = R"doc()doc";
 
@@ -2321,6 +2326,16 @@ event loop iteration)doc";
 static const char *__doc_nanogui_Screen_resize_callback = R"doc(Retrieve the resize callback)doc";
 
 static const char *__doc_nanogui_Screen_resize_callback_event = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_resize_end_callback_event = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_resize_end_event =
+R"doc(Handler called once a resize has settled
+
+resize_event() fires at every intermediate size during a resize, while
+this handler fires once at the end (detected via a Cocoa notification
+on macOS and a 250 ms debounce elsewhere). It is the place for
+expensive resolution-dependent work.)doc";
 
 static const char *__doc_nanogui_Screen_resize_event = R"doc(Window resize event handler)doc";
 
