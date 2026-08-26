@@ -29,6 +29,7 @@ extern void register_nanovg(nb::module_ &m);
 extern void register_render(nb::module_ &m);
 extern void register_quad(nb::module_ &m);
 extern void register_lines(nb::module_ &m);
+extern void register_camera(nb::module_ &m);
 extern void register_chroma(nb::module_ &m);
 extern void register_ratemeter(nb::module_ &m);
 
@@ -139,6 +140,7 @@ NB_MODULE(nanogui_ext, m_) {
     register_render(m);
     register_quad(m);
     register_lines(m);
+    register_camera(m);
     register_chroma(m);
     register_ratemeter(m);
 }

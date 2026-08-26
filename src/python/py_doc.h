@@ -391,6 +391,204 @@ static const char *__doc_nanogui_Button_set_text_color = R"doc(Sets the text col
 
 static const char *__doc_nanogui_Button_text_color = R"doc(Returns the text color of the caption of this Button.)doc";
 
+static const char *__doc_nanogui_CameraController =
+R"doc(Self-contained camera controller
+
+This class ships a simple and self-contained camera controller to
+facilitate building demo applications that need 3D viewport
+navigation. Its internal representation uses a pivot, distance, and
+azimuth/elevation/roll angles relative to an 'up' axis.
+
+Dragging the mouse with LMB held orbits around the pivot, MMB/RMB pan,
+and the scroll wheel zooms.
+
+A Screen subclass can simply forward its mouse and keyboard events and
+call update() once per frame. The callback set with set_callback() runs
+whenever the camera changes.
+
+Pressing WASD or the cursor keys switches to first person navigation,
+in which case dragging LMB turns the camera, and the wheel changes the
+speed.
+
+The frame() method frames a given bounding box with a smooth camera
+transition from the current view and switches back to orbit mode.
+
+All speeds are relative to the distance to the pivot, which adapts the
+controls to the scale of whatever the camera was last focused on. The
+public speed fields adjust sensitivities, and negative values flip the
+associated direction. Applications with other conventions (e.g. a
+Maya-style Alt+drag scheme or different navigation keys) can translate
+buttons, modifiers, and key codes before forwarding events to the
+controller.)doc";
+
+static const char *__doc_nanogui_CameraController_CameraController =
+R"doc(Create a controller
+
+Parameter ``state``:
+    Initial camera state
+
+Parameter ``world_up``:
+    Up direction of the scene, around which the orbit yaw rotates)doc";
+
+static const char *__doc_nanogui_CameraController_Turntable = R"doc(Turntable state)doc";
+
+static const char *__doc_nanogui_CameraController_Turntable_azimuth = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_Turntable_distance = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_Turntable_elevation = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_Turntable_pivot = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_Turntable_roll = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_animating = R"doc(Is a frame animation in progress?)doc";
+
+static const char *__doc_nanogui_CameraController_basis = R"doc(Basis (forward, right, up) of the given angles, before roll)doc";
+
+static const char *__doc_nanogui_CameraController_callback = R"doc(Return the callback invoked whenever the camera changes)doc";
+
+static const char *__doc_nanogui_CameraController_commit = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_fly_mode =
+R"doc(Is first person navigation active?
+
+The navigation keys enter it, frame() and set_state() leave it.)doc";
+
+static const char *__doc_nanogui_CameraController_fly_ramp = R"doc(Seconds over which a held key ramps up to full speed)doc";
+
+static const char *__doc_nanogui_CameraController_fly_speed = R"doc(Fly speed in multiples of the pivot distance per second)doc";
+
+static const char *__doc_nanogui_CameraController_focus_event = R"doc(Handle focus changes, see Widget::focus_event())doc";
+
+static const char *__doc_nanogui_CameraController_frame =
+R"doc(Animate the camera so that a bounding box fills the view
+
+Starts a transition of ``duration`` seconds from the current camera to
+one that frames the box along the current view direction, spanning the
+field of view divided by ``margin`` along its larger extent.
+
+The field of view and the principal point offset are derived from the
+projection matrix of the view. Returns ``False`` without starting an
+animation for an orthographic projection, where moving the eye does
+not change the framing.)doc";
+
+static const char *__doc_nanogui_CameraController_from_state = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_keyboard_event = R"doc(Handle key presses, see Widget::keyboard_event())doc";
+
+static const char *__doc_nanogui_CameraController_m_animating = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_axis = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_callback = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_center = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_dir0 = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_dir1 = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_drag_button = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_drag_offset = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_drag_start = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_duration = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_fly = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_held = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_keys = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_last_update = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_start = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_turntable = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_world_up = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_z0 = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_z1 = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_mouse_button_event = R"doc(Handle mouse button presses, see Widget::mouse_button_event())doc";
+
+static const char *__doc_nanogui_CameraController_mouse_motion_event =
+R"doc(Handle mouse motion, see Screen::mouse_motion_event_f()
+
+``button`` is the bitmask of the pressed buttons. A drag ends when its
+button is no longer in it.)doc";
+
+static const char *__doc_nanogui_CameraController_orbit_speed = R"doc(Degrees per pixel of orbit or look drag (negative values flip the direction))doc";
+
+static const char *__doc_nanogui_CameraController_pan_speed = R"doc(Fraction of the pivot distance per pixel of pan drag (negative values flip))doc";
+
+static const char *__doc_nanogui_CameraController_scene_scale =
+R"doc(Reference length of the scene, which bounds the range of the zoom
+distance. Must be positive.)doc";
+
+static const char *__doc_nanogui_CameraController_scroll_event = R"doc(Handle scrolling, see Widget::scroll_event())doc";
+
+static const char *__doc_nanogui_CameraController_set_callback =
+R"doc(Set the callback invoked whenever the camera changes
+
+The callback receives a copy of the new camera state and may keep it
+beyond the call, e.g. as application state read by another thread.)doc";
+
+static const char *__doc_nanogui_CameraController_set_fly_mode = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_set_state =
+R"doc(Replace the camera state, which ends a drag or frame animation
+
+The roll of ``state`` relative to world_up() is preserved by later
+orbits. States with non-finite components or a zero distance are
+ignored.)doc";
+
+static const char *__doc_nanogui_CameraController_set_world_up = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_state = R"doc(Return the current camera state)doc";
+
+static const char *__doc_nanogui_CameraController_to_state = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_update =
+R"doc(Advance the fly motion and frame animation
+
+Call this once per frame. Returns ``True`` if the camera changed.)doc";
+
+static const char *__doc_nanogui_CameraController_world_up = R"doc(Up direction of the scene)doc";
+
+static const char *__doc_nanogui_CameraController_zoom_step = R"doc(Distance factor per scroll wheel notch (values > 1 invert the zoom))doc";
+
+static const char *__doc_nanogui_CameraState =
+R"doc(Camera state
+
+This convenience class wraps the view matrix read and written by the
+CameraController class below.)doc";
+
+static const char *__doc_nanogui_CameraState_CameraState = R"doc()doc";
+
+static const char *__doc_nanogui_CameraState_CameraState_2 = R"doc()doc";
+
+static const char *__doc_nanogui_CameraState_basis = R"doc(Orthonormal (forward, right, up) basis of the camera)doc";
+
+static const char *__doc_nanogui_CameraState_distance = R"doc(Distance from the origin to the target)doc";
+
+static const char *__doc_nanogui_CameraState_forward = R"doc(Unit vector from the origin to the target)doc";
+
+static const char *__doc_nanogui_CameraState_origin = R"doc()doc";
+
+static const char *__doc_nanogui_CameraState_right = R"doc(Unit vector pointing to the right of the view direction)doc";
+
+static const char *__doc_nanogui_CameraState_target = R"doc()doc";
+
+static const char *__doc_nanogui_CameraState_up = R"doc()doc";
+
+static const char *__doc_nanogui_CameraState_view_matrix = R"doc(World-to-camera transformation, see Matrix4f::look_at())doc";
+
 static const char *__doc_nanogui_Canvas =
 R"doc(\class GLCanvas canvas.h nanogui/canvas.h
 
