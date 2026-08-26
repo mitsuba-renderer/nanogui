@@ -99,6 +99,9 @@ public:
         }
     }
 
+    /// Turn the textbox into a password field.
+    void set_password_field(bool enable, char mask = '*');
+
     /// Set the \ref Theme used to draw this widget
     virtual void set_theme(Theme *theme) override;
 
@@ -155,6 +158,8 @@ protected:
     int position_to_cursor_index(float posx, float lastx,
                                  const NVGglyphPosition *glyphs, int size);
 
+    std::string value_or_mask_str(const std::string& str) const;
+
     /// The location (if any) for the spin area.
     enum class SpinArea { None, Top, Bottom };
     SpinArea spin_area(const Vector2i &pos);
@@ -163,6 +168,8 @@ protected:
     bool m_editable;
     bool m_spinnable;
     bool m_committed;
+    bool m_password;
+    char m_password_mask;
     std::string m_value;
     std::string m_default_value;
     Alignment m_alignment;

@@ -27,6 +27,8 @@ TextBox::TextBox(Widget *parent, std::string_view value)
       m_editable(false),
       m_spinnable(false),
       m_committed(true),
+      m_password(false),
+      m_password_mask('*'),
       m_value(value),
       m_default_value(""),
       m_alignment(Alignment::Center),
@@ -230,7 +232,11 @@ void TextBox::draw(NVGcontext* ctx) {
     draw_pos.x() += m_text_offset;
 
     if (m_committed) {
-        nvgText(ctx, draw_pos.x(), draw_pos.y(), m_value.empty() ? m_placeholder.c_str() : m_value.c_str(), nullptr);
+        nvgText(ctx, draw_pos.x(), draw_pos.y(),
+                m_value.empty()
+                ? m_placeholder.c_str()
+                : value_or_mask_str(m_value).c_str()
+                  , nullptr);
     } else {
         const int max_glyphs = 1024;
         NVGglyphPosition glyphs[max_glyphs];
@@ -259,13 +265,18 @@ void TextBox::draw(NVGcontext* ctx) {
         draw_pos.x() = old_draw_pos.x() + m_text_offset;
 
         // draw text with offset
-        nvgText(ctx, draw_pos.x(), draw_pos.y(), m_value_temp.c_str(), nullptr);
-        nvgTextBounds(ctx, draw_pos.x(), draw_pos.y(), m_value_temp.c_str(),
-                      nullptr, text_bound);
+        nvgText(ctx, draw_pos.x(), draw_pos.y(),
+                value_or_mask_str(m_value_temp).c_str()
+                , nullptr);
+
+        nvgTextBounds(ctx, draw_pos.x(), draw_pos.y(),
+                      value_or_mask_str(m_value_temp).c_str()
+                      ,nullptr, text_bound);
 
         // recompute cursor positions
         nglyphs = nvgTextGlyphPositions(ctx, draw_pos.x(), draw_pos.y(),
-                m_value_temp.c_str(), nullptr, glyphs, max_glyphs);
+                                         value_or_mask_str(m_value_temp).c_str()
+                                        , nullptr, glyphs, max_glyphs);
 
         if (m_cursor_pos > -1) {
             if (m_selection_pos > -1) {
@@ -648,6 +659,18 @@ TextBox::SpinArea TextBox::spin_area(const Vector2i & pos) {
         }
     }
     return SpinArea::None;
+}
+
+void TextBox::set_password_field(bool enable, char mask) {
+    m_password = enable;
+    m_password_mask = mask;
+}
+
+std::string TextBox::value_or_mask_str(const std::string& str) const
+{
+    return m_password
+            ? std::string(str.length(), m_password_mask).c_str()
+            : str.c_str();
 }
 
 NAMESPACE_END(nanogui)
