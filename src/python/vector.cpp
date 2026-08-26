@@ -86,6 +86,7 @@ auto register_vector_type(nb::module_ &m, const char *name) {
     }
 
     nb::implicitly_convertible<nb::sequence, Vector>();
+    m.def("normalize", [](const Vector &v) { return normalize(v);});
 
     return type;
 }
@@ -194,7 +195,11 @@ void register_vector(nb::module_ &m) {
             [](const Vector3f &origin, const Vector3f &target, const Vector3f &up) {
                 return Matrix4f::look_at(origin, target, up);
             },
-            "origin"_a, "target"_a, "up"_a, D(Matrix, look_at));
+            "origin"_a, "target"_a, "up"_a, D(Matrix, look_at))
+        .def_static(
+            "from_mitsuba_projection",
+            [](const Matrix4f &m) { return Matrix4f::from_mitsuba_projection(m); },
+            "m"_a, D(Matrix, from_mitsuba_projection));
 }
 
 #endif

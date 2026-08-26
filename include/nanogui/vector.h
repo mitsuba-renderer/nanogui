@@ -593,6 +593,22 @@ template <typename Value_, size_t Size_> struct Matrix {
     }
 
     /**
+     * \brief Convert a Mitsuba-style projection matrix into NanoGUI conventions
+     *
+     * \c m maps a camera space that looks along +z with +x to the left onto
+     * the sample cube ``[0, 1]^3``, with y pointing down. The result maps a
+     * camera space as in \ref look_at() onto clip space, with depth in
+     * \ref clip_depth_range().
+     */
+    template <size_t S = Size, std::enable_if_t<S == 4, int> = 0>
+    static Matrix from_mitsuba_projection(const Matrix &m) {
+        auto [z0, z1] = clip_depth_range();
+        return translate(Array<Value, 3>(-1, 1, z0)) *
+               scale(Array<Value, 3>(2, -2, z1 - z0)) * m *
+               scale(Array<Value, 3>(-1, 1, -1));
+    }
+
+    /**
      * \brief Compute a standard orthographic projection matrix
      *
      * Maps the box ``[left, right] x [bottom, top] x [-far_, -near_]``

@@ -1789,6 +1789,14 @@ static const char *__doc_nanogui_Matrix_T = R"doc()doc";
 static const char *__doc_nanogui_Matrix_clip_depth_range =
 R"doc(Depth range of clip space: [-1, 1] on OpenGL and GLES, [0, 1] on Metal)doc";
 
+static const char *__doc_nanogui_Matrix_from_mitsuba_projection =
+R"doc(Convert a Mitsuba-style projection matrix into NanoGUI conventions
+
+``m`` maps a camera space that looks along +z with +x to the left
+onto the sample cube ``[0, 1]^3``, with y pointing down. The result
+maps a camera space as in look_at() onto clip space, with depth in
+clip_depth_range().)doc";
+
 static const char *__doc_nanogui_Matrix_look_at =
 R"doc(World-to-camera matrix of a camera positioned at ``origin`` that looks
 towards ``target``
