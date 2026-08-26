@@ -222,6 +222,11 @@ Shader::Shader(RenderPass *render_pass,
         };
 
         if (type == VertexBuffer) {
+            // Scalar attributes carry a single component per vertex
+            if (buf.ndim == 0) {
+                buf.shape[0] = 1;
+                buf.ndim = 1;
+            }
             for (int i = (int) buf.ndim - 1; i >= 0; --i) {
                 buf.shape[i + 1] = buf.shape[i];
             }
