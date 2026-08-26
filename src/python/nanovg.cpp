@@ -1,4 +1,5 @@
 #include "python.h"
+#include <nanobind/stl/tuple.h>
 
 using namespace nanobind::literals;
 
@@ -27,7 +28,7 @@ void register_nanovg(nb::module_ &m) {
         .value("MITER", NVG_MITER)
         .export_values();
 
-    nb::enum_<NVGalign>(nvg, "NVGalign")
+    nb::enum_<NVGalign>(nvg, "NVGalign", nb::is_flag(), nb::is_arithmetic())
         .value("ALIGN_LEFT", NVG_ALIGN_LEFT)
         .value("ALIGN_CENTER", NVG_ALIGN_CENTER)
         .value("ALIGN_RIGHT", NVG_ALIGN_RIGHT)
