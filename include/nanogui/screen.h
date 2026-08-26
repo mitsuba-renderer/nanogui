@@ -328,6 +328,10 @@ protected:
     Vector2i m_fbsize;
     float m_pixel_ratio;
     int m_mouse_state, m_modifiers;
+    int m_click_count = 0;
+    int m_last_click_button = -1;
+    double m_last_click_time = 0.0;
+    Vector2i m_last_click_pos;
     Vector2i m_mouse_pos;
     Vector2f m_mouse_pos_f;
     bool m_drag_active;

@@ -136,6 +136,7 @@ static const Key keys[] = {
     K(MOD_CONTROL),
     K(MOD_ALT),
     K(MOD_SUPER),
+    { "MOD_DOUBLE_CLICK", nanogui::MOD_DOUBLE_CLICK },
     K(MOUSE_BUTTON_1),
     K(MOUSE_BUTTON_2),
     K(MOUSE_BUTTON_3),

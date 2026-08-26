@@ -1007,10 +1007,21 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
             }
         }
 
-        if (action == GLFW_PRESS)
+        bool double_click = false;
+        if (action == GLFW_PRESS) {
             m_mouse_state |= 1 << button;
-        else
+            Vector2i delta = m_mouse_pos - m_last_click_pos;
+            bool repeat = button == m_last_click_button &&
+                          m_last_interaction - m_last_click_time < 0.4 &&
+                          std::abs(delta.x()) <= 4 && std::abs(delta.y()) <= 4;
+            m_click_count = repeat ? m_click_count + 1 : 1;
+            m_last_click_button = button;
+            m_last_click_time = m_last_interaction;
+            m_last_click_pos = m_mouse_pos;
+            double_click = m_click_count == 2;
+        } else {
             m_mouse_state &= ~(1 << button);
+        }
 
         auto drop_widget = find_widget(m_mouse_pos);
         if (m_drag_active && action == GLFW_RELEASE &&
@@ -1044,7 +1055,9 @@ void Screen::mouse_button_callback_event(int button, int action, int modifiers) 
         }
 
         m_redraw |= mouse_button_event(m_mouse_pos, button,
-                                       action == GLFW_PRESS, m_modifiers);
+                                       action == GLFW_PRESS,
+                                       m_modifiers |
+                                       (double_click ? MOD_DOUBLE_CLICK : 0));
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }
