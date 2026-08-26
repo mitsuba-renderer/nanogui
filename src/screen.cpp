@@ -18,10 +18,10 @@
 #include <nanogui/popup.h>
 #include <nanogui/metal.h>
 #include <nanogui/shader.h>
-#include "rtimer.h"
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <cstdlib>
 #include <iostream>
 
@@ -706,17 +706,9 @@ void Screen::draw_setup() {
         bool vsync = run_mode == RunMode::VSync;
         metal_window_set_vsync(m_nswin, vsync);
 #endif
-        // Create or destroy tooltip timer based on run mode
-        if (run_mode == RunMode::Lazy && !m_tooltip_timer) {
-            m_tooltip_timer = new RestartableTimer(
-                [this]() {
-                    m_tooltip_force_visible = true;
-                    redraw();
-                },
-                std::chrono::milliseconds(int(TOOLTIP_DELAY_SEC * 1000))
-            );
-        } else if (run_mode != RunMode::Lazy && m_tooltip_timer) {
-            m_tooltip_timer.reset();
+        // The tooltip deadline logic in draw_all() only runs in lazy mode
+        if (run_mode != RunMode::Lazy) {
+            m_tooltip_deadline = 0.0;
             m_tooltip_force_visible = false;
         }
         m_last_run_mode = run_mode;
@@ -769,6 +761,15 @@ void Screen::draw_teardown() {
 }
 
 void Screen::draw_all() {
+    // Lazy mode: pin the tooltip once the mouse has hovered for long enough
+    if (m_tooltip_deadline != 0.0 && glfwGetTime() >= m_tooltip_deadline) {
+        m_tooltip_deadline = 0.0;
+        if (run_mode() == RunMode::Lazy) {
+            m_tooltip_force_visible = true;
+            redraw();
+        }
+    }
+
     if (run_mode() != RunMode::Lazy || m_redraw) {
         m_redraw = false;
 
@@ -819,8 +820,8 @@ void Screen::draw_widgets() {
 
 void Screen::draw_tooltip() {
     // Should we show a tooltip
-    if (m_tooltip_timer) {
-        // When using a timer thread (in lazy rendering mode), consult a flag
+    if (run_mode() == RunMode::Lazy) {
+        // Lazy mode: consult the flag set by the deadline logic in draw_all()
         if (!m_tooltip_force_visible)
             return;
     } else {
@@ -915,6 +916,13 @@ bool Screen::resize_event(const Vector2i& size) {
     return true;
 }
 
+double Screen::next_wakeup() const {
+    double t = std::numeric_limits<double>::infinity();
+    if (m_tooltip_deadline != 0.0)
+        t = std::min(t, m_tooltip_deadline);
+    return t;
+}
+
 void Screen::redraw() {
     m_redraw = true;
     glfwPostEmptyEvent();
@@ -935,7 +943,7 @@ void Screen::cursor_pos_callback_event(double x, double y) {
 
     // When a tooltip is currently being shown (in lazy rendering mode), we must
     // redraw to hide it following the mouse motion.
-    if (m_tooltip_timer && m_tooltip_force_visible) {
+    if (m_tooltip_force_visible) {
         m_tooltip_force_visible = false;
         m_redraw = true;
     }
@@ -963,17 +971,14 @@ void Screen::cursor_pos_callback_event(double x, double y) {
             ret = mouse_motion_event_f(p, p_f - m_mouse_pos_f, m_mouse_state, m_modifiers);
         }
 
-        // In lazy rendering mode, inform a background tooltip rendering
-        // thread on whether to send redraw events.
-        if (m_tooltip_timer) {
+        // Lazy mode: arm the tooltip delay while the mouse rests on a
+        // widget with a tooltip
+        if (run_mode() == RunMode::Lazy) {
             const Widget *tooltip_widget = find_widget(p);
             while (tooltip_widget && tooltip_widget->tooltip().empty())
                 tooltip_widget = tooltip_widget->parent();
-
-            if (tooltip_widget && !tooltip_widget->tooltip().empty())
-                m_tooltip_timer->restart();
-            else
-                m_tooltip_timer->clear();
+            m_tooltip_deadline =
+                tooltip_widget ? m_last_interaction + TOOLTIP_DELAY_SEC : 0.0;
         }
 
         m_mouse_pos = p;
