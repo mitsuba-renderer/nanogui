@@ -15,6 +15,9 @@
 
 #include <tsl/robin_map.h>
 
+#include <limits>
+#include <cmath>
+#include <algorithm>
 #include <mutex>
 #include <cstring>
 #include <clocale>
@@ -120,6 +123,7 @@ static void mainloop_iteration() {
     }
 
     // Index by position: a draw callback may add or remove a screen mid-loop
+    double next_wakeup = std::numeric_limits<double>::infinity();
     for (size_t i = 0; i < __nanogui_screens.size(); ++i) {
         Screen *screen = __nanogui_screens[i].second;
         if (!screen->visible()) {
@@ -133,6 +137,7 @@ static void mainloop_iteration() {
                 screen->redraw();
         #endif
         screen->draw_all();
+        next_wakeup = std::min(next_wakeup, screen->next_wakeup());
         num_screens++;
     }
 
@@ -143,11 +148,14 @@ static void mainloop_iteration() {
     }
 
     #if !defined(EMSCRIPTEN)
-        // Wait for mouse/keyboard or empty refresh events
-        if (current_run_mode == RunMode::Lazy)
-            glfwWaitEvents();
-        else
+        // Wait for mouse/keyboard or empty refresh events. A screen deadline
+        // (see Screen::next_wakeup()) bounds the wait time in lazy mode.
+        if (current_run_mode != RunMode::Lazy)
             glfwPollEvents();
+        else if (std::isfinite(next_wakeup))
+            glfwWaitEventsTimeout(std::max(next_wakeup - glfwGetTime(), 1e-3));
+        else
+            glfwWaitEvents();
     #endif
 }
 

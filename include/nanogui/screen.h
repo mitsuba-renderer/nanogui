@@ -22,7 +22,6 @@
 NAMESPACE_BEGIN(nanogui)
 
 class Texture;
-class RestartableTimer;
 
 /**
  * \class Screen screen.h nanogui/screen.h
@@ -308,6 +307,8 @@ public:
     void resize_callback_event(int width, int height);
 
     /* Internal helper functions */
+    /// Next glfwGetTime() deadline at which the lazy main loop must wake up (or infinity)
+    double next_wakeup() const;
     void update_focus(Widget *widget);
     void dispose_widget(Widget *widget);
     void center_window(Window *window);
@@ -352,7 +353,7 @@ protected:
     std::function<void(Vector2i)> m_resize_callback;
     RunMode m_last_run_mode;
     ref<Texture> m_depth_stencil_texture;
-    ref<RestartableTimer> m_tooltip_timer;
+    double m_tooltip_deadline = 0.0;
     bool m_tooltip_force_visible = false;
     RateMeter<double> m_frame_timer;
     uint64_t m_frame_index;

@@ -405,7 +405,6 @@ add_library(nanogui ${NANOGUI_LIBRARY_TYPE}
 
   # Fonts etc.
   nanogui_resources.cpp
-  src/rtimer.cpp src/rtimer.h
   include/nanogui/common.h src/common.cpp
   include/nanogui/widget.h src/widget.cpp
   include/nanogui/theme.h src/theme.cpp

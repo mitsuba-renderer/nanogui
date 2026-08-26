@@ -2025,8 +2025,6 @@ associated with this render pass)doc";
 
 static const char *__doc_nanogui_RenderPass_viewport = R"doc(Return the pixel offset and size of the viewport region)doc";
 
-static const char *__doc_nanogui_RestartableTimer = R"doc()doc";
-
 static const char *__doc_nanogui_RunMode = R"doc(The nanogui mainloop can be in the following set of states)doc";
 
 static const char *__doc_nanogui_RunMode_Eager = R"doc(Windows are redrawn as quickly as possible. Will use 100% CPU.)doc";
@@ -2280,7 +2278,7 @@ static const char *__doc_nanogui_Screen_m_stencil_buffer = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_tooltip_force_visible = R"doc()doc";
 
-static const char *__doc_nanogui_Screen_m_tooltip_timer = R"doc()doc";
+static const char *__doc_nanogui_Screen_m_tooltip_deadline = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_wants_color_management = R"doc()doc";
 
@@ -2299,6 +2297,10 @@ static const char *__doc_nanogui_Screen_mouse_pos = R"doc(Return the last observ
 static const char *__doc_nanogui_Screen_move_window = R"doc(Move window relatively)doc";
 
 static const char *__doc_nanogui_Screen_move_window_to_front = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_next_wakeup =
+R"doc(Next glfwGetTime() deadline at which the lazy main loop must wake up
+(or infinity))doc";
 
 static const char *__doc_nanogui_Screen_nvg_context = R"doc(Return a pointer to the underlying NanoVG draw context)doc";
 
