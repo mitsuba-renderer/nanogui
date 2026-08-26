@@ -1546,6 +1546,9 @@ static const char *__doc_nanogui_LineRenderer_set_width = R"doc(Set the line wid
 
 static const char *__doc_nanogui_LineRenderer_width = R"doc(Return the line width in framebuffer pixels)doc";
 
+static const char *__doc_nanogui_MOD_DOUBLE_CLICK =
+R"doc(Modifier bit signaling a double click in Widget::mouse_button_event())doc";
+
 static const char *__doc_nanogui_Matrix =
 R"doc(Simple matrix class with *column-major* storage (that is the
 convention used by OpenGL/Metal))doc";
@@ -2207,6 +2210,8 @@ static const char *__doc_nanogui_Screen_m_bits_per_sample = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_caption = R"doc()doc";
 
+static const char *__doc_nanogui_Screen_m_click_count = R"doc()doc";
+
 static const char *__doc_nanogui_Screen_m_cursor = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_cursors = R"doc()doc";
@@ -2234,6 +2239,12 @@ static const char *__doc_nanogui_Screen_m_frame_timer = R"doc()doc";
 static const char *__doc_nanogui_Screen_m_fullscreen = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_glfw_window = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_last_click_button = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_last_click_pos = R"doc()doc";
+
+static const char *__doc_nanogui_Screen_m_last_click_time = R"doc()doc";
 
 static const char *__doc_nanogui_Screen_m_last_draw = R"doc()doc";
 

@@ -149,6 +149,9 @@ enum class Cursor {
     CursorCount ///< Not a cursor --- should always be last: enables a loop over the cursor types.
 };
 
+// Modifier bit signaling a double click in \ref Widget::mouse_button_event()
+constexpr int MOD_DOUBLE_CLICK = 1 << 16;
+
 // skip the forward declarations for the docs
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
