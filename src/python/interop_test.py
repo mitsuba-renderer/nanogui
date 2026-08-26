@@ -1,6 +1,5 @@
 """Tiny NumPy / NanoGUI demo using UploadSink."""
 
-import threading
 import time
 
 import numpy as np
@@ -73,8 +72,7 @@ class Viewer(ng.Screen):
         self.display_label.set_fixed_width(270)
 
         self.stream = FrameStream(UploadSink(), SIZE)
-        self.worker = threading.Thread(target=self.producer, daemon=True)
-        self.worker.start()
+        self.stream.start(self.producer)
         self.perform_layout()
 
     def producer(self):
@@ -114,9 +112,10 @@ def run():
     ng.init()
     viewer = Viewer()
     viewer.set_visible(True)
-    ng.run()
-    viewer.stream.active = False
-    viewer.worker.join(timeout=2)
+    try:
+        ng.run()
+    finally:
+        viewer.stream.close()
     if viewer.rendered:
         print(f"rendered {viewer.rendered} frames, dropped {viewer.dropped} "
               f"({100.0 * viewer.dropped / viewer.rendered:.1f}%)")

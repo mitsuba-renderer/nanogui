@@ -56,7 +56,7 @@ Below is a minimal ``UploadSink`` viewer that streams procedurally generated
 NumPy frames of a moving circle:
 
 ```python
-import threading, time
+import time
 import numpy as np
 import nanogui as ng
 from nanogui.interop import FrameStream, UploadSink
@@ -78,8 +78,7 @@ class Viewer(ng.Screen):
         self.render_pass = ng.RenderPass(color_targets=[self])
         self.quad = ng.TexturedQuad(self.render_pass)
         self.stream = FrameStream(UploadSink(), size)
-        self.worker = threading.Thread(target=self.producer)
-        self.worker.start()
+        self.stream.start(self.producer)
 
     def producer(self):
         while self.stream.active:
@@ -99,11 +98,12 @@ if __name__ == "__main__":
     ng.init()
     viewer = Viewer(size=ng.Vector2i(640, 480))
     viewer.set_visible(True)
-    ng.run()
-    viewer.stream.active = False
-    viewer.worker.join()
-    del viewer
-    ng.shutdown()
+    try:
+        ng.run()
+    finally:
+        viewer.stream.close()
+        del viewer
+        ng.shutdown()
 ```
 """
 
@@ -169,13 +169,18 @@ class FrameStream:
     up the change. The object is passed by reference and should not be
     modified following ``set_state()``.
 
+    ``start()`` runs the producer loop on a background thread owned by the
+    stream. An exception escaping the loop stops the stream, and the next
+    ``present()`` re-raises it on the consumer thread, from where it
+    propagates out of ``nanogui.run()``. ``stop()``, which ``close()`` also
+    calls, clears ``active`` and joins the thread. Producers may instead run
+    their own thread and use ``active`` as a loop flag.
+
     Performance statistics are available in the ``producer_rate`` and
-    ``consumer_rate`` meters. On each side, ``interval()`` and ``rate()``
-    report the smoothed frame time and rate. ``producer_rate.busy()`` further
-    reports the host time spent producing a frame: the span from the end of
-    ``pace()`` (or of the previous ``submit()``) to the end of ``submit()``,
-    which excludes pacing and reconfiguration waits and, for asynchronous
-    producers, the device-side rendering they overlap.
+    ``consumer_rate`` meters.
+
+    ``size`` holds the current frame size in pixels, which a producer should
+    re-read after every reconfiguration.
 
     The following functions may only be called from a specific context:
 
@@ -190,6 +195,8 @@ class FrameStream:
     _spin: bool                       # poll instead of block in pace()
     size: ng.Vector2i                 # current frame size, in pixels
     active: bool                      # producer loop flag; clear to stop
+    _error: BaseException | None      # exception that ended the producer loop
+    _thread: threading.Thread | None  # producer thread started by start()
     _state: tuple[Any, int]           # (app state, generation), swapped whole
     producer_rate: ng.RateMeter       # producer frame stats, see class docs
     consumer_rate: ng.RateMeter       # display frame stats, see class docs
@@ -219,7 +226,7 @@ class FrameStream:
                 asynchronous producer to have outstanding at once. The default
                 of 2 overlaps device rendering with enqueuing the next frame.
             spin: Poll for render completion in ``pace()`` instead of blocking
-                on the event. The latter can cause the CPU core to ender a lower
+                on the event. The latter can cause the CPU core to enter a lower
                 power state (or the thread to be migrated to an efficiency core),
                 which leads to erratic timing behavior.
         """
@@ -241,6 +248,8 @@ class FrameStream:
         self._writing = collections.deque()
 
         self.active = True
+        self._error = None
+        self._thread = None
         self._state = (state, 0)
 
         # Keep track of per-frame statistics on each end
@@ -259,6 +268,31 @@ class FrameStream:
 
         self._reconfiguring = False
         self._barrier = threading.Barrier(2)
+
+    def start(self, producer: Callable[[], None]) -> None:
+        """Run ``producer`` on a background thread. The callable should loop
+        while ``active`` is set, see the class docstring."""
+        if self._thread is not None:
+            raise RuntimeError("FrameStream.start(): producer already running")
+        self._thread = threading.Thread(target=self._run, args=(producer,),
+                                        name="FrameStream producer")
+        self._thread.start()
+
+    def _run(self, producer: Callable[[], None]) -> None:
+        try:
+            producer()
+        except BaseException as e:  # noqa: BLE001
+            # Kept for present() to re-raise on the consumer thread
+            self._error = e
+            self.active = False
+
+    def stop(self) -> None:
+        """Clear ``active`` and join the producer thread started by
+        ``start()``, if any."""
+        self.active = False
+        if self._thread is not None:
+            self._thread.join()
+            self._thread = None
 
     def set_state(self, state: Any) -> None:
         """
@@ -327,7 +361,10 @@ class FrameStream:
 
         The context manager yields ``None`` until the first frame is ready. Later,
         it always returns the last displayed texture until a newer one is ready.
+        A producer failure is re-raised here.
         """
+        if self._error is not None:
+            raise self._error
         sink = self._sink
         self.consumer_rate.tick()
 
@@ -381,16 +418,18 @@ class FrameStream:
 
         Call this on the NanoGUI/main thread, usually after the window or
         render pass has been resized. The producer must call
-        ``wait_if_reconfiguring()`` regularly; ``resize()`` waits until the
-        producer parks before destroying or replacing slot storage. It follows
-        that this function must not be called once the producer thread has
-        stopped, since the handshake would block forever.
+        ``wait_if_reconfiguring()`` regularly, and ``resize()`` waits until
+        the producer parks before destroying or replacing slot storage. The
+        handshake is skipped when the thread started by ``start()`` has
+        exited. A producer running on its own thread must still be alive.
         """
         size = ng.Vector2i(size)
         if size == self.size:
             return
-        self._reconfiguring = True
-        self._barrier.wait()
+        handshake = self._thread is None or self._thread.is_alive()
+        if handshake:
+            self._reconfiguring = True
+            self._barrier.wait()
 
         # Drain the consumer's outstanding reads releasing the old slot storage.
         while self._pending:
@@ -412,12 +451,13 @@ class FrameStream:
         # Restart rate trackers after the rebuild
         self.producer_rate.reset()
         self.consumer_rate.reset()
-        self._reconfiguring = False
-        self._barrier.wait()
+        if handshake:
+            self._reconfiguring = False
+            self._barrier.wait()
 
     def close(self) -> None:
-        """Release the stream's frame storage."""
-        self.active = False
+        """Stop the producer and release the stream's frame storage."""
+        self.stop()
         while self._pending:
             fence, _ = self._pending.popleft()
             fence.wait()
