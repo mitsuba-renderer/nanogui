@@ -1515,12 +1515,15 @@ static const char *__doc_nanogui_Matrix_Matrix_5 = R"doc(Initialize from columns
 
 static const char *__doc_nanogui_Matrix_T = R"doc()doc";
 
+static const char *__doc_nanogui_Matrix_clip_depth_range =
+R"doc(Depth range of clip space: [-1, 1] on OpenGL and GLES, [0, 1] on Metal)doc";
+
 static const char *__doc_nanogui_Matrix_look_at =
 R"doc(World-to-camera matrix of a camera positioned at ``origin`` that looks
 towards ``target``
 
 The resulting camera space looks along -z with +x to the right and +y
-up, which is the convention of perspective() and ortho().)doc";
+up.)doc";
 
 static const char *__doc_nanogui_Matrix_m = R"doc()doc";
 
@@ -1528,9 +1531,14 @@ static const char *__doc_nanogui_Matrix_operator_array = R"doc()doc";
 
 static const char *__doc_nanogui_Matrix_operator_array_2 = R"doc()doc";
 
-static const char *__doc_nanogui_Matrix_ortho = R"doc()doc";
+static const char *__doc_nanogui_Matrix_ortho =
+R"doc(Compute a standard orthographic projection matrix
 
-static const char *__doc_nanogui_Matrix_perspective = R"doc()doc";
+Maps the box ``[left, right] x [bottom, top] x [-far_, -near_]`` of a
+camera space that looks along -z onto clip space.)doc";
+
+static const char *__doc_nanogui_Matrix_perspective =
+R"doc(Compute a standard perspective projection matrix)doc";
 
 static const char *__doc_nanogui_Matrix_rotate = R"doc()doc";
 

@@ -160,23 +160,29 @@ void register_vector(nb::module_ &m) {
     register_matrix_type<Matrix4f>(m, "Matrix4f")
         .def_static("translate", &Matrix4f::translate)
         .def_static(
+            "clip_depth_range",
+            []() { return Matrix4f::clip_depth_range(); },
+            D(Matrix, clip_depth_range))
+        .def_static(
             "perspective",
             [](float fov, float near_, float far_, float aspect) {
                 return Matrix4f::perspective(fov, near_, far_, aspect);
             },
-            "fov"_a, "near"_a, "far"_a, "aspect"_a = 1.f)
+            "fov"_a, "near"_a, "far"_a, "aspect"_a = 1.f,
+            D(Matrix, perspective))
         .def_static(
             "ortho",
             [](float left, float right, float bottom, float top, float near_, float far_) {
                 return Matrix4f::ortho(left, right, bottom, top, near_, far_);
             },
-            "left"_a, "right"_a, "bottom"_a, "top"_a, "near"_a, "far"_a)
+            "left"_a, "right"_a, "bottom"_a, "top"_a, "near"_a, "far"_a,
+            D(Matrix, ortho))
         .def_static(
             "look_at",
             [](const Vector3f &origin, const Vector3f &target, const Vector3f &up) {
                 return Matrix4f::look_at(origin, target, up);
             },
-            "origin"_a, "target"_a, "up"_a);
+            "origin"_a, "target"_a, "up"_a, D(Matrix, look_at));
 }
 
 #endif

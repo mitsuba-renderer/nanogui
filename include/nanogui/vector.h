@@ -562,19 +562,42 @@ template <typename Value_, size_t Size_> struct Matrix {
         return result;
     }
 
+    /// Compute a standard perspective projection matrix
     template <size_t S = Size, std::enable_if_t<S == 4, int> = 0>
     static Matrix perspective(Value fov, Value near_, Value far_, Value aspect = 1.f) {
         Value recip = 1 / (near_ - far_),
               c     = 1 / std::tan(.5f * fov);
 
-        Matrix trafo = Matrix::scale(Array<Value, Size>(c / aspect, c, (near_ + far_) * recip, 0.f));
+#if defined(NANOGUI_USE_METAL)
+        Value zz = far_ * recip, zw = near_ * far_ * recip;
+#else
+        Value zz = (near_ + far_) * recip, zw = 2.f * near_ * far_ * recip;
+#endif
 
-        trafo.m[3][2] = 2.f * near_ * far_ * recip;
+        Matrix trafo = Matrix::scale(Array<Value, Size>(c / aspect, c, zz, 0.f));
+
+        trafo.m[3][2] = zw;
         trafo.m[2][3] = -1.f;
 
         return trafo;
     }
 
+    // Depth range of clip space: [-1, 1] on OpenGL and GLES, [0, 1] on Metal
+    template <size_t S = Size, std::enable_if_t<S == 4, int> = 0>
+    static std::pair<Value, Value> clip_depth_range() {
+#if defined(NANOGUI_USE_METAL)
+        return { (Value) 0, (Value) 1 };
+#else
+        return { (Value) -1, (Value) 1 };
+#endif
+    }
+
+    /**
+     * \brief Compute a standard orthographic projection matrix
+     *
+     * Maps the box ``[left, right] x [bottom, top] x [-far_, -near_]``
+     * of a camera space that looks along -z onto clip space.
+     */
     template <size_t S = Size, std::enable_if_t<S == 4, int> = 0>
     static Matrix ortho(Value left, Value right,
                         Value bottom, Value top,
@@ -588,11 +611,17 @@ template <typename Value_, size_t Size_> struct Matrix {
 
         result.m[0][0] = 2 * rl;
         result.m[1][1] = 2 * tb;
-        result.m[2][2] = -2 * fn;
         result.m[3][3] = 1;
         result.m[3][0] = -(right + left) * rl;
         result.m[3][1] = -(top + bottom) * tb;
+
+#if defined(NANOGUI_USE_METAL)
+        result.m[2][2] = -fn;
+        result.m[3][2] = -near_ * fn;
+#else
+        result.m[2][2] = -2 * fn;
         result.m[3][2] = -(far_ + near_) * fn;
+#endif
 
         return result;
     }
