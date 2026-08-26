@@ -67,7 +67,7 @@ def render(size, t):
     s = min(w, h)
     cx = w * 0.5 + 0.3 * s * np.cos(t)
     cy = h * 0.5 + 0.3 * s * np.sin(t)
-    img = np.zeros((h, w, 4), np.float16)
+    img = np.zeros((h, w, 4), np.float32)
     img[..., 3] = 1.0
     img[(x - cx) ** 2 + (y - cy) ** 2 < (0.1 * s) ** 2, :3] = (0.4, 0.7, 1.0)
     return img
@@ -123,6 +123,7 @@ __all__ = [
     "FrameSink",
     "ZeroCopySink",
     "UploadSink",
+    "drjit_sink",
 ]
 
 
@@ -550,13 +551,14 @@ class ZeroCopySink(FrameSink):
     (https://github.com/mitsuba-renderer/drjit) but could likely be generalized
     to other GPU frameworks.
 
-    Each slot is an RGBA Float16 texture, exposed to the producer via
-    ``texture_type.from_native_handle()``. The resulting wrappers must provide
+    Each slot is an RGBA texture of the given ``component_format`` (default:
+    Float32), exposed to the producer via ``texture_type.from_native_handle()``,
+    whose element type must match. The resulting wrappers must provide
     ``set_value_with_event(value, event)``; ``event_type`` instances must
     provide ``record()``, ``wait()`` and ``query()``, serving both as
-    write-completion events and for render pacing. ``submit()`` must be handed
-    exactly the value that ``set_value_with_event()`` accepts (e.g. a flat
-    RGBA Float16 buffer).
+    write-completion events and for render pacing. ``submit()`` accepts the
+    value that ``set_value_with_event()`` takes (a flat RGBA buffer) or a
+    tensor providing it through an ``array`` attribute.
 
     When producer and NanoGUI use different APIs (e.g. Dr.Jit CUDA writing
     into OpenGL textures), the wrappers additionally provide ``map()`` and
@@ -571,10 +573,13 @@ class ZeroCopySink(FrameSink):
 
     def __init__(self, texture_type: Any,
                  event_type: Callable[[], Any], *,
-                 sync_producer: Callable[[], None] | None = None) -> None:
+                 sync_producer: Callable[[], None] | None = None,
+                 component_format: ng.Texture.ComponentFormat =
+                     ng.Texture.ComponentFormat.Float32) -> None:
         self.Texture = texture_type
         self.Event = event_type
         self._sync_producer = sync_producer
+        self._component_format = component_format
         self.ptex: list[Any] = []
 
     def resize(self, size: ng.Vector2i, n: int) -> None:
@@ -586,7 +591,7 @@ class ZeroCopySink(FrameSink):
         flags = (ng.Texture.TextureFlags.ShaderRead |
                  ng.Texture.TextureFlags.ShaderWrite)
         self.textures = [ng.Texture(ng.Texture.PixelFormat.RGBA,
-                                    ng.Texture.ComponentFormat.Float16,
+                                    self._component_format,
                                     size, samples=1, flags=flags)
                          for _ in range(n)]
         self.ptex = [self.Texture.from_native_handle(t.native_handle(),
@@ -607,6 +612,7 @@ class ZeroCopySink(FrameSink):
         self.write_events = []
 
     def write(self, idx: int, frame: Any) -> None:
+        frame = getattr(frame, "array", frame)
         self.ptex[idx].set_value_with_event(frame, self.write_events[idx])
 
     def write_complete(self, idx: int) -> bool:
@@ -628,14 +634,21 @@ class UploadSink(FrameSink):
 
     Each slot holds a reference to the submitted host array. Writes complete
     immediately without tracking by events. The consumer owns a single RGBA
-    Float16 texture and starts an async upload before drawing. ``submit()``
-    expects a C-contiguous CPU array of shape ``(height, width, 4)``, which the
-    producer must not modify after ``submit()`` returns.
+    texture of the given ``component_format`` (default: Float32) and starts
+    an async upload before drawing. ``submit()`` expects anything that
+    ``Texture.upload_async()`` accepts via the DLPack protocol: a
+    C-contiguous CPU array of shape ``(height, width, 4)`` with a matching
+    dtype, e.g. a NumPy array. The producer must not modify the array after
+    ``submit()`` returns.
     """
+
+    def __init__(self, component_format: ng.Texture.ComponentFormat =
+                     ng.Texture.ComponentFormat.Float32) -> None:
+        self._component_format = component_format
 
     def resize(self, size: ng.Vector2i, n: int) -> None:
         self.tex = ng.Texture(ng.Texture.PixelFormat.RGBA,
-                              ng.Texture.ComponentFormat.Float16,
+                              self._component_format,
                               flags=ng.Texture.TextureFlags.ShaderRead,
                               samples=1, size=size)
         self.host: list[Any] = [None] * n
@@ -648,3 +661,31 @@ class UploadSink(FrameSink):
 
     def texture(self, idx: int) -> ng.Texture:
         return self.tex
+
+
+def drjit_sink(tp: type) -> FrameSink:
+    """Return a sink suited to the Dr.Jit tensor type ``tp`` (e.g.
+    ``mitsuba.TensorXf``), whose Float16/Float32 precision it follows."""
+    import importlib
+    import drjit as dr
+
+    vt = dr.type_v(tp)
+    if vt not in (dr.VarType.Float16, dr.VarType.Float32):
+        raise TypeError(
+            "drjit_sink(): 'tp' must be a Float16 or Float32 tensor type")
+    half = vt == dr.VarType.Float16
+    fmt = ng.Texture.ComponentFormat.Float16 if half else \
+        ng.Texture.ComponentFormat.Float32
+
+    backend = dr.backend_v(tp)
+    if backend in (dr.JitBackend.CUDA, dr.JitBackend.Metal):
+        mod = importlib.import_module("drjit." + backend.name.lower())
+        return ZeroCopySink(mod.Texture2f16 if half else mod.Texture2f,
+                            mod.Event, sync_producer=dr.sync_thread,
+                            component_format=fmt)
+    else:
+        class LLVMUploadSink(UploadSink):
+            # Evaluate on the producer thread and hand over a plain memoryview
+            def write(self, idx: int, frame: Any) -> None:
+                super().write(idx, frame.memview())
+        return LLVMUploadSink(fmt)

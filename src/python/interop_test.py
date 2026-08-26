@@ -31,7 +31,7 @@ def line(img, a, b):
 
 def cube(size, t):
     w, h = int(size[0]), int(size[1])
-    img = np.empty((h, w, 4), dtype=np.float16)
+    img = np.empty((h, w, 4), dtype=np.float32)
     img[:] = BG
 
     c, s = np.cos(t), np.sin(t)
