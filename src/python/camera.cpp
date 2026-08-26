@@ -5,6 +5,18 @@
 #include <nanobind/stl/function.h>
 #include <nanobind/stl/tuple.h>
 
+/// Cyclic GC support: the callbacks may close the loop back to their owner
+static int camera_tp_traverse(PyObject *self, visitproc visit, void *arg) {
+    return widget_tp_traverse_base(self, visit, arg, Py_TYPE(self));
+}
+
+static int camera_tp_clear(PyObject *self) {
+    CameraController *c = nb::inst_ptr<CameraController>(self);
+    c->set_callback(nullptr);
+    c->set_click_callback(nullptr);
+    return 0;
+}
+
 void register_camera(nb::module_ &m) {
     nb::class_<CameraState>(m, "CameraState", D(CameraState))
         .def(nb::init<>())
@@ -29,7 +41,14 @@ void register_camera(nb::module_ &m) {
                  return oss.str();
              });
 
-    nb::class_<CameraController>(m, "CameraController", D(CameraController))
+    PyType_Slot camera_type_slots[] = {
+        { Py_tp_traverse, (void *) camera_tp_traverse },
+        { Py_tp_clear, (void *) camera_tp_clear },
+        { 0, nullptr }
+    };
+
+    nb::class_<CameraController>(m, "CameraController", D(CameraController),
+                                 nb::type_slots(camera_type_slots))
         .def(nb::init<const CameraState &, const Vector3f &>(),
              D(CameraController, CameraController), "state"_a, "world_up"_a)
         .def("state", &CameraController::state, D(CameraController, state))
@@ -39,9 +58,16 @@ void register_camera(nb::module_ &m) {
              D(CameraController, set_callback), "callback"_a.none())
         .def("callback", &CameraController::callback,
              D(CameraController, callback))
+        .def("set_click_callback", &CameraController::set_click_callback,
+             D(CameraController, set_click_callback), "callback"_a.none())
+        .def("click_callback", &CameraController::click_callback,
+             D(CameraController, click_callback))
+        .def_rw("drag_threshold", &CameraController::drag_threshold,
+                D(CameraController, drag_threshold))
         .def("world_up", &CameraController::world_up,
              D(CameraController, world_up))
-        .def("set_world_up", &CameraController::set_world_up, "world_up"_a)
+        .def("set_world_up", &CameraController::set_world_up,
+             D(CameraController, set_world_up), "world_up"_a, "snap"_a = false)
         .def_rw("scene_scale", &CameraController::scene_scale,
                 D(CameraController, scene_scale))
         .def_rw("orbit_speed", &CameraController::orbit_speed,

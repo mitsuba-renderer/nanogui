@@ -448,7 +448,11 @@ static const char *__doc_nanogui_CameraController_basis = R"doc(Basis (forward, 
 
 static const char *__doc_nanogui_CameraController_callback = R"doc(Return the callback invoked whenever the camera changes)doc";
 
+static const char *__doc_nanogui_CameraController_click_callback = R"doc(Return the callback invoked when the left mouse button is clicked)doc";
+
 static const char *__doc_nanogui_CameraController_commit = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_drag_threshold = R"doc(Per-axis motion in pixels beyond which a click becomes a drag)doc";
 
 static const char *__doc_nanogui_CameraController_fly_mode =
 R"doc(Is first person navigation active?
@@ -484,6 +488,14 @@ static const char *__doc_nanogui_CameraController_m_axis = R"doc()doc";
 static const char *__doc_nanogui_CameraController_m_callback = R"doc()doc";
 
 static const char *__doc_nanogui_CameraController_m_center = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_click_armed = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_click_callback = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_click_double = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_click_pos = R"doc()doc";
 
 static const char *__doc_nanogui_CameraController_m_dir0 = R"doc()doc";
 
@@ -539,6 +551,13 @@ R"doc(Set the callback invoked whenever the camera changes
 The callback receives a copy of the new camera state and may keep it
 beyond the call, e.g. as application state read by another thread.)doc";
 
+static const char *__doc_nanogui_CameraController_set_click_callback =
+R"doc(Set the callback invoked when the left mouse button is clicked
+
+A press and release with at most drag_threshold pixels of motion in
+between counts as a click. The callback receives the release position
+and whether the press was a double-click (see MOD_DOUBLE_CLICK).)doc";
+
 static const char *__doc_nanogui_CameraController_set_fly_mode = R"doc()doc";
 
 static const char *__doc_nanogui_CameraController_set_state =
@@ -548,7 +567,11 @@ The roll of ``state`` relative to world_up() is preserved by later
 orbits. States with non-finite components or a zero distance are
 ignored.)doc";
 
-static const char *__doc_nanogui_CameraController_set_world_up = R"doc()doc";
+static const char *__doc_nanogui_CameraController_set_world_up =
+R"doc(Set the up direction of the scene
+
+With ``snap`` set, the closest signed world axis is used instead.
+Non-finite or zero vectors are ignored.)doc";
 
 static const char *__doc_nanogui_CameraController_state = R"doc(Return the current camera state)doc";
 

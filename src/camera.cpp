@@ -94,12 +94,21 @@ CameraController::CameraController(const CameraState &state, const Vector3f &wor
     set_state(state);
 }
 
-void CameraController::set_world_up(const Vector3f &world_up) {
+void CameraController::set_world_up(const Vector3f &world_up, bool snap) {
     float n = norm(world_up);
     if (!is_finite(world_up) || !(n > 0.f))
         return;
+    Vector3f up = world_up / n;
+    if (snap) {
+        int k = 0;
+        for (int i = 1; i < 3; ++i)
+            if (std::abs(up[i]) > std::abs(up[k]))
+                k = i;
+        up = Vector3f(0.f);
+        up[k] = world_up[k] > 0.f ? 1.f : -1.f;
+    }
     CameraState state = to_state(m_turntable);
-    m_world_up = world_up / n;
+    m_world_up = up;
     // Horizontal axes u, v with v = world_up x u, seeded by the axis least aligned with world_up
     float ax = std::abs(m_world_up.x()), ay = std::abs(m_world_up.y()),
           az = std::abs(m_world_up.z());
@@ -173,7 +182,18 @@ void CameraController::set_state(const CameraState &state) {
     commit(t);
 }
 
-bool CameraController::mouse_button_event(const Vector2i &, int button, bool down, int) {
+bool CameraController::mouse_button_event(const Vector2i &p, int button, bool down,
+                                          int modifiers) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && m_click_callback) {
+        if (down) {
+            m_click_armed = true;
+            m_click_double = (modifiers & MOD_DOUBLE_CLICK) != 0;
+            m_click_pos = Vector2f(p);
+        } else if (m_click_armed) {
+            m_click_armed = false;
+            m_click_callback(p, m_click_double);
+        }
+    }
     if (down) {
         if (m_drag_button >= 0 || button > GLFW_MOUSE_BUTTON_MIDDLE)
             return false;
@@ -189,8 +209,14 @@ bool CameraController::mouse_button_event(const Vector2i &, int button, bool dow
     return false;
 }
 
-bool CameraController::mouse_motion_event(const Vector2f &, const Vector2f &rel,
+bool CameraController::mouse_motion_event(const Vector2f &p, const Vector2f &rel,
                                           int button, int) {
+    // Moving away from the press position turns the click into a drag
+    if (m_click_armed) {
+        Vector2f d = p - m_click_pos;
+        if (std::max(std::abs(d.x()), std::abs(d.y())) > drag_threshold)
+            m_click_armed = false;
+    }
     // A release lost while the window was unfocused must not leave the drag stuck
     if (m_drag_button >= 0 && !(button & (1 << m_drag_button)))
         m_drag_button = -1;

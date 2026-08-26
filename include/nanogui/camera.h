@@ -123,9 +123,35 @@ public:
     /// Return the callback invoked whenever the camera changes
     const std::function<void(CameraState)> &callback() const { return m_callback; }
 
+    /**
+     * \brief Set the callback invoked when the left mouse button is clicked
+     *
+     * A press and release with at most \ref drag_threshold pixels of motion in
+     * between counts as a click. The callback receives the release position
+     * and whether the press was a double-click (see \ref MOD_DOUBLE_CLICK).
+     */
+    void set_click_callback(const std::function<void(Vector2i, bool)> &callback) {
+        m_click_callback = callback;
+    }
+
+    /// Return the callback invoked when the left mouse button is clicked
+    const std::function<void(Vector2i, bool)> &click_callback() const {
+        return m_click_callback;
+    }
+
+    /// Per-axis motion in pixels beyond which a click becomes a drag
+    float drag_threshold = 3.f;
+
     /// Up direction of the scene
     const Vector3f &world_up() const { return m_world_up; }
-    void set_world_up(const Vector3f &world_up);
+
+    /**
+     * \brief Set the up direction of the scene
+     *
+     * With \c snap set, the closest signed world axis is used instead.
+     * Non-finite or zero vectors are ignored.
+     */
+    void set_world_up(const Vector3f &world_up, bool snap = false);
 
     /// Reference length of the scene, which bounds the range of the zoom
     /// distance. Must be positive.
@@ -226,6 +252,13 @@ private:
 
     // Callback invoked whenever the camera changes
     std::function<void(CameraState)> m_callback;
+
+    // Callback invoked when the left mouse button is clicked
+    std::function<void(Vector2i, bool)> m_click_callback;
+
+    // Pending click: armed by a press, cancelled by motion beyond drag_threshold
+    bool m_click_armed = false, m_click_double = false;
+    Vector2f m_click_pos;
 
     // Button held during the current drag, or -1
     int m_drag_button = -1;

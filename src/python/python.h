@@ -44,4 +44,5 @@ namespace nb = nanobind;
 using namespace nanobind::literals;
 
 extern int widget_tp_traverse(PyObject *, visitproc, void *);
+extern int widget_tp_traverse_base(PyObject *, visitproc, void *, PyTypeObject *);
 extern int widget_tp_clear(PyObject *);
