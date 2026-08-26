@@ -127,6 +127,11 @@ __all__ = [
 ]
 
 
+def _clamp_size(size: ng.Vector2i) -> ng.Vector2i:
+    """Clamp a frame size to at least one pixel per dimension"""
+    return ng.Vector2i(max(1, size.x), max(1, size.y))
+
+
 class FrameStream:
     """
     ``FrameStream`` coordinates the handoff of frames between a producer and
@@ -239,7 +244,7 @@ class FrameStream:
         # a ready slot, the displayed slot, and typically one guarded by a
         # consumer fence until its reads retire.
         self._n = max_in_flight + 3
-        self.size = ng.Vector2i(size)
+        self.size = _clamp_size(size)
         sink.resize(self.size, self._n)
 
         self._ready = -1
@@ -424,7 +429,7 @@ class FrameStream:
         handshake is skipped when the thread started by ``start()`` has
         exited. A producer running on its own thread must still be alive.
         """
-        size = ng.Vector2i(size)
+        size = _clamp_size(size)
         if size == self.size:
             return
         handshake = self._thread is None or self._thread.is_alive()
