@@ -136,6 +136,14 @@ auto register_matrix_type(nb::module_ &m, const char *name) {
 
             return nb::ndarray<float>(&t->m, {Matrix::Size, Matrix::Size}, owner);
          })
+        .def("__array__",
+             [](Matrix &m, nb::handle, nb::handle) {
+                 return nb::ndarray<nb::numpy, Value, nb::f_contig>(
+                     m.m[0].v, { Matrix::Size, Matrix::Size });
+             },
+             "dtype"_a = nb::none(), "copy"_a = nb::none(),
+             nb::rv_policy::reference_internal,
+             "Convert into a NumPy array indexed by row and column")
         .def("__repr__", [](const Matrix &m) {
             std::ostringstream oss;
             oss << m;

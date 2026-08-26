@@ -29,7 +29,7 @@ class MyScreen(ng.Screen):
         )
         self.texture.upload(image)
         self.render_pass = ng.RenderPass(color_targets=[self])
-        self.quad = ng.Quad(self.render_pass)
+        self.quad = ng.TexturedQuad(self.render_pass)
         self.quad.set_texture(self.texture)
 
     def draw_contents(self):
@@ -56,7 +56,7 @@ class MyScreen(ng.Screen):
 
             # Set MVP and render
             mvp = proj @ view @ model
-            self.quad.set_mvp(mvp.T) # -> col-major
+            self.quad.set_mvp(mvp)
             self.quad.draw()
 
     def keyboard_event(self, key, scancode, action, modifiers):
