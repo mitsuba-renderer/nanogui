@@ -12,7 +12,13 @@ void register_ratemeter(nb::module_ &m) {
         .def("rate", &RateMeterd::rate, D(RateMeter, rate))
         .def("interval", &RateMeterd::interval, D(RateMeter, interval))
         .def("busy", &RateMeterd::busy, D(RateMeter, busy))
-        .def("tau", &RateMeterd::tau, D(RateMeter, tau));
+        .def("tau", &RateMeterd::tau, D(RateMeter, tau))
+        .def("__str__", [](const RateMeterd &m) {
+            char buf[64];
+            snprintf(buf, sizeof(buf), "%.1f ms (%.1f FPS)",
+                     m.interval() * 1e3, m.rate());
+            return std::string(buf);
+        });
 }
 
 #endif
