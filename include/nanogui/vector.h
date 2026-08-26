@@ -597,27 +597,35 @@ template <typename Value_, size_t Size_> struct Matrix {
         return result;
     }
 
+    /**
+     * \brief World-to-camera matrix of a camera positioned at \c origin that
+     * looks towards \c target
+     *
+     * The resulting camera space looks along -z with +x to the right and +y up.
+     */
     template <size_t S = Size, std::enable_if_t<S == 4, int> = 0>
     static Matrix look_at(const Array<Value, 3> &origin,
                           const Array<Value, 3> &target,
                           const Array<Value, 3> &up) {
 
         auto dir = normalize(target - origin);
-        auto left = normalize(cross(dir, up));
-        auto new_up = cross(left, dir);
+        auto right = normalize(cross(dir, up));
+        auto new_up = cross(right, dir);
         dir = -dir;
 
+        // Column-major storage: the camera basis vectors form the rows of
+        // the rotation block, and the last column holds the translation
         Matrix result(0);
-        result.m[0][0] = left.x();
-        result.m[0][1] = left.y();
-        result.m[0][2] = left.z();
-        result.m[1][0] = new_up.x();
+        result.m[0][0] = right.x();
+        result.m[1][0] = right.y();
+        result.m[2][0] = right.z();
+        result.m[0][1] = new_up.x();
         result.m[1][1] = new_up.y();
-        result.m[1][2] = new_up.z();
-        result.m[2][0] = dir.x();
-        result.m[2][1] = dir.y();
+        result.m[2][1] = new_up.z();
+        result.m[0][2] = dir.x();
+        result.m[1][2] = dir.y();
         result.m[2][2] = dir.z();
-        result.m[3][0] = -dot(left, origin);
+        result.m[3][0] = -dot(right, origin);
         result.m[3][1] = -dot(new_up, origin);
         result.m[3][2] = -dot(dir, origin);
         result.m[3][3] = 1.f;

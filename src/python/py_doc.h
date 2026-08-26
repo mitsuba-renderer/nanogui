@@ -1515,7 +1515,12 @@ static const char *__doc_nanogui_Matrix_Matrix_5 = R"doc(Initialize from columns
 
 static const char *__doc_nanogui_Matrix_T = R"doc()doc";
 
-static const char *__doc_nanogui_Matrix_look_at = R"doc()doc";
+static const char *__doc_nanogui_Matrix_look_at =
+R"doc(World-to-camera matrix of a camera positioned at ``origin`` that looks
+towards ``target``
+
+The resulting camera space looks along -z with +x to the right and +y
+up, which is the convention of perspective() and ortho().)doc";
 
 static const char *__doc_nanogui_Matrix_m = R"doc()doc";
 
