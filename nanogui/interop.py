@@ -167,13 +167,17 @@ class FrameStream:
     7. The slot displaced by step 6 returns to the free pool once the
        consumer's reads of it have retired.
 
-    The stream also carries an application-defined ``state`` object plus a
-    monotonically increasing generation counter, which together form a one-way
-    channel from the UI to the producer, e.g. for camera/view parameters.
-    In this case, an input handler on the UI thread calls ``set_state()``,
-    which bumps the generation, and the producer reads ``state()`` to pick
-    up the change. The object is passed by reference and should not be
-    modified following ``set_state()``.
+    The stream also carries an application-defined ``state`` object, which
+    forms a one-way channel from the UI to the producer, e.g. for camera/view
+    parameters. An input handler on the UI thread calls ``set_state()``, and
+    the producer reads ``state()``, which also reports whether the value
+    changed since it last looked. The object is passed by reference and should
+    not be modified following ``set_state()``.
+
+    The producer passes the state it used back to ``submit()``, and
+    ``present()`` yields it along with the texture of the frame on screen.
+    Overlays drawn from it line up with the image even though the frame on
+    screen was produced one or two states earlier.
 
     ``start()`` runs the producer loop on a background thread owned by the
     stream. An exception escaping the loop stops the stream, and the next
@@ -195,17 +199,20 @@ class FrameStream:
       ``wait_if_reconfiguring()``.
     """
 
+    size: ng.Vector2i                 # current frame size, in pixels
+    active: bool                      # producer loop flag; clear to stop
+    producer_rate: ng.RateMeter       # producer frame stats, see class docs
+    consumer_rate: ng.RateMeter       # display frame stats, see class docs
     _sink: FrameSink                  # storage + handoff adapter
     _n: int                           # total number of frame slots
     _max_in_flight: int               # cap on outstanding producer renders
     _spin: bool                       # poll instead of block in pace()
-    size: ng.Vector2i                 # current frame size, in pixels
-    active: bool                      # producer loop flag; clear to stop
     _error: BaseException | None      # exception that ended the producer loop
     _thread: threading.Thread | None  # producer thread started by start()
     _state: tuple[Any, int]           # (app state, generation), swapped whole
-    producer_rate: ng.RateMeter       # producer frame stats, see class docs
-    consumer_rate: ng.RateMeter       # display frame stats, see class docs
+    _state_seen: int                  # generation reported by the last state()
+    _slot_state: list[Any]            # per-slot state passed to submit()
+    _displayed_state: Any             # state of the frame on screen, or None
     _produce_start: float             # start of the current produce step
     _free: list[int]                  # slots available to the producer
     _ready: int                       # newest completed slot (consumer), or -1
@@ -257,6 +264,9 @@ class FrameStream:
         self._error = None
         self._thread = None
         self._state = (state, 0)
+        self._state_seen = -1
+        self._slot_state = [None] * self._n
+        self._displayed_state = None
 
         # Keep track of per-frame statistics on each end
         self.producer_rate = ng.RateMeter()
@@ -302,20 +312,25 @@ class FrameStream:
 
     def set_state(self, state: Any) -> None:
         """
-        Replace the application state (e.g., the camera view) and increment the
-        associated generation counter.
+        Replace the application state (e.g., the camera view). The producer
+        learns about the change through ``state()``.
         """
         # Only the consumer thread writes _state, and the producer picks up the
         # packed tuple with a single atomic attribute read. No lock is needed.
         self._state = (state, self._state[1] + 1)
 
-    def state(self) -> tuple[Any, int]:
-        """Return ``(state, generation)``.
+    def state(self) -> tuple[Any, bool]:
+        """Return ``(state, changed)``.
 
-        Producers can compare the generation with a cached value to detect view
-        or parameter changes.
+        The flag reports whether the state was replaced since the previous
+        call, which tells a progressive producer to discard what it has
+        accumulated so far. The first call and the one following a ``resize()``
+        report a change as well.
         """
-        return self._state
+        state, gen = self._state
+        changed = gen != self._state_seen
+        self._state_seen = gen
+        return state, changed
 
     def pace(self) -> None:
         """Block until at most ``max_in_flight - 1`` renders are outstanding.
@@ -330,9 +345,11 @@ class FrameStream:
                 event.wait()
         self._produce_start = perf_counter()
 
-    def submit(self, frame: Any) -> bool:
+    def submit(self, frame: Any, state: Any = None) -> bool:
         """Hand the latest finished frame to the consumer. ``frame`` is a
-        finished frame object compatible with the selected sink. The function
+        finished frame object compatible with the selected sink, and ``state``
+        is the application state it was produced from, which travels along and
+        reappears in ``present()`` once the frame is on screen. The function
         returns ``True`` when the frame was accepted for publication and
         ``False`` when no slot is available and the frame was dropped."""
         # Record a completion event tracking this render for pacing.
@@ -344,6 +361,8 @@ class FrameStream:
         # Reserve a free slot, or drop the frame when none is available
         idx = self._free.pop() if self._free else -1
         if idx != -1:
+            # Update state first, then publish via the append
+            self._slot_state[idx] = state
             self._sink.write(idx, frame)
             self._writing.append(idx)
 
@@ -355,19 +374,21 @@ class FrameStream:
         return idx != -1
 
     @contextlib.contextmanager
-    def present(self, render_pass: ng.RenderPass) -> Iterator[ng.Texture | None]:
-        """Yield the texture to be drawn in ``render_pass``.
+    def present(self, render_pass: ng.RenderPass) \
+            -> Iterator[tuple[ng.Texture | None, Any]]:
+        """Yield the texture to be drawn in ``render_pass`` together with the
+        application state it was produced from (see ``submit()``).
 
         Use this from the NanoGUI draw callback:
 
-            with stream.present(render_pass) as texture:
+            with stream.present(render_pass) as (texture, state):
                 if texture is not None:
                     quad.set_texture(texture)
                     quad.draw()
 
-        The context manager yields ``None`` until the first frame is ready. Later,
-        it always returns the last displayed texture until a newer one is ready.
-        A producer failure is re-raised here.
+        The context manager yields a ``None`` texture until the first frame is
+        ready. Later, it always returns the last displayed texture until a
+        newer one is ready. A producer failure is re-raised here.
         """
         if self._error is not None:
             raise self._error
@@ -398,6 +419,7 @@ class FrameStream:
             retired = self._displayed
             self._displayed = prepare
             self._ready = -1
+            self._displayed_state = self._slot_state[prepare]
             sink.prepare_present(prepare)
             self._stale = None
         self._free.extend(freed)
@@ -406,12 +428,12 @@ class FrameStream:
         # exists (kept in _stale) and otherwise yield None
         if self._displayed == -1:
             with render_pass:
-                yield self._stale
+                yield self._stale, self._displayed_state
             return
 
         tex = sink.texture(self._displayed)
         with render_pass:
-            yield tex
+            yield tex, self._displayed_state
             if retired != -1:
                 # Guard the displaced slot with a fence. It rejoins the free
                 # pool once the consumer's reads have retired (see above).
@@ -450,9 +472,16 @@ class FrameStream:
         self.size = size
         self._sink.resize(size, self._n)
 
+        # Frames rendered at the old size are worthless, and the next
+        # state() therefore reports a change even without a new value
+        self._state = (self._state[0], self._state[1] + 1)
+
         self._ready = -1
         self._displayed = -1
         self._free = list(range(self._n))
+        # ``_displayed_state`` still describes the pre-resize frame kept in
+        # _stale, which remains on screen until the producer catches up
+        self._slot_state = [None] * self._n
 
         # Restart rate trackers after the rebuild
         self.producer_rate.reset()
@@ -473,6 +502,8 @@ class FrameStream:
         self._ready = -1
         self._displayed = -1
         self._stale = None
+        self._slot_state = []
+        self._displayed_state = None
         self._pace_events = None
         self._sink.close()
 
