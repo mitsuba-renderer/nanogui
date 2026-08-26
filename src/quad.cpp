@@ -8,6 +8,7 @@
 */
 
 #include <nanogui/quad.h>
+#include <nanogui/renderpass.h>
 #include <nanogui/opengl.h>
 
 NAMESPACE_BEGIN(nanogui)
@@ -70,6 +71,8 @@ static const char *quad_fragment_shader =
         uniform sampler2D texture_sampler;
         uniform bool linear;
         uniform float texture_exposure;
+        uniform bool depth_from_alpha;
+        uniform vec4 depth_proj;
 
         vec3 linearToGamma22(vec3 linear) {
             return sign(linear) * pow(abs(linear), vec3(1.0/2.2));
@@ -81,6 +84,21 @@ static const char *quad_fragment_shader =
 
             if (linear)
                 color.rgb = linearToGamma22(color.rgb);
+
+            if (depth_from_alpha) {
+                // Map the eye-space depth in color.a to a window-space
+                // value using the set_depth_projection() coefficients.
+                // Non-finite values mark the background (far plane).
+                float z = -color.a;
+                float depth = 1.0;
+                if (!isinf(color.a) && !isnan(color.a))
+                    depth = clamp((depth_proj.x * z + depth_proj.y) /
+                                  (depth_proj.z * z + depth_proj.w), 0.0, 1.0);
+                gl_FragDepth = depth;
+                color.a = 1.0;
+            } else {
+                gl_FragDepth = gl_FragCoord.z;
+            }
 
             fragColor = color;
         }
@@ -94,6 +112,8 @@ static const char *quad_fragment_shader =
         uniform sampler2D texture_sampler;
         uniform bool linear;
         uniform float texture_exposure;
+        uniform bool depth_from_alpha;
+        uniform vec4 depth_proj;
 
         vec3 linearToGamma22(vec3 linear) {
             return sign(linear) * pow(abs(linear), vec3(1.0/2.2));
@@ -106,10 +126,80 @@ static const char *quad_fragment_shader =
             if (linear)
                 color.rgb = linearToGamma22(color.rgb);
 
+            if (depth_from_alpha) {
+                // Map the eye-space depth in color.a to a window-space
+                // value using the set_depth_projection() coefficients.
+                // Non-finite values mark the background (far plane).
+                float z = -color.a;
+                float depth = 1.0;
+                if (!isinf(color.a) && !isnan(color.a))
+                    depth = clamp((depth_proj.x * z + depth_proj.y) /
+                                  (depth_proj.z * z + depth_proj.w), 0.0, 1.0);
+                gl_FragDepth = depth;
+                color.a = 1.0;
+            } else {
+                gl_FragDepth = gl_FragCoord.z;
+            }
+
             fragColor = color;
         }
     )";
 #elif defined(NANOGUI_USE_METAL)
+    R"(
+        using namespace metal;
+
+        struct VertexOut {
+            float4 position [[position]];
+            float2 uv;
+        };
+
+        float3 linearToGamma22(float3 linear) {
+            return sign(linear) * pow(abs(linear), float3(1.0/2.2));
+        }
+
+        struct FragmentOut {
+            float4 color [[color(0)]];
+            float depth [[depth(any)]];
+        };
+
+        fragment FragmentOut fragment_main(VertexOut vert [[stage_in]],
+                     texture2d<float, access::sample> texture_sampler,
+                     sampler texture_sampler_sampler,
+                     constant bool &linear,
+                     constant float &texture_exposure,
+                     constant bool &depth_from_alpha,
+                     constant float4 &depth_proj) {
+            float4 color = texture_sampler.sample(texture_sampler_sampler, vert.uv);
+            color.rgb *= texture_exposure;
+
+            if (linear)
+                color.rgb = linearToGamma22(color.rgb);
+
+            FragmentOut out;
+            if (depth_from_alpha) {
+                // Map the eye-space depth in color.a to a window-space
+                // value using the set_depth_projection() coefficients.
+                // Non-finite values mark the background (far plane).
+                float z = -color.a;
+                float depth = 1.f;
+                if (!isinf(color.a) && !isnan(color.a))
+                    depth = clamp((depth_proj.x * z + depth_proj.y) /
+                                  (depth_proj.z * z + depth_proj.w), 0.f, 1.f);
+                out.depth = depth;
+                color.a = 1.f;
+            } else {
+                out.depth = vert.position.z;
+            }
+            out.color = color;
+            return out;
+        }
+    )";
+#endif
+
+#if defined(NANOGUI_USE_METAL)
+/* Variant for render passes without a depth attachment, where Metal rejects
+   pipelines whose fragment shader declares a depth output */
+static const char *quad_fragment_shader_nodepth =
     R"(
         using namespace metal;
 
@@ -138,11 +228,24 @@ static const char *quad_fragment_shader =
     )";
 #endif
 
+// The GL variants keep their depth write in either case, where it is legal
+// and simply ignored when the framebuffer lacks a depth buffer
+static const char *select_fragment_shader(RenderPass *render_pass) {
+#if defined(NANOGUI_USE_METAL)
+    if (!render_pass->targets()[0])
+        return quad_fragment_shader_nodepth;
+#else
+    (void) render_pass;
+#endif
+    return quad_fragment_shader;
+}
+
 TexturedQuad::TexturedQuad(RenderPass *render_pass, BlendMode blend_mode)
     : Shader(render_pass, "quad_shader",
              quad_vertex_shader,
-             quad_fragment_shader,
-             blend_mode) {
+             select_fragment_shader(render_pass),
+             blend_mode),
+      m_has_depth(render_pass->targets()[0] != nullptr) {
 
     float positions[] = {
         -1.0f, -1.0f, 0.0f,
@@ -175,6 +278,10 @@ TexturedQuad::TexturedQuad(RenderPass *render_pass, BlendMode blend_mode)
     // Initialize texture uniforms with defaults
     set_uniform("linear", false);
     set_uniform("texture_exposure", 1.0f);
+    if (m_has_depth) {
+        set_uniform("depth_from_alpha", false);
+        set_depth_projection(Matrix4f::perspective(1.f, 0.1f, 100.f));
+    }
 }
 
 void TexturedQuad::set_texture(Texture *texture) {
@@ -188,6 +295,38 @@ void TexturedQuad::set_mvp(const Matrix4f &mvp) {
 void TexturedQuad::set_linear(bool linear) {
     m_linear = linear;
     set_uniform("linear", linear);
+}
+
+void TexturedQuad::set_depth_from_alpha(bool enabled) {
+    if (!m_has_depth) {
+        if (enabled)
+            throw std::runtime_error(
+                "TexturedQuad::set_depth_from_alpha(): the render pass has "
+                "no depth attachment");
+        return;
+    }
+    m_depth_from_alpha = enabled;
+    set_uniform("depth_from_alpha", enabled);
+}
+
+void TexturedQuad::set_depth_projection(const Matrix4f &projection, float scale) {
+    if (!m_has_depth)
+        return;
+    // Rows 2 and 3 of the projection applied to (0, 0, z, 1) give clip-space
+    // z and w. The matrix is stored column-major, and z arrives in units of
+    // 'scale' from the alpha channel.
+    float zz = projection.m[2][2] * scale, zw = projection.m[3][2],
+          wz = projection.m[2][3] * scale, ww = projection.m[3][3];
+
+    // The shader writes a window-space depth in [0, 1] on either backend.
+    // Folding the remap from the API's clip depth range into the
+    // coefficients keeps the fragment shader free of backend conventions.
+    auto [z0, z1] = Matrix4f::clip_depth_range();
+    float s = 1.f / (z1 - z0), t = -z0 * s;
+    zz = s * zz + t * wz;
+    zw = s * zw + t * ww;
+
+    set_uniform("depth_proj", Vector4f(zz, zw, wz, ww));
 }
 
 void TexturedQuad::set_texture_exposure(float exposure) {

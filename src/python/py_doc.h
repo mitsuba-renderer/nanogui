@@ -3128,6 +3128,8 @@ Parameter ``render_pass``:
 Parameter ``blend_mode``:
     Alpha blending mode for rendering)doc";
 
+static const char *__doc_nanogui_TexturedQuad_depth_from_alpha = R"doc(Get whether the depth buffer is written from the alpha channel)doc";
+
 static const char *__doc_nanogui_TexturedQuad_draw =
 R"doc(Render the quad
 
@@ -3139,9 +3141,46 @@ R"doc(Get whether the texture is treated as linear space
 Returns:
     True if texture is treated as linear space)doc";
 
+static const char *__doc_nanogui_TexturedQuad_m_depth_from_alpha = R"doc()doc";
+
+static const char *__doc_nanogui_TexturedQuad_m_has_depth = R"doc()doc";
+
 static const char *__doc_nanogui_TexturedQuad_m_linear = R"doc()doc";
 
 static const char *__doc_nanogui_TexturedQuad_m_texture_exposure = R"doc()doc";
+
+static const char *__doc_nanogui_TexturedQuad_set_depth_from_alpha =
+R"doc(Write depth taken from the texture's alpha channel
+
+When set, the class interprets the texture's alpha channel as depth
+and writes it to the depth buffer. A stored value is the distance of
+the surface seen by that texel from the camera plane, measured along
+the view axis (the negated eye-space z coordinate). Values that are
+not finite, such as an infinity marking the background, land on the
+far plane.
+
+set_depth_projection() configures the conversion from these values to
+the depth buffer.
+
+Geometry drawn into the same render pass with depth testing is then
+occluded by the image, which is useful for 3D overlays. The render
+pass must have a depth attachment.
+
+The default is false.
+
+Parameter ``enabled``:
+    True to derive the depth buffer from the alpha channel)doc";
+
+static const char *__doc_nanogui_TexturedQuad_set_depth_projection =
+R"doc(Set the projection used by set_depth_from_alpha()
+
+Parameter ``projection``:
+    Camera-to-clip transformation, e.g. from Matrix4f::perspective()
+    or Matrix4f::ortho().
+
+Parameter ``scale``:
+    Unit of the depth values stored in the alpha channel. Default is
+    1.)doc";
 
 static const char *__doc_nanogui_TexturedQuad_set_linear =
 R"doc(Set whether the texture is in linear space

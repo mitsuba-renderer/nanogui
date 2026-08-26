@@ -83,6 +83,45 @@ public:
     bool linear() const { return m_linear; }
 
     /**
+     * \brief Write depth taken from the texture's alpha channel
+     *
+     * When set, the class interprets the texture's alpha channel as depth
+     * and writes it to the depth buffer. A stored value is the distance of
+     * the surface seen by that texel from the camera plane, measured along
+     * the view axis (the negated eye-space z coordinate). Values that are
+     * not finite, such as an infinity marking the background, land on the
+     * far plane.
+     *
+     * \ref set_depth_projection() configures the conversion from these
+     * values to the depth buffer.
+     *
+     * Geometry drawn into the same render pass with depth testing is then
+     * occluded by the image, which is useful for 3D overlays. The render
+     * pass must have a depth attachment.
+     *
+     * The default is false.
+     *
+     * \param enabled
+     *     True to derive the depth buffer from the alpha channel
+     */
+    void set_depth_from_alpha(bool enabled);
+
+    /// Get whether the depth buffer is written from the alpha channel
+    bool depth_from_alpha() const { return m_depth_from_alpha; }
+
+    /**
+     * \brief Set the projection used by \ref set_depth_from_alpha()
+     *
+     * \param projection
+     *     Camera-to-clip transformation, e.g. from \ref Matrix4f::perspective()
+     *     or \ref Matrix4f::ortho().
+     *
+     * \param scale
+     *     Unit of the depth values stored in the alpha channel. Default is 1.
+     */
+    void set_depth_projection(const Matrix4f &projection, float scale = 1.f);
+
+    /**
      * \brief Set the exposure multiplier for the texture
      *
      * This value is multiplied onto the texture color before the gamma 2.2
@@ -103,6 +142,8 @@ public:
 private:
     bool m_linear = false;
     float m_texture_exposure = 1.0f;
+    bool m_depth_from_alpha = false;
+    bool m_has_depth;
 };
 
 NAMESPACE_END(nanogui)

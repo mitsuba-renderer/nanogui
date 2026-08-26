@@ -20,6 +20,14 @@ void register_quad(nb::module_ &m) {
              "linear"_a)
         .def("linear", &TexturedQuad::linear,
              D(TexturedQuad, linear))
+        .def("set_depth_from_alpha", &TexturedQuad::set_depth_from_alpha,
+             D(TexturedQuad, set_depth_from_alpha),
+             "enabled"_a)
+        .def("depth_from_alpha", &TexturedQuad::depth_from_alpha,
+             D(TexturedQuad, depth_from_alpha))
+        .def("set_depth_projection", &TexturedQuad::set_depth_projection,
+             D(TexturedQuad, set_depth_projection),
+             "projection"_a, "scale"_a = 1.f)
         .def("set_texture_exposure", &TexturedQuad::set_texture_exposure,
              D(TexturedQuad, set_texture_exposure),
              "exposure"_a)
