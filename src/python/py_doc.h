@@ -1499,6 +1499,53 @@ Returns:
     The preferred size, accounting for things such as spacing, padding
     for icons, etc.)doc";
 
+static const char *__doc_nanogui_LineRenderer =
+R"doc(Renderer for 3D line segments with a constant width in pixels
+
+This class draws 3D line segments on OpenGL, GLES, and Metal. It takes
+a list of segments (or an axis-aligned box via set_box()) and draws
+them with a specified screen-space line width and color. It is
+suitable for overlays such as bounding boxes, gizmos, and wireframes.)doc";
+
+static const char *__doc_nanogui_LineRenderer_LineRenderer =
+R"doc(Initialize the line renderer
+
+Parameter ``render_pass``:
+    RenderPass object encoding targets to which the lines will be
+    rendered
+
+Parameter ``blend_mode``:
+    Alpha blending mode for rendering)doc";
+
+static const char *__doc_nanogui_LineRenderer_draw =
+R"doc(Render the segments
+
+This method handles begin(), draw_array(), and end() internally.)doc";
+
+static const char *__doc_nanogui_LineRenderer_m_segment_count = R"doc()doc";
+
+static const char *__doc_nanogui_LineRenderer_m_width = R"doc()doc";
+
+static const char *__doc_nanogui_LineRenderer_set_box = R"doc(Upload the 12 edges of an axis-aligned box)doc";
+
+static const char *__doc_nanogui_LineRenderer_set_color = R"doc(Set the line color (default: white))doc";
+
+static const char *__doc_nanogui_LineRenderer_set_mvp = R"doc(Set the model-view-projection matrix)doc";
+
+static const char *__doc_nanogui_LineRenderer_set_segments =
+R"doc(Upload a set of line segments
+
+Parameter ``endpoints``:
+    Pointer to ``2 * count`` vertices holding the start and end point
+    of every segment in turn
+
+Parameter ``count``:
+    Number of segments)doc";
+
+static const char *__doc_nanogui_LineRenderer_set_width = R"doc(Set the line width in framebuffer pixels (default: 1))doc";
+
+static const char *__doc_nanogui_LineRenderer_width = R"doc(Return the line width in framebuffer pixels)doc";
+
 static const char *__doc_nanogui_Matrix =
 R"doc(Simple matrix class with *column-major* storage (that is the
 convention used by OpenGL/Metal))doc";
