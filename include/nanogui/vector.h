@@ -706,6 +706,39 @@ inline Matrix3f inverse(const Matrix3f& mat) {
     return result;
 }
 
+/// Gauss-Jordan inverse, which returns a zero matrix for singular input
+template <typename Value, size_t Size>
+Matrix<Value, Size> inverse(const Matrix<Value, Size>& mat) {
+    Matrix<Value, Size> a(mat), r((Value) 1);
+    for (size_t c = 0; c < Size; ++c) {
+        size_t p = c;
+        for (size_t i = c + 1; i < Size; ++i)
+            if (std::abs(a.m[c][i]) > std::abs(a.m[c][p]))
+                p = i;
+        if (a.m[c][p] == (Value) 0)
+            return Matrix<Value, Size>((Value) 0);
+        for (size_t j = 0; j < Size; ++j) {
+            std::swap(a.m[j][c], a.m[j][p]);
+            std::swap(r.m[j][c], r.m[j][p]);
+        }
+        Value inv = (Value) 1 / a.m[c][c];
+        for (size_t j = 0; j < Size; ++j) {
+            a.m[j][c] *= inv;
+            r.m[j][c] *= inv;
+        }
+        for (size_t i = 0; i < Size; ++i) {
+            if (i == c)
+                continue;
+            Value f = a.m[c][i];
+            for (size_t j = 0; j < Size; ++j) {
+                a.m[j][i] -= f * a.m[j][c];
+                r.m[j][i] -= f * r.m[j][c];
+            }
+        }
+    }
+    return r;
+}
+
 inline Matrix3f transpose(const Matrix3f& mat) {
     Matrix3f result;
     for (int m = 0; m < 3; ++m) {

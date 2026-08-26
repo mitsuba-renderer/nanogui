@@ -3947,6 +3947,8 @@ static const char *__doc_nanogui_inverse = R"doc()doc";
 
 static const char *__doc_nanogui_inverse_2 = R"doc()doc";
 
+static const char *__doc_nanogui_inverse_3 = R"doc(Gauss-Jordan inverse; returns a zero matrix for singular input)doc";
+
 static const char *__doc_nanogui_ituth273_ColorPrimaries = R"doc()doc";
 
 static const char *__doc_nanogui_ituth273_ColorPrimaries_BT2020 = R"doc()doc";

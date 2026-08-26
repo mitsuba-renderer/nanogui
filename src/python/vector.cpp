@@ -112,6 +112,10 @@ auto register_matrix_type(nb::module_ &m, const char *name) {
              })
         .def_prop_ro("T", &Matrix::T)
         .def("__matmul__", [](const Matrix &a, const Matrix &b) { return a * b; }, nb::is_operator())
+        .def("__matmul__", [](const Matrix &a, const Vector &b) { return a * b; }, nb::is_operator())
+        .def("__matmul__", [](const Matrix &a, const Array<Value, Size - 1> &b) { return a * b; },
+             nb::is_operator(), "Transform a point (homogeneous coordinates, with perspective division)")
+        .def("inverse", [](const Matrix &a) { return inverse(a); })
         .def("__len__", [](const Matrix &) -> size_t { return Matrix::Size; })
         .def("__getitem__", [](const Matrix &m, size_t index) -> const Vector& {
             if (index >= Matrix::Size)
