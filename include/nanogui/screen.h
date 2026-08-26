@@ -183,6 +183,16 @@ public:
     /// Window resize event handler
     virtual bool resize_event(const Vector2i& size);
 
+    /**
+     * \brief Handler called once a resize has settled
+     *
+     * \ref resize_event() fires at every intermediate size during a resize,
+     * while this handler fires once at the end (detected via a Cocoa
+     * notification on macOS and a 250 ms debounce elsewhere). It is the
+     * place for expensive resolution-dependent work.
+     */
+    virtual bool resize_end_event(const Vector2i &size);
+
     /// Window maximization event handler
     virtual bool maximize_event(bool maximized);
 
@@ -201,16 +211,6 @@ public:
 
     /// Return a pointer to the underlying GLFW window data structure
     GLFWwindow *glfw_window() const { return m_glfw_window; }
-
-    /**
-     * \brief Is the window currently in an interactive (live) resize?
-     *
-     * True while the user drags a window edge and false the instant they
-     * release. Lets applications defer expensive resolution-dependent
-     * reconfiguration until the resize settles. Always false on platforms
-     * without a live-resize concept.
-     */
-    bool in_live_resize() const;
 
     /// Return a pointer to the underlying NanoVG draw context
     NVGcontext *nvg_context() const { return m_nvg_context; }
@@ -305,6 +305,7 @@ public:
     void drop_callback_event(int count, const char **filenames);
     void scroll_callback_event(double x, double y);
     void resize_callback_event(int width, int height);
+    void resize_end_callback_event();
 
     /* Internal helper functions */
     /// Next glfwGetTime() deadline at which the lazy main loop must wake up (or infinity)
@@ -357,6 +358,15 @@ protected:
     bool m_tooltip_force_visible = false;
     RateMeter<double> m_frame_timer;
     uint64_t m_frame_index;
+    bool m_resize_pending = false;
+    double m_last_resize = 0.0;
+
+    bool in_live_resize() const;
+#if defined(__APPLE__)
+    void *m_resize_observer = nullptr;
+    void live_resize_observer_install();
+    void live_resize_observer_remove();
+#endif
 #if defined(NANOGUI_USE_METAL)
     void *m_metal_texture = nullptr;
     void *m_metal_drawable = nullptr;

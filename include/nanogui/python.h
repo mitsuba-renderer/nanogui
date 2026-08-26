@@ -99,6 +99,9 @@ extern "C" {
     }                                                                          \
     virtual bool resize_event(const ::nanogui::Vector2i &size) override {      \
         NB_OVERRIDE(resize_event, size);                                       \
+    }                                                                          \
+    virtual bool resize_end_event(const ::nanogui::Vector2i &size) override {  \
+        NB_OVERRIDE(resize_end_event, size);                                   \
     }
 
 NAMESPACE_BEGIN(nanobind)

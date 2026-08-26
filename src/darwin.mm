@@ -1,5 +1,9 @@
 #include <nanogui/nanogui.h>
 #import <Cocoa/Cocoa.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_COCOA 1
+#include <GLFW/glfw3native.h>
 
 #if defined(NANOGUI_USE_METAL)
 #  import <Metal/Metal.h>
@@ -27,8 +31,31 @@ void disable_saved_application_state_osx() {
 }
 
 bool Screen::in_live_resize() const {
-    NSWindow *nswin = (__bridge NSWindow *) m_nswin;
+    NSWindow *nswin = glfwGetCocoaWindow(m_glfw_window);
     return nswin != nil && [nswin inLiveResize];
+}
+
+void Screen::live_resize_observer_install() {
+    NSWindow *nswin = glfwGetCocoaWindow(m_glfw_window);
+    if (nswin == nil)
+        return;
+    Screen *screen = this;
+    id token = [[NSNotificationCenter defaultCenter]
+        addObserverForName:NSWindowDidEndLiveResizeNotification
+                    object:nswin
+                     queue:nil
+                usingBlock:^(NSNotification *) {
+                    screen->resize_end_callback_event();
+                }];
+    m_resize_observer = (__bridge_retained void *) token;
+}
+
+void Screen::live_resize_observer_remove() {
+    if (!m_resize_observer)
+        return;
+    id token = (__bridge_transfer id) m_resize_observer;
+    [[NSNotificationCenter defaultCenter] removeObserver:token];
+    m_resize_observer = nullptr;
 }
 
 #if defined(NANOGUI_USE_METAL)
