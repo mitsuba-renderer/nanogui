@@ -1152,6 +1152,8 @@ or ``double``.)doc";
 
 static const char *__doc_nanogui_FloatBox_FloatBox = R"doc()doc";
 
+static const char *__doc_nanogui_FloatBox_callback = R"doc(The callback installed via set_callback())doc";
+
 static const char *__doc_nanogui_FloatBox_m_max_value = R"doc()doc";
 
 static const char *__doc_nanogui_FloatBox_m_min_value = R"doc()doc";
@@ -1623,6 +1625,8 @@ Template parameters should be integral types, e.g. ``int``, ``long``,
 ``uint32_t``, etc.)doc";
 
 static const char *__doc_nanogui_IntBox_IntBox = R"doc()doc";
+
+static const char *__doc_nanogui_IntBox_callback = R"doc(The callback installed via set_callback())doc";
 
 static const char *__doc_nanogui_IntBox_m_max_value = R"doc()doc";
 

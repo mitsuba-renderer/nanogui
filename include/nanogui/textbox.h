@@ -216,17 +216,21 @@ public:
     }
 
     void set_callback(const std::function<void(Scalar)> &cb) {
+        m_typed_callback = cb;
         TextBox::set_callback(
-            [cb, this](const std::string &str) {
+            [this](const std::string &str) {
                 std::istringstream iss(str);
                 Scalar value = 0;
                 iss >> value;
                 set_value(value);
-                cb(value);
+                m_typed_callback(value);
                 return true;
             }
         );
     }
+
+    /// The callback installed via \ref set_callback()
+    const std::function<void(Scalar)> &callback() const { return m_typed_callback; }
 
     void set_value_increment(Scalar incr) {
         m_value_increment = incr;
@@ -297,6 +301,7 @@ public:
         return false;
     }
 private:
+    std::function<void(Scalar)> m_typed_callback;
     Scalar m_mouse_down_value;
     Scalar m_value_increment;
     Scalar m_min_value, m_max_value;
@@ -343,13 +348,17 @@ public:
     }
 
     void set_callback(const std::function<void(Scalar)> &cb) {
-        TextBox::set_callback([cb, this](const std::string &str) {
+        m_typed_callback = cb;
+        TextBox::set_callback([this](const std::string &str) {
             Scalar scalar = (Scalar) std::stod(str);
             set_value(scalar);
-            cb(scalar);
+            m_typed_callback(scalar);
             return true;
         });
     }
+
+    /// The callback installed via \ref set_callback()
+    const std::function<void(Scalar)> &callback() const { return m_typed_callback; }
 
     void set_value_increment(Scalar incr) {
         m_value_increment = incr;
@@ -422,6 +431,7 @@ public:
 
 private:
     std::string m_number_format;
+    std::function<void(Scalar)> m_typed_callback;
     Scalar m_mouse_down_value;
     Scalar m_value_increment;
     Scalar m_min_value, m_max_value;

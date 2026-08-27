@@ -181,6 +181,14 @@ void register_widget(nb::module_ &m) {
         .def("keyboard_character_event", &Widget::keyboard_character_event,
              D(Widget, keyboard_character_event))
         .def("preferred_size", &Widget::preferred_size, D(Widget, preferred_size))
+        .def("preferred_size_impl",
+             [](const Widget &w, NVGcontext *ctx) {
+                 // Expose the protected virtual that Python widget
+                 // subclasses inherit (NANOGUI_WIDGET_OVERLOADS routes
+                 // preferred size queries through it)
+                 struct Access : Widget { using Widget::preferred_size_impl; };
+                 return (w.*(&Access::preferred_size_impl))(ctx);
+             }, D(Widget, preferred_size_impl))
         .def("preferred_size_changed", &Widget::preferred_size_changed, D(Widget, preferred_size_changed))
         .def("perform_layout", &Widget::perform_layout, D(Widget, perform_layout))
         .def("screen", nb::overload_cast<>(&Widget::screen, nb::const_), D(Widget, screen))

@@ -26,7 +26,6 @@ nanobind_add_module(nanogui-python MODULE
   textbox.cpp
   textarea.cpp
   theme.cpp
-  formhelper.cpp
   misc.cpp
   canvas.cpp
   nanovg.cpp
@@ -80,12 +79,20 @@ if (NANOGUI_INSTALL)
   set_target_properties(nanogui-python PROPERTIES INSTALL_RPATH "${NANOGUI_ORIGIN}")
 endif()
 
-if (NOT (CMAKE_CURRENT_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR))
-  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.py
-                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../../nanogui/__init__.py
-                                                      ${CMAKE_CURRENT_BINARY_DIR}/../../nanogui/__init__.py
-                     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../../nanogui/__init__.py)
-endif()
+set(NANOGUI_PYTHON_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../nanogui)
+set(NANOGUI_PYTHON_FILES __init__.py formhelper.py interop.py)
+
+foreach (NANOGUI_PYTHON_FILE IN LISTS NANOGUI_PYTHON_FILES)
+  list(APPEND NANOGUI_PYTHON_OUTPUTS ${NANOGUI_OUTPUT_DIRECTORY}/${NANOGUI_PYTHON_FILE})
+
+  if (NOT (CMAKE_CURRENT_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR))
+    add_custom_command(OUTPUT ${NANOGUI_OUTPUT_DIRECTORY}/${NANOGUI_PYTHON_FILE}
+                       COMMAND ${CMAKE_COMMAND} -E copy
+                               ${NANOGUI_PYTHON_SOURCE_DIRECTORY}/${NANOGUI_PYTHON_FILE}
+                               ${NANOGUI_OUTPUT_DIRECTORY}/${NANOGUI_PYTHON_FILE}
+                       DEPENDS ${NANOGUI_PYTHON_SOURCE_DIRECTORY}/${NANOGUI_PYTHON_FILE})
+  endif()
+endforeach()
 
 nanobind_add_stub(
   nanobind-python-stub
@@ -102,7 +109,7 @@ nanobind_add_stub(
 
   DEPENDS
     nanogui-python
-    ${NANOGUI_OUTPUT_DIRECTORY}/__init__.py
+    ${NANOGUI_PYTHON_OUTPUTS}
 
   MARKER_FILE
     ${NANOGUI_OUTPUT_DIRECTORY}/py.typed
@@ -114,7 +121,7 @@ nanobind_add_stub(
 if (NANOGUI_INSTALL)
   install(
     FILES
-      ${NANOGUI_OUTPUT_DIRECTORY}/__init__.py
+      ${NANOGUI_PYTHON_OUTPUTS}
       ${NANOGUI_OUTPUT_DIRECTORY}/__init__.pyi
       ${NANOGUI_OUTPUT_DIRECTORY}/glfw.pyi
       ${NANOGUI_OUTPUT_DIRECTORY}/icons.pyi

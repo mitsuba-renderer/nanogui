@@ -2,6 +2,8 @@ from importlib import import_module as _import
 
 _import('nanogui.nanogui_ext')
 
+from .formhelper import FormHelper
+
 def cmake_dir():
     from os import path
     file_dir = path.abspath(path.dirname(__file__))

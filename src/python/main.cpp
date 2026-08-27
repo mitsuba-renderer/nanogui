@@ -23,7 +23,6 @@ extern void register_textbox(nb::module_ &m);
 extern void register_textarea(nb::module_ &m);
 extern void register_theme(nb::module_ &m);
 extern void register_canvas(nb::module_ &m);
-extern void register_formhelper(nb::module_ &m);
 extern void register_misc(nb::module_ &m);
 extern void register_nanovg(nb::module_ &m);
 extern void register_render(nb::module_ &m);
@@ -134,7 +133,6 @@ NB_MODULE(nanogui_ext, m_) {
     register_textarea(m);
     register_theme(m);
     register_canvas(m);
-    register_formhelper(m);
     register_misc(m);
     register_nanovg(m);
     register_render(m);
