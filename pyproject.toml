@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "scikit-build-core",
+    "scikit-build-core>=1.0",
     "nanobind==3.0.0",
     "nanobind-backend>=1.0.0"
 ]
@@ -17,18 +17,13 @@ dependencies = ["nanobind-backend>=1.0.0"]
 authors = [
     { name = "Wenzel Jakob", email = "wenzel.jakob@epfl.ch" }
 ]
-license = { text = "BSD" }
+license = "BSD-3-Clause"
+license-files = ["LICENSE.txt"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD License",
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: User Interfaces"
 ]
@@ -40,9 +35,10 @@ Issues = "https://github.com/mitsuba-renderer/nanogui/issues"
 
 
 [tool.scikit-build]
-minimum-version = "0.4"
+minimum-version = "1.0"
+cmake.version = ">=3.15"
 build-dir = "build/{wheel_tag}"
-cmake.verbose = true
+build.verbose = true
 logging.level = "INFO"
 wheel.py-api = "cp310"
 
@@ -57,7 +53,8 @@ cmake.args = [
 wheel.packages = ["nanogui"]
 
 
-[tool.scikit-build.metadata.version]
+[[tool.dynamic-metadata]]
+field = "version"
 provider = "scikit_build_core.metadata.regex"
 input = "include/nanogui/common.h"
 regex = '''(?sx)

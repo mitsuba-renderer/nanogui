@@ -54,6 +54,13 @@ jobs:
     if: ${{ github.event.inputs.upload == '1' }}
     needs: [build_wheels]
 
+    environment:
+      name: pypi
+      url: https://pypi.org/p/nanogui
+
+    permissions:
+      id-token: write
+
     steps:
       - uses: actions/download-artifact@v7
         with:
@@ -63,5 +70,5 @@ jobs:
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: __token__
-          password: ${{ secrets.PYPI_PASSWORD }}
+          attestations: true
+          print-hash: true
