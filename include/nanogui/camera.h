@@ -73,6 +73,8 @@ struct NANOGUI_EXPORT CameraState {
  *
  * Pressing WASD or the cursor keys switches to first person navigation, in
  * which case dragging LMB turns the camera, and the wheel changes the speed.
+ * Q and E move down and up along the world up axis, and holding Shift
+ * multiplies the speed by \ref fly_boost.
  *
  * The \ref frame() method frames a given bounding box with a smooth camera
  * transition from the current view and switches back to orbit mode.
@@ -167,10 +169,13 @@ public:
     float zoom_step = 0.8f;
 
     /// Fly speed in multiples of the pivot distance per second
-    float fly_speed = 1.2f;
+    float fly_speed = 0.5f;
 
     /// Seconds over which a held key ramps up to full speed
     float fly_ramp = 0.5f;
+
+    /// Speed multiple applied while Shift is held in first person navigation
+    float fly_boost = 4.f;
 
     /// Handle mouse button presses, see \ref Widget::mouse_button_event()
     bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers);
@@ -274,6 +279,9 @@ private:
 
     // Bit mask of held navigation keys
     int m_keys = 0;
+
+    // Is the Shift speed boost active?
+    bool m_boost = false;
 
     // Time of the last update() call
     double m_last_update = -1.0;

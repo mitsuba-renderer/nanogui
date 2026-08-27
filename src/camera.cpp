@@ -276,12 +276,15 @@ bool CameraController::scroll_event(const Vector2i &, const Vector2f &rel) {
 }
 
 bool CameraController::keyboard_event(int key, int, int action, int modifiers) {
+    m_boost = (modifiers & GLFW_MOD_SHIFT) != 0;
     int bit;
     switch (key) {
         case GLFW_KEY_W: case GLFW_KEY_UP:    bit = 1; break;
         case GLFW_KEY_S: case GLFW_KEY_DOWN:  bit = 2; break;
         case GLFW_KEY_D: case GLFW_KEY_RIGHT: bit = 4; break;
         case GLFW_KEY_A: case GLFW_KEY_LEFT:  bit = 8; break;
+        case GLFW_KEY_E:                      bit = 16; break;
+        case GLFW_KEY_Q:                      bit = 32; break;
         default: return false;
     }
     if (action == GLFW_PRESS) {
@@ -297,8 +300,10 @@ bool CameraController::keyboard_event(int key, int, int action, int modifiers) {
 
 void CameraController::focus_event(bool focused) {
     // Key releases are not delivered while another window has focus
-    if (!focused)
+    if (!focused) {
         m_keys = 0;
+        m_boost = false;
+    }
 }
 
 bool CameraController::update() {
@@ -309,14 +314,18 @@ bool CameraController::update() {
     bool changed = false;
 
     int fwd = !!(m_keys & 1) - !!(m_keys & 2),
-        rgt = !!(m_keys & 4) - !!(m_keys & 8);
-    if (m_fly && (fwd != 0 || rgt != 0) && dt > 0.f) {
+        rgt = !!(m_keys & 4) - !!(m_keys & 8),
+        upv = !!(m_keys & 16) - !!(m_keys & 32);
+    if (m_fly && (fwd != 0 || rgt != 0 || upv != 0) && dt > 0.f) {
         float ramp = std::max(fly_ramp, 1e-6f);
         m_held = std::min(m_held + dt, ramp);
         float step = m_turntable.distance * fly_speed * dt * m_held / ramp;
+        if (m_boost)
+            step *= fly_boost;
         Vector3f forward, right, up;
         to_state(m_turntable).basis(forward, right, up);
-        Vector3f offset = forward * (fwd * step) + right * (rgt * step);
+        Vector3f offset = forward * (fwd * step) + right * (rgt * step) +
+                          m_world_up * (upv * step);
         m_animating = false;
         // The drag snapshot moves along so that a drag in progress carries on
         m_drag_start.pivot += offset;

@@ -408,7 +408,8 @@ whenever the camera changes.
 
 Pressing WASD or the cursor keys switches to first person navigation,
 in which case dragging LMB turns the camera, and the wheel changes the
-speed.
+speed. Q and E move down and up along the world up axis, and holding
+Shift multiplies the speed by fly_boost.
 
 The frame() method frames a given bounding box with a smooth camera
 transition from the current view and switches back to orbit mode.
@@ -453,6 +454,8 @@ static const char *__doc_nanogui_CameraController_click_callback = R"doc(Return 
 static const char *__doc_nanogui_CameraController_commit = R"doc()doc";
 
 static const char *__doc_nanogui_CameraController_drag_threshold = R"doc(Per-axis motion in pixels beyond which a click becomes a drag)doc";
+
+static const char *__doc_nanogui_CameraController_fly_boost = R"doc(Speed multiple applied while Shift is held in first person navigation)doc";
 
 static const char *__doc_nanogui_CameraController_fly_mode =
 R"doc(Is first person navigation active?

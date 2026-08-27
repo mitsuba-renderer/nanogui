@@ -80,6 +80,8 @@ void register_camera(nb::module_ &m) {
                 D(CameraController, fly_speed))
         .def_rw("fly_ramp", &CameraController::fly_ramp,
                 D(CameraController, fly_ramp))
+        .def_rw("fly_boost", &CameraController::fly_boost,
+                D(CameraController, fly_boost))
         .def("mouse_button_event", &CameraController::mouse_button_event,
              D(CameraController, mouse_button_event),
              "p"_a, "button"_a, "down"_a, "modifiers"_a)
