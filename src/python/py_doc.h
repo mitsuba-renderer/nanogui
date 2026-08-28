@@ -3462,6 +3462,14 @@ R"doc(Render the quad
 
 This method handles begin(), draw_array(), and end() internally)doc";
 
+static const char *__doc_nanogui_TexturedQuad_exposure =
+R"doc(Get the current exposure multiplier
+
+Returns:
+    Current exposure factor)doc";
+
+static const char *__doc_nanogui_TexturedQuad_hdr = R"doc(Get whether colors may exceed the [0, 1] display range)doc";
+
 static const char *__doc_nanogui_TexturedQuad_linear =
 R"doc(Get whether the texture is treated as linear space
 
@@ -3470,11 +3478,13 @@ Returns:
 
 static const char *__doc_nanogui_TexturedQuad_m_depth_from_alpha = R"doc()doc";
 
+static const char *__doc_nanogui_TexturedQuad_m_exposure = R"doc()doc";
+
 static const char *__doc_nanogui_TexturedQuad_m_has_depth = R"doc()doc";
 
-static const char *__doc_nanogui_TexturedQuad_m_linear = R"doc()doc";
+static const char *__doc_nanogui_TexturedQuad_m_hdr = R"doc()doc";
 
-static const char *__doc_nanogui_TexturedQuad_m_texture_exposure = R"doc()doc";
+static const char *__doc_nanogui_TexturedQuad_m_linear = R"doc()doc";
 
 static const char *__doc_nanogui_TexturedQuad_set_depth_from_alpha =
 R"doc(Write depth taken from the texture's alpha channel
@@ -3509,6 +3519,26 @@ Parameter ``scale``:
     Unit of the depth values stored in the alpha channel. Default is
     1.)doc";
 
+static const char *__doc_nanogui_TexturedQuad_set_exposure =
+R"doc(Set the exposure multiplier
+
+The RGB channels are multiplied by this value before the optional [0,
+1] clamp and gamma 2.2 conversion. Default is 1.0.
+
+Parameter ``exposure``:
+    Multiplicative exposure factor)doc";
+
+static const char *__doc_nanogui_TexturedQuad_set_hdr =
+R"doc(Set whether colors may exceed the [0, 1] display range
+
+When true, colors pass through unclamped, which allows bright image
+regions to use the extended range of a floating point framebuffer on
+HDR displays. When false, the shader clamps colors to [0, 1] after
+applying the exposure multiplier. Default is true.
+
+Parameter ``hdr``:
+    True to pass colors through unclamped)doc";
+
 static const char *__doc_nanogui_TexturedQuad_set_linear =
 R"doc(Set whether the texture is in linear space
 
@@ -3530,21 +3560,6 @@ R"doc(Set the texture to be rendered on the quad
 
 Parameter ``texture``:
     The texture to display)doc";
-
-static const char *__doc_nanogui_TexturedQuad_set_texture_exposure =
-R"doc(Set the exposure multiplier for the texture
-
-This value is multiplied onto the texture color before the gamma 2.2
-conversion. Default is 1.0.
-
-Parameter ``exposure``:
-    Exposure multiplier (typically 0.0 to 10.0))doc";
-
-static const char *__doc_nanogui_TexturedQuad_texture_exposure =
-R"doc(Get the current exposure multiplier
-
-Returns:
-    Current exposure value)doc";
 
 static const char *__doc_nanogui_Theme = R"doc()doc";
 

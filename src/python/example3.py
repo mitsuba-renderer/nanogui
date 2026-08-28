@@ -44,7 +44,7 @@ class MyCanvas(ng.Canvas):
                         color = frag_color;
                     }
                     """
-            elif ng.api == 'gles2' or nanogui.api == 'gles3':
+            elif ng.api == 'gles2' or ng.api == 'gles3':
                 vertex_shader = """
                     precision highp float;
                     uniform mat4 mvp;

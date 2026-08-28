@@ -70,7 +70,8 @@ static const char *quad_fragment_shader =
         out vec4 fragColor;
         uniform sampler2D texture_sampler;
         uniform bool linear;
-        uniform float texture_exposure;
+        uniform bool hdr;
+        uniform float exposure;
         uniform bool depth_from_alpha;
         uniform vec4 depth_proj;
 
@@ -80,7 +81,10 @@ static const char *quad_fragment_shader =
 
         void main() {
             vec4 color = texture(texture_sampler, uv_frag);
-            color.rgb *= texture_exposure;
+            color.rgb *= exposure;
+
+            if (!hdr)
+                color.rgb = clamp(color.rgb, 0.0, 1.0);
 
             if (linear)
                 color.rgb = linearToGamma22(color.rgb);
@@ -111,7 +115,8 @@ static const char *quad_fragment_shader =
         out vec4 fragColor;
         uniform sampler2D texture_sampler;
         uniform bool linear;
-        uniform float texture_exposure;
+        uniform bool hdr;
+        uniform float exposure;
         uniform bool depth_from_alpha;
         uniform vec4 depth_proj;
 
@@ -121,7 +126,10 @@ static const char *quad_fragment_shader =
 
         void main() {
             vec4 color = texture(texture_sampler, uv_frag);
-            color.rgb *= texture_exposure;
+            color.rgb *= exposure;
+
+            if (!hdr)
+                color.rgb = clamp(color.rgb, 0.0, 1.0);
 
             if (linear)
                 color.rgb = linearToGamma22(color.rgb);
@@ -166,11 +174,15 @@ static const char *quad_fragment_shader =
                      texture2d<float, access::sample> texture_sampler,
                      sampler texture_sampler_sampler,
                      constant bool &linear,
-                     constant float &texture_exposure,
+                     constant bool &hdr,
+                     constant float &exposure,
                      constant bool &depth_from_alpha,
                      constant float4 &depth_proj) {
             float4 color = texture_sampler.sample(texture_sampler_sampler, vert.uv);
-            color.rgb *= texture_exposure;
+            color.rgb *= exposure;
+
+            if (!hdr)
+                color.rgb = clamp(color.rgb, 0.f, 1.f);
 
             if (linear)
                 color.rgb = linearToGamma22(color.rgb);
@@ -216,9 +228,13 @@ static const char *quad_fragment_shader_nodepth =
                      texture2d<float, access::sample> texture_sampler,
                      sampler texture_sampler_sampler,
                      constant bool &linear,
-                     constant float &texture_exposure) {
+                     constant bool &hdr,
+                     constant float &exposure) {
             float4 color = texture_sampler.sample(texture_sampler_sampler, vert.uv);
-            color.rgb *= texture_exposure;
+            color.rgb *= exposure;
+
+            if (!hdr)
+                color.rgb = clamp(color.rgb, 0.f, 1.f);
 
             if (linear)
                 color.rgb = linearToGamma22(color.rgb);
@@ -277,7 +293,8 @@ TexturedQuad::TexturedQuad(RenderPass *render_pass, BlendMode blend_mode)
 
     // Initialize texture uniforms with defaults
     set_uniform("linear", false);
-    set_uniform("texture_exposure", 1.0f);
+    set_uniform("hdr", true);
+    set_uniform("exposure", 1.0f);
     if (m_has_depth) {
         set_uniform("depth_from_alpha", false);
         set_depth_projection(Matrix4f::perspective(1.f, 0.1f, 100.f));
@@ -295,6 +312,11 @@ void TexturedQuad::set_mvp(const Matrix4f &mvp) {
 void TexturedQuad::set_linear(bool linear) {
     m_linear = linear;
     set_uniform("linear", linear);
+}
+
+void TexturedQuad::set_hdr(bool hdr) {
+    m_hdr = hdr;
+    set_uniform("hdr", hdr);
 }
 
 void TexturedQuad::set_depth_from_alpha(bool enabled) {
@@ -329,9 +351,9 @@ void TexturedQuad::set_depth_projection(const Matrix4f &projection, float scale)
     set_uniform("depth_proj", Vector4f(zz, zw, wz, ww));
 }
 
-void TexturedQuad::set_texture_exposure(float exposure) {
-    m_texture_exposure = exposure;
-    set_uniform("texture_exposure", exposure);
+void TexturedQuad::set_exposure(float exposure) {
+    m_exposure = exposure;
+    set_uniform("exposure", exposure);
 }
 
 void TexturedQuad::draw() {

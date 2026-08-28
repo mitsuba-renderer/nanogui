@@ -83,6 +83,22 @@ public:
     bool linear() const { return m_linear; }
 
     /**
+     * \brief Set whether colors may exceed the [0, 1] display range
+     *
+     * When true, colors pass through unclamped, which allows bright image
+     * regions to use the extended range of a floating point framebuffer on
+     * HDR displays. When false, the shader clamps colors to [0, 1] after
+     * applying the exposure multiplier. Default is true.
+     *
+     * \param hdr
+     *     True to pass colors through unclamped
+     */
+    void set_hdr(bool hdr);
+
+    /// Get whether colors may exceed the [0, 1] display range
+    bool hdr() const { return m_hdr; }
+
+    /**
      * \brief Write depth taken from the texture's alpha channel
      *
      * When set, the class interprets the texture's alpha channel as depth
@@ -122,26 +138,27 @@ public:
     void set_depth_projection(const Matrix4f &projection, float scale = 1.f);
 
     /**
-     * \brief Set the exposure multiplier for the texture
+     * \brief Set the exposure multiplier
      *
-     * This value is multiplied onto the texture color before the gamma 2.2
-     * conversion. Default is 1.0.
+     * The RGB channels are multiplied by this value before the optional
+     * [0, 1] clamp and gamma 2.2 conversion. Default is 1.0.
      *
      * \param exposure
-     *     Exposure multiplier (typically 0.0 to 10.0)
+     *     Multiplicative exposure factor
      */
-    void set_texture_exposure(float exposure);
+    void set_exposure(float exposure);
 
     /**
      * \brief Get the current exposure multiplier
      *
-     * \return Current exposure value
+     * \return Current exposure factor
      */
-    float texture_exposure() const { return m_texture_exposure; }
+    float exposure() const { return m_exposure; }
 
 private:
     bool m_linear = false;
-    float m_texture_exposure = 1.0f;
+    bool m_hdr = true;
+    float m_exposure = 1.0f;
     bool m_depth_from_alpha = false;
     bool m_has_depth;
 };
