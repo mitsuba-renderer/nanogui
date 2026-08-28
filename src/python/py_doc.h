@@ -414,8 +414,11 @@ Shift multiplies the speed by fly_boost.
 The frame() method frames a given bounding box with a smooth camera
 transition from the current view and switches back to orbit mode.
 
-All speeds are relative to the distance to the pivot, which adapts the
-controls to the scale of whatever the camera was last focused on. The
+Motion speeds are relative to the distance to the pivot, which adapts
+the controls to the scale of whatever the camera was last focused on.
+Panning additionally accounts for the field of view so that the
+grabbed point follows the cursor, and can anchor to the surface under
+the mouse when the embedder provides a set_depth_callback(). The
 public speed fields adjust sensitivities, and negative values flip the
 associated direction. Applications with other conventions (e.g. a
 Maya-style Alt+drag scheme or different navigation keys) can translate
@@ -453,6 +456,8 @@ static const char *__doc_nanogui_CameraController_click_callback = R"doc(Return 
 
 static const char *__doc_nanogui_CameraController_commit = R"doc()doc";
 
+static const char *__doc_nanogui_CameraController_depth_callback = R"doc(Return the callback that reports the scene depth under the cursor)doc";
+
 static const char *__doc_nanogui_CameraController_drag_threshold = R"doc(Per-axis motion in pixels beyond which a click becomes a drag)doc";
 
 static const char *__doc_nanogui_CameraController_fly_boost = R"doc(Speed multiple applied while Shift is held in first person navigation)doc";
@@ -476,9 +481,9 @@ one that frames the box along the current view direction, spanning the
 field of view divided by ``margin`` along its larger extent.
 
 The field of view and the principal point offset are derived from the
-projection matrix of the view. Returns ``False`` without starting an
-animation for an orthographic projection, where moving the eye does
-not change the framing.)doc";
+projection matrix set with set_projection(). Returns ``False`` without
+starting an animation for an orthographic projection, where moving the
+eye does not change the framing.)doc";
 
 static const char *__doc_nanogui_CameraController_from_state = R"doc()doc";
 
@@ -500,6 +505,8 @@ static const char *__doc_nanogui_CameraController_m_click_double = R"doc()doc";
 
 static const char *__doc_nanogui_CameraController_m_click_pos = R"doc()doc";
 
+static const char *__doc_nanogui_CameraController_m_depth_callback = R"doc()doc";
+
 static const char *__doc_nanogui_CameraController_m_dir0 = R"doc()doc";
 
 static const char *__doc_nanogui_CameraController_m_dir1 = R"doc()doc";
@@ -520,6 +527,12 @@ static const char *__doc_nanogui_CameraController_m_keys = R"doc()doc";
 
 static const char *__doc_nanogui_CameraController_m_last_update = R"doc()doc";
 
+static const char *__doc_nanogui_CameraController_m_pan_depth = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_projection = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_m_size = R"doc()doc";
+
 static const char *__doc_nanogui_CameraController_m_start = R"doc()doc";
 
 static const char *__doc_nanogui_CameraController_m_turntable = R"doc()doc";
@@ -536,11 +549,19 @@ static const char *__doc_nanogui_CameraController_mouse_motion_event =
 R"doc(Handle mouse motion, see Screen::mouse_motion_event_f()
 
 ``button`` is the bitmask of the pressed buttons. A drag ends when its
-button is no longer in it.)doc";
+button is no longer in it.
+
+Panning matches the cursor: the point at the pivot depth stays under
+the mouse, based on the view set with set_projection(). Orthographic
+projections pan independently of the pivot distance.)doc";
 
 static const char *__doc_nanogui_CameraController_orbit_speed = R"doc(Degrees per pixel of orbit or look drag (negative values flip the direction))doc";
 
-static const char *__doc_nanogui_CameraController_pan_speed = R"doc(Fraction of the pivot distance per pixel of pan drag (negative values flip))doc";
+static const char *__doc_nanogui_CameraController_pan_speed =
+R"doc(Multiplier on the pan drag. At the default of 1, the grabbed point
+stays under the cursor (negative values flip the direction).)doc";
+
+static const char *__doc_nanogui_CameraController_projection = R"doc(Return the projection matrix set with set_projection())doc";
 
 static const char *__doc_nanogui_CameraController_scene_scale =
 R"doc(Reference length of the scene, which bounds the range of the zoom
@@ -561,7 +582,25 @@ A press and release with at most drag_threshold pixels of motion in
 between counts as a click. The callback receives the release position
 and whether the press was a double-click (see MOD_DOUBLE_CLICK).)doc";
 
+static const char *__doc_nanogui_CameraController_set_depth_callback =
+R"doc(Set the callback that reports the scene depth under the cursor
+
+When set, a starting pan drag invokes it with the cursor position,
+normalized to [0, 1]^2 within the viewport. A positive return value
+anchors the pan at that eye-space depth along the view direction, so
+that the surface point under the cursor follows it exactly. Return
+zero when the depth is unknown (e.g. a ray cast that misses the scene)
+to fall back to the pivot distance.)doc";
+
 static const char *__doc_nanogui_CameraController_set_fly_mode = R"doc()doc";
+
+static const char *__doc_nanogui_CameraController_set_projection =
+R"doc(Set the projection matrix of the view and the viewport size
+
+Panning and frame() relate cursor motion and framing to the scene
+through the projection. ``size`` is the viewport size in the units of
+the event positions (typically Widget::size()). Until this method is
+called, pan drags have no effect.)doc";
 
 static const char *__doc_nanogui_CameraController_set_state =
 R"doc(Replace the camera state, which ends a drag or frame animation
@@ -584,6 +623,8 @@ static const char *__doc_nanogui_CameraController_update =
 R"doc(Advance the fly motion and frame animation
 
 Call this once per frame. Returns ``True`` if the camera changed.)doc";
+
+static const char *__doc_nanogui_CameraController_viewport_size = R"doc(Return the viewport size set with set_projection())doc";
 
 static const char *__doc_nanogui_CameraController_world_up = R"doc(Up direction of the scene)doc";
 

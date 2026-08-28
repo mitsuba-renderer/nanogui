@@ -14,6 +14,7 @@ static int camera_tp_clear(PyObject *self) {
     CameraController *c = nb::inst_ptr<CameraController>(self);
     c->set_callback(nullptr);
     c->set_click_callback(nullptr);
+    c->set_depth_callback(nullptr);
     return 0;
 }
 
@@ -62,12 +63,22 @@ void register_camera(nb::module_ &m) {
              D(CameraController, set_click_callback), "callback"_a.none())
         .def("click_callback", &CameraController::click_callback,
              D(CameraController, click_callback))
+        .def("set_depth_callback", &CameraController::set_depth_callback,
+             D(CameraController, set_depth_callback), "callback"_a.none())
+        .def("depth_callback", &CameraController::depth_callback,
+             D(CameraController, depth_callback))
         .def_rw("drag_threshold", &CameraController::drag_threshold,
                 D(CameraController, drag_threshold))
         .def("world_up", &CameraController::world_up,
              D(CameraController, world_up))
         .def("set_world_up", &CameraController::set_world_up,
              D(CameraController, set_world_up), "world_up"_a, "snap"_a = false)
+        .def("set_projection", &CameraController::set_projection,
+             D(CameraController, set_projection), "projection"_a, "size"_a)
+        .def("projection", &CameraController::projection,
+             D(CameraController, projection))
+        .def("viewport_size", &CameraController::viewport_size,
+             D(CameraController, viewport_size))
         .def_rw("scene_scale", &CameraController::scene_scale,
                 D(CameraController, scene_scale))
         .def_rw("orbit_speed", &CameraController::orbit_speed,
@@ -105,7 +116,7 @@ void register_camera(nb::module_ &m) {
              D(CameraController, fly_mode))
         .def("set_fly_mode", &CameraController::set_fly_mode, "value"_a)
         .def("frame", &CameraController::frame,
-             D(CameraController, frame), "min"_a, "max"_a, "projection"_a,
+             D(CameraController, frame), "min"_a, "max"_a,
              "margin"_a = 1.2f, "duration"_a = 0.7f);
 }
 

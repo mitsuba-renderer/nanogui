@@ -79,13 +79,15 @@ struct NANOGUI_EXPORT CameraState {
  * The \ref frame() method frames a given bounding box with a smooth camera
  * transition from the current view and switches back to orbit mode.
  *
- * All speeds are relative to the distance to the pivot, which adapts the
- * controls to the scale of whatever the camera was last focused on. The
- * public speed fields adjust sensitivities, and negative values flip the
- * associated direction. Applications with other conventions (e.g. a
- * Maya-style Alt+drag scheme or different navigation keys) can translate
- * buttons, modifiers, and key codes before forwarding events to the
- * controller.
+ * Motion speeds are relative to the distance to the pivot. Panning is designed
+ * grab a 3D scene position and maintain it below the moving cursor. This
+ * requires the application to provide a \ref set_depth_callback() to obtain the
+ * distance from the camera.
+ *
+ * Several adjustable fields control the motion sensitivity. Negative values
+ * flip the associated direction. Applications that desire different key
+ * bindings can translate buttons, modifiers, and key codes before forwarding
+ * events to the controller.
  */
 class NANOGUI_EXPORT CameraController {
 public:
@@ -141,6 +143,23 @@ public:
         return m_click_callback;
     }
 
+    /**
+     * \brief Set a callback that reports the scene depth under the cursor
+     *
+     * The 3D panning feature requires knowing the 3D depth associated with a
+     * given screen-space position. This function can be used to register a
+     * callback that provides this information given a normalized [0, 1]^2
+     * coordinate. Without this, panning falls back to the pivot distance.
+     */
+    void set_depth_callback(const std::function<float(Vector2f)> &callback) {
+        m_depth_callback = callback;
+    }
+
+    /// Return the registered depth callback
+    const std::function<float(Vector2f)> &depth_callback() const {
+        return m_depth_callback;
+    }
+
     /// Per-axis motion in pixels beyond which a click becomes a drag
     float drag_threshold = 3.f;
 
@@ -155,6 +174,25 @@ public:
      */
     void set_world_up(const Vector3f &world_up, bool snap = false);
 
+    /**
+     * \brief Set the projection matrix of the view and the viewport size
+     *
+     * Panning and \ref frame() relate cursor motion and framing to the scene
+     * through the projection. \c size is the viewport size in the units of
+     * the event positions (typically \ref Widget::size()). Panning is disabled
+     * until this method is called.
+     */
+    void set_projection(const Matrix4f &projection, const Vector2i &size) {
+        m_projection = projection;
+        m_size = size;
+    }
+
+    /// Return the projection matrix set with \ref set_projection()
+    const Matrix4f &projection() const { return m_projection; }
+
+    /// Return the viewport size set with \ref set_projection()
+    const Vector2i &viewport_size() const { return m_size; }
+
     /// Reference length of the scene, which bounds the range of the zoom
     /// distance. Must be positive.
     float scene_scale = 1.f;
@@ -162,8 +200,9 @@ public:
     /// Degrees per pixel of orbit or look drag (negative values flip the direction)
     float orbit_speed = 0.4f;
 
-    /// Fraction of the pivot distance per pixel of pan drag (negative values flip)
-    float pan_speed = 0.0015f;
+    /// Multiplier on the pan drag. At the default of 1, the grabbed point
+    /// stays under the cursor (negative values flip the direction).
+    float pan_speed = 1.f;
 
     /// Distance factor per scroll wheel notch (values > 1 invert the zoom)
     float zoom_step = 0.8f;
@@ -188,8 +227,13 @@ public:
      *
      * \c button is the bitmask of the pressed buttons. A drag ends when its
      * button is no longer in it.
+     *
+     * Panning matches the cursor: the point at the pivot depth stays under
+     * the mouse, based on the view set with \ref set_projection().
+     * Orthographic projections pan independently of the pivot distance.
      */
-    bool mouse_motion_event(const Vector2f &p, const Vector2f &rel, int button, int modifiers);
+    bool mouse_motion_event(const Vector2f &p, const Vector2f &rel, int button,
+                            int modifiers);
 
     /// Handle scrolling, see \ref Widget::scroll_event()
     bool scroll_event(const Vector2i &p, const Vector2f &rel, int flags);
@@ -227,12 +271,11 @@ public:
      * field of view divided by \c margin along its larger extent.
      *
      * The field of view and the principal point offset are derived from the
-     * projection matrix of the view. Returns \c false without starting an
-     * animation for an orthographic projection, where moving the eye does not
-     * change the framing.
+     * projection matrix set with \ref set_projection(). Returns \c false
+     * without starting an animation for an orthographic projection, where
+     * moving the eye does not change the framing.
      */
-    bool frame(const Vector3f &min, const Vector3f &max,
-               const Matrix4f &projection, float margin = 1.2f,
+    bool frame(const Vector3f &min, const Vector3f &max, float margin = 1.2f,
                float duration = 0.7f);
 
 private:
@@ -253,6 +296,10 @@ private:
     // Current turntable state, the source of truth between events
     Turntable m_turntable;
 
+    // Projection and viewport size of the view, see set_projection()
+    Matrix4f m_projection { 1.f };
+    Vector2i m_size { 0, 0 };
+
     // Scene up and the horizontal axes of azimuth 0 and 90 degrees (defaults: +Y up)
     Vector3f m_world_up = Vector3f(0.f, 1.f, 0.f),
              m_axis[2] = { Vector3f(1.f, 0.f, 0.f),
@@ -263,6 +310,9 @@ private:
 
     // Callback invoked when the left mouse button is clicked
     std::function<void(Vector2i, bool)> m_click_callback;
+
+    // Callback that reports the scene depth under the cursor
+    std::function<float(Vector2f)> m_depth_callback;
 
     // Pending click: armed by a press, cancelled by motion beyond drag_threshold
     bool m_click_armed = false, m_click_double = false;
@@ -276,6 +326,9 @@ private:
 
     // Total mouse offset since the drag began
     Vector2f m_drag_offset;
+
+    // Pan anchor depth captured when the drag began (0: use the pivot distance)
+    float m_pan_depth = 0.f;
 
     // Is first person navigation active?
     bool m_fly = false;

@@ -200,6 +200,14 @@ bool CameraController::mouse_button_event(const Vector2i &p, int button, bool do
         m_drag_button = button;
         m_drag_start = m_turntable;
         m_drag_offset = Vector2f(0.f);
+        m_pan_depth = 0.f;
+        if (!m_fly && button != GLFW_MOUSE_BUTTON_LEFT && m_depth_callback &&
+            m_size.x() > 0 && m_size.y() > 0) {
+            float d = m_depth_callback((Vector2f(p) + 0.5f) / Vector2f(m_size)),
+                  scale = std::max(scene_scale, 1e-30f);
+            if (std::isfinite(d) && d > 0.f)
+                m_pan_depth = std::min(std::max(d, 1e-6f * scale), 1e6f * scale);
+        }
         m_animating = false;
         return true;
     } else if (button == m_drag_button) {
@@ -240,10 +248,19 @@ bool CameraController::mouse_motion_event(const Vector2f &p, const Vector2f &rel
     } else if (m_drag_button == GLFW_MOUSE_BUTTON_LEFT) {
         t.azimuth -= scale * dx * yaw_sign;
         t.elevation -= scale * dy;
-    } else {
+    } else if (m_size.x() > 0 && m_size.y() > 0) {
+        // Column-major: m[col][row]. 1/m[i][i] is the half-extent of the view
+        // at unit depth, or directly for an orthographic projection, which
+        // maps z to w through m[2][3] resp. leaves w = 1 (see frame() below).
+        const auto &m = m_projection.m;
+        float anchor = m_pan_depth > 0.f ? m_pan_depth : t.distance,
+              depth = (m[2][3] == 0.f ? 1.f : anchor) * pan_speed;
+        Vector2f s(2.f * depth / (m[0][0] * m_size.x()),
+                   2.f * depth / (m[1][1] * m_size.y()));
         Vector3f forward, right, up;
         to_state(t).basis(forward, right, up);
-        t.pivot += (up * dy - right * dx) * (t.distance * pan_speed);
+        if (std::isfinite(s.x()) && std::isfinite(s.y()))
+            t.pivot += up * (dy * s.y()) - right * (dx * s.x());
     }
     commit(t);
     return true;
@@ -358,11 +375,10 @@ bool CameraController::update() {
 }
 
 bool CameraController::frame(const Vector3f &min, const Vector3f &max,
-                             const Matrix4f &projection, float margin,
-                             float duration) {
+                             float margin, float duration) {
     // Column-major: m[col][row]. A perspective matrix maps z to w through
     // m[2][3], while an orthographic one has w = 1 throughout.
-    const auto &m = projection.m;
+    const auto &m = m_projection.m;
     if (m[2][3] == 0.f)
         return false;
     Vector2f tan_half_fov(1.f / m[0][0], 1.f / m[1][1]),
