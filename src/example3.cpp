@@ -167,8 +167,8 @@ int main(int /* argc */, char ** /* argv */) {
     );
 
     glfwSetScrollCallback(window,
-        [](GLFWwindow *, double x, double y) {
-            screen->scroll_callback_event(x, y);
+        [](GLFWwindow *, double x, double y, int flags) {
+            screen->scroll_callback_event(x, y, flags);
        }
     );
 

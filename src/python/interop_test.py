@@ -131,8 +131,9 @@ class Viewer(ng.Screen):
             return True
         return self.controller.mouse_motion_event(p, rel, button, modifiers)
 
-    def scroll_event(self, p, rel):
-        return super().scroll_event(p, rel) or self.controller.scroll_event(p, rel)
+    def scroll_event(self, p, rel, flags):
+        return (super().scroll_event(p, rel, flags) or
+                self.controller.scroll_event(p, rel, flags))
 
     def keyboard_event(self, key, scancode, action, modifiers):
         if super().keyboard_event(key, scancode, action, modifiers):

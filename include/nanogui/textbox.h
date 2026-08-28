@@ -287,8 +287,8 @@ public:
         return false;
     }
 
-    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override {
-        if (Widget::scroll_event(p, rel))
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel, int flags) override {
+        if (Widget::scroll_event(p, rel, flags))
             return true;
 
         if (m_spinnable && !focused()) {
@@ -415,8 +415,8 @@ public:
         return false;
     }
 
-    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override {
-        if (Widget::scroll_event(p, rel))
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel, int flags) override {
+        if (Widget::scroll_event(p, rel, flags))
             return true;
 
         if (m_spinnable && !focused()) {

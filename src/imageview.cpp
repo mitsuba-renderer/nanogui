@@ -109,7 +109,8 @@ bool ImageView::mouse_drag_event(const Vector2i & /* p */, const Vector2i &rel,
     return true;
 }
 
-bool ImageView::scroll_event(const Vector2i &p, const Vector2f &rel) {
+bool ImageView::scroll_event(const Vector2i &p, const Vector2f &rel,
+                             int /* flags */) {
     if (!m_enabled || !m_image)
         return false;
 

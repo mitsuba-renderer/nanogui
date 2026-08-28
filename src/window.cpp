@@ -185,8 +185,8 @@ bool Window::mouse_button_event(const Vector2i &p, int button, bool down, int mo
     return false;
 }
 
-bool Window::scroll_event(const Vector2i &p, const Vector2f &rel) {
-    Widget::scroll_event(p, rel);
+bool Window::scroll_event(const Vector2i &p, const Vector2f &rel, int flags) {
+    Widget::scroll_event(p, rel, flags);
     return true;
 }
 

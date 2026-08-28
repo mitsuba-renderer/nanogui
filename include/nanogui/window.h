@@ -54,7 +54,7 @@ public:
     /// Handle mouse events recursively and bring the current window to the top
     virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
     /// Accept scroll events and propagate them to the widget under the mouse cursor
-    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel, int flags) override;
     /// Invoke the associated layout generator to properly place child widgets, if any
     virtual void perform_layout(NVGcontext *ctx) override;
 protected:

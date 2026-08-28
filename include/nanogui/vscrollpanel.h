@@ -50,7 +50,7 @@ public:
                                     int modifiers) override;
     virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel,
                                   int button, int modifiers) override;
-    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel, int flags) override;
     virtual void draw(NVGcontext *ctx) override;
 
 protected:

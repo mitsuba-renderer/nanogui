@@ -152,6 +152,18 @@ enum class Cursor {
 // Modifier bit signaling a double click in \ref Widget::mouse_button_event()
 constexpr int MOD_DOUBLE_CLICK = 1 << 16;
 
+// Flag bits describing the device and phase of a \ref Widget::scroll_event().
+// These mirror the ``GLFW_SCROLL_*`` constants.
+
+/// Pixel-precise device such as a touchpad, as opposed to a detented wheel
+constexpr int SCROLL_PRECISE  = 1 << 0;
+/// Inertial event generated after the user lifted their fingers
+constexpr int SCROLL_MOMENTUM = 1 << 1;
+/// First event of a scroll phase
+constexpr int SCROLL_BEGIN    = 1 << 2;
+/// Last event of a scroll phase, may carry a zero offset
+constexpr int SCROLL_END      = 1 << 3;
+
 // skip the forward declarations for the docs
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 

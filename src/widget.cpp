@@ -159,12 +159,12 @@ bool Widget::mouse_motion_event(const Vector2i &p, const Vector2i &rel, int butt
     return handled;
 }
 
-bool Widget::scroll_event(const Vector2i &p, const Vector2f &rel) {
+bool Widget::scroll_event(const Vector2i &p, const Vector2f &rel, int flags) {
     for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
         Widget *child = *it;
         if (!child->visible())
             continue;
-        if (child->contains(p - m_pos) && child->scroll_event(p - m_pos, rel))
+        if (child->contains(p - m_pos) && child->scroll_event(p - m_pos, rel, flags))
             return true;
     }
     return false;

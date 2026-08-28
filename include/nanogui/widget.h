@@ -274,8 +274,13 @@ public:
     /// Handle a mouse enter/leave event (default implementation: record this fact, but do nothing)
     virtual bool mouse_enter_event(const Vector2i &p, bool enter);
 
-    /// Handle a mouse scroll event (default implementation: propagate to children)
-    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel);
+    /**
+     * \brief Handle a mouse scroll event (default implementation: propagate to children)
+     *
+     * The \c flags argument describes the device and phase of the event, see
+     * \ref SCROLL_PRECISE and friends.
+     */
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel, int flags);
 
     /// Handle a focus change event (default implementation: record the focus status, but do nothing)
     virtual bool focus_event(bool focused);

@@ -71,6 +71,12 @@
 
 NAMESPACE_BEGIN(nanogui)
 
+static_assert(SCROLL_PRECISE  == GLFW_SCROLL_PRECISE &&
+              SCROLL_MOMENTUM == GLFW_SCROLL_MOMENTUM &&
+              SCROLL_BEGIN    == GLFW_SCROLL_BEGIN &&
+              SCROLL_END      == GLFW_SCROLL_END,
+              "Scroll flags are out of sync with GLFW");
+
 /// Delay in seconds before showing tooltips
 #define TOOLTIP_DELAY_SEC 0.2f
 
@@ -378,10 +384,10 @@ Screen::Screen(const Vector2i &size, std::string_view caption, bool resizable,
     );
 
     glfwSetScrollCallback(m_glfw_window,
-        [](GLFWwindow *w, double x, double y) {
+        [](GLFWwindow *w, double x, double y, int flags) {
             for (auto kv: __nanogui_screens) {
                 if (w == kv.first) {
-                    kv.second->scroll_callback_event(x, y);
+                    kv.second->scroll_callback_event(x, y, flags);
                     break;
                 }
             }
@@ -1127,7 +1133,7 @@ void Screen::drop_callback_event(int count, const char **filenames) {
     m_redraw |= drop_event(arg);
 }
 
-void Screen::scroll_callback_event(double x, double y) {
+void Screen::scroll_callback_event(double x, double y, int flags) {
     m_last_interaction = glfwGetTime();
     try {
         if (m_focus_path.size() > 1) {
@@ -1138,7 +1144,7 @@ void Screen::scroll_callback_event(double x, double y) {
                     return;
             }
         }
-        m_redraw |= scroll_event(m_mouse_pos, Vector2f(x, y));
+        m_redraw |= scroll_event(m_mouse_pos, Vector2f(x, y), flags);
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in event handler: " << e.what() << std::endl;
     }

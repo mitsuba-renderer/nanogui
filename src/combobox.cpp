@@ -79,9 +79,9 @@ void ComboBox::set_items(const std::vector<std::string> &items, const std::vecto
     set_selected_index(m_selected_index);
 }
 
-bool ComboBox::scroll_event(const Vector2i &p, const Vector2f &rel) {
+bool ComboBox::scroll_event(const Vector2i &p, const Vector2f &rel, int flags) {
     if (rel.y() == 0)
-        return Widget::scroll_event(p, rel);
+        return Widget::scroll_event(p, rel, flags);
     set_pushed(false);
     popup()->set_visible(false);
     if (rel.y() < 0)

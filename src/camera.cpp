@@ -249,8 +249,12 @@ bool CameraController::mouse_motion_event(const Vector2f &p, const Vector2f &rel
     return true;
 }
 
-bool CameraController::scroll_event(const Vector2i &, const Vector2f &rel) {
-    float step = std::min(std::max(rel.y(), -4.f), 4.f);
+bool CameraController::scroll_event(const Vector2i &, const Vector2f &rel,
+                                    int flags) {
+    float step = rel.y();
+    if (flags & SCROLL_PRECISE)
+        step /= std::max(zoom_precise_notch, 1e-6f);
+    step = std::min(std::max(step, -4.f), 4.f);
     if (step == 0.f)
         return false;
     float factor = std::pow(std::max(zoom_step, 1e-6f), step),

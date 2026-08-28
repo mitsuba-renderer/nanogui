@@ -303,7 +303,7 @@ public:
     void key_callback_event(int key, int scancode, int action, int mods);
     void char_callback_event(unsigned int codepoint);
     void drop_callback_event(int count, const char **filenames);
-    void scroll_callback_event(double x, double y);
+    void scroll_callback_event(double x, double y, int flags);
     void resize_callback_event(int width, int height);
     void resize_end_callback_event();
 

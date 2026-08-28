@@ -168,6 +168,9 @@ public:
     /// Distance factor per scroll wheel notch (values > 1 invert the zoom)
     float zoom_step = 0.8f;
 
+    /// Scroll offset that counts as one notch on touchpads and similar devices
+    float zoom_precise_notch = 12.f;
+
     /// Fly speed in multiples of the pivot distance per second
     float fly_speed = 0.5f;
 
@@ -189,7 +192,7 @@ public:
     bool mouse_motion_event(const Vector2f &p, const Vector2f &rel, int button, int modifiers);
 
     /// Handle scrolling, see \ref Widget::scroll_event()
-    bool scroll_event(const Vector2i &p, const Vector2f &rel);
+    bool scroll_event(const Vector2i &p, const Vector2f &rel, int flags);
 
     /// Handle key presses, see \ref Widget::keyboard_event()
     bool keyboard_event(int key, int scancode, int action, int modifiers);

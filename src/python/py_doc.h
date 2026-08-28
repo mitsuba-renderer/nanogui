@@ -587,6 +587,10 @@ Call this once per frame. Returns ``True`` if the camera changed.)doc";
 
 static const char *__doc_nanogui_CameraController_world_up = R"doc(Up direction of the scene)doc";
 
+static const char *__doc_nanogui_CameraController_zoom_precise_notch =
+R"doc(Scroll offset that counts as one notch on touchpads and similar
+devices)doc";
+
 static const char *__doc_nanogui_CameraController_zoom_step = R"doc(Distance factor per scroll wheel notch (values > 1 invert the zoom))doc";
 
 static const char *__doc_nanogui_CameraState =
@@ -2270,6 +2274,18 @@ static const char *__doc_nanogui_RunMode_Lazy = R"doc(Windows are redrawn lazily
 static const char *__doc_nanogui_RunMode_Stopped = R"doc(The mainloop is currently stopped)doc";
 
 static const char *__doc_nanogui_RunMode_VSync = R"doc(Windows are redrawn based on the screen's refresh rate)doc";
+
+static const char *__doc_nanogui_SCROLL_BEGIN = R"doc(First event of a scroll phase)doc";
+
+static const char *__doc_nanogui_SCROLL_END =
+R"doc(Last event of a scroll phase, may carry a zero offset)doc";
+
+static const char *__doc_nanogui_SCROLL_MOMENTUM =
+R"doc(Inertial event generated after the user lifted their fingers)doc";
+
+static const char *__doc_nanogui_SCROLL_PRECISE =
+R"doc(Pixel-precise device such as a touchpad, as opposed to a detented
+wheel)doc";
 
 static const char *__doc_nanogui_Screen = R"doc()doc";
 
@@ -4016,7 +4032,10 @@ static const char *__doc_nanogui_Widget_screen_2 = R"doc(Walk up the hierarchy a
 
 static const char *__doc_nanogui_Widget_scroll_event =
 R"doc(Handle a mouse scroll event (default implementation: propagate to
-children))doc";
+children)
+
+The ``flags`` argument describes the device and phase of the event, see
+SCROLL_PRECISE and friends.)doc";
 
 static const char *__doc_nanogui_Widget_set_cursor = R"doc(Set the cursor of the widget)doc";
 

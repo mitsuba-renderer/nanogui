@@ -67,7 +67,7 @@ public:
     // Widget implementation
     virtual bool keyboard_event(int key, int scancode, int action, int modifiers) override;
     virtual bool mouse_drag_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
-    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel, int flags) override;
     virtual void draw(NVGcontext *ctx) override;
     virtual void draw_contents() override;
 

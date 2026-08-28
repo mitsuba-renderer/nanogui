@@ -93,7 +93,7 @@ bool VScrollPanel::mouse_button_event(const Vector2i &p, int button, bool down,
     return false;
 }
 
-bool VScrollPanel::scroll_event(const Vector2i &p, const Vector2f &rel) {
+bool VScrollPanel::scroll_event(const Vector2i &p, const Vector2f &rel, int flags) {
     if (!m_children.empty() && m_child_preferred_height > m_size.y()) {
         auto child = m_children[0];
         float scroll_amount = rel.y() * m_size.y() * .25f;
@@ -109,7 +109,7 @@ bool VScrollPanel::scroll_event(const Vector2i &p, const Vector2f &rel) {
 
         return true;
     } else {
-        return Widget::scroll_event(p, rel);
+        return Widget::scroll_event(p, rel, flags);
     }
 }
 

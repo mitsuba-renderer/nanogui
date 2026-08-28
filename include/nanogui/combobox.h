@@ -60,7 +60,7 @@ public:
     const std::vector<std::string> &items_short() const { return m_items_short; }
 
     /// Handles mouse scrolling events for this ComboBox.
-    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
+    virtual bool scroll_event(const Vector2i &p, const Vector2f &rel, int flags) override;
 protected:
     /// Scroll panel used to store the combo box contents
     VScrollPanel *m_scroll = nullptr;

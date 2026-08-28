@@ -76,6 +76,8 @@ void register_camera(nb::module_ &m) {
                 D(CameraController, pan_speed))
         .def_rw("zoom_step", &CameraController::zoom_step,
                 D(CameraController, zoom_step))
+        .def_rw("zoom_precise_notch", &CameraController::zoom_precise_notch,
+                D(CameraController, zoom_precise_notch))
         .def_rw("fly_speed", &CameraController::fly_speed,
                 D(CameraController, fly_speed))
         .def_rw("fly_ramp", &CameraController::fly_ramp,
@@ -89,7 +91,7 @@ void register_camera(nb::module_ &m) {
              D(CameraController, mouse_motion_event),
              "p"_a, "rel"_a, "button"_a, "modifiers"_a)
         .def("scroll_event", &CameraController::scroll_event,
-             D(CameraController, scroll_event), "p"_a, "rel"_a)
+             D(CameraController, scroll_event), "p"_a, "rel"_a, "flags"_a)
         .def("keyboard_event", &CameraController::keyboard_event,
              D(CameraController, keyboard_event),
              "key"_a, "scancode"_a, "action"_a, "modifiers"_a)

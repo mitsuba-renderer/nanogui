@@ -48,8 +48,8 @@ extern "C" {
         NB_OVERRIDE(mouse_enter_event, p, enter);                              \
     }                                                                          \
     bool scroll_event(const ::nanogui::Vector2i &p,                            \
-                      const ::nanogui::Vector2f &rel) override {               \
-        NB_OVERRIDE(scroll_event, p, rel);                                     \
+                      const ::nanogui::Vector2f &rel, int flags) override {    \
+        NB_OVERRIDE(scroll_event, p, rel, flags);                              \
     }                                                                          \
     bool focus_event(bool focused) override {                                  \
         NB_OVERRIDE(focus_event, focused);                                     \

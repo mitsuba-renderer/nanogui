@@ -173,7 +173,7 @@ void register_widget(nb::module_ &m) {
              "button"_a, "modifiers"_a, D(Widget, mouse_drag_event))
         .def("mouse_enter_event", &Widget::mouse_enter_event, "p"_a, "enter"_a,
              D(Widget, mouse_enter_event))
-        .def("scroll_event", &Widget::scroll_event, "p"_a, "rel"_a,
+        .def("scroll_event", &Widget::scroll_event, "p"_a, "rel"_a, "flags"_a,
              D(Widget, scroll_event))
         .def("focus_event", &Widget::focus_event, "focused"_a, D(Widget, focus_event))
         .def("keyboard_event", &Widget::keyboard_event, "key"_a, "scancode"_a,
