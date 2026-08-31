@@ -3407,6 +3407,8 @@ static const char *__doc_nanogui_Texture_component_format = R"doc(Return the com
 
 static const char *__doc_nanogui_Texture_download = R"doc(Download packed pixel data from the GPU to the CPU)doc";
 
+static const char *__doc_nanogui_Texture_download_sub_region = R"doc(Download packed pixel data from a rectangular sub-region of the texture from the GPU to the CPU)doc";
+
 static const char *__doc_nanogui_Texture_flags = R"doc(Return a combination of flags (from Texture::TextureFlags))doc";
 
 static const char *__doc_nanogui_Texture_generate_mipmap =

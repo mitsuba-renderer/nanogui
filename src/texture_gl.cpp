@@ -367,6 +367,78 @@ void Texture::download(uint8_t *data) {
 #endif
 }
 
+void Texture::download_sub_region(uint8_t *data, const Vector2i &origin,
+                                  const Vector2i &size) {
+#if defined(NANOGUI_USE_GLES)
+    (void) data; (void) origin; (void) size;
+    throw std::runtime_error("Texture::download_sub_region(): not supported on GLES 2!");
+#else
+    if (m_handle == 0)
+        throw std::runtime_error("Texture::download_sub_region(): no texture handle!");
+    else if (m_samples > 1)
+        throw std::runtime_error("Texture::download_sub_region(): only implemented for samples=1!");
+    else if (origin.x() < 0 || origin.y() < 0 || size.x() <= 0 || size.y() <= 0 ||
+             origin.x() + size.x() > m_size.x() || origin.y() + size.y() > m_size.y())
+        throw std::runtime_error("Texture::download_sub_region(): out of bounds!");
+
+    GLenum pixel_format_gl,
+           component_format_gl,
+           internal_format_gl;
+
+    gl_map_texture_format(m_pixel_format,
+                          m_component_format,
+                          pixel_format_gl,
+                          component_format_gl,
+                          internal_format_gl);
+
+    (void) internal_format_gl;
+
+    // Render targets are stored bottom-up, see download() above
+    GLint y = origin.y();
+    if (m_flags & (uint8_t) TextureFlags::RenderTarget)
+        y = m_size.y() - origin.y() - size.y();
+
+    size_t n_bytes = bytes_per_pixel() * size.x() * size.y();
+    CHK(glPixelStorei(GL_PACK_ALIGNMENT, 1));
+
+    if (glGetTextureSubImage) {
+        CHK(glGetTextureSubImage(m_handle, 0, origin.x(), y, 0, size.x(),
+                                 size.y(), 1, pixel_format_gl,
+                                 component_format_gl, (GLsizei) n_bytes, data));
+    } else {
+        // Without GL 4.5, read the region back through a scratch framebuffer
+        GLuint fbo = 0;
+        CHK(glGenFramebuffers(1, &fbo));
+        CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo));
+        CHK(glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_2D, m_handle, 0));
+        if (glCheckFramebufferStatus(GL_READ_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, 0));
+            CHK(glDeleteFramebuffers(1, &fbo));
+            throw std::runtime_error(
+                "Texture::download_sub_region(): texture is not readable!");
+        }
+        CHK(glReadBuffer(GL_COLOR_ATTACHMENT0));
+        CHK(glReadPixels(origin.x(), y, size.x(), size.y(), pixel_format_gl,
+                         component_format_gl, data));
+        CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, 0));
+        CHK(glDeleteFramebuffers(1, &fbo));
+    }
+
+    if (m_flags & (uint8_t) TextureFlags::RenderTarget) {
+        // Flip the retrieved rows back into top-down order
+        size_t stride = bytes_per_pixel() * size.x();
+        std::unique_ptr<uint8_t[]> temp(new uint8_t[stride]);
+        uint8_t *low = data, *high = low + (size.y() - 1) * stride;
+        for (; low < high; low += stride, high -= stride) {
+            memcpy(temp.get(), low, stride);
+            memcpy(low, high, stride);
+            memcpy(high, temp.get(), stride);
+        }
+    }
+#endif
+}
+
 void Texture::resize(const Vector2i &size) {
     if (m_size == size)
         return;

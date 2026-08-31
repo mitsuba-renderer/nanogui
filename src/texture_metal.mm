@@ -187,6 +187,48 @@ void Texture::download(uint8_t *data) {
     memcpy(data, buffer.contents, img_bytes);
 }
 
+void Texture::download_sub_region(uint8_t *data, const Vector2i &origin,
+                                  const Vector2i &size) {
+    if (m_samples > 1)
+        throw std::runtime_error("Texture::download_sub_region(): only implemented for samples=1!");
+    else if (origin.x() < 0 || origin.y() < 0 || size.x() <= 0 || size.y() <= 0 ||
+             origin.x() + size.x() > m_size.x() || origin.y() + size.y() > m_size.y())
+        throw std::runtime_error("Texture::download_sub_region(): out of bounds!");
+
+    id<MTLCommandQueue> command_queue =
+        (__bridge id<MTLCommandQueue>) metal_command_queue();
+    id<MTLCommandBuffer> command_buffer = [command_queue commandBuffer];
+    id<MTLBlitCommandEncoder> command_encoder =
+        [command_buffer blitCommandEncoder];
+
+    size_t row_bytes = bytes_per_pixel() * size.x(),
+           img_bytes = row_bytes * size.y();
+
+    id<MTLDevice> device = (__bridge id<MTLDevice>) metal_device();
+    id<MTLTexture> texture = (__bridge id<MTLTexture>) m_handle;
+    id<MTLBuffer> buffer =
+        [device newBufferWithLength: img_bytes
+                            options: MTLResourceStorageModeShared];
+
+    [command_encoder
+                 copyFromTexture: texture
+                     sourceSlice: 0
+                     sourceLevel: 0
+                    sourceOrigin: MTLOriginMake((NSUInteger) origin.x(),
+                                                (NSUInteger) origin.y(), 0)
+                      sourceSize: MTLSizeMake((NSUInteger) size.x(),
+                                              (NSUInteger) size.y(), 1)
+                        toBuffer: buffer
+               destinationOffset: 0
+          destinationBytesPerRow: row_bytes
+        destinationBytesPerImage: img_bytes];
+
+    [command_encoder endEncoding];
+    [command_buffer commit];
+    [command_buffer waitUntilCompleted];
+    memcpy(data, buffer.contents, img_bytes);
+}
+
 void Texture::resize(const Vector2i &size) {
     if (m_size == size)
         return;

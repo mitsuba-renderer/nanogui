@@ -89,7 +89,7 @@ shader_set_buffer(Shader &shader, const std::string &name,
     shader.set_buffer(name, dtype, array.ndim(), dim, array.data());
 }
 
-static nb::ndarray<nb::numpy> texture_download(Texture &texture) {
+static nb::dlpack::dtype texture_dtype(const Texture &texture) {
     nb::dlpack::dtype dt;
 
     switch (texture.component_format()) {
@@ -103,6 +103,12 @@ static nb::ndarray<nb::numpy> texture_download(Texture &texture) {
         case Texture::ComponentFormat::Float32: dt = nb::dtype<float>(); break;
         default: throw std::runtime_error("Invalid component format");
     }
+
+    return dt;
+}
+
+static nb::ndarray<nb::numpy> texture_download(Texture &texture) {
+    nb::dlpack::dtype dt = texture_dtype(texture);
 
     // Dynamically allocate 'data'
     size_t shape[3] = { (size_t) texture.size().y(),
@@ -121,6 +127,26 @@ static nb::ndarray<nb::numpy> texture_download(Texture &texture) {
     }
 
     return nb::ndarray<nb::numpy>(ptr, 3, shape, owner, nullptr, dt);
+}
+
+static nb::ndarray<nb::memview> texture_download_sub_region(
+        Texture &texture, const Vector2i &origin, const Vector2i &size) {
+    nb::dlpack::dtype dt = texture_dtype(texture);
+
+    size_t shape[3] = { (size_t) size.y(), (size_t) size.x(),
+                        (size_t) texture.channels() };
+    uint8_t *ptr = new uint8_t[shape[0] * shape[1] * shape[2] * dt.bits / 8];
+
+    nb::capsule owner(ptr, [](void *p) noexcept {
+       delete[] (uint8_t *) p;
+    });
+
+    {
+        nb::gil_scoped_release release;
+        texture.download_sub_region(ptr, origin, size);
+    }
+
+    return nb::ndarray<nb::memview>(ptr, 3, shape, owner, nullptr, dt);
 }
 
 template <bool Async>
@@ -294,6 +320,8 @@ void register_render(nb::module_ &m) {
         .def("bytes_per_pixel", &Texture::bytes_per_pixel, D(Texture, bytes_per_pixel))
         .def("channels", &Texture::channels, D(Texture, channels))
         .def("download", &texture_download, D(Texture, download))
+        .def("download_sub_region", &texture_download_sub_region,
+             "origin"_a, "size"_a, D(Texture, download_sub_region))
         .def("upload", &texture_upload<false>, D(Texture, upload))
         // Async upload uses Metal blits on Apple and PBO staging on GL/GLES3.
         .def("upload_async", &texture_upload<true>, D(Texture, upload_async))

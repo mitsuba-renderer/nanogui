@@ -242,6 +242,10 @@ public:
     /// Download packed pixel data from the GPU to the CPU
     void download(uint8_t *data);
 
+    /// Download packed pixel data from a rectangular sub-region of the texture from the GPU to the CPU
+    void download_sub_region(uint8_t *data, const Vector2i &origin,
+                             const Vector2i &size);
+
     /// Resize the texture (discards the current contents)
     void resize(const Vector2i &size);
 
