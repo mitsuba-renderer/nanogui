@@ -1007,8 +1007,10 @@ void Screen::cursor_pos_callback_event(double x, double y) {
         }
 
         if (!ret) {
-            ret = mouse_motion_event(p, p - m_mouse_pos, m_mouse_state, m_modifiers);
-            ret = mouse_motion_event_f(p, p_f - m_mouse_pos_f, m_mouse_state, m_modifiers);
+            bool handled = mouse_motion_event(p, p - m_mouse_pos, m_mouse_state,
+                                              m_modifiers);
+            ret = mouse_motion_event_f(p_f, p_f - m_mouse_pos_f, m_mouse_state,
+                                       m_modifiers) || handled;
         }
 
         // Lazy mode: arm the tooltip delay while the mouse rests on a

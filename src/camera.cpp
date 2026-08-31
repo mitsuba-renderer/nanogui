@@ -219,12 +219,15 @@ bool CameraController::mouse_button_event(const Vector2i &p, int button, bool do
 
 bool CameraController::mouse_motion_event(const Vector2f &p, const Vector2f &rel,
                                           int button, int) {
-    // Moving away from the press position turns the click into a drag
+    // Moving away from the press position turns the click into a drag. Button
+    // events only carry whole pixels, so the comparison truncates as well.
     if (m_click_armed) {
-        Vector2f d = p - m_click_pos;
+        Vector2f d((float) (int) p.x() - m_click_pos.x(),
+                   (float) (int) p.y() - m_click_pos.y());
         if (std::max(std::abs(d.x()), std::abs(d.y())) > drag_threshold)
             m_click_armed = false;
     }
+
     // A release lost while the window was unfocused must not leave the drag stuck
     if (m_drag_button >= 0 && !(button & (1 << m_drag_button)))
         m_drag_button = -1;
