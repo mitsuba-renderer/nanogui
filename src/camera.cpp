@@ -163,23 +163,23 @@ bool CameraController::from_state(const CameraState &c, Turntable &t) const {
     return true;
 }
 
-void CameraController::commit(const Turntable &t) {
+void CameraController::commit(const Turntable &t, bool notify) {
     m_turntable = t;
     // Keep the angles small so that long sessions do not lose precision
     m_turntable.azimuth = std::remainder(t.azimuth, 2 * Pi);
     m_turntable.elevation = std::remainder(t.elevation, 2 * Pi);
-    if (m_callback)
+    if (m_callback && notify)
         m_callback(to_state(m_turntable));
 }
 
-void CameraController::set_state(const CameraState &state) {
+void CameraController::set_state(const CameraState &state, bool notify) {
     Turntable t;
     if (!from_state(state, t))
         return;
     m_drag_button = -1;
     m_animating = false;
     m_fly = false;
-    commit(t);
+    commit(t, notify);
 }
 
 bool CameraController::mouse_button_event(const Vector2i &p, int button, bool down,

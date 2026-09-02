@@ -54,7 +54,7 @@ void register_camera(nb::module_ &m) {
              D(CameraController, CameraController), "state"_a, "world_up"_a)
         .def("state", &CameraController::state, D(CameraController, state))
         .def("set_state", &CameraController::set_state,
-             D(CameraController, set_state), "state"_a)
+             D(CameraController, set_state), "state"_a, "notify"_a = true)
         .def("set_callback", &CameraController::set_callback,
              D(CameraController, set_callback), "callback"_a.none())
         .def("callback", &CameraController::callback,

@@ -110,9 +110,11 @@ public:
      *
      * The roll of \c state relative to \ref world_up() is preserved by
      * later orbits. States with non-finite components or a zero distance
-     * are ignored.
+     * are ignored. With \c notify cleared, the callback stays silent, which
+     * suits corrections that leave the view unchanged, such as moving the
+     * orbit target along the view axis.
      */
-    void set_state(const CameraState &state);
+    void set_state(const CameraState &state, bool notify = true);
 
     /**
      * \brief Set the callback invoked whenever the camera changes
@@ -292,7 +294,7 @@ private:
                Vector3f &right, Vector3f &up) const;
     CameraState to_state(const Turntable &t) const;
     bool from_state(const CameraState &state, Turntable &t) const;
-    void commit(const Turntable &t);
+    void commit(const Turntable &t, bool notify = true);
 
     // Current turntable state, the source of truth between events
     Turntable m_turntable;

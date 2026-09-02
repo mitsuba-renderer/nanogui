@@ -607,7 +607,9 @@ R"doc(Replace the camera state, which ends a drag or frame animation
 
 The roll of ``state`` relative to world_up() is preserved by later
 orbits. States with non-finite components or a zero distance are
-ignored.)doc";
+ignored. With ``notify`` cleared, the callback stays silent, which
+suits corrections that leave the view unchanged, such as moving the
+orbit target along the view axis.)doc";
 
 static const char *__doc_nanogui_CameraController_set_world_up =
 R"doc(Set the up direction of the scene
