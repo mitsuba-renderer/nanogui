@@ -25,11 +25,6 @@
 #include <cstdlib>
 #include <iostream>
 
-#if defined(EMSCRIPTEN)
-#  include <emscripten/emscripten.h>
-#  include <emscripten/html5.h>
-#endif
-
 #if defined(_WIN32)
 #  ifndef NOMINMAX
 #    define NOMINMAX
@@ -91,39 +86,10 @@ static bool glad_initialized = false;
 
 /* Calculate pixel ratio for hi-dpi devices. */
 static float get_pixel_ratio(GLFWwindow *window) {
-#if defined(EMSCRIPTEN)
-    return emscripten_get_device_pixel_ratio();
-#else
     float xscale, yscale;
     glfwGetWindowContentScale(window, &xscale, &yscale);
     return xscale;
-#endif
 }
-
-#if defined(EMSCRIPTEN)
-static EM_BOOL nanogui_emscripten_resize_callback(int eventType, const EmscriptenUiEvent *, void *) {
-    double ratio = emscripten_get_device_pixel_ratio();
-
-    int w1, h1;
-    emscripten_get_canvas_element_size("#canvas", &w1, &h1);
-
-    double w2, h2;
-    emscripten_get_element_css_size("#canvas", &w2, &h2);
-
-    double w3 = w2 * ratio, h3 = h2 * ratio;
-
-    if (w1 != (int) w3 || h1 != (int) h3)
-        emscripten_set_canvas_element_size("#canvas", w3, h3);
-
-    for (auto kv: __nanogui_screens) {
-        Screen *screen = kv.second;
-        screen->resize_event(Vector2i((int) w2, (int) h2));
-        screen->redraw();
-    }
-
-    return true;
-}
-#endif
 
 Screen::Screen()
     : Widget(nullptr), m_glfw_window(nullptr), m_nvg_context(nullptr),
@@ -219,7 +185,9 @@ Screen::Screen(const Vector2i &size, std::string_view caption, bool resizable,
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
     glfwWindowHint(GLFW_MAXIMIZED, maximized ? GL_TRUE : GL_FALSE);
+#if !defined(__EMSCRIPTEN__)
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+#endif
 
     glfwWindowHintString(GLFW_X11_CLASS_NAME, m_caption.c_str());
     glfwWindowHintString(GLFW_X11_INSTANCE_NAME, m_caption.c_str());
@@ -477,6 +445,12 @@ Screen::Screen(const Vector2i &size, std::string_view caption, bool resizable,
         }
     );
 
+#if defined(__EMSCRIPTEN__)
+    // A resizable screen fills the browser window and follows its size
+    if (resizable)
+        emscripten::glfw3::MakeCanvasResizable(m_glfw_window, "window");
+#endif
+
     initialize(m_glfw_window, true);
 }
 
@@ -491,26 +465,7 @@ void Screen::initialize(GLFWwindow *window, bool shutdown_glfw) {
 
     m_pixel_ratio = get_pixel_ratio(window);
 
-#if defined(EMSCRIPTEN)
-    double w, h;
-    emscripten_get_element_css_size("#canvas", &w, &h);
-    double ratio = emscripten_get_device_pixel_ratio(),
-           w2 = w * ratio, h2 = h * ratio;
-
-    if (w != m_size[0] || h != m_size[1]) {
-        /* The canvas element is configured as width/height: auto, expand to
-           the available space instead of using the specified window resolution */
-        nanogui_emscripten_resize_callback(0, nullptr, nullptr);
-        emscripten_set_resize_callback(nullptr, nullptr, false,
-                                       nanogui_emscripten_resize_callback);
-    } else if (w != w2 || h != h2) {
-        /* Configure for rendering on a high-DPI display */
-        emscripten_set_canvas_element_size("#canvas", (int) w2, (int) h2);
-        emscripten_set_element_css_size("#canvas", w, h);
-    }
-    m_fbsize = Vector2i((int) w2, (int) h2);
-    m_size = Vector2i((int) w, (int) h);
-#elif defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__)
     if (glfwGetPlatform() != GLFW_PLATFORM_WAYLAND)
         m_size = Vector2i(Vector2f(m_fbsize) / m_pixel_ratio);
 #endif
@@ -659,7 +614,7 @@ void Screen::move_window(const Vector2i &rel) {
     Vector2i pos;
     glfwGetWindowPos(m_glfw_window, &pos[0], &pos[1]);
 
-#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
+#if defined(_WIN32) || defined(__linux__)
     pos += Vector2i(Vector2f(rel) * m_pixel_ratio);
 #else
     pos += rel;
@@ -672,7 +627,7 @@ void Screen::set_size(const Vector2i &size) {
     Widget::set_size(size);
 
     auto targetSize = size;
-#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
+#if defined(_WIN32) || defined(__linux__)
     if (glfwGetPlatform() != GLFW_PLATFORM_WAYLAND)
         targetSize = Vector2i(std::ceil(size.x() * m_pixel_ratio), std::ceil(size.y() * m_pixel_ratio));
 #endif
@@ -699,17 +654,14 @@ void Screen::draw_setup() {
 
 #endif
 
-#if !defined(EMSCRIPTEN)
     glfwGetFramebufferSize(m_glfw_window, &m_fbsize[0], &m_fbsize[1]);
     glfwGetWindowSize(m_glfw_window, &m_size[0], &m_size[1]);
-#else
-    emscripten_get_canvas_element_size("#canvas", &m_size[0], &m_size[1]);
-    m_fbsize = m_size;
-#endif
 
     RunMode run_mode = nanogui::run_mode();
     if (run_mode != m_last_run_mode) {
-#if !defined(NANOGUI_USE_METAL)
+#if defined(__EMSCRIPTEN__)
+        // The browser paces frames via requestAnimationFrame
+#elif !defined(NANOGUI_USE_METAL)
         int interval = 0;
         if (run_mode != RunMode::Eager) {
             bool swap_control = glfwExtensionSupported("WGL_EXT_swap_control_tear") ||
@@ -729,7 +681,7 @@ void Screen::draw_setup() {
         m_last_run_mode = run_mode;
     }
 
-#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
+#if defined(_WIN32) || defined(__linux__)
     if (glfwGetPlatform() != GLFW_PLATFORM_WAYLAND) {
         m_fbsize = m_size;
         m_size = Vector2i(Vector2f(m_size) / m_pixel_ratio);
@@ -969,7 +921,7 @@ void Screen::redraw() {
 }
 
 void Screen::cursor_pos_callback_event(double x, double y) {
-#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
+#if defined(_WIN32) || defined(__linux__)
     if (glfwGetPlatform() != GLFW_PLATFORM_WAYLAND) {
         x /= m_pixel_ratio;
         y /= m_pixel_ratio;
@@ -1153,10 +1105,6 @@ void Screen::scroll_callback_event(double x, double y, int flags) {
 }
 
 void Screen::resize_callback_event(int, int) {
-#if defined(EMSCRIPTEN)
-    return;
-#endif
-
     Vector2i fb_size, size;
     glfwGetFramebufferSize(m_glfw_window, &fb_size[0], &fb_size[1]);
     glfwGetWindowSize(m_glfw_window, &size[0], &size[1]);
@@ -1164,7 +1112,7 @@ void Screen::resize_callback_event(int, int) {
         return;
     m_fbsize = fb_size; m_size = size;
 
-#if defined(_WIN32) || defined(__linux__) || defined(EMSCRIPTEN)
+#if defined(_WIN32) || defined(__linux__)
     if (glfwGetPlatform() != GLFW_PLATFORM_WAYLAND)
         m_size = Vector2i(Vector2f(m_size) / m_pixel_ratio);
 #endif

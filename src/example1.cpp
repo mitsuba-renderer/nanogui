@@ -145,7 +145,7 @@ public:
 #endif
         std::vector<std::pair<int, std::string>> icons;
 
-#if !defined(EMSCRIPTEN)
+#if !defined(__EMSCRIPTEN__)
         try {
             icons = load_image_directory(m_nvg_context, resources_folder_path);
         } catch (const std::exception &e) {

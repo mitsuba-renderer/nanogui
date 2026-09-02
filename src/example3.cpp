@@ -11,26 +11,7 @@
     BSD-style license that can be found in the LICENSE.txt file.
 */
 
-// GLFW
-//
-#if defined(NANOGUI_USE_OPENGL)
-#  if defined(NANOGUI_GLAD)
-#    if defined(NANOGUI_SHARED) && !defined(GLAD_GLAPI_EXPORT)
-#      define GLAD_GLAPI_EXPORT
-#    endif
-#    include <glad/glad.h>
-#  else
-#    if defined(__APPLE__)
-#      define GLFW_INCLUDE_GLCOREARB
-#    else
-#      define GL_GLEXT_PROTOTYPES
-#    endif
-#  endif
-#elif defined(NANOGUI_USE_GLES)
-#  define GLFW_INCLUDE_ES2
-#endif
-
-#include <GLFW/glfw3.h>
+#include <nanogui/opengl.h>
 #include <nanogui/nanogui.h>
 #include <iostream>
 

@@ -31,13 +31,15 @@
 #  define GLFW_EXPOSE_NATIVE_X11
 #endif
 
-#include <nfd_glfw3.h>
+#if !defined(__EMSCRIPTEN__)
+#  include <nfd_glfw3.h>
+#endif
 
 #if !defined(_WIN32)
 #  include <dirent.h>
 #endif
 
-#if defined(EMSCRIPTEN)
+#if defined(__EMSCRIPTEN__)
 #  include <emscripten/emscripten.h>
 #endif
 
@@ -49,7 +51,9 @@ extern std::vector<std::pair<GLFWwindow *, Screen *>> __nanogui_screens;
   extern void disable_saved_application_state_osx();
 #endif
 
+#if !defined(__EMSCRIPTEN__)
 static bool nfd_initialized = false;
+#endif
 
 void init(bool color_management) {
     #if !defined(_WIN32)
@@ -73,9 +77,12 @@ void init(bool color_management) {
     if (old_error_callback)
         glfwSetErrorCallback(old_error_callback);
 
-    if (color_management) {
+#if !defined(__EMSCRIPTEN__)
+    if (color_management)
         glfwInitHint(GLFW_WAYLAND_COLOR_MANAGEMENT, GLFW_TRUE);
-    }
+#else
+    (void) color_management;
+#endif
 
     if (!glfwInit())
         throw std::runtime_error("Could not initialize GLFW!");
@@ -86,18 +93,15 @@ void init(bool color_management) {
 
     glfwSetTime(0);
 
+#if !defined(__EMSCRIPTEN__)
     if (NFD_Init() == NFD_OKAY) {
         nfd_initialized = true;
         if (!NFD_SetDisplayPropertiesFromGLFW())
             fprintf(stderr, "Could not set NFD display properties; file dialogs might misbehave.\n");
     } else
         fprintf(stderr, "Could not initialize NFD; file dialogs will not work.\n");
-}
-
-#if defined(EMSCRIPTEN)
-static double emscripten_last = 0;
-static float emscripten_refresh = 0;
 #endif
+}
 
 std::mutex m_async_mutex;
 std::vector<std::function<void()>> m_async_functions;
@@ -105,15 +109,6 @@ static RunMode current_run_mode = RunMode::Stopped;
 
 static void mainloop_iteration() {
     int num_screens = 0;
-
-    #if defined(EMSCRIPTEN)
-        double emscripten_now = glfwGetTime();
-        bool emscripten_redraw = false;
-        if (float((emscripten_now - emscripten_last) * 1000) > emscripten_refresh) {
-            emscripten_redraw = true;
-            emscripten_last = emscripten_now;
-        }
-    #endif
 
     /* Run async functions */ {
         std::lock_guard<std::mutex> guard(m_async_mutex);
@@ -132,10 +127,6 @@ static void mainloop_iteration() {
             screen->set_visible(false);
             continue;
         }
-        #if defined(EMSCRIPTEN)
-            if (emscripten_redraw || screen->tooltip_fade_in_progress())
-                screen->redraw();
-        #endif
         screen->draw_all();
         next_wakeup = std::min(next_wakeup, screen->next_wakeup());
         num_screens++;
@@ -147,7 +138,10 @@ static void mainloop_iteration() {
         return;
     }
 
-    #if !defined(EMSCRIPTEN)
+    #if defined(__EMSCRIPTEN__)
+        // The browser drives the loop, never block
+        glfwPollEvents();
+    #else
         // Wait for mouse/keyboard or empty refresh events. A screen deadline
         // (see Screen::next_wakeup()) bounds the wait time in lazy mode.
         if (current_run_mode != RunMode::Lazy)
@@ -163,7 +157,7 @@ void run(RunMode run_mode) {
     if (current_run_mode != RunMode::Stopped)
         throw std::runtime_error("Main loop is already active!");
 
-#if defined(EMSCRIPTEN)
+#if defined(__EMSCRIPTEN__)
     current_run_mode = run_mode;
     /* The following will throw an exception and enter the main
        loop within Emscripten. This means that none of the code below
@@ -203,8 +197,10 @@ std::pair<bool, bool> test_10bit_edr_support() {
 
 
 void shutdown() {
+#if !defined(__EMSCRIPTEN__)
     if (nfd_initialized)
         NFD_Quit();
+#endif
 
     glfwTerminate();
 
@@ -289,6 +285,17 @@ load_image_directory(NVGcontext *ctx, const std::string &path) {
 #endif
     return result;
 }
+
+#if defined(__EMSCRIPTEN__)
+
+std::vector<std::string>
+file_dialog(Widget *, FileDialogType,
+            const std::vector<std::pair<std::string, std::string>> &,
+            const std::string &) {
+    throw std::runtime_error("nanogui::file_dialog(): not supported on the web.");
+}
+
+#else
 
 template <typename Func> struct scope_guard {
     scope_guard(Func &&func) : func(std::move(func)) { };
@@ -403,6 +410,8 @@ file_dialog(Widget *parent,
 
     return paths;
 }
+
+#endif
 
 static void (*object_inc_ref_py)(PyObject *) noexcept = nullptr;
 static void (*object_dec_ref_py)(PyObject *) noexcept = nullptr;

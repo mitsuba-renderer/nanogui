@@ -61,19 +61,11 @@ set(NANOGUI_BUILD_SHARED_DEFAULT ON)
 set(NANOGUI_BUILD_PYTHON_DEFAULT ON)
 set(NANOGUI_BUILD_GLFW_DEFAULT ON)
 
-if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
-  set(CMAKE_CXX_COMPILER_ID "Emscripten")
+if (EMSCRIPTEN)
   set(NANOGUI_BUILD_SHARED_DEFAULT OFF)
   set(NANOGUI_BUILD_PYTHON_DEFAULT OFF)
   set(NANOGUI_BUILD_GLAD_DEFAULT   OFF)
   set(NANOGUI_BUILD_GLFW_DEFAULT   OFF)
-
-  set(CMAKE_STATIC_LIBRARY_SUFFIX ".bc")
-  set(CMAKE_EXECUTABLE_SUFFIX ".bc")
-  set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_CXX_COMPILER> -o <TARGET> <LINK_FLAGS> <OBJECTS>")
-  if (U_CMAKE_BUILD_TYPE MATCHES REL)
-    add_compile_options(-O3 -DNDEBUG)
-  endif()
 endif()
 
 option(NANOGUI_BUILD_EXAMPLES            "Build NanoGUI example application?" ON)
@@ -87,8 +79,8 @@ option(NANOGUI_SKIP_METAL_SHADER_PRECOMPILATION "Compile Metal shaders at runtim
 option(NANOGUI_SKIP_STB_IMAGE_IMPLEMENTATION    "Do not compile stb_image's implementation into nanogui. If enabled, user code must do this instead." OFF)
 
 if (NOT DEFINED NANOGUI_BACKEND OR "${NANOGUI_BACKEND}" STREQUAL "")
-  if (CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
-    set(NANOGUI_BACKEND_DEFAULT "GLES 2")
+  if (EMSCRIPTEN)
+    set(NANOGUI_BACKEND_DEFAULT "GLES 3")
   elseif (APPLE)
     set(NANOGUI_BACKEND_DEFAULT "Metal")
   elseif (CMAKE_SYSTEM_NAME MATCHES "Linux" OR
@@ -268,8 +260,15 @@ elseif(UNIX)
 endif()
 
 # Required core libraries on various platforms
-if (${CMAKE_CXX_COMPILER_ID} MATCHES "Emscripten")
-  # No dependencies
+if (EMSCRIPTEN)
+  # GLFW (contrib.glfw3 port) and GLES are provided by the Emscripten runtime.
+  # The port warns about every hint or callback the web lacks, silence that.
+  set(NANOGUI_GLFW_PORT --use-port=contrib.glfw3:disableWarning=true)
+  add_compile_options(${NANOGUI_GLFW_PORT})
+  list(APPEND NANOGUI_LIBS ${NANOGUI_GLFW_PORT} -sALLOW_MEMORY_GROWTH=1)
+  if (NANOGUI_BACKEND STREQUAL "GLES 3")
+    list(APPEND NANOGUI_LIBS -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2)
+  endif()
 elseif (WIN32)
   list(APPEND NANOGUI_LIBS opengl32)
 elseif (APPLE)
@@ -373,13 +372,15 @@ if (NANOGUI_BUILD_GLFW)
   list(APPEND NANOGUI_EXTRA $<TARGET_OBJECTS:glfw>)
 endif()
 
-# Native file dialog library
-set(BUILD_SHARED_LIBS OFF)
-set(NFD_INSTALL OFF CACHE BOOL " " FORCE)
-set(NFD_PORTAL ON CACHE BOOL " " FORCE)
-set(NFD_APPEND_EXTENSION ON CACHE BOOL " " FORCE)
-set(NFD_CASE_SENSITIVE_FILTER OFF CACHE BOOL " " FORCE)
-add_subdirectory(ext/nativefiledialog-extended)
+# Native file dialog library (no web backend)
+if (NOT EMSCRIPTEN)
+  set(BUILD_SHARED_LIBS OFF)
+  set(NFD_INSTALL OFF CACHE BOOL " " FORCE)
+  set(NFD_PORTAL ON CACHE BOOL " " FORCE)
+  set(NFD_APPEND_EXTENSION ON CACHE BOOL " " FORCE)
+  set(NFD_CASE_SENSITIVE_FILTER OFF CACHE BOOL " " FORCE)
+  add_subdirectory(ext/nativefiledialog-extended)
+endif()
 
 mark_as_advanced(
   APPKIT_LIBRARY
@@ -545,7 +546,9 @@ if (MSVC)
   target_compile_options(nanogui PRIVATE /wd4324 /wd4702)
 endif()
 
-target_link_libraries(nanogui PRIVATE $<BUILD_INTERFACE:nfd>)
+if (NOT EMSCRIPTEN)
+  target_link_libraries(nanogui PRIVATE $<BUILD_INTERFACE:nfd>)
+endif()
 
 # Auto-detect GLES include directory on Raspberry PI
 if (EXISTS /opt/vc/include)
@@ -611,7 +614,6 @@ endif()
 if (NANOGUI_BUILD_EXAMPLES)
   add_executable(example1      src/example1.cpp)
   add_executable(example2      src/example2.cpp)
-  add_executable(example3      src/example3.cpp)
   add_executable(example4      src/example4.cpp)
   add_executable(example_icons src/example_icons.cpp)
   add_executable(example_hdr   src/example_hdr.cpp)
@@ -619,9 +621,17 @@ if (NANOGUI_BUILD_EXAMPLES)
   target_link_libraries(example1      nanogui)
   target_link_libraries(example_hdr   nanogui)
   target_link_libraries(example2      nanogui)
-  target_link_libraries(example3      nanogui ${NANOGUI_LIBS}) # For OpenGL
   target_link_libraries(example4      nanogui)
   target_link_libraries(example_icons nanogui)
+
+  if (EMSCRIPTEN)
+    set_target_properties(example1 example2 example4 example_icons example_hdr
+                          PROPERTIES SUFFIX ".html")
+  else()
+    # Runs its own blocking GLFW event loop, which the browser does not permit
+    add_executable(example3 src/example3.cpp)
+    target_link_libraries(example3 nanogui ${NANOGUI_LIBS}) # For OpenGL
+  endif()
 
   # Copy icons for example application
   file(COPY resources/icons DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

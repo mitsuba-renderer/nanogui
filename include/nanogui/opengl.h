@@ -42,12 +42,13 @@
 
 #include <GLFW/glfw3.h>
 
+#if defined(__EMSCRIPTEN__)
+#  include <nanogui/glfw_emscripten.h>
+#endif
+
 #if defined(NANOGUI_USE_GLES)
-#  if NANOGUI_GLES_VERSION == 2
-#    include <GLES2/gl2ext.h>
-#  elif NANOGUI_GLES_VERSION == 3
-#    include <GLES3/gl3ext.h>
-#  endif
+// Khronos ships extension declarations for GLES 2 and 3 in the same header
+#  include <GLES2/gl2ext.h>
 #endif
 
 #if !defined(GL_TEXTURE_2D_MULTISAMPLE)
