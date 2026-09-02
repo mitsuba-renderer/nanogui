@@ -80,7 +80,6 @@ void TabWidgetBase::perform_layout(NVGcontext* ctx) {
     nvgFontSize(ctx, font_size());
     nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
 
-    m_tab_offsets.clear();
     int width = 0;
     float unused[4];
     for (std::string_view label : m_tab_captions) {
