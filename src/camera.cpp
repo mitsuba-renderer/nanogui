@@ -234,6 +234,10 @@ bool CameraController::mouse_motion_event(const Vector2f &p, const Vector2f &rel
     if (m_drag_button < 0)
         return false;
     m_drag_offset += rel;
+
+    // Do not treat sub-threshold motion of a pending click as a drag
+    if (m_click_armed)
+        return true;
     Turntable t = m_drag_start;
     float dx = m_drag_offset.x(), dy = m_drag_offset.y(),
           scale = orbit_speed * (Pi / 180);

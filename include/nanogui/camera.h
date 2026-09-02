@@ -131,8 +131,9 @@ public:
      * \brief Set the callback invoked when the left mouse button is clicked
      *
      * A press and release with at most \ref drag_threshold pixels of motion in
-     * between counts as a click. The callback receives the release position
-     * and whether the press was a double-click (see \ref MOD_DOUBLE_CLICK).
+     * between counts as a click, and such motion leaves the camera untouched.
+     * The callback receives the release position and whether the press was a
+     * double-click (see \ref MOD_DOUBLE_CLICK).
      */
     void set_click_callback(const std::function<void(Vector2i, bool)> &callback) {
         m_click_callback = callback;
