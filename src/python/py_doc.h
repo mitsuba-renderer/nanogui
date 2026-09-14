@@ -2971,7 +2971,9 @@ static const char *__doc_nanogui_TabWidgetBase_set_selected_index = R"doc(Set th
 
 static const char *__doc_nanogui_TabWidgetBase_set_tab_caption = R"doc(Change the caption of the tab with the given ID)doc";
 
-static const char *__doc_nanogui_TabWidgetBase_set_tabs_closeable = R"doc()doc";
+static const char *__doc_nanogui_TabWidgetBase_set_tab_closeable = R"doc(Set whether the tab with the given ID provides a close button)doc";
+
+static const char *__doc_nanogui_TabWidgetBase_set_tabs_closeable = R"doc(Set whether tabs provide a close button. Applies to existing tabs as well.)doc";
 
 static const char *__doc_nanogui_TabWidgetBase_set_tabs_draggable = R"doc()doc";
 
@@ -2979,13 +2981,15 @@ static const char *__doc_nanogui_TabWidgetBase_tab_at_position = R"doc()doc";
 
 static const char *__doc_nanogui_TabWidgetBase_tab_caption = R"doc(Return the caption of the tab with the given ID)doc";
 
+static const char *__doc_nanogui_TabWidgetBase_tab_closeable = R"doc(Return whether the tab with the given ID provides a close button)doc";
+
 static const char *__doc_nanogui_TabWidgetBase_tab_count = R"doc(Return the total number of tabs)doc";
 
 static const char *__doc_nanogui_TabWidgetBase_tab_id = R"doc(Return the ID of the tab at a given index)doc";
 
 static const char *__doc_nanogui_TabWidgetBase_tab_index = R"doc(Return the index of the tab with a given ID (or throw an exception))doc";
 
-static const char *__doc_nanogui_TabWidgetBase_tabs_closeable = R"doc(Return whether tabs provide a close button)doc";
+static const char *__doc_nanogui_TabWidgetBase_tabs_closeable = R"doc(Return whether new tabs provide a close button)doc";
 
 static const char *__doc_nanogui_TabWidgetBase_tabs_draggable = R"doc(Return whether tabs can be dragged to different positions)doc";
 

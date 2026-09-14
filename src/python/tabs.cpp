@@ -24,6 +24,8 @@ void register_tabs(nb::module_ &m) {
         .def("set_tabs_draggable", &TabWidgetBase::set_tabs_draggable, D(TabWidgetBase, set_tabs_draggable))
         .def("tabs_closeable", &TabWidgetBase::tabs_closeable, D(TabWidgetBase, tabs_closeable))
         .def("set_tabs_closeable", &TabWidgetBase::set_tabs_closeable, D(TabWidgetBase, set_tabs_closeable))
+        .def("tab_closeable", &TabWidgetBase::tab_closeable, D(TabWidgetBase, tab_closeable), "id"_a)
+        .def("set_tab_closeable", &TabWidgetBase::set_tab_closeable, D(TabWidgetBase, set_tab_closeable), "id"_a, "value"_a)
         .def("padding", &TabWidgetBase::padding, D(TabWidgetBase, padding))
         .def("set_padding", &TabWidgetBase::set_padding, D(TabWidgetBase, set_padding))
         .def("set_background_color", &TabWidgetBase::set_background_color, D(TabWidgetBase, set_background_color))

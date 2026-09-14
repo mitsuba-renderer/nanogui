@@ -32,6 +32,7 @@ void TabWidgetBase::remove_tab(int id) {
     bool close_active = index == m_active_tab;
     m_tab_captions.erase(m_tab_captions.begin() + index);
     m_tab_ids.erase(m_tab_ids.begin() + index);
+    m_tab_closeable.erase(m_tab_closeable.begin() + index);
     if (index <= m_active_tab)
         m_active_tab = std::max(0, m_active_tab - 1);
     TabWidgetBase::perform_layout(screen()->nvg_context());
@@ -48,6 +49,7 @@ int TabWidgetBase::insert_tab(int index, std::string_view caption) {
     int id = m_tab_counter++;
     m_tab_captions.insert(m_tab_captions.begin() + index, std::string(caption));
     m_tab_ids.insert(m_tab_ids.begin() + index, id);
+    m_tab_closeable.insert(m_tab_closeable.begin() + index, m_tabs_closeable);
     TabWidgetBase::perform_layout(screen()->nvg_context());
     if (index < m_active_tab)
         m_active_tab++;
@@ -62,6 +64,17 @@ int TabWidgetBase::insert_tab(int index, std::string_view caption) {
 
 int TabWidgetBase::append_tab(std::string_view caption) {
     return insert_tab((int) m_tab_captions.size(), caption);
+}
+
+void TabWidgetBase::set_tabs_closeable(bool value) {
+    m_tabs_closeable = value;
+    std::fill(m_tab_closeable.begin(), m_tab_closeable.end(), value);
+    preferred_size_changed();
+}
+
+void TabWidgetBase::set_tab_closeable(int id, bool value) {
+    m_tab_closeable[tab_index(id)] = value;
+    preferred_size_changed();
 }
 
 int TabWidgetBase::tab_index(int id) const {
@@ -83,11 +96,12 @@ void TabWidgetBase::perform_layout(NVGcontext* ctx) {
     m_tab_offsets.clear();
     int width = 0;
     float unused[4];
-    for (std::string_view label : m_tab_captions) {
+    for (size_t i = 0; i < m_tab_captions.size(); ++i) {
+        std::string_view label = m_tab_captions[i];
         int label_width = nvgTextBounds(ctx, 0, 0, label.data(), label.data() + label.size(), unused);
         m_tab_offsets.push_back(width);
         width += label_width + 2 * m_theme->m_tab_button_horizontal_padding;
-        if (m_tabs_closeable)
+        if (m_tab_closeable[i])
             width += m_close_width;
     }
     m_tab_offsets.push_back(width);
@@ -103,11 +117,12 @@ Vector2i TabWidgetBase::preferred_size_impl(NVGcontext* ctx) const {
     nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
 
     int width = 0;
-    for (std::string_view label : m_tab_captions) {
+    for (size_t i = 0; i < m_tab_captions.size(); ++i) {
+        std::string_view label = m_tab_captions[i];
         float unused[4];
         int label_width = nvgTextBounds(ctx, 0, 0, label.data(), label.data() + label.size(), unused);
         width += label_width + 2 * m_theme->m_tab_button_horizontal_padding;
-        if (m_tabs_closeable)
+        if (m_tab_closeable[i])
             width += m_close_width;
     }
 
@@ -174,7 +189,7 @@ void TabWidgetBase::draw(NVGcontext* ctx) {
 
         nvgText(ctx, x_pos, y_pos, m_tab_captions[i].c_str(), nullptr);
 
-        if (m_tabs_closeable) {
+        if (m_tab_closeable[i]) {
             x_pos = m_pos.x() + m_tab_offsets[i + 1] -
                     m_theme->m_tab_button_horizontal_padding - m_close_width + 5;
             nvgFontFace(ctx, "icons");
@@ -234,7 +249,7 @@ std::pair<int, bool> TabWidgetBase::tab_at_position(const Vector2i &p, bool test
         if (x >= m_tab_offsets[i] && x < m_tab_offsets[i + 1]) {
             int r = m_tab_offsets[i + 1] - x;
             return {
-                (int) i, m_tabs_closeable &&
+                (int) i, m_tab_closeable[i] &&
                    r < m_theme->m_tab_button_horizontal_padding + m_close_width - 4 &&
                    r > m_theme->m_tab_button_horizontal_padding - 4 &&
                    p.y() - m_pos.y() > m_theme->m_tab_button_vertical_padding &&
@@ -332,7 +347,7 @@ bool TabWidgetBase::mouse_button_event(const Vector2i &p, int button, bool down,
 }
 
 bool TabWidgetBase::mouse_enter_event(const Vector2i &/* p */, bool /* enter */) {
-    if (m_tabs_closeable && m_close_index >= 0) {
+    if (m_close_index >= 0) {
         m_close_index = -1;
         m_close_index_pushed = -1;
         return true;

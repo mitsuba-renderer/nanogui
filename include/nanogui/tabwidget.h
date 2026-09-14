@@ -62,9 +62,14 @@ public:
     /// Change the caption of the tab with the given ID
     void set_tab_caption(int id, std::string_view caption) { m_tab_captions[tab_index(id)] = caption; preferred_size_changed(); }
 
-    /// Return whether tabs provide a close button
+    /// Return whether new tabs provide a close button
     bool tabs_closeable() const { return m_tabs_closeable; }
-    void set_tabs_closeable(bool value) { m_tabs_closeable = value; preferred_size_changed(); }
+    /// Set whether tabs provide a close button. Applies to existing tabs as well.
+    void set_tabs_closeable(bool value);
+    /// Return whether the tab with the given ID provides a close button
+    bool tab_closeable(int id) const { return m_tab_closeable[tab_index(id)]; }
+    /// Set whether the tab with the given ID provides a close button
+    void set_tab_closeable(int id, bool value);
 
     /// Return whether tabs can be dragged to different positions
     bool tabs_draggable() const { return m_tabs_draggable; }
@@ -119,6 +124,7 @@ protected:
     std::vector<std::string> m_tab_captions;
     std::vector<int> m_tab_ids;
     std::vector<int> m_tab_offsets;
+    std::vector<bool> m_tab_closeable;
     int m_close_width = 0;
     int m_active_tab = 0;
     int m_tab_drag_index = -1;
