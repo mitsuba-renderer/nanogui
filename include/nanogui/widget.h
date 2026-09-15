@@ -15,6 +15,8 @@
 #include <nanogui/object.h>
 #include <nanogui/theme.h>
 
+#include <utility>
+
 NAMESPACE_BEGIN(nanogui)
 
 enum class Cursor; // do not put a docstring, this is already documented
@@ -188,8 +190,8 @@ public:
 
     /// Variadic shorthand notation to construct and add a child widget
     template<typename WidgetClass, typename... Args>
-    WidgetClass* add(const Args&... args) {
-        return new WidgetClass(this, args...);
+    WidgetClass* add(Args&&... args) {
+        return new WidgetClass(this, std::forward<Args>(args)...);
     }
 
     /// Walk up the hierarchy and return the parent window
